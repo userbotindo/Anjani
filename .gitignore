@@ -1,0 +1,15 @@
+__pycache__/
+
+# environment file
+*.env
+!sample_config.env
+
+# file
+*.pyc
+*.log
+*.session
+
+# IDE specific files
+.idea/
+.vscode/
+*.sw*
