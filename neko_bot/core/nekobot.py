@@ -1,6 +1,7 @@
 """Bot core client"""
 
 import asyncio
+import importlib
 import logging
 import signal
 from typing import Optional, Any, Awaitable, List
@@ -9,6 +10,7 @@ from pyrogram import Client, idle
 
 from . import pool
 from .. import Config
+from ..plugins import ALL_MODULES
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,16 +28,24 @@ class NekoBot(Client):  # pylint: disable=too-many-ancestors
         }
         super().__init__(**kwargs)
 
-
     async def start(self):
         """ Start client """
         pool.start()
+        LOGGER.info("Importing available modules")
+        for mod in ALL_MODULES:
+            imported_module = importlib.import_module("neko_bot.plugins." + mod)
+            if hasattr(
+                    imported_module,
+                    "__MODULE__"
+                ) and imported_module.__MODULE__:
+                imported_module.__MODULE__ = imported_module.__MODULE__
+                LOGGER.debug("%s module loaded", mod)
         LOGGER.info("Starting Bot Client...")
         await super().start()
 
     async def stop(self):  # pylint: disable=arguments-differ
         """ Stop client """
-        LOGGER.info("Exiting bot...")
+        LOGGER.info("Disconnecting...")
         await super().stop()
         await pool.stop()
 
