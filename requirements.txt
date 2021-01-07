@@ -1,0 +1,5 @@
+aiohttp
+colorlog
+pyrogram
+python-dotenv
+tgcrypto
