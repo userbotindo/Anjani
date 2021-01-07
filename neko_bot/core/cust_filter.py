@@ -7,6 +7,10 @@ from typing import Union, List
 from pyrogram.filters import create
 from pyrogram.types import Message
 
+from .. import Config
+from ..utils import adminlist
+
+
 
 def command(commands: Union[str, List[str]],
             prefixes: Union[str, List[str]] = "/",
@@ -51,3 +55,29 @@ def command(commands: Union[str, List[str]],
         prefixes=prefixes,
         case_sensitive=case_sensitive
     )
+
+
+async def _admin_filters(_, client, message: Message) -> bool:
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    admin_list = await adminlist(client, chat_id)
+    if user_id in admin_list:
+        return True
+    if user_id == Config.OWNER_ID:
+        return True
+    if Config.SUDO_USERS and user_id in Config.SUDO_USERS:
+        return True
+    return False
+
+
+async def _staf_filters(_, __, message: Message) -> bool:
+    user_id = message.from_user.id
+    if user_id == Config.OWNER_ID:
+        return True
+    if Config.SUDO_USERS and user_id in Config.SUDO_USERS:
+        return True
+    return False
+
+# pylint: disable=invalid-name
+admin = create(_admin_filters)
+staff = create(_staf_filters)

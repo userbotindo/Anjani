@@ -4,11 +4,11 @@ import asyncio
 import importlib
 import logging
 import signal
-from typing import Optional, Any, Awaitable, List
+from typing import Optional, Any, Awaitable, List, Union
 
 from pyrogram import Client, idle
 
-from . import pool
+from . import cust_filter, pool
 from .. import Config
 from ..plugins import ALL_MODULES
 
@@ -90,3 +90,36 @@ class NekoBot(Client):  # pylint: disable=too-many-ancestors
         finally:
             self.loop.close()
             LOGGER.info("Loop closed")
+
+    def on_command(
+            self,
+            cmd: Union[str, List[str]],
+            admin: Optional[bool] = False,
+            staff: Optional[bool] = False,
+            group: Optional[int] = 0,
+        ) -> callable:
+        """Decorator for handling commands
+
+        Parameters:
+            cmd (`str` | List of `str`):
+                Pass one or more commands to trigger your function.
+
+            admin (`bool`, *optional*):
+                Pass True if the command only used by admins.
+
+            admin (`bool`, *optional*):
+                Pass True if the command only used by Staff (SUDO and OWNER).
+
+            group (`int`, *optional*):
+                The group identifier, defaults to 0.
+        """
+
+        def decorator(coro):
+            _filters = cust_filter.command(commands=cmd)
+            if admin:
+                _filters = _filters & cust_filter.admin
+            elif staff:
+                _filters = _filters & cust_filter.staff
+            dec = self.on_message(filters=_filters, group=group)
+            return dec(coro)
+        return decorator
