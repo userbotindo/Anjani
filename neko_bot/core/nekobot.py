@@ -7,6 +7,7 @@ import signal
 from typing import Optional, Any, Awaitable, List, Union
 
 from pyrogram import Client, idle
+from pyrogram.filters import Filter
 
 from . import cust_filter, pool, DataBase
 from .. import Config
@@ -96,6 +97,7 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
     def on_command(
             self,
             cmd: Union[str, List[str]],
+            filters: Optional[Filter] = None,
             admin: Optional[bool] = False,
             staff: Optional[bool] = False,
             group: Optional[int] = 0,
@@ -106,10 +108,16 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
             cmd (`str` | List of `str`):
                 Pass one or more commands to trigger your function.
 
-            admin (`bool`, *optional*):
-                Pass True if the command only used by admins.
+            filters (:obj:`~pyrogram.filters`, *optional*):
+                aditional build-in pyrogram filters to allow only a subset of messages to
+                be passed in your function.
 
             admin (`bool`, *optional*):
+                Pass True if the command only used by admins (bot staff included).
+                The bot need to be an admin as well. This parameters also means
+                that the command won't run in private (PM`s).
+
+            staff (`bool`, *optional*):
                 Pass True if the command only used by Staff (SUDO and OWNER).
 
             group (`int`, *optional*):
@@ -118,10 +126,14 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
 
         def decorator(coro):
             _filters = cust_filter.command(commands=cmd)
+            if filters:
+                _filters = _filters & filters
+
             if admin:
-                _filters = _filters & cust_filter.admin
+                _filters = _filters & cust_filter.admin & cust_filter.bot_admin
             elif staff:
                 _filters = _filters & cust_filter.staff
+
             dec = self.on_message(filters=_filters, group=group)
             return dec(coro)
         return decorator
