@@ -16,6 +16,8 @@ class Config:  # pylint: disable=too-few-public-methods
     BOT_TOKEN = environ.get("BOT_TOKEN")
     API_ID = int(environ.get("API_ID"))
     API_HASH = environ.get("API_HASH")
+    # Required
+    DB_URI = environ.get("DB_URI")
     # Staff  required
     OWNER_ID = int(environ.get("OWNER_ID"))
     # Optional

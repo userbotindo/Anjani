@@ -8,14 +8,14 @@ from typing import Optional, Any, Awaitable, List, Union
 
 from pyrogram import Client, idle
 
-from . import cust_filter, pool
+from . import cust_filter, pool, DataBase
 from .. import Config
 from ..plugins import ALL_MODULES
 
 LOGGER = logging.getLogger(__name__)
 
 
-class NekoBot(Client):  # pylint: disable=too-many-ancestors
+class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
     """ NekoBot Client """
 
     def __init__(self, **kwargs):
@@ -31,6 +31,7 @@ class NekoBot(Client):  # pylint: disable=too-many-ancestors
     async def start(self):
         """ Start client """
         pool.start()
+        await self.connect_db("NekoBot")
         LOGGER.info("Importing available modules")
         for mod in ALL_MODULES:
             imported_module = importlib.import_module("neko_bot.plugins." + mod)
@@ -47,6 +48,7 @@ class NekoBot(Client):  # pylint: disable=too-many-ancestors
         """ Stop client """
         LOGGER.info("Disconnecting...")
         await super().stop()
+        await self.disconnect_db()
         await pool.stop()
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
