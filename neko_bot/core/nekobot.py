@@ -4,6 +4,7 @@ import asyncio
 import importlib
 import logging
 import signal
+import time
 from typing import Optional, Any, Awaitable, List, Union
 
 from pyrogram import Client, idle
@@ -12,6 +13,7 @@ from pyrogram.filters import Filter
 from . import cust_filter, pool, DataBase
 from .. import Config
 from ..plugins import ALL_MODULES
+from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +29,13 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
             "bot_token" : Config.BOT_TOKEN,
             "session_name" : ":memory:",
         }
+        self._start_time = time.time()
         super().__init__(**kwargs)
+
+    @property
+    def uptime(self) -> str:
+        """ Get bot uptime """
+        return get_readable_time(time.time() - self._start_time)
 
     async def start(self):
         """ Start client """
