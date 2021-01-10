@@ -7,7 +7,6 @@ from typing import Union, List, Optional
 from pyrogram.filters import create
 from pyrogram.types import Message
 
-from .. import Config
 from ..utils import adminlist
 
 
@@ -62,8 +61,7 @@ async def _admin_filters(_, client, message: Message) -> bool:
         user_id = message.from_user.id
         return bool(
             user_id in await adminlist(client, chat_id)
-            or user_id == Config.OWNER_ID
-            or Config.SUDO_USERS and user_id in Config.SUDO_USERS
+            or user_id in client.staff_id
         )
     return False
 
@@ -77,12 +75,9 @@ async def _bot_admin_filters(_, client, message: Message) -> bool:
     return False
 
 
-async def _staf_filters(_, __, message: Message) -> bool:
+async def _staf_filters(_, client, message: Message) -> bool:
     user_id = message.from_user.id
-    return bool(
-        user_id == Config.OWNER_ID
-        or Config.SUDO_USERS and user_id in Config.SUDO_USERS
-    )
+    return bool(user_id in client.staff_id)
 
 # pylint: disable=invalid-name
 admin = create(_admin_filters)

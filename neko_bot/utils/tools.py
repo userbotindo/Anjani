@@ -2,12 +2,12 @@
 
 
 def get_readable_time(seconds: int) -> str:
+    """get human readable time from seconds."""
     up_time = ""
     time_list = []
     time_suffix_list = ["s", "m", "h", "days"]
 
     for count in range(1, 4):
-        count += 1
         if count < 3:
             remainder, result = divmod(seconds, 60)
         else:
@@ -17,8 +17,8 @@ def get_readable_time(seconds: int) -> str:
         time_list.append(int(result))
         seconds = int(remainder)
 
-    for x in range(len(time_list)):
-        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+    for _x in range(len(time_list)):
+        time_list[_x] = str(time_list[_x]) + time_suffix_list[_x]
     if len(time_list) == 4:
         up_time += time_list.pop() + ", "
 

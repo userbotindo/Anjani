@@ -9,7 +9,7 @@ from .. import Config
 
 LOGGER = logging.getLogger(__name__)
 
-# pylint: disable=attribute-defined-outside-init
+
 class DataBase:
     """Client Database on MongoDB"""
 

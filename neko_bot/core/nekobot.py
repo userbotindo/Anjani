@@ -2,6 +2,7 @@
 
 import asyncio
 import importlib
+import json
 import logging
 import signal
 import time
@@ -20,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
     """ NekoBot Client """
+    staff = dict()
 
     def __init__(self, **kwargs):
         LOGGER.info("Setting up bot client...")
@@ -30,12 +32,30 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
             "session_name" : ":memory:",
         }
         self._start_time = time.time()
+        self.staff["owner"] = Config.OWNER_ID
         super().__init__(**kwargs)
+
+    def __str__(self):
+        return f"Uptime: {self.uptime}\nStaff list:\n{json.dumps(self.staff, indent=2)}"
 
     @property
     def uptime(self) -> str:
         """ Get bot uptime """
         return get_readable_time(time.time() - self._start_time)
+
+    @property
+    def staff_id(self) -> List[int]:
+        """ Get bot staff ids as a list """
+        _id = [self.staff["owner"]]
+        _id.extend(self.staff["dev"] + self.staff["sudo"])
+        return _id
+
+    async def _load_staff(self) -> None:
+        """ Load staff database """
+        _db = self.get_collection("STAFF")
+        self.staff.update({'dev': [], 'sudo': []})
+        async for i in _db.find():
+            self.staff[i["rank"]].append(i["_id"])
 
     async def start(self):
         """ Start client """
@@ -50,6 +70,7 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
                 ) and imported_module.__MODULE__:
                 imported_module.__MODULE__ = imported_module.__MODULE__
                 LOGGER.debug("%s module loaded", mod)
+        await self._load_staff()
         LOGGER.info("Starting Bot Client...")
         await super().start()
 

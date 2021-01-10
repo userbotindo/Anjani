@@ -20,5 +20,3 @@ class Config:  # pylint: disable=too-few-public-methods
     DB_URI = environ.get("DB_URI")
     # Staff  required
     OWNER_ID = int(environ.get("OWNER_ID"))
-    # Optional
-    SUDO_USERS = {int(x) for x in environ.get("SUDO_USERS", "").split()}
