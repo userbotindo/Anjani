@@ -19,21 +19,19 @@ def command(commands: Union[str, List[str]],
         text: str = message.text or message.caption
         message.command = []
 
-        me = await client.get_me()  # pylint: disable=invalid-name
-
         if not text:
             return False
 
         regex = "^({prefix})+\\b({regex})\\b(\\b@{bot_name}\\b)?(.*)".format(
             prefix="|".join(re.escape(x) for x in prefixes),
             regex="|".join(flt.commands).lower(),
-            bot_name=me.username,
+            bot_name=client.username,
         )
 
         matches = re.search(re.compile(regex), text.lower())
         if matches:
             for arg in shlex.split(matches.group(4).strip()):
-                if arg.startswith("@") and arg != f"@{me.username.lower()}":
+                if arg.startswith("@") and arg != f"@{client.username.lower()}":
                     return False
                 message.command.append(arg)
             return True

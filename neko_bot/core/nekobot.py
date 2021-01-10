@@ -46,12 +46,20 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
     @property
     def staff_id(self) -> List[int]:
         """ Get bot staff ids as a list """
-        _id = [self.staff["owner"]]
-        _id.extend(self.staff["dev"] + self.staff["sudo"])
+        _id = [self.staff.get("owner")]
+        _id.extend(self.staff.get("dev") + self.staff.get("sudo"))
         return _id
 
-    async def _load_staff(self) -> None:
-        """ Load staff database """
+    async def _load_all_attribute(self) -> None:
+        """ Load all client attributes """
+        bot = await self.get_me()
+        self.id = bot.id
+        self.username = bot.username
+        if bot.last_name:
+            self.name = bot.first_name + " " + bot.last_name
+        else:
+            self.name = bot.first_name
+
         _db = self.get_collection("STAFF")
         self.staff.update({'dev': [], 'sudo': []})
         async for i in _db.find():
@@ -70,9 +78,9 @@ class NekoBot(DataBase, Client):  # pylint: disable=too-many-ancestors
                 ) and imported_module.__MODULE__:
                 imported_module.__MODULE__ = imported_module.__MODULE__
                 LOGGER.debug("%s module loaded", mod)
-        await self._load_staff()
         LOGGER.info("Starting Bot Client...")
         await super().start()
+        await self._load_all_attribute()
 
     async def stop(self):  # pylint: disable=arguments-differ
         """ Stop client """
