@@ -2,4 +2,5 @@ aiohttp
 colorlog
 pyrogram
 python-dotenv
+PyYAML
 tgcrypto

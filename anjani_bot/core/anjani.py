@@ -33,7 +33,7 @@ from ..utils import get_readable_time
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(DataBase, Client):  # pylint: disable=too-many-ancestors
+class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     staff = dict()
 
@@ -67,7 +67,7 @@ class Anjani(DataBase, Client):  # pylint: disable=too-many-ancestors
     async def _load_all_attribute(self) -> None:
         """ Load all client attributes """
         bot = await self.get_me()
-        self.id = bot.id
+        self.id = bot.id  # pylint: disable = C0103
         self.username = bot.username
         if bot.last_name:
             self.name = bot.first_name + " " + bot.last_name
@@ -83,6 +83,7 @@ class Anjani(DataBase, Client):  # pylint: disable=too-many-ancestors
         """ Start client """
         pool.start()
         await self.connect_db("AnjaniBot")
+        self._load_language()
         LOGGER.info("Importing available modules")
         for mod in ALL_MODULES:
             imported_module = importlib.import_module("anjani_bot.plugins." + mod)
