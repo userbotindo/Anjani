@@ -95,13 +95,13 @@ class DataBase:
         """
         _lang = await self._get_lang(chat_id)
 
-        if _lang in ['en', 'id'] and name in self.__strings[_lang]:
-            return(
+        if _lang in self.__language and name in self.__strings[_lang]:
+            return (
                 decode(
                     encode(
                         self.__strings[_lang][name],
                         'latin-1',
-                        'bakslashreplace',
+                        'backslashreplace',
                     ),
                     'unicode-escape',
                 )
