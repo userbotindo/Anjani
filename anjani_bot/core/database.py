@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=unsubscriptable-object
+
 import logging
 from codecs import decode, encode
 from typing import List
@@ -32,6 +34,7 @@ class DataBase:
 
     def _load_language(self):
         """Load bot language."""
+        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Loading language...")
         self.__language = ['en', 'id']
         self.__strings = {}
@@ -46,6 +49,7 @@ class DataBase:
         Parameters:
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
+        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Connecting to MongoDB...")
         self._client: AsyncIOMotorClient = AsyncIOMotorClient(Config.DB_URI)
         if db_name in await self._client.list_database_names():
