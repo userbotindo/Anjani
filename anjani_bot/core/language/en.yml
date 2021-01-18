@@ -13,9 +13,15 @@ help-pm : |
   **Main** commands available:
   × /start: Starts me, can be used to check i'm alive or not.
   × /help: PM's you this message.
+  × /setlang: Change your language preference.
 start-chat : Sending you a warm hi & wishing your day is a happy one!
 help-chat : Contact me in PM to get the list of possible commands.
 add-to-group-button : Add to Group 👥
 start-help-button : Help & Commands ❔
 help-chat-button : Help
+#endregion
+#region language
+current-language : "{} current language is **{}**\nSelect language bellow to change"
+language-code-error : An error has occured (No language code)... please contact support
+language-set-succes : Language set to {} successfully
 #endregion
