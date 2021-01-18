@@ -1,0 +1,21 @@
+#region Main
+start-pm : |
+  Hey there! my name is **{}**.
+  Any questions on how to use me? use /help
+  Join Our [Group](https://t.me/userbotindo) If You wanna Report Issue 🙂
+  I'm here to make your group management fun and easy!
+  **Managed With ❤️ By :** [UserbotIndo Team](https://t.me/userbotindo)
+  Wanna Add me to your Group? Just click the button below!
+help-pm : |
+  Hello there! My name is **{}**.
+  I'm a modular group management bot with a few fun extras! Have a look at the following for an idea of some of \
+  the things I can help you with.
+  **Main** commands available:
+  × /start: Starts me, can be used to check i'm alive or not.
+  × /help: PM's you this message.
+start-chat : Sending you a warm hi & wishing your day is a happy one!
+help-chat : Contact me in PM to get the list of possible commands.
+add-to-group-button : Add to Group 👥
+start-help-button : Help & Commands ❔
+help-chat-button : Help
+#endregion
