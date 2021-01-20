@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=unsubscriptable-object
-
 import re
 import shlex
 from typing import Union, List, Optional
@@ -33,22 +32,23 @@ def command(commands: Union[str, List[str]],
 
     async def func(flt, client, message: Message):
         text: str = message.text or message.caption
-        message.command = []
+        message.command: List[str] = list()
 
         if not text:
             return False
 
-        regex = "^({prefix})+\\b({regex})\\b(\\b@{bot_name}\\b)?(.*)".format(
+        regex = "^{prefix}+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(
             prefix="|".join(re.escape(x) for x in prefixes),
             regex="|".join(flt.commands).lower(),
-            bot_name=client.username,
+            bot_name=client.username.lower(),
         )
 
-        matches = re.search(re.compile(regex), text.lower())
+        matches = re.compile(regex).match(text.lower())
+
         if matches:
-            for arg in shlex.split(matches.group(4).strip()):
-                if arg.startswith("@") and arg != f"@{client.username.lower()}":
-                    return False
+            if matches.group(1) is None and matches.group(2).startswith("@"):
+                return False
+            for arg in shlex.split(matches.group(2)):
                 message.command.append(arg)
             return True
         return False
