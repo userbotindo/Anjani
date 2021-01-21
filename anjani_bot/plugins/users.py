@@ -51,3 +51,19 @@ class Users:
             },
             upsert=True,
         )
+
+    @anjani.on_message(filters.left_chat_member, group=7)
+    async def del_log_user(self, message):
+        """ Delete user data from chats """
+        chat_id = message.chat.id
+        user_id = message.left_chat_member.id
+
+        await USERS_DB.update_one(
+            {'_id': user_id},
+            {"$pull" : {'chats': chat_id}}
+        )
+
+        await CHATS_DB.update_one(
+            {'chat_id': chat_id},
+            {"$pull": {'member': user_id}}
+        )
