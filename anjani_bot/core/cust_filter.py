@@ -42,11 +42,14 @@ def command(commands: Union[str, List[str]],
             bot_name=client.username.lower(),
         )
 
-        matches = re.compile(regex).match(text.lower())
+        matches = re.compile(regex).search(text.lower())
 
         if matches:
-            if matches.group(1) is None and matches.group(2).startswith("@"):
-                return False
+            if matches.group(1) is None and matches.group(2) is not None:
+                if matches.group(2).startswith("@"):
+                    return False
+            elif matches.group(2) is None:
+                return True
             for arg in shlex.split(matches.group(2)):
                 message.command.append(arg)
             return True
