@@ -92,6 +92,35 @@ async def _staf_filters(_, client, message: Message) -> bool:
     user_id = message.from_user.id
     return bool(user_id in client.staff_id)
 
+
+async def check_perm(flt, client, message: Message) -> bool:
+    """ Check user and bot permission """
+    chat_id = message.chat.id
+    bot = await client.get_chat_member(chat_id, 'me')
+    user = await client.get_chat_member(chat_id, message.from_user.id)
+    if flt.can_change_info and not (
+            bot.can_change_info and user.can_change_info):
+        return False
+    if flt.can_delete and not (
+            bot.can_delete_messages and user.can_delete_messages):
+        return False
+    if flt.can_restrict and not (
+            bot.can_restrict_members and
+                (user.can_restrict_members or user in client.staff_id)):
+        return False
+    if flt.can_invite_users and not (
+            bot.can_invite_users and user.can_invite_users):
+        return False
+    if flt.can_pin and not (
+            bot.can_pin_messages and user.can_pin_messages):
+        return False
+    if flt.can_promote and not (
+            bot.can_promote_members and
+                (user.can_promote_members or user in client.staff_id)):
+        return False
+    return True
+
+
 # pylint: disable=invalid-name
 admin = create(_admin_filters)
 bot_admin = create(_bot_admin_filters)
