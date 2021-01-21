@@ -95,7 +95,6 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
         self.load_all_modules()
-        LOGGER.info(self.modules)
         await super().start()
         await self._load_all_attribute()
 
