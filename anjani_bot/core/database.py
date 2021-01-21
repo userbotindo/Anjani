@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=unsubscriptable-object
 
 import logging
 from codecs import decode, encode
@@ -39,7 +38,6 @@ class DataBase:
 
     def _load_language(self):
         """Load bot language."""
-        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Loading language...")
         self.__language = ['en', 'id']
         self.__strings = {}
@@ -54,7 +52,6 @@ class DataBase:
         Parameters:
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
-        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Connecting to MongoDB...")
         self._client: AsyncIOMotorClient = AsyncIOMotorClient(Config.DB_URI)
         if db_name in await self._client.list_database_names():
@@ -64,7 +61,7 @@ class DataBase:
         self._db: AsyncIOMotorDatabase = self._client[db_name]
         self._list_collection: List[str] = await self._db.list_collection_names()
         LOGGER.info("Database connected")
-        self._LANG = self.get_collection("LANGUAGE")
+        self._lang = self.get_collection("LANGUAGE")
 
     async def disconnect_db(self) -> None:
         """Disconnect database client"""
@@ -85,12 +82,12 @@ class DataBase:
 
     async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        data = await self._LANG.find_one({'chat_id': chat_id})
+        data = await self._lang.find_one({'chat_id': chat_id})
         return data["language"] if data else 'en'  # default english
 
     async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
         """ Change chat language setting. """
-        await self._LANG.update_one(
+        await self._lang.update_one(
             {'chat_id': int(chat_id)},
             {"$set": {'language': language}},
             upsert=True,

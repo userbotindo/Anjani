@@ -25,7 +25,6 @@ from anjani_bot import anjani
 LOGGER = logging.getLogger(__name__)
 __MODULE__ = "language"
 
-# pylint: disable=unsubscriptable-object
 
 class Language:
     """ Bot language plugin """

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=unsubscriptable-object
 
 import asyncio
 import importlib
@@ -68,7 +67,6 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
 
     async def _load_all_attribute(self) -> None:
         """ Load all client attributes """
-        # pylint: disable=attribute-defined-outside-init
         bot = await self.get_me()
         self.id = bot.id  # pylint: disable = C0103
         self.username = bot.username
@@ -149,7 +147,7 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
             self.loop.close()
             LOGGER.info("Loop closed")
 
-    def on_command(  # pylint: disable=too-many-arguments
+    def on_command(
             self,
             cmd: Union[str, List[str]],
             filters: Optional[Filter] = None,
