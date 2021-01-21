@@ -16,7 +16,6 @@
 
 import logging
 import re
-from typing import ClassVar
 
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -24,12 +23,12 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from anjani_bot import anjani
 
 LOGGER = logging.getLogger(__name__)
+__MODULE__ = "language"
 
 # pylint: disable=unsubscriptable-object
 
 class Language:
     """ Bot language plugin """
-    name: ClassVar[str] = "language"
 
     @staticmethod
     def parse_lang(lang_id: str) -> str:
@@ -41,7 +40,7 @@ class Language:
         LOGGER.error("Language code %s not defined", lang_id)
         return None
 
-    @anjani.on_command(["lang", "setlang", "language"])
+    @anjani.on_command("setlang")
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id

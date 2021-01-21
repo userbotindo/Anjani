@@ -18,6 +18,8 @@ from pyrogram import filters
 
 from anjani_bot import anjani
 
+__MODULE__ = "users"
+
 USERS_DB = anjani.get_collection("USERS")
 CHATS_DB = anjani.get_collection("CHATS")
 
@@ -25,6 +27,7 @@ class Users:
 
     @anjani.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
+        """ User database. """
         chat = message.chat
         user = message.from_user
 

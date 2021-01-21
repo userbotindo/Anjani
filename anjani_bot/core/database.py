@@ -64,6 +64,7 @@ class DataBase:
         self._db: AsyncIOMotorDatabase = self._client[db_name]
         self._list_collection: List[str] = await self._db.list_collection_names()
         LOGGER.info("Database connected")
+        self._LANG = self.get_collection("LANGUAGE")
 
     async def disconnect_db(self) -> None:
         """Disconnect database client"""
@@ -84,14 +85,12 @@ class DataBase:
 
     async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        col = self.get_collection("LANGUAGE")
-        data = await col.find_one({'chat_id': chat_id})
+        data = await self._LANG.find_one({'chat_id': chat_id})
         return data["language"] if data else 'en'  # default english
 
     async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
         """ Change chat language setting. """
-        col = self.get_collection("LANGUAGE")
-        await col.update_one(
+        await self._LANG.update_one(
             {'chat_id': int(chat_id)},
             {"$set": {'language': language}},
             upsert=True,

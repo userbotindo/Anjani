@@ -1,0 +1,27 @@
+#region Main
+start-pm : |
+  Hai yang disana! Nama saya adalah **{}**.
+  Ada pertanyaan bagaimana menggunakan saya? Gunakan /help
+  Bergabung dengan [Grup](https://t.me/userbotindo) kami Jika anda ingin melaporkan isu 🙂
+  Saya di sini untuk membuat pengelolaan grup Anda menyenangkan dan mudah!
+  **Dikelola dengan ❤️ oleh :** [UserbotIndo Team](https://t.me/userbotindo)
+  Ingin menambahkan saya ke grup anda? Gunakan tombol dibawah ini!
+help-pm : |
+  Hai yang disana! Nama saya adalah **{}**.
+  Saya bot manajemen grup modular dengan beberapa tambahan yang menyenangkan! Lihatlah berikut ini untuk mendapatkan gambaran tentang beberapa \
+  hal-hal yang dapat saya bantu...
+  perintah **Utama** yang tersedia:
+  × /start: Perintah untuk memeriksa saya masih hidup atau tidak.
+  × /help: Memberikan anda pesan bantuan ini.
+  × /setlang: mengganti preferensi bahasa anda.
+start-chat : Memberi Anda salam hangat & berharap hari Anda menyenangkan!
+help-chat : Hubungi saya di pesan pribadi untuk mendapatkan daftar kemungkinan perintah.
+add-to-group-button : Tambahkan ke grup 👥
+start-help-button : Bantuan & Perintah ❔
+help-chat-button : Bantuan
+#endregion
+#region language
+current-language : "Bahasa **{}** saat ini adalah **{}**\nPilih bahasa di bawah ini, untuk mengganti"
+language-code-error : Telah terjadi kesalahan (tidak ada string bahasa yang tersedia)... tolong hubungi grup dukungan!
+language-set-succes : Bahasa berhasil disetel ke {}
+#endregion

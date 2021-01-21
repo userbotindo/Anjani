@@ -29,7 +29,7 @@ class Main:
 
         if message.chat.type == "private":  # only send in PM's
             if message.command and message.command[0] == "help":
-                await message.reply_text(
+                return await message.reply_text(
                     await anjani.text(chat_id, "help-pm", anjani.name)
                 )
             buttons = [
@@ -64,7 +64,7 @@ class Main:
                     [
                         [
                             InlineKeyboardButton(
-                                text="help-chat-button",
+                                text=await anjani.text(chat_id, "help-chat-button"),
                                 url=f"t.me/{anjani.username}?start=help"
                             )
                         ]
