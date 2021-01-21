@@ -19,15 +19,17 @@ import re
 
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from typing import ClassVar
 
 from anjani_bot import anjani
+from .. import plugin
 
 LOGGER = logging.getLogger(__name__)
-__MODULE__ = "language"
 
 
-class Language:
+class Language(plugin.Plugin):
     """ Bot language plugin """
+    name: ClassVar[str] = "Language"
 
     @staticmethod
     def parse_lang(lang_id: str) -> str:

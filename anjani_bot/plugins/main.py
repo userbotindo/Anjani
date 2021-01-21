@@ -16,11 +16,15 @@
 
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from typing import ClassVar
 
 from anjani_bot import anjani
+from .. import plugin
 
-class Main:
+
+class Main(plugin.Plugin):
     """ Bot main Commands """
+    name: ClassVar[str] = "Main"
 
     @anjani.on_command("start")
     async def start(self, message):

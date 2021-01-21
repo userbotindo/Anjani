@@ -17,35 +17,39 @@
 
 import asyncio
 import importlib
+import pkgutil
 import json
 import logging
 import signal
 import time
-from typing import Optional, Any, Awaitable, List, Union
+from types import ModuleType
+from typing import Optional, Any, Awaitable, List, Union, Iterable
 
 from pyrogram import Client, idle
 from pyrogram.filters import Filter, create
 
 from . import cust_filter, pool, DataBase
+from .plugin_extender import PluginExtender
 from .. import Config
-from ..plugins import ALL_MODULES
 from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
+class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     staff = dict()
+    submodules: Iterable[ModuleType]
 
     def __init__(self, **kwargs):
         LOGGER.info("Setting up bot client...")
         kwargs = {
-            "api_id" : Config.API_ID,
-            "api_hash" : Config.API_HASH,
-            "bot_token" : Config.BOT_TOKEN,
-            "session_name" : ":memory:",
+            "api_id": Config.API_ID,
+            "api_hash": Config.API_HASH,
+            "bot_token": Config.BOT_TOKEN,
+            "session_name": ":memory:",
         }
+        self.modules = {}
         self._start_time = time.time()
         self.staff["owner"] = Config.OWNER_ID
         super().__init__(**kwargs)
@@ -85,16 +89,13 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
         pool.start()
         await self.connect_db("AnjaniBot")
         self._load_language()
-        LOGGER.info("Importing available modules")
-        for mod in ALL_MODULES:
-            imported_module = importlib.import_module("anjani_bot.plugins." + mod)
-            if hasattr(
-                    imported_module,
-                    "__MODULE__"
-                ) and imported_module.__MODULE__:
-                imported_module.__MODULE__ = imported_module.__MODULE__
-                LOGGER.debug("%s module loaded", mod)
         LOGGER.info("Starting Bot Client...")
+        self.submodules = [
+            importlib.import_module("anjani_bot.plugins." + info.name, __name__)
+            for info in pkgutil.iter_modules(["anjani_bot/plugins"])
+        ]
+        self.load_all_modules()
+        LOGGER.info(self.modules)
         await super().start()
         await self._load_all_attribute()
 

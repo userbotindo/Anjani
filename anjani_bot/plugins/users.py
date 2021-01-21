@@ -15,15 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import filters
+from typing import ClassVar
 
 from anjani_bot import anjani
+from .. import plugin
 
-__MODULE__ = "users"
 
 USERS_DB = anjani.get_collection("USERS")
 CHATS_DB = anjani.get_collection("CHATS")
 
-class Users:
+
+class Users(plugin.Plugin):
+    name: ClassVar[str] = "Users"
 
     @anjani.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
