@@ -39,7 +39,7 @@ class Language:
         LOGGER.error("Language code %s not defined", lang_id)
         return None
 
-    @anjani.on_command("setlang")
+    @anjani.on_command(["lang", "setlang", "language"])
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id
