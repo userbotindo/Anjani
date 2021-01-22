@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import filters
 from typing import ClassVar
 
-from anjani_bot import anjani
-from .. import plugin
+from pyrogram import filters
+
+from anjani_bot import anjani, plugin
 
 
 USERS_DB = anjani.get_collection("USERS")
