@@ -16,6 +16,7 @@
 
 
 import asyncio
+import aiohttp
 import importlib
 import pkgutil
 import json
@@ -40,6 +41,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
     """ AnjaniBot Client """
     staff = dict()
     submodules: Iterable[ModuleType]
+    http: aiohttp.ClientSession
 
     def __init__(self, **kwargs):
         LOGGER.info("Setting up bot client...")
@@ -49,6 +51,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             "bot_token": Config.BOT_TOKEN,
             "session_name": ":memory:",
         }
+        self.http = aiohttp.ClientSession()
         self.modules = {}
         self._start_time = time.time()
         self.staff["owner"] = Config.OWNER_ID
@@ -102,6 +105,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         """ Stop client """
         LOGGER.info("Disconnecting...")
         await super().stop()
+        await self.http.close()
         await self.disconnect_db()
         await pool.stop()
 

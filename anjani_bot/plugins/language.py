@@ -45,11 +45,11 @@ class Language(plugin.Plugin):
         """ Set user/chat language. """
         chat_id = message.chat.id
         chat_name = message.chat.first_name or message.chat.title
-        lang = Language.parse_lang(await anjani.get_lang(chat_id))
+        lang = Language.parse_lang(await self.get_lang(chat_id))
         keyboard = []
         temp = []
 
-        for count, i in enumerate(anjani.language, start=1):
+        for count, i in enumerate(self.language, start=1):
             temp.append(
                 InlineKeyboardButton(
                     Language.parse_lang(i), callback_data=f"set_lang_{i}"
@@ -58,11 +58,11 @@ class Language(plugin.Plugin):
             if count % 2 == 0:
                 keyboard.append(temp)
                 temp = []
-            if count == len(anjani.language):
+            if count == len(self.language):
                 keyboard.append(temp)
 
         await message.reply_text(
-            await anjani.text(chat_id, "current-language", chat_name, lang),
+            await self.text(chat_id, "current-language", chat_name, lang),
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
 
@@ -76,9 +76,9 @@ class Language(plugin.Plugin):
             lang = Language.parse_lang(lang_match[0])
             if lang is None:
                 return await query.edit_message_text(
-                    await anjani.text(chat_id, "language-code-error")
+                    await self.text(chat_id, "language-code-error")
                 )
-            await anjani.switch_lang(chat_id, lang_match[0])
+            await self.switch_lang(chat_id, lang_match[0])
             await query.edit_message_text(
-                text=await anjani.text(chat_id, "language-set-succes", lang),
+                text=await self.text(chat_id, "language-set-succes", lang),
             )

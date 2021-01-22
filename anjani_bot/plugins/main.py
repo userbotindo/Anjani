@@ -34,27 +34,27 @@ class Main(plugin.Plugin):
         if message.chat.type == "private":  # only send in PM's
             if message.command and message.command[0] == "help":
                 return await message.reply_text(
-                    await anjani.text(chat_id, "help-pm", anjani.name)
+                    await self.text(chat_id, "help-pm", self.name)
                 )
             buttons = [
                 [
                     InlineKeyboardButton(
-                        text=await anjani.text(chat_id, "add-to-group-button"),
+                        text=await self.text(chat_id, "add-to-group-button"),
                         url=f"t.me/{anjani.username}?startgroup=true"
                     ),
                     InlineKeyboardButton(
-                        text=await anjani.text(chat_id, "start-help-button"),
+                        text=await self.text(chat_id, "start-help-button"),
                         url=f"t.me/{anjani.username}?start=help",
                     ),
                 ]
             ]
             return await message.reply_text(
-                await anjani.text(chat_id, "start-pm", anjani.name),
+                await self.text(chat_id, "start-pm", self.name),
                 reply_markup=InlineKeyboardMarkup(buttons),
                 disable_web_page_preview=True,
                 parse_mode="markdown",
             )
-        return await message.reply_text(await anjani.text(chat_id, "start-chat"))
+        return await message.reply_text(await self.text(chat_id, "start-chat"))
 
     @anjani.on_command("help")
     async def help(self, message):
@@ -63,12 +63,12 @@ class Main(plugin.Plugin):
 
         if message.chat.type != "private":  # only send in PM's
             return await message.reply_text(
-                await anjani.text(chat_id, "help-chat"),
+                await self.text(chat_id, "help-chat"),
                 reply_markup=InlineKeyboardMarkup(
                     [
                         [
                             InlineKeyboardButton(
-                                text=await anjani.text(chat_id, "help-chat-button"),
+                                text=await self.text(chat_id, "help-chat-button"),
                                 url=f"t.me/{anjani.username}?start=help"
                             )
                         ]
@@ -77,7 +77,7 @@ class Main(plugin.Plugin):
             )
 
         await message.reply_text(
-            await anjani.text(chat_id, "help-pm", anjani.name)
+            await self.text(chat_id, "help-pm", self.name)
         )
 
     @anjani.on_callback_query(filters.regex(r"help_(.*?)"))

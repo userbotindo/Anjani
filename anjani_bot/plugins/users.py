@@ -21,12 +21,16 @@ from pyrogram import filters
 from anjani_bot import anjani, plugin
 
 
-USERS_DB = anjani.get_collection("USERS")
-CHATS_DB = anjani.get_collection("CHATS")
-
-
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
+
+    @classmethod
+    def USERS_DB(cls, client):
+        return client.get_collection("USERS")
+
+    @classmethod
+    def CHATS_DB(cls, client):
+        return client.get_collection("CHATS")
 
     @anjani.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
@@ -34,7 +38,7 @@ class Users(plugin.Plugin):
         chat = message.chat
         user = message.from_user
 
-        await USERS_DB.update_one(
+        await Users.USERS_DB(self).update_one(
             {'_id': user.id},
             {
                 "$set": {'username': user.username},
@@ -46,7 +50,7 @@ class Users(plugin.Plugin):
         if not (chat.id or chat.title):
             return
 
-        await CHATS_DB.update_one(
+        await Users.CHATS_DB(self).update_one(
             {'chat_id': chat.id},
             {
                 "$set": {'chat_name': chat.title},
@@ -61,12 +65,12 @@ class Users(plugin.Plugin):
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
 
-        await USERS_DB.update_one(
+        await Users.USERS_DB(self).update_one(
             {'_id': user_id},
-            {"$pull" : {'chats': chat_id}}
+            {"$pull": {'chats': chat_id}}
         )
 
-        await CHATS_DB.update_one(
+        await Users.CHATS_DB(self).update_one(
             {'chat_id': chat_id},
             {"$pull": {'member': user_id}}
         )
