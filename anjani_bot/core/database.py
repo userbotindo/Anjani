@@ -17,7 +17,7 @@
 
 import logging
 from codecs import decode, encode
-from typing import List, Union
+from typing import Any, List, Union
 
 from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
@@ -93,7 +93,7 @@ class DataBase:
             upsert=True,
         )
 
-    async def text(self, chat_id: int, name: str, *args: object) -> str:
+    async def text(self, chat_id: int, name: str, *args: Any, **kwargs: Any) -> str:
         """Parse the string with user language setting.
 
         Parameters:
@@ -105,7 +105,11 @@ class DataBase:
 
             *args (`any`, *Optional*):
                 One or more values that should be formatted and inserted in the string.
-                The value should be in order (based on the placeholder on the YAML documents).
+                The value should be in order based on the language string placeholder.
+
+            **kwargs (`any, *Optional*`):
+                One or more keyword values that should be formatted and inserted in the string.
+                based on the keyword on the language strings.
         """
         _lang = await self.get_lang(chat_id)
 
@@ -119,8 +123,20 @@ class DataBase:
                     ),
                     'unicode-escape',
                 )
-            ).format(*args)
-
+            ).format(*args, **kwargs)
         err = "NO LANGUAGE STRING FOR {} in {}".format(name, _lang)
-        LOGGER.critical(err)
-        return err + "\nPlease forward this to @userbotindo."
+        LOGGER.warning(err)
+        # try to send the english string first if not found
+        try:
+            return (
+                decode(
+                    encode(
+                        self.__strings["en"][name],
+                        'latin-1',
+                        'backslashreplace',
+                    ),
+                    'unicode-escape',
+                )
+            ).format(*args, **kwargs)
+        except KeyError:
+            return err + "\nPlease forward this to @userbotindo."
