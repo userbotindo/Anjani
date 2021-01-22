@@ -14,39 +14,42 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=unsubscriptable-object
 
 import asyncio
 import importlib
+import pkgutil
 import json
 import logging
 import signal
 import time
-from typing import Optional, Any, Awaitable, List, Union
+from types import ModuleType
+from typing import Optional, Any, Awaitable, List, Union, Iterable
 
 from pyrogram import Client, idle
-from pyrogram.filters import Filter
+from pyrogram.filters import Filter, create
 
 from . import cust_filter, pool, DataBase
+from .plugin_extender import PluginExtender
 from .. import Config
-from ..plugins import ALL_MODULES
 from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
+class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     staff = dict()
+    submodules: Iterable[ModuleType]
 
     def __init__(self, **kwargs):
         LOGGER.info("Setting up bot client...")
         kwargs = {
-            "api_id" : Config.API_ID,
-            "api_hash" : Config.API_HASH,
-            "bot_token" : Config.BOT_TOKEN,
-            "session_name" : ":memory:",
+            "api_id": Config.API_ID,
+            "api_hash": Config.API_HASH,
+            "bot_token": Config.BOT_TOKEN,
+            "session_name": ":memory:",
         }
+        self.modules = {}
         self._start_time = time.time()
         self.staff["owner"] = Config.OWNER_ID
         super().__init__(**kwargs)
@@ -68,7 +71,6 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
 
     async def _load_all_attribute(self) -> None:
         """ Load all client attributes """
-        # pylint: disable=attribute-defined-outside-init
         bot = await self.get_me()
         self.id = bot.id  # pylint: disable = C0103
         self.username = bot.username
@@ -87,16 +89,12 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
         pool.start()
         await self.connect_db("AnjaniBot")
         self._load_language()
-        LOGGER.info("Importing available modules")
-        for mod in ALL_MODULES:
-            imported_module = importlib.import_module("anjani_bot.plugins." + mod)
-            if hasattr(
-                    imported_module,
-                    "__MODULE__"
-                ) and imported_module.__MODULE__:
-                imported_module.__MODULE__ = imported_module.__MODULE__
-                LOGGER.debug("%s module loaded", mod)
         LOGGER.info("Starting Bot Client...")
+        self.submodules = [
+            importlib.import_module("anjani_bot.plugins." + info.name, __name__)
+            for info in pkgutil.iter_modules(["anjani_bot/plugins"])
+        ]
+        self.load_all_modules(self.submodules)
         await super().start()
         await self._load_all_attribute()
 
@@ -149,13 +147,18 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
             self.loop.close()
             LOGGER.info("Loop closed")
 
-    def on_command(  # pylint: disable=too-many-arguments
+    def on_command(
             self,
             cmd: Union[str, List[str]],
             filters: Optional[Filter] = None,
-            admin: Optional[bool] = False,
-            staff: Optional[bool] = False,
-            group: Optional[int] = 0,
+            admin_only: Optional[bool] = False,
+            can_change_info: Optional[bool] = False,
+            can_delete: Optional[bool] = False,
+            can_restrict: Optional[bool] = False,
+            can_invite_users: Optional[bool] = False,
+            can_pin: Optional[bool] = False,
+            can_promote: Optional[bool] = False,
+            staff_only: Optional[bool] = False,
         ) -> callable:
         """Decorator for handling commands
 
@@ -167,16 +170,37 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
                 aditional build-in pyrogram filters to allow only a subset of messages to
                 be passed in your function.
 
-            admin (`bool`, *optional*):
+            admin_only (`bool`, *optional*):
                 Pass True if the command only used by admins (bot staff included).
                 The bot need to be an admin as well. This parameters also means
                 that the command won't run in private (PM`s).
 
-            staff (`bool`, *optional*):
-                Pass True if the command only used by Staff (SUDO and OWNER).
+            can_change_info (`bool`, *optional*):
+                check if user and bot can change the chat title, photo and other settings.
+                default False.
 
-            group (`int`, *optional*):
-                The group identifier, defaults to 0.
+            can_delete (`bool`, *optional*):
+                check if user and bot can delete messages of other users.
+                default False
+
+            can_restrict (`bool`, *optional*):
+                check if user and bot can restrict, ban or unban chat members.
+                default False.
+
+            can_invite_users (`bool`, *optional*):
+                check if user and bot is allowed to invite new users to the chat.
+                default False.
+
+            can_pin (`bool`, *optional*):
+                check if user and bot is allowed to pin messages.
+                default False.
+
+            can_promote (`bool`, *optional*):
+                check if user and bot can add new administrator.
+                default False
+
+            staff_only (`bool`, *optional*):
+                Pass True if the command only used by Staff (SUDO and OWNER).
         """
 
         def decorator(coro):
@@ -184,11 +208,28 @@ class Anjani(Client, DataBase):  # pylint: disable=too-many-ancestors
             if filters:
                 _filters = _filters & filters
 
-            if admin:
+            perm = (can_change_info or can_delete or
+                    can_restrict or can_invite_users or
+                    can_pin or can_promote)
+            if perm:
+                _filters = _filters & (
+                    create(
+                        cust_filter.check_perm,
+                        "CheckPermission",
+                        can_change_info=can_change_info,
+                        can_delete=can_delete,
+                        can_restrict=can_restrict,
+                        can_invite_users=can_invite_users,
+                        can_pin=can_pin,
+                        can_promote=can_promote
+                    )
+                )
+
+            if admin_only:
                 _filters = _filters & cust_filter.admin & cust_filter.bot_admin
-            elif staff:
+            elif staff_only:
                 _filters = _filters & cust_filter.staff
 
-            dec = self.on_message(filters=_filters, group=group)
+            dec = self.on_message(filters=_filters)
             return dec(coro)
         return decorator

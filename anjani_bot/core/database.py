@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=unsubscriptable-object
 
 import logging
 from codecs import decode, encode
-from typing import List
+from typing import List, Union
 
 from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
@@ -32,9 +31,13 @@ LOGGER = logging.getLogger(__name__)
 class DataBase:
     """Client Database on MongoDB"""
 
+    @property
+    def language(self) -> list:
+        """ Return list of bot suported languages """
+        return self.__language
+
     def _load_language(self):
         """Load bot language."""
-        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Loading language...")
         self.__language = ['en', 'id']
         self.__strings = {}
@@ -49,7 +52,6 @@ class DataBase:
         Parameters:
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
-        # pylint: disable=attribute-defined-outside-init
         LOGGER.info("Connecting to MongoDB...")
         self._client: AsyncIOMotorClient = AsyncIOMotorClient(Config.DB_URI)
         if db_name in await self._client.list_database_names():
@@ -59,6 +61,7 @@ class DataBase:
         self._db: AsyncIOMotorDatabase = self._client[db_name]
         self._list_collection: List[str] = await self._db.list_collection_names()
         LOGGER.info("Database connected")
+        self._lang = self.get_collection("LANGUAGE")
 
     async def disconnect_db(self) -> None:
         """Disconnect database client"""
@@ -77,11 +80,18 @@ class DataBase:
             LOGGER.debug("Collection %s Not Found, Creating New Collection...", name)
         return self._db[name]
 
-    async def _get_lang(self, chat_id) -> str:
+    async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        col = self.get_collection("LANGUAGE")
-        data = await col.find_one({'chat_id': chat_id})
+        data = await self._lang.find_one({'chat_id': chat_id})
         return data["language"] if data else 'en'  # default english
+
+    async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
+        """ Change chat language setting. """
+        await self._lang.update_one(
+            {'chat_id': int(chat_id)},
+            {"$set": {'language': language}},
+            upsert=True,
+        )
 
     async def text(self, chat_id: int, name: str, *args: object) -> str:
         """Parse the string with user language setting.
@@ -97,7 +107,7 @@ class DataBase:
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order (based on the placeholder on the YAML documents).
         """
-        _lang = await self._get_lang(chat_id)
+        _lang = await self.get_lang(chat_id)
 
         if _lang in self.__language and name in self.__strings[_lang]:
             return (
