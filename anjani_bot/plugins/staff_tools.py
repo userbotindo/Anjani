@@ -17,11 +17,9 @@
 import codecs
 from typing import ClassVar
 
-import aiohttp
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani_bot import anjani
-from anjani_bot import plugin
+from anjani_bot import anjani, plugin
 
 
 class Staff(plugin.Plugin):
@@ -32,22 +30,21 @@ class Staff(plugin.Plugin):
         """ Get bot logging as file """
         with codecs.open("anjani_bot/core/AnjaniBot.log", "r", encoding="utf-8") as log_file:
             data = log_file.read()
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    "https://nekobin.com/api/documents",
-                    json={"content": data},
-            ) as res:
-                if res.status != 200:
-                    response = await res.json()
-                    key = response['result']['key']
-                    url = [
-                        [
-                            InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
-                        ]
+        async with self.http.post(
+                "https://nekobin.com/api/documents",
+                json={"content": data},
+        ) as res:
+            if res.status != 200:
+                response = await res.json()
+                key = response['result']['key']
+                url = [
+                    [
+                        InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
                     ]
-                else:
-                    return await message.reply_text("Failed to reach Nekobin")
-        await anjani.send_document(
+                ]
+            else:
+                return await message.reply_text("Failed to reach Nekobin")
+        await self.send_document(
             message.from_user.id,
             "anjani_bot/core/AnjaniBot.log",
             caption="Bot logs",
