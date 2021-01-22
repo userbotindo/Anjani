@@ -1,6 +1,7 @@
 aiohttp
 colorlog
 motor
+dnspython
 pyrogram
 python-dotenv
 PyYAML
