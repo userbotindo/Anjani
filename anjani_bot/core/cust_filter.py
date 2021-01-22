@@ -16,7 +16,7 @@
 
 import re
 import shlex
-from typing import Union, List, Optional
+from typing import Union, List
 
 from pyrogram.filters import create
 from pyrogram.types import Message
@@ -25,7 +25,6 @@ from ..utils import adminlist
 
 
 def command(commands: Union[str, List[str]],
-            prefixes: Optional[Union[str, List[str]]] = "/",
             case_sensitive: bool = False):
     """Build a command that accept bot username eg: /start@AnjaniBot"""
 
@@ -35,9 +34,10 @@ def command(commands: Union[str, List[str]],
 
         if not text:
             return False
+        elif not text.startswith("/"):
+            return False
 
-        regex = "^{prefix}+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(
-            prefix="|".join(re.escape(x) for x in prefixes),
+        regex = "^/+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(
             regex="|".join(flt.commands).lower(),
             bot_name=client.username.lower(),
         )
@@ -58,15 +58,10 @@ def command(commands: Union[str, List[str]],
     commands = commands if isinstance(commands, list) else [commands]
     commands = {c if case_sensitive else c.lower() for c in commands}
 
-    prefixes = [] if isinstance(prefixes, type(None)) else prefixes
-    prefixes = prefixes if isinstance(prefixes, list) else [prefixes]
-    prefixes = set(prefixes) if prefixes else {""}
-
     return create(
         func,
         "CustomCommandFilter",
         commands=commands,
-        prefixes=prefixes,
         case_sensitive=case_sensitive
     )
 
@@ -108,8 +103,8 @@ async def check_perm(flt, client, message: Message) -> bool:
             bot.can_delete_messages and user.can_delete_messages):
         return False
     if flt.can_restrict and not (
-            bot.can_restrict_members and
-                (user.can_restrict_members or user in client.staff_id)):
+            bot.can_restrict_members and (
+                user.can_restrict_members or user in client.staff_id)):
         return False
     if flt.can_invite_users and not (
             bot.can_invite_users and user.can_invite_users):
@@ -118,8 +113,8 @@ async def check_perm(flt, client, message: Message) -> bool:
             bot.can_pin_messages and user.can_pin_messages):
         return False
     if flt.can_promote and not (
-            bot.can_promote_members and
-                (user.can_promote_members or user in client.staff_id)):
+            bot.can_promote_members and (
+                user.can_promote_members or user in client.staff_id)):
         return False
     return True
 
