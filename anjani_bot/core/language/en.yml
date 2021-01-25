@@ -29,3 +29,6 @@ language-set-succes : Language set to {} successfully
 wait-paste : `Pasting to Nekobin`
 fail-paste : `Failed to reach Nekobin`
 #endregion
+#region Error
+error-chat-private : "**Error:** `Chat type private`\nThis command for groups only..."
+#endregion
