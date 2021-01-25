@@ -25,11 +25,13 @@ class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
     @classmethod
-    def USERS_DB(cls, client):
+    def users_db(cls, client):
+        """ Uses collection """
         return client.get_collection("USERS")
 
     @classmethod
-    def CHATS_DB(cls, client):
+    def chats_db(cls, client):
+        """ Chats collection """
         return client.get_collection("CHATS")
 
     @anjani.on_message(filters.all & filters.group, group=4)
@@ -38,7 +40,7 @@ class Users(plugin.Plugin):
         chat = message.chat
         user = message.from_user
 
-        await Users.USERS_DB(self).update_one(
+        await Users.users_db(self).update_one(
             {'_id': user.id},
             {
                 "$set": {'username': user.username},
@@ -50,7 +52,7 @@ class Users(plugin.Plugin):
         if not (chat.id or chat.title):
             return
 
-        await Users.CHATS_DB(self).update_one(
+        await Users.chats_db(self).update_one(
             {'chat_id': chat.id},
             {
                 "$set": {'chat_name': chat.title},
@@ -65,12 +67,12 @@ class Users(plugin.Plugin):
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
 
-        await Users.USERS_DB(self).update_one(
+        await Users.users_db(self).update_one(
             {'_id': user_id},
             {"$pull": {'chats': chat_id}}
         )
 
-        await Users.CHATS_DB(self).update_one(
+        await Users.chats_db(self).update_one(
             {'chat_id': chat_id},
             {"$pull": {'member': user_id}}
         )

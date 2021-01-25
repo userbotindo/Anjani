@@ -16,10 +16,10 @@
 
 import logging
 import re
+from typing import ClassVar
 
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from typing import ClassVar
 
 from anjani_bot import anjani, plugin
 

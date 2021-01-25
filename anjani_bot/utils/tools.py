@@ -40,3 +40,16 @@ def get_readable_time(seconds: int) -> str:
     up_time += ":".join(time_list)
 
     return up_time
+
+
+async def nekobin(client, data: str) -> str:
+    """ return the nekobin pasted key """
+    async with client.http.post(
+            "https://nekobin.com/api/documents",
+            json={"content": data},
+    ) as resp:
+        if resp.status != 200:
+            response = await resp.json()
+            key = response['result']['key']
+            return key
+    return None

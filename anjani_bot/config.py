@@ -32,5 +32,6 @@ class Config:  # pylint: disable=too-few-public-methods
     API_HASH = environ.get("API_HASH")
     # Required
     DB_URI = environ.get("DB_URI")
+    DOWNLOAD_PATH = environ.get("DOWNLOAD_PATH") or "./downloads"
     # Staff  required
     OWNER_ID = int(environ.get("OWNER_ID"))

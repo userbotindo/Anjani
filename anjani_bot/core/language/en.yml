@@ -25,3 +25,7 @@ current-language : "**{}** current language is **{}**\nSelect language bellow to
 language-code-error : An error has occured (No language code)... please contact support
 language-set-succes : Language set to {} successfully
 #endregion
+#region misc
+wait-paste : `Pasting to Nekobin`
+fail-paste : `Failed to reach Nekobin`
+#endregion

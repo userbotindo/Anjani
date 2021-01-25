@@ -34,7 +34,7 @@ def command(commands: Union[str, List[str]],
 
         if not text:
             return False
-        elif not text.startswith("/"):
+        if not text.startswith("/"):
             return False
 
         regex = "^/+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(
