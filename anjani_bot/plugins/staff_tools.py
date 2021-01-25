@@ -20,7 +20,7 @@ from typing import ClassVar
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import anjani, plugin
-
+from anjani_bot.utils import nekobin
 
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
@@ -30,27 +30,21 @@ class Staff(plugin.Plugin):
         """ Get bot logging as file """
         with codecs.open("anjani_bot/core/AnjaniBot.log", "r", encoding="utf-8") as log_file:
             data = log_file.read()
-        async with self.http.post(
-                "https://nekobin.com/api/documents",
-                json={"content": data},
-        ) as res:
-            if res.status != 200:
-                response = await res.json()
-                key = response['result']['key']
-                url = [
-                    [
-                        InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
-                    ]
-                ]
-            else:
-                return await message.reply_text("Failed to reach Nekobin")
-        await self.send_document(
-            message.from_user.id,
-            "anjani_bot/core/AnjaniBot.log",
-            caption="Bot logs",
-            file_name="AnjaniBot.log",
-            force_document=True,
-            reply_markup=InlineKeyboardMarkup(url),
-        )
-        if message.chat.type != "private":
-            await message.reply_text("I've send the log on PM's :)")
+        
+        key = await nekobin(self, data)
+        if key:
+            url = [[
+                InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
+            ]]
+            await self.send_document(
+                message.from_user.id,
+                "anjani_bot/core/AnjaniBot.log",
+                caption="Bot logs",
+                file_name="AnjaniBot.log",
+                force_document=True,
+                reply_markup=InlineKeyboardMarkup(url),
+            )
+            if message.chat.type != "private":
+                await message.reply_text("I've send the log on PM's :)")
+        else:
+            await message.reply_text("Failed to reach Nekobin")
