@@ -68,7 +68,7 @@ class Staff(plugin.Plugin):
             sent = 0
             text = to_send[1] + "\n\nThis is broadcast message."
             msg = await message.reply_text("sending broadcast...")
-            async for chat in users.Users.chats_db(self).find({}):
+            async for chat in users.Users.chats_db().find({}):
                 if sent % 25 == 0:
                     # sleep every 25 msg sent to prevent flood limmit.
                     await asyncio.sleep(1)
@@ -103,7 +103,7 @@ class Staff(plugin.Plugin):
     async def chatlist(self, message):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"
-        async for chat in users.Users.chats_db(self).find({}):
+        async for chat in users.Users.chats_db().find({}):
             chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
