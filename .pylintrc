@@ -147,7 +147,7 @@ disable=print-statement,
         # false-positive
         # the object instance in every plugin was overwritten by the client
         # that makes pylint expect no member on that dynamic object
-        no-member
+        no-member,
         # temporarily; false-positive error on python 3.9
         # (see https://github.com/PyCQA/pylint/issues/3882)
         unsubscriptable-object,
