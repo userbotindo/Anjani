@@ -94,9 +94,11 @@ async def _staf_filters(_, client, message: Message) -> bool:
 async def check_perm(flt, client, message: Message) -> bool:
     """ Check user and bot permission """
     chat_id = message.chat.id
-    # Check Chat type first 
+    # Check Chat type first
     if message.chat.type == "private":
-      return await message.reply_text(await client.text(chat_id, "error-chat-private"))
+        return await message.reply_text(
+            await client.text(chat_id, "error-chat-private")
+        )
 
     bot = await client.get_chat_member(chat_id, 'me')
     user = await client.get_chat_member(chat_id, message.from_user.id)

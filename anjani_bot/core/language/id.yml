@@ -25,6 +25,11 @@ current-language : "Bahasa **{}** saat ini adalah **{}**\nPilih bahasa di bawah 
 language-code-error : Telah terjadi kesalahan (tidak ada string bahasa yang tersedia)... tolong hubungi grup dukungan!
 language-set-succes : Bahasa berhasil disetel ke {}
 #endregion
+#region misc
+wait-paste : "`Menyalin ke Nekobin...`"
+fail-paste : "`Gagal untuk menyalin ke Nekobin!`"
+#endregion
 #region Error
 error-chat-private : "**kesalahan:** `Obrolan Pribadi`\nPerintah ini Hanya untuk grup..."
+error-no-rights : "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 #endregion

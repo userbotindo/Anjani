@@ -31,6 +31,14 @@ class Language(plugin.Plugin):
     name: ClassVar[str] = "Language"
 
     @staticmethod
+    async def can_change_lang(client, message) -> bool:
+        """ Check if user have rights to change chat language """
+        user = await client.get_chat_member(message.chat.id, message.from_user.id)
+        if not user.can_change_info:
+            return False
+        return True
+
+    @staticmethod
     def parse_lang(lang_id: str) -> str:
         """ Return language name from language id. """
         if lang_id == 'en':
@@ -44,6 +52,11 @@ class Language(plugin.Plugin):
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id
+        if message.chat.type != "private":  # Check admin rights
+            if not (await Language.can_change_lang(self, message)):
+                return await message.reply_text(
+                    await self.text(chat_id, "error-no-rights")
+                )
         chat_name = message.chat.first_name or message.chat.title
         lang = Language.parse_lang(await self.get_lang(chat_id))
         keyboard = []
@@ -71,6 +84,12 @@ class Language(plugin.Plugin):
         """ Set language query. """
         lang_match = re.findall(r"en|id", query.data)
         chat_id = query.message.chat.id
+
+        if query.message.chat.type != "private":  # Check admin rights
+            if not (await Language.can_change_lang(self, query.message)):
+                return await query.answer(
+                    await self.text(chat_id, "error-no-rights")
+                )
 
         if lang_match:
             lang = Language.parse_lang(lang_match[0])
