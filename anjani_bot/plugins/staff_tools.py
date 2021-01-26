@@ -90,14 +90,14 @@ class Staff(plugin.Plugin):
     @anjani.on_command(["leave", "leavechat", "leavegroup"], staff_only=True)
     async def leavechat(self, message):
         """ leave the given chat_id """
-        if len(message.command) >= 1:
-            try:
-                await anjani.leave_chat(message.command[0])
-                await message.reply_text("Left the group successfully!")
-            except (PeerIdInvalid, UserNotParticipant):
-                await message.reply_text("I'm not a member on that group")
-        else:
-            await message.reply_text("Give me the chat_id!")
+        try:
+            await anjani.leave_chat(message.command[0])
+            await message.reply_text("Left the group successfully!")
+        except (PeerIdInvalid, UserNotParticipant):
+            await message.reply_text("I'm not a member on that group")
+        except IndexError:
+            await message.reply_text("Give me the chat id!")
+
 
     @anjani.on_command("chatlist", staff_only=True)
     async def chatlist(self, message):
