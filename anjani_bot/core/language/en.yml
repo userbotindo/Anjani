@@ -26,6 +26,18 @@ language-code-error : An error has occured (No language code)... please contact 
 language-set-succes : Language set to {} successfully
 #endregion
 #region misc
+covid-text : |
+  **Corona Virus Statistics in {country}**
+  **on {date}**\n
+  **Confirmed Cases :** `{confirmed}`
+  **Active Cases :** `{active}`
+  **Deaths :** `{deaths}`
+  **Recovered :** `{recovered}`\n
+  **New Cases :** `{new_cases}`
+  **New Deaths :** `{new_deaths}`
+  **Critical Cases :** `{critical}`
+  **Total Tests :** `{total_tests}`\n
+  Data provided by [Worldometer]({link})
 wait-paste : "`Pasting to Nekobin...`"
 fail-paste : "`Failed to reach Nekobin`"
 #endregion

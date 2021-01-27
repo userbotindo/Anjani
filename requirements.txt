@@ -1,7 +1,8 @@
 aiohttp
 colorlog
-motor
+covid
 dnspython
+motor
 pyrogram
 python-dotenv
 PyYAML
