@@ -36,6 +36,11 @@ class DataBase:
         """ Return list of bot suported languages """
         return self.__language
 
+    @property
+    def lang_col(self) -> AgnosticCollection:
+        """ Return client language collection """
+        return self._lang
+
     def _load_language(self):
         """Load bot language."""
         LOGGER.info("Loading language...")

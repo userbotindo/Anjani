@@ -30,6 +30,12 @@ class Language(plugin.Plugin):
     """ Bot language plugin """
     name: ClassVar[str] = "Language"
 
+    async def __migrate__(self, old_chat, new_chat):
+        await anjani.lang_col.update_one(
+            {'chat_id': old_chat},
+            {"$set": {'chat_id': new_chat}},
+        )
+
     @staticmethod
     async def can_change_lang(client, message) -> bool:
         """ Check if user have rights to change chat language """
