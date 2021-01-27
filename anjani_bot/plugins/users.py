@@ -24,6 +24,21 @@ from anjani_bot import anjani, plugin
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
+    async def __migrate__(self, old_chat, new_chat):
+        await Users.users_db().update_many(
+            {'chats': old_chat},
+            {"$push": {'chats': new_chat}},
+        )
+        await Users.users_db().update_many(
+            {'chats': old_chat},
+            {"$pull": {'chats': old_chat}},
+        )
+
+        await Users.chats_db().update_one(
+            {'chat_id': old_chat},
+            {"$set": {'chat_id': new_chat}}
+        )
+
     @classmethod
     def users_db(cls):
         """ Uses collection """
@@ -39,6 +54,9 @@ class Users(plugin.Plugin):
         """ User database. """
         chat = message.chat
         user = message.from_user
+
+        if not (user):  # sanity check for service message
+            return
 
         await Users.users_db().update_one(
             {'_id': user.id},
@@ -76,3 +94,10 @@ class Users(plugin.Plugin):
             {'chat_id': chat_id},
             {"$pull": {'member': user_id}}
         )
+
+    @anjani.on_message(filters.migrate_from_chat_id)
+    async def __chat_migrate(self, message):
+        """ Chat migrate handler """
+        old_chat = message.migrate_from_chat_id
+        new_chat = message.chat.id
+        await self.migrate_chat(old_chat, new_chat)

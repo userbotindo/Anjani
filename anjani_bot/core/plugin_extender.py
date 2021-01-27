@@ -28,6 +28,7 @@ LOGGER = logging.getLogger(__name__)
 
 class PluginExtender:
     modules: MutableMapping[str, plugin.Plugin]
+    __migrateable = list()
 
     def __init__(self, **kwargs: Any) -> None:
         self.modules = {}
@@ -38,11 +39,13 @@ class PluginExtender:
             self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None
         ) -> None:
         """ Load bot module"""
-        LOGGER.info("Loading %s", cls.format_desc(comment))
+        LOGGER.debug("Loading %s", cls.format_desc(comment))
 
         mod = cls(self)
         mod.comment = comment
         self.modules[cls.name] = mod
+        if hasattr(mod, "__migrate__"):
+            self.__migrateable.append(mod)
 
     def unload_module(self, mod: plugin.Plugin) -> None:
         """ Unload bot module """
@@ -69,7 +72,10 @@ class PluginExtender:
         """ Load available module """
         LOGGER.info("Loading plugins")
         self._load_all_from_metamod(submodules)
-        LOGGER.info("All plugins loaded.")
+        loaded = []
+        for module in self.modules:
+            loaded.append(module)
+        LOGGER.info("Plugins loaded %s", loaded)
 
     def unload_all_modules(self) -> None:
         """ Unload modules """
@@ -80,3 +86,9 @@ class PluginExtender:
             self.unload_module(mod)
 
         LOGGER.info("All modules unloaded.")
+
+    async def migrate_chat(self, old_chat: int, new_chat: int):
+        """ Run all migrate handler on every migrateable module """
+        LOGGER.debug("Migrating chat from %s to %s", old_chat, new_chat)
+        for mod in self.__migrateable:
+            await mod.__migrate__(old_chat, new_chat)
