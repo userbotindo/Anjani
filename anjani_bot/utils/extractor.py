@@ -48,4 +48,3 @@ def extract_user_and_text(message: Message) -> Tuple[Union[str, int], Optional[s
 async def extract_user(client, user_ids: Union[str, int]) -> User:
     """ Excract user from user id """
     return await client.get_users(user_ids)
-
