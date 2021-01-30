@@ -20,6 +20,19 @@ add-to-group-button : Add to Group 👥
 start-help-button : Help & Commands ❔
 help-chat-button : Help
 #endregion
+#region admin
+purge: purging...
+purge-done: "`Purged {} messages`"
+no-kick-user: who should i kick?
+admin-kick: Yeahh... let's start kicking admins?
+kick-done: "`Kicked!`"
+no-ban-user: who should i ban?
+admin-ban: I'm not gonna ban an admin, don't make fun of yourself!
+ban-done: "`Banned!`"
+unban-no-user: give me a user to unban
+unban-done: "`Unbanned...`"
+gpic-no-photo: Give me a photo!
+#endregion
 #region language
 current-language : "**{}** current language is **{}**\nSelect language bellow to change"
 language-code-error : An error has occured (No language code)... please contact support
@@ -41,7 +54,8 @@ covid-text : |
 wait-paste : "`Pasting to Nekobin...`"
 fail-paste : "`Failed to reach Nekobin`"
 #endregion
-#region Error
+#region common-error
 error-chat-private : "**Error:** `Chat type private`\nThis command for groups only..."
 error-no-rights : "You don't have rights to use this command!"
+err-not-participant: "This user is not a member of this chat!"
 #endregion
