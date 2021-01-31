@@ -49,3 +49,15 @@ class class_name(plugin.Plugin):
 Then to add a handler use a decorator `@anjani.on_command("<trigger>")` or other update handler. Command Trigger can be a `string` or a `list of strings`.
 
 The `__migrate__()` function is used for migrating chats - when a chat is upgraded to a supergroup, the ID changes, so it is necessary to migrate it in the DB.
+
+## Translator
+
+  - English - [Mr.Miss](https://github.com/keselekpermen69) & [TomyPrs](https://github.com/TomyPrs)
+
+  - Indonesia - [TomyPrs](https://github.com/TomyPrs)
+
+You may send us a [pull request](https://github.com/userbotindo/Anjani/pulls) to help translating other languages.
+
+## Credits
+
+  - [All Contributors 👥](https://github.com/userbotindo/Anjani/graphs/contributors)
