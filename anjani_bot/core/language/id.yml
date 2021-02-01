@@ -20,6 +20,19 @@ add-to-group-button : Tambahkan ke grup 👥
 start-help-button : Bantuan & Perintah ❔
 help-chat-button : Bantuan
 #endregion
+#region admin
+purge : membersihkan...
+purge-done : "`{} pesan dibershikan`"
+no-kick-user : siapa yang mau saya tendang?
+admin-kick : Yakin adminnya mau ditendang?
+kick-done : "`Tertendang!`"
+no-ban-user : siapa yang mau saya ban?
+admin-ban : Saya tidak mau nge-ban seorang admin, jangan sok lucu!
+ban-done : "`Banned!`"
+unban-no-user : berikan saya user untuk di unban
+unban-done : "Unbanned...`"
+gpic-no-photo : Berikan saya sebuah foto!
+#endregion
 #region language
 current-language : "Bahasa **{}** saat ini adalah **{}**\nPilih bahasa di bawah ini, untuk mengganti"
 language-code-error : Telah terjadi kesalahan (tidak ada string bahasa yang tersedia)... tolong hubungi grup dukungan!
