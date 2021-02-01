@@ -55,6 +55,8 @@ The `__migrate__()` function is used for migrating chats - when a chat is upgrad
   - English - [Mr.Miss](https://github.com/keselekpermen69) & [TomyPrs](https://github.com/TomyPrs)
 
   - Indonesia - [TomyPrs](https://github.com/TomyPrs)
+  
+  - Indonesia - [Archiruz](https://github.com/Archiruz)
 
 You may send us a [pull request](https://github.com/userbotindo/Anjani/pulls) to help translating other languages.
 
