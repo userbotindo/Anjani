@@ -21,7 +21,7 @@ start-help-button : Bantuan & Perintah ❔
 help-chat-button : Bantuan
 #endregion
 #region admin
-purge : membersihkan...
+purge : membersihkan pesan...
 purge-done : "`{} pesan dibershikan`"
 no-kick-user : siapa yang mau saya tendang?
 admin-kick : Yakin adminnya mau ditendang?
@@ -39,10 +39,22 @@ language-code-error : Telah terjadi kesalahan (tidak ada string bahasa yang ters
 language-set-succes : Bahasa berhasil disetel ke {}
 #endregion
 #region misc
+covid-text : |
+  **Statistik Virus Corona di {country}**
+  **pada {date}**\n
+  **Kasus Terkonfirmasi :** `{confirmed}`
+  **Kasus Aktif :** `{active}`
+  **Total Korban Meninggal :** `{deaths}`
+  **Total Sembuh :** `{recovered}`\n
+  **Kasus Baru :** `{new_cases}`
+  **Korban Meninggal Baru :** `{new_deaths}`
+  **Kasus Kritis :** `{critical}`
+  **Total Tes :** `{total_tests}`\n
+  Data berasal dari [Worldometer]({link})
 wait-paste : "`Menyalin ke Nekobin...`"
 fail-paste : "`Gagal untuk menyalin ke Nekobin!`"
 #endregion
 #region Error
-error-chat-private : "**kesalahan:** `Obrolan Pribadi`\nPerintah ini Hanya untuk grup..."
+error-chat-private : "**kesalahan:** `Obrolan Pribadi`\nPerintah ini hanya untuk grup..."
 error-no-rights : "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 #endregion
