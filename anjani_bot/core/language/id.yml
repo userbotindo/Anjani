@@ -26,11 +26,11 @@ purge-done : "`{} pesan dibershikan`"
 no-kick-user : siapa yang mau saya tendang?
 admin-kick : Yakin adminnya mau ditendang?
 kick-done : "`Tertendang!`"
-no-ban-user : siapa yang mau saya ban?
-admin-ban : Saya tidak mau nge-ban seorang admin, jangan sok lucu!
-ban-done : "`Banned!`"
-unban-no-user : berikan saya user untuk di unban
-unban-done : "Unbanned...`"
+no-ban-user : siapa yang mau saya blokir dari grup?
+admin-ban : Saya tidak mau memblokir seorang admin, jangan sok lucu!
+ban-done : "`Terblokir!`"
+unban-no-user : berikan saya user untuk diblokir
+unban-done : "`Tidak jadi terblokir...`"
 gpic-no-photo : Berikan saya sebuah foto!
 #endregion
 #region language
