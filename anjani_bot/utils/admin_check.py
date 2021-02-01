@@ -18,12 +18,11 @@
 async def adminlist(client, chat_id, full=False):
     """This Function to get admin list."""
     admins = []
-    async for i in client.iter_chat_members(chat_id):
-        if i.status in ["administrator", "creator"]:
-            if full:
-                admins.append({"name": i.user.first_name or i.user.last_name, "id": i.user.id})
-            else:
-                admins.append(i.user.id)
+    async for i in client.iter_chat_members(chat_id, filter="administrators"):
+        if full:
+            admins.append({"name": i.user.first_name or i.user.last_name, "id": i.user.id})
+        else:
+            admins.append(i.user.id)
     return admins
 
 
