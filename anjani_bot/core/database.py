@@ -17,7 +17,7 @@
 
 import logging
 from codecs import decode, encode
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
@@ -98,7 +98,13 @@ class DataBase:
             upsert=True,
         )
 
-    async def text(self, chat_id: int, name: str, *args: Any, **kwargs: Any) -> str:
+    async def text(
+            self,
+            chat_id: int,
+            name: str,
+            *args: Optional[Any],
+            **kwargs: Optional[Any],
+        ) -> str:
         """Parse the string with user language setting.
 
         Parameters:
@@ -112,14 +118,21 @@ class DataBase:
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
 
-            **kwargs (`any, *Optional*`):
+            **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
+
+            special parameters:
+                noformat (`bool`, *Optional*):
+                    If exist and True, the text returned will not be formated.
+                    Default to False.
+
         """
         _lang = await self.get_lang(chat_id)
+        noformat = bool(kwargs.get("noformat", False))
 
         if _lang in self.__language and name in self.__strings[_lang]:
-            return (
+            text = (
                 decode(
                     encode(
                         self.__strings[_lang][name],
@@ -128,12 +141,13 @@ class DataBase:
                     ),
                     'unicode-escape',
                 )
-            ).format(*args, **kwargs)
+            )
+            return text if noformat else text.format(*args, **kwargs)
         err = "NO LANGUAGE STRING FOR {} in {}".format(name, _lang)
         LOGGER.warning(err)
         # try to send the english string first if not found
         try:
-            return (
+            text = (
                 decode(
                     encode(
                         self.__strings["en"][name],
@@ -142,6 +156,7 @@ class DataBase:
                     ),
                     'unicode-escape',
                 )
-            ).format(*args, **kwargs)
+            )
+            return text if noformat else text.format(*args, **kwargs)
         except KeyError:
             return err + "\nPlease forward this to @userbotindo."

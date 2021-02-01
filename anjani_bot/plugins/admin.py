@@ -68,7 +68,7 @@ class Admin(plugin.Plugin):
         if message.reply_to_message:
             purged = 0
             msg = await message.reply_text(
-                await self.lang(message.chat.id, "purge")
+                await self.text(message.chat.id, "purge")
                 )
             for msg_id in reversed(range(
                     message.reply_to_message.message_id,
@@ -96,10 +96,10 @@ class Admin(plugin.Plugin):
         user, _ = extract_user_and_text(message)
         chat_id = message.chat.id
         if user is None:
-            return await message.reply_text(await self.lang(chat_id, "no-kick-user"))
+            return await message.reply_text(await self.text(chat_id, "no-kick-user"))
         try:
             if await user_ban_protected(self, chat_id, user):
-                return await message.reply_text(await self.lang(chat_id, "admin-kick"))
+                return await message.reply_text(await self.text(chat_id, "admin-kick"))
         except UserNotParticipant:
             return await message.reply_text(
                 await self.text(chat_id, "err-not-participant")
@@ -114,11 +114,13 @@ class Admin(plugin.Plugin):
         user, _ = extract_user_and_text(message)
         chat_id = message.chat.id
         if user is None:
-            return await message.reply_text("Who should i ban?\nis it you?")
+            return await message.reply_text(
+                await self.text(chat_id, "no-ban-user")
+            )
         try:
             if await user_ban_protected(self, chat_id, user):
                 return await message.reply_text(
-                    await self.text(chat_id, "no-ban-user")
+                    await self.text(chat_id, "admin-ban")
                 )
         except UserNotParticipant:
             return await message.reply_text(
