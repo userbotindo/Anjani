@@ -23,31 +23,23 @@ from anjani_bot import anjani, plugin
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
+    users_db = anjani.get_collection("USERS")
+    chats_db = anjani.get_collection("CHATS")
 
     async def __migrate__(self, old_chat, new_chat):
-        await Users.users_db().update_many(
+        await Users.users_db.update_many(
             {'chats': old_chat},
             {"$push": {'chats': new_chat}},
         )
-        await Users.users_db().update_many(
+        await Users.users_db.update_many(
             {'chats': old_chat},
             {"$pull": {'chats': old_chat}},
         )
 
-        await Users.chats_db().update_one(
+        await Users.chats_db.update_one(
             {'chat_id': old_chat},
             {"$set": {'chat_id': new_chat}}
         )
-
-    @classmethod
-    def users_db(cls):
-        """ Uses collection """
-        return anjani.get_collection("USERS")
-
-    @classmethod
-    def chats_db(cls):
-        """ Chats collection """
-        return anjani.get_collection("CHATS")
 
     @anjani.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
@@ -55,10 +47,10 @@ class Users(plugin.Plugin):
         chat = message.chat
         user = message.from_user
 
-        if not (user):  # sanity check for service message
+        if not user:  # sanity check for service message
             return
 
-        await Users.users_db().update_one(
+        await Users.users_db.update_one(
             {'_id': user.id},
             {
                 "$set": {'username': user.username},
@@ -70,7 +62,7 @@ class Users(plugin.Plugin):
         if not (chat.id or chat.title):
             return
 
-        await Users.chats_db().update_one(
+        await Users.chats_db.update_one(
             {'chat_id': chat.id},
             {
                 "$set": {'chat_name': chat.title},
@@ -85,12 +77,12 @@ class Users(plugin.Plugin):
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
 
-        await Users.users_db().update_one(
+        await Users.users_db.update_one(
             {'_id': user_id},
             {"$pull": {'chats': chat_id}}
         )
 
-        await Users.chats_db().update_one(
+        await Users.chats_db.update_one(
             {'chat_id': chat_id},
             {"$pull": {'member': user_id}}
         )
