@@ -26,7 +26,7 @@ from types import ModuleType
 from typing import Optional, Any, Awaitable, List, Union, Iterable
 
 import aiohttp
-from pyrogram import Client, idle
+from pyrogram import Client, idle, types
 from pyrogram.filters import Filter, create
 
 from . import cust_filter, pool, DataBase
@@ -54,6 +54,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         self.http = aiohttp.ClientSession()
         self.modules = {}
         self._start_time = time.time()
+        self._log_channel = Config.LOG_CHANNEL
         self.staff["owner"] = Config.OWNER_ID
         super().__init__(**kwargs)
 
@@ -92,12 +93,12 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         pool.start()
         await self.connect_db("AnjaniBot")
         self._load_language()
-        LOGGER.info("Starting Bot Client...")
         self.submodules = [
             importlib.import_module("anjani_bot.plugins." + info.name, __name__)
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
         self.load_all_modules(self.submodules)
+        LOGGER.info("Starting Bot Client...")
         await super().start()
         await self._load_all_attribute()
 
@@ -237,3 +238,55 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             dec = self.on_message(filters=_filters)
             return dec(coro)
         return decorator
+
+    async def channel_log(
+            self,
+            text: str,
+            parse_mode: Optional[str] = object,
+            disable_web_page_preview: bool = None,
+            disable_notification: bool = None,
+            reply_markup: Union[
+                "types.InlineKeyboardMarkup",
+                "types.ReplyKeyboardMarkup",
+                "types.ReplyKeyboardRemove",
+                "types.ForceReply"
+            ] = None
+        ) -> Union["types.Message", None]:
+        """Send message to log channel.
+
+        Parameters:
+            text (`str`):
+                Text of the message to be sent.
+
+            parse_mode (`str`, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "html" to enable HTML-style parsing only.
+                Pass None to completely disable style parsing.
+
+            disable_web_page_preview (`bool`, *optional*):
+                Disables link previews for links in this message.
+
+            disable_notification (`bool`, *optional*):
+                Sends the message silently.
+                Users will receive a notification with no sound.
+
+            reply_markup (:obj:`~InlineKeyboardMarkup` | :obj:`~ReplyKeyboardMarkup` | :obj:`~ReplyKeyboardRemove` | :obj:`~ForceReply`, *optional*):
+                Additional interface options. An object for an inline keyboard, custom reply keyboard,
+                instructions to remove reply keyboard or to force a reply from the user.
+
+        Returns:
+            :obj:`~types.Message`: On success, the sent text message is returned.
+        """
+        if self._log_channel == 0:
+            return None
+
+        return await self.send_message(
+            chat_id=self._log_channel,
+            text=text,
+            parse_mode=parse_mode,
+            disable_web_page_preview=disable_web_page_preview,
+            disable_notification=disable_notification,
+            reply_markup=reply_markup
+        )
