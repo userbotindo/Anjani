@@ -54,8 +54,21 @@ covid-text : |
 wait-paste : "`Pasting to Nekobin...`"
 fail-paste : "`Failed to reach Nekobin`"
 #endregion
+#region greetings
+bot-added: |
+  Hi... Thanks for inviting me.
+  Currently, I'm still in development.
+  Some features haven't been added yet and will be added by time.
+  If you found something that not supposed to happen,
+  We would appreciate a report on our support group.
+  Thank You 😊
+default-welcome: Hey {first}, how are you?\nWelcome to {chatname}
+clean-serv-set: Turned {} service messages cleaning.
+cust-welcome-set: Successfully set custom welcome message!
+#endregion
 #region common-error
 error-chat-private : "**Error:** `Chat type private`\nThis command for groups only..."
 error-no-rights : "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
+err-invalid-option: Invalid option!
 #endregion
