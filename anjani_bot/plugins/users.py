@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 from typing import ClassVar
 
 from pyrogram import filters
@@ -25,21 +26,23 @@ class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
     users_db = anjani.get_collection("USERS")
     chats_db = anjani.get_collection("CHATS")
+    lock = asyncio.Lock()
 
     async def __migrate__(self, old_chat, new_chat):
-        await Users.users_db.update_many(
-            {'chats': old_chat},
-            {"$push": {'chats': new_chat}},
-        )
-        await Users.users_db.update_many(
-            {'chats': old_chat},
-            {"$pull": {'chats': old_chat}},
-        )
+        async with Users.lock:
+            await Users.users_db.update_many(
+                {'chats': old_chat},
+                {"$push": {'chats': new_chat}},
+            )
+            await Users.users_db.update_many(
+                {'chats': old_chat},
+                {"$pull": {'chats': old_chat}},
+            )
 
-        await Users.chats_db.update_one(
-            {'chat_id': old_chat},
-            {"$set": {'chat_id': new_chat}}
-        )
+            await Users.chats_db.update_one(
+                {'chat_id': old_chat},
+                {"$set": {'chat_id': new_chat}}
+            )
 
     @anjani.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
@@ -50,26 +53,27 @@ class Users(plugin.Plugin):
         if not user:  # sanity check for service message
             return
 
-        await Users.users_db.update_one(
-            {'_id': user.id},
-            {
-                "$set": {'username': user.username},
-                "$addToSet": {'chats': chat.id}
-            },
-            upsert=True,
-        )
+        async with Users.lock:
+            await Users.users_db.update_one(
+                {'_id': user.id},
+                {
+                    "$set": {'username': user.username},
+                    "$addToSet": {'chats': chat.id}
+                },
+                upsert=True,
+            )
 
-        if not (chat.id or chat.title):
-            return
+            if not (chat.id or chat.title):
+                return
 
-        await Users.chats_db.update_one(
-            {'chat_id': chat.id},
-            {
-                "$set": {'chat_name': chat.title},
-                "$addToSet": {'member': user.id}
-            },
-            upsert=True,
-        )
+            await Users.chats_db.update_one(
+                {'chat_id': chat.id},
+                {
+                    "$set": {'chat_name': chat.title},
+                    "$addToSet": {'member': user.id}
+                },
+                upsert=True,
+            )
 
     @anjani.on_message(filters.left_chat_member, group=7)
     async def del_log_user(self, message):
@@ -77,15 +81,16 @@ class Users(plugin.Plugin):
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
 
-        await Users.users_db.update_one(
-            {'_id': user_id},
-            {"$pull": {'chats': chat_id}}
-        )
+        async with Users.lock:
+            await Users.users_db.update_one(
+                {'_id': user_id},
+                {"$pull": {'chats': chat_id}}
+            )
 
-        await Users.chats_db.update_one(
-            {'chat_id': chat_id},
-            {"$pull": {'member': user_id}}
-        )
+            await Users.chats_db.update_one(
+                {'chat_id': chat_id},
+                {"$pull": {'member': user_id}}
+            )
 
     @anjani.on_message(filters.migrate_from_chat_id)
     async def __chat_migrate(self, message):
