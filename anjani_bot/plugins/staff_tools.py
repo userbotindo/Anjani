@@ -68,7 +68,7 @@ class Staff(plugin.Plugin):
             sent = 0
             text = to_send[1] + "\n\nThis is broadcast message."
             msg = await message.reply_text("sending broadcast...")
-            async for chat in users.Users.chats_db().find({}):
+            async for chat in users.Users.chats_db.find({}):
                 if sent % 25 == 0:
                     # sleep every 25 msg sent to prevent flood limmit.
                     await asyncio.sleep(1)
