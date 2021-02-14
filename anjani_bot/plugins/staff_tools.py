@@ -103,7 +103,7 @@ class Staff(plugin.Plugin):
     async def chatlist(self, message):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"
-        async for chat in users.Users.chats_db().find({}):
+        async for chat in users.Users.chats_db.find({}):
             chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
