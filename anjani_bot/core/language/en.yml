@@ -64,7 +64,14 @@ bot-added: |
   Thank You 😊
 default-welcome: Hey {first}, how are you?\nWelcome to {chatname}
 clean-serv-set: Turned {} service messages cleaning.
+welcome-set: Welcome turned {} on new member join.
 cust-welcome-set: Successfully set custom welcome message!
+reset-welcome: Successfully reset welcome message to default!
+view-welcome: |
+  **This chat has the welcome setting:**
+  ``Welcoming user`` = ``{}``
+  ``Clean service message`` = ``{}``
+  And the welcome message of this chat is:
 #endregion
 #region common-error
 error-chat-private : "**Error:** `Chat type private`\nThis command for groups only..."

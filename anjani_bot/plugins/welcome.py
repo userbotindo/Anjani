@@ -65,7 +65,8 @@ class RawGreeting:
     welcome_db = anjani.get_collection("WELCOME")
 
     @staticmethod
-    async def _default_welc(chat_id):
+    async def default_welc(chat_id):
+        """ Bot default welcome """
         return await anjani.text(chat_id, "default-welcome", noformat=True)
 
     @staticmethod
@@ -76,15 +77,22 @@ class RawGreeting:
         return parsed_user
 
     @classmethod
+    async def full_welcome(cls, chat_id) -> Tuple[bool, str, bool]:
+        """ Get chat full welcome data """
+        sett, text = await cls.welc_pref(chat_id)
+        clean_serv = await cls.clean_service(chat_id)
+        return sett, text, clean_serv
+
+    @classmethod
     async def welc_pref(cls, chat_id) -> Tuple[bool, str]:
         """ Get chat welcome setting """
         setting = await cls.welcome_db.find_one({'chat_id': chat_id})
         if setting:
             return (
                 setting["should_welcome"],
-                setting["custom_welcome"] or await cls._default_welc(chat_id),
+                setting["custom_welcome"] or await cls.default_welc(chat_id),
             )
-        return True, await cls._default_welc(chat_id)
+        return True, await cls.default_welc(chat_id)
 
     @classmethod
     async def clean_service(cls, chat_id) -> bool:
@@ -120,6 +128,18 @@ class RawGreeting:
                     "$set": {
                         'clean_service': setting
                     }
+                },
+                upsert=True
+            )
+
+    @classmethod
+    async def set_welc_pref(cls, chat_id, setting: bool):
+        """ Turn on/off welcome in chats """
+        async with cls.lock:
+            await cls.welcome_db.update_one(
+                {'chat_id': chat_id},
+                {
+                    "$set": {'should_welcome': setting}
                 },
                 upsert=True
             )
@@ -178,11 +198,36 @@ class Greeting(plugin.Plugin, RawGreeting):
         await Greeting.set_custom_welcome(chat.id, msg.text)
         await message.reply_text(await self.text(chat.id, "cust-welcome-set"))
 
+    @anjani.on_command("resetwelcome", admin_only=True)
+    async def reset_welcome(self, message):
+        """ Reset saved welcome message """
+        chat = message.chat
+        await Greeting.set_custom_welcome(chat.id, await Greeting.default_welc(chat.id))
+        await message.reply_text(await self.text(chat.id, "reset-welcome"))
+
     @anjani.on_command("welcome", admin_only=True)
     async def view_welcome(self, message):
         """ View current welcome message """
-        _, text = await Greeting.welc_pref(message.chat.id)
+        chat_id = message.chat.id
+        if len(message.command) >= 1:
+            arg = message.command[0]
+            if arg in ["yes", "on"]:
+                await Greeting.set_welc_pref(chat_id, True)
+                return await message.reply_text(await self.text(chat_id, "welcome-set", "on"))
+            elif arg in ["no", "off"]:
+                await Greeting.set_welc_pref(chat_id, False)
+                return await message.reply_text(await self.text(chat_id, "welcome-set", "off"))
+            else:
+                return await message.reply_text(await self.text(chat_id, "err-invalid-option"))
+        sett, welc_text, clean_serv = await Greeting.full_welcome(chat_id)
+        text = await self.text(
+            chat_id,
+            "view-welcome",
+            sett,
+            clean_serv
+        )
         await message.reply_text(text)
+        await message.reply_text(welc_text)
 
     @anjani.on_command("cleanservice", admin_only=True)
     async def cleanserv(self, message):
