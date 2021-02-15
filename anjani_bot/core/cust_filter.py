@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import re
 import shlex
 from typing import Union, List
@@ -22,6 +23,8 @@ from pyrogram.filters import create
 from pyrogram.types import Message
 
 from ..utils import adminlist
+
+LOGGER = logging.getLogger(__name__)
 
 
 def command(commands: Union[str, List[str]],
@@ -86,9 +89,23 @@ async def _bot_admin_filters(_, client, message: Message) -> bool:
     return False
 
 
-async def _staf_filters(_, client, message: Message) -> bool:
+async def _staff_filters(_, client, message: Message) -> bool:
     user_id = message.from_user.id
     return bool(user_id in client.staff_id)
+
+
+async def staff_rank(flt, client, message: Message) -> bool:
+    """ Check staff rank """
+    user_id = message.from_user.id
+    if flt.rank == "owner":
+        return bool(user_id == client.staff.get("owner"))
+    if flt.rank == "dev":
+        return bool(
+            user_id in client.staff.get("dev")
+            or user_id == client.staff.get("owner")
+        )
+    LOGGER.error("Unknown rank '%s'! Avalaible rank ['owner', 'dev']", flt.rank)
+    return False
 
 
 async def check_perm(flt, client, message: Message) -> bool:
@@ -128,4 +145,4 @@ async def check_perm(flt, client, message: Message) -> bool:
 # pylint: disable=invalid-name
 admin = create(_admin_filters)
 bot_admin = create(_bot_admin_filters)
-staff = create(_staf_filters)
+staff = create(_staff_filters)

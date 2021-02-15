@@ -72,10 +72,10 @@ class PluginExtender:
         """ Load available module """
         LOGGER.info("Loading plugins")
         self._load_all_from_metamod(submodules)
-        loaded = []
+        self.loaded = []
         for module in self.modules:
-            loaded.append(module)
-        LOGGER.info("Plugins loaded %s", loaded)
+            self.loaded.append(module)
+        LOGGER.info("Plugins loaded %s", self.loaded)
 
     def unload_all_modules(self) -> None:
         """ Unload modules """

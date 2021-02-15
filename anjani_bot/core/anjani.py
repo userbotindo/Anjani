@@ -57,7 +57,15 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         super().__init__(**kwargs)
 
     def __str__(self):
-        return f"Uptime: {self.uptime}\nStaff list:\n{json.dumps(self.staff, indent=2)}"
+        output = f"Name : {self.name}\n"
+        output += f"Username : {self.username}\n"
+        output += f"ID : {self.id}\n"
+        output += f"Uptime: {self.uptime}\n"
+        output += f"Pyrogram: {self.app_version}\n"
+        output += f"Language: {self.language}\n"
+        output += f"Loaded Modules:{json.dumps(self.loaded, indent=2)}\n"
+        output += f"Staff list:{json.dumps(self.staff, indent=2)}\n"
+        return output
 
     @property
     def uptime(self) -> str:
@@ -161,7 +169,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             can_invite_users: Optional[bool] = False,
             can_pin: Optional[bool] = False,
             can_promote: Optional[bool] = False,
-            staff_only: Optional[bool] = False,
+            staff_only: Optional[Union[bool, str]] = False,
         ) -> callable:
         """Decorator for handling commands
 
@@ -202,8 +210,10 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
                 check if user and bot can add new administrator.
                 default False
 
-            staff_only (`bool`, *optional*):
-                Pass True if the command only used by Staff (SUDO and OWNER).
+            staff_only (`bool` | 'str', *optional*):
+                Pass True if the command only used by all staff or pass the rank string
+                if the command only available for those rank.
+                Eg: "owner" or "dev"
         """
 
         def decorator(coro):
@@ -231,7 +241,14 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             if admin_only:
                 _filters = _filters & cust_filter.admin & cust_filter.bot_admin
             elif staff_only:
-                _filters = _filters & cust_filter.staff
+                if isinstance(staff_only, bool):
+                    _filters = _filters & cust_filter.staff
+                else:
+                    _filters = _filters & create(
+                        cust_filter.staff_rank,
+                        "CheckStaffRank",
+                        rank=staff_only
+                    )
 
             dec = self.on_message(filters=_filters)
             return dec(coro)
@@ -250,7 +267,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
                 "types.ForceReply"
             ] = None
         ) -> Union["types.Message", None]:
-        """Send message to log channel.
+        """Shortcut method to send message to log channel.
 
         Parameters:
             text (`str`):
@@ -270,14 +287,19 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
                 Sends the message silently.
                 Users will receive a notification with no sound.
 
-            reply_markup (:obj:`~InlineKeyboardMarkup` | :obj:`~ReplyKeyboardMarkup` | :obj:`~ReplyKeyboardRemove` | :obj:`~ForceReply`, *optional*):
-                Additional interface options. An object for an inline keyboard, custom reply keyboard,
-                instructions to remove reply keyboard or to force a reply from the user.
+            reply_markup (
+                :obj:`~InlineKeyboardMarkup` | :obj:`~ReplyKeyboardMarkup` |
+                :obj:`~ReplyKeyboardRemove` | :obj:`~ForceReply`, *optional*
+                ):
+                Additional interface options. An object for an inline keyboard,
+                custom reply keyboard, instructions to remove reply keyboard or
+                to force a reply from the user.
 
         Returns:
             :obj:`~types.Message`: On success, the sent text message is returned.
         """
         if self._log_channel == 0:
+            LOGGER.warning("No LOG_CHANNEL var! message not sended.")
             return None
 
         return await self.send_message(
