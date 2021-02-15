@@ -37,8 +37,10 @@ class Evaluate(plugin.Plugin):
     async def eval(self, message):
         """ run a command """
         status = await message.reply_text("Processing...")
-        cmd = message.text.split(" ", maxsplit=1)[1]
-
+        try:
+            cmd = message.text.split(" ", maxsplit=1)[1]
+        except IndexError:
+            return await status.edit("Give me a code to evaluate!")
         reply_to = message.reply_to_message or message
 
         old_stderr = sys.stderr
