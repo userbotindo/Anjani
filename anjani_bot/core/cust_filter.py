@@ -53,8 +53,11 @@ def command(commands: Union[str, List[str]],
                     return False
             elif matches.group(2) is None:
                 return True
-            for arg in shlex.split(matches.group(2)):
-                message.command.append(arg)
+            try:
+                for arg in shlex.split(matches.group(2)):
+                    message.command.append(arg)
+            except ValueError:
+                pass
             return True
         return False
 

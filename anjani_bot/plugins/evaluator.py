@@ -22,8 +22,8 @@ from typing import ClassVar
 from anjani_bot import anjani, plugin
 
 
-class Evaluate(plugin.Plugin):
-    name: ClassVar[str] = "Eval"
+class Evaluator(plugin.Plugin):
+    name: ClassVar[str] = "Evaluator"
 
     @staticmethod
     async def aexec(code, message):
@@ -50,7 +50,7 @@ class Evaluate(plugin.Plugin):
         stdout, stderr, exc = None, None, None
 
         try:
-            returned = await Evaluate.aexec(cmd, message)
+            returned = await Evaluator.aexec(cmd, message)
         except Exception:  # pylint: disable=broad-except
             exc = traceback.format_exc()
 
@@ -59,12 +59,16 @@ class Evaluate(plugin.Plugin):
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
-        evaluation = exc or stderr or stdout or returned or "Success"
+        evaluation = exc or stderr or stdout or returned
 
         output = "**CODE:**\n"
         output += f"```{cmd}```\n\n"
-        output += "**OUTPUT:**\n"
-        output += f"```{evaluation}```\n"
+        try:  # handle the error while stringifying the result
+            output += "**OUTPUT:**\n"
+            output += f"```{evaluation}```\n"
+        except Exception:  # pylint: disable=broad-except
+            output += "**Exception:**\n"
+            output += f"```{traceback.format_exc()}```\n"
 
         if len(output) > 4096:
             with io.BytesIO(str.encode(output)) as out_file:
