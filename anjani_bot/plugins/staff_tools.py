@@ -59,14 +59,14 @@ class Staff(plugin.Plugin):
         else:
             await message.reply_text("Failed to reach Nekobin")
 
-    @anjani.on_command("broadcast", staff_only=True)
+    @anjani.on_command("broadcast", staff_only="owner")
     async def broadcast(self, message):
         """ Broadcast a message to all chats """
         to_send = message.text.split(None, 1)
         if len(to_send) >= 2:
             failed = 0
             sent = 0
-            text = to_send[1] + "\n\nThis is broadcast message."
+            text = to_send[1] + "\n\n*This is a broadcast message."
             msg = await message.reply_text("sending broadcast...")
             async for chat in users.Users.chats_db.find({}):
                 if sent % 25 == 0:
