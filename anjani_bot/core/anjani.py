@@ -22,11 +22,10 @@ import json
 import logging
 import signal
 import time
-from types import ModuleType
-from typing import Optional, Any, Awaitable, List, Union, Iterable
+from typing import Optional, Any, Awaitable, List, Union
 
 import aiohttp
-from pyrogram import Client, idle, types
+from pyrogram import Client, idle
 from pyrogram.filters import Filter, create
 
 from . import cust_filter, pool, DataBase
@@ -40,7 +39,6 @@ LOGGER = logging.getLogger(__name__)
 class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     staff = dict()
-    submodules: Iterable[ModuleType]
     http: aiohttp.ClientSession
 
     def __init__(self, **kwargs):
@@ -93,11 +91,11 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         pool.start()
         await self.connect_db("AnjaniBot")
         self._load_language()
-        self.submodules = [
+        submodules = [
             importlib.import_module("anjani_bot.plugins." + info.name, __name__)
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
-        self.load_all_modules(self.submodules)
+        self.load_all_modules(submodules)
         LOGGER.info("Starting Bot Client...")
         await super().start()
         await self._load_all_attribute()
