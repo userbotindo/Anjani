@@ -90,7 +90,7 @@ class RawGreeting:
         if setting:
             return (
                 setting["should_welcome"],
-                setting["custom_welcome"] or await cls.default_welc(chat_id),
+                setting.get("custom_welcome", await cls.default_welc(chat_id))
             )
         return True, await cls.default_welc(chat_id)
 
@@ -99,7 +99,7 @@ class RawGreeting:
         """ Fetch clean service setting """
         clean = await cls.welcome_db.find_one({'chat_id': chat_id})
         if clean:
-            return clean["clean_service"]
+            return clean.get("clean_service", False)
         return False
 
     @classmethod
