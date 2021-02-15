@@ -90,7 +90,7 @@ class RawGreeting:
         if setting:
             return (
                 setting["should_welcome"],
-                setting["custom_welcome"] or await cls.default_welc(chat_id),
+                setting.get("custom_welcome", await cls.default_welc(chat_id))
             )
         return True, await cls.default_welc(chat_id)
 
