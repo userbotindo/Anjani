@@ -17,10 +17,15 @@
 import asyncio
 from typing import ClassVar
 
+from datetime import datetime
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 
 from anjani_bot import anjani, plugin
-from anjani_bot.utils import extract_user_and_text, user_ban_protected, adminlist
+from anjani_bot.utils import (
+    extract_user_and_text,
+    user_ban_protected,
+    adminlist,
+)
 
 
 class Admin(plugin.Plugin):
@@ -34,7 +39,11 @@ class Admin(plugin.Plugin):
                 await self.text(message.chat.id, "error-reply-to-message")
             )
         is_silent = True
-        if message.command and message.command[0] in ["notify", "loud", "violence"]:
+        if message.command and message.command[0] in [
+            "notify",
+            "loud",
+            "violence",
+        ]:
             is_silent = False
         await message.reply_to_message.pin(disable_notification=is_silent)
 
@@ -65,30 +74,38 @@ class Admin(plugin.Plugin):
     @anjani.on_command(["purge", "prune"], can_delete=True)
     async def purge_message(self, message):
         """ purge message from message replied """
+        time_start = datetime.now()
+        await message.delete()
+        message_ids = []
+        purged = 0
         if message.reply_to_message:
-            purged = 0
-            msg = await message.reply_text(
-                await self.text(message.chat.id, "purge")
-                )
-            for msg_id in reversed(range(
-                    message.reply_to_message.message_id,
-                    message.message_id
-            )):
+            for msg_id in range(
+                message.reply_to_message.message_id, message.message_id
+            ):
+                message_ids.append(msg_id)
+                if len(message_ids) == 100:
+                    await self.delete_messages(
+                        chat_id=message.chat.id,
+                        message_ids=message_ids,
+                        revoke=True,
+                    )
+                    purged += len(message_ids)
+                    message_ids = []
+            if message_ids:
                 await self.delete_messages(
-                    message.chat.id,
-                    msg_id
+                    chat_id=message.chat.id,
+                    message_ids=message_ids,
+                    revoke=True,
                 )
-                purged += 1
-            await message.delete()
-            await msg.edit(
-                await self.text(message.chat.id, "purge-done", purged)
-            )
-            await asyncio.sleep(5)
-            await msg.delete()
-        else:
-            await message.reply_text(
-                await self.text(message.chat.id, "error-reply-to-message")
-            )
+                purged += len(message_ids)
+        time_end = datetime.now()
+        run_time = (time_end - time_start).seconds
+        await self.send_message(
+            message.chat.id,
+            await self.text(message.chat.id, "purge-done", purged, run_time),
+        )
+        await asyncio.sleep(5)
+        await message.delete()
 
     @anjani.on_command("kick", can_restrict=True)
     async def kick_member(self, message):
@@ -96,10 +113,14 @@ class Admin(plugin.Plugin):
         user, _ = extract_user_and_text(message)
         chat_id = message.chat.id
         if user is None:
-            return await message.reply_text(await self.text(chat_id, "no-kick-user"))
+            return await message.reply_text(
+                await self.text(chat_id, "no-kick-user")
+            )
         try:
             if await user_ban_protected(self, chat_id, user):
-                return await message.reply_text(await self.text(chat_id, "admin-kick"))
+                return await message.reply_text(
+                    await self.text(chat_id, "admin-kick")
+                )
         except UserNotParticipant:
             return await message.reply_text(
                 await self.text(chat_id, "err-not-participant")
@@ -132,13 +153,18 @@ class Admin(plugin.Plugin):
     @anjani.on_command("unban", can_restrict=True)
     async def unban_member(self, message):
         """ Unban chat member """
-        user, _, = extract_user_and_text(message)
+        (
+            user,
+            _,
+        ) = extract_user_and_text(message)
         if user is None:
             return await message.reply_text(
                 await self.text(message.chat.id, "unban-no-user")
             )
         await message.chat.unban_member(user)
-        await message.reply_text(await self.text(message.chat.id, "unban-done"))
+        await message.reply_text(
+            await self.text(message.chat.id, "unban-done")
+        )
 
     @anjani.on_command("setgpic", can_change_info=True)
     async def change_g_pic(self, message):
@@ -148,7 +174,9 @@ class Admin(plugin.Plugin):
         if file:
             await self.set_chat_photo(message.chat.id, photo=file.file_id)
         else:
-            await message.reply_text(await self.text(message.chat.id, "gpic-no-photo"))
+            await message.reply_text(
+                await self.text(message.chat.id, "gpic-no-photo")
+            )
 
     @anjani.on_command("adminlist")
     async def admin_list(self, message):
