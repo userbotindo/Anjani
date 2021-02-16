@@ -114,8 +114,8 @@ class Admin(plugin.Plugin):
         except UserNotParticipant:
             return await message.reply_text(await self.text(chat_id, "err-not-participant"))
         await message.chat.kick_member(user)
-        await message.chat.unban_member(user)
         await message.reply_text(await self.text(chat_id, "kick-done"))
+        await message.chat.unban_member(user)
 
     @anjani.on_command("ban", can_restrict=True)
     async def ban_member(self, message):
@@ -135,10 +135,7 @@ class Admin(plugin.Plugin):
     @anjani.on_command("unban", can_restrict=True)
     async def unban_member(self, message):
         """ Unban chat member """
-        (
-            user,
-            _,
-        ) = extract_user_and_text(message)
+        user, _, = extract_user_and_text(message)
         if user is None:
             return await message.reply_text(await self.text(message.chat.id, "unban-no-user"))
         await message.chat.unban_member(user)
