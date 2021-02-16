@@ -15,6 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from random import choice
+from uuid import uuid4
+
+
 def get_readable_time(seconds: int) -> str:
     """get human readable time from seconds."""
     up_time = ""
@@ -74,3 +78,14 @@ def format_integer(number, thousand_separator="."):
         else:
             result = char + result
     return result
+
+
+def rand_array(array: list, string: bool = True):
+    """pick an item randomly from list"""
+    rand_choice = choice(array)
+    return str(rand_choice) if string else rand_choice
+
+
+def rand_key():
+    """generates a random key"""
+    return str(uuid4())[:8]
