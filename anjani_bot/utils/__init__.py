@@ -16,4 +16,10 @@
 
 from .admin_check import adminlist, user_ban_protected
 from .extractor import extract_user_and_text, extract_user
-from .tools import format_integer, get_readable_time, nekobin
+from .tools import (
+    format_integer,
+    get_readable_time,
+    nekobin,
+    rand_array,
+    rand_key
+)

@@ -80,10 +80,9 @@ def format_integer(number, thousand_separator="."):
     return result
 
 
-def rand_array(array: list, string: bool = True):
+def rand_array(array: list):
     """pick an item randomly from list"""
-    rand_choice = choice(array)
-    return str(rand_choice) if string else rand_choice
+    return choice(array)
 
 
 def rand_key():
