@@ -22,7 +22,7 @@ help-chat-button : Help
 #endregion
 #region admin
 purge: purging...
-purge-done: "`Purged {} messages`"
+purge-done: "`Purged {} messages in {} second...`"
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
 kick-done: "`Kicked!`"

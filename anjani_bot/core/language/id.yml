@@ -22,7 +22,7 @@ help-chat-button : Bantuan
 #endregion
 #region admin
 purge : membersihkan pesan...
-purge-done : "`{} pesan dibershikan`"
+purge-done : "`{} pesan dibershikan dalam {} detik...`"
 no-kick-user : siapa yang mau saya tendang?
 admin-kick : Yakin adminnya mau ditendang?
 kick-done : "`Tertendang!`"
