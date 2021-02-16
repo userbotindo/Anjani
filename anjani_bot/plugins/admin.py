@@ -100,12 +100,12 @@ class Admin(plugin.Plugin):
                 purged += len(message_ids)
         time_end = datetime.now()
         run_time = (time_end - time_start).seconds
-        await self.send_message(
+        _msg = await self.send_message(
             message.chat.id,
             await self.text(message.chat.id, "purge-done", purged, run_time),
         )
         await asyncio.sleep(5)
-        await message.delete()
+        await _msg.delete()
 
     @anjani.on_command("kick", can_restrict=True)
     async def kick_member(self, message):
