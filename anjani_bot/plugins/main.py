@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from typing import ClassVar
 
 from pyrogram import filters
@@ -75,14 +76,38 @@ class Main(plugin.Plugin):
                     ]
                 )
             )
-
+        keyboard = await self.help_builder(self.helpable, "help", chat_id)
         await message.reply_text(
-            await self.text(chat_id, "help-pm", self.name)
+            await self.text(chat_id, "help-pm", self.name),
+            reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
     @anjani.on_callback_query(filters.regex(r"help_(.*?)"))
     async def help_button(self, query):
         """ Bot helper button """
-        # mod_match = re.match(r"help_module\((.+?)\)", query.data)
-        # prev_match = re.match(r"help_prev\((.+?)\)", query.data)
-        # next_match = re.match(r"help_next\((.+?)\)", query.data)
+        mod_match = re.match(r"help_module\((.+?)\)", query.data)
+        back_match = re.match(r"help_back", query.data)
+        chat_id = query.message.chat.id
+
+        if mod_match:
+            module = mod_match.group(1)
+            text = (
+                "Here is the help for the **{}** module:\n{}".format(
+                    module.capitalize(),
+                    await self.text(chat_id, f"{module}-help")
+                )
+            )
+            await query.edit_message_text(
+                text,
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton(
+                        text="⬅️ Back", callback_data="help_back"
+                    )
+                ]])
+            )
+        elif back_match:
+            keyboard = await self.help_builder(self.helpable, "help", chat_id)
+            await query.edit_message_text(
+                await self.text(chat_id, "help-pm", self.name),
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
