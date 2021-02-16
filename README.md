@@ -33,14 +33,14 @@ Once everyting set up, start the client by running
 
 We try our best to simplify module creation.
 
-All you need is a `<plugin>.py` file in `anjani_bot/plugins`.
+All you need is a `<plugin-name>.py` file in `anjani_bot/plugins`.
 
-Import the Client `from anjani_bot import anjani, plugins`.
+Import the Client `from .. import anjani, plugins`.
 
 Create a class that inherit with `plugins.Plugins` And give that Class name attribute to name the plugin. eg:
 
 ```python
-from anjani_bot import anjani, plugin
+from .. import anjani, plugin
 
 class PluginClass(plugin.Plugin):
     name = "plugin name"
