@@ -54,8 +54,8 @@ class Evaluator(plugin.Plugin):
         except Exception:  # pylint: disable=broad-except
             exc = traceback.format_exc()
 
-        stdout = redirected_output.getvalue()
-        stderr = redirected_error.getvalue()
+        stdout = redirected_output.getvalue().strip()
+        stderr = redirected_error.getvalue().strip()
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
@@ -80,4 +80,4 @@ class Evaluator(plugin.Plugin):
                 )
             await status.delete()
         else:
-            await status.edit(output)
+            await status.edit(output, parse_mode="md")
