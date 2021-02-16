@@ -21,7 +21,7 @@ from typing import ClassVar
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani_bot import anjani, plugin
+from .. import anjani, plugin
 
 LOGGER = logging.getLogger(__name__)
 

@@ -21,10 +21,10 @@ from typing import ClassVar
 from covid import Covid
 from pyrogram import filters
 
-from anjani_bot import anjani, plugin
-from anjani_bot.core.pool import run_in_thread
-from anjani_bot.config import Config
-from anjani_bot.utils import nekobin, format_integer
+from .. import anjani, plugin
+from ..config import Config
+from ..core.pool import run_in_thread
+from ..utils import nekobin, format_integer
 
 
 class Misc(plugin.Plugin):

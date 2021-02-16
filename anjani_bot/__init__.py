@@ -13,9 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from .core import Anjani, setup_log
 
-from anjani_bot.config import Config  # noqa
-from anjani_bot.core import Anjani
-
-
-anjani = Anjani()  # pylint: disable = invalid-name
+anjani = Anjani()

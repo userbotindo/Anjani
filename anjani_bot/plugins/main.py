@@ -20,7 +20,7 @@ from typing import ClassVar
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani_bot import anjani, plugin
+from .. import anjani, plugin
 
 
 class Main(plugin.Plugin):
@@ -76,7 +76,7 @@ class Main(plugin.Plugin):
                     ]
                 )
             )
-        keyboard = await self.help_builder(self.helpable, "help", chat_id)
+        keyboard = await plugin.help_builder(self.helpable, "help")
         await message.reply_text(
             await self.text(chat_id, "help-pm", self.name),
             reply_markup=InlineKeyboardMarkup(keyboard)
@@ -106,7 +106,7 @@ class Main(plugin.Plugin):
                 ]])
             )
         elif back_match:
-            keyboard = await self.help_builder(self.helpable, "help", chat_id)
+            keyboard = await plugin.help_builder(self.helpable, "help")
             await query.edit_message_text(
                 await self.text(chat_id, "help-pm", self.name),
                 reply_markup=InlineKeyboardMarkup(keyboard)

@@ -19,7 +19,7 @@ from typing import ClassVar
 
 from pyrogram import filters
 
-from anjani_bot import anjani, plugin
+from .. import anjani, plugin
 
 
 class Users(plugin.Plugin):

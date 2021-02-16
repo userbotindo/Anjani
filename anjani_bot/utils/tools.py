@@ -13,8 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 from random import choice
 from uuid import uuid4
 
@@ -35,8 +33,8 @@ def get_readable_time(seconds: int) -> str:
         time_list.append(int(result))
         seconds = int(remainder)
 
-    for _x in range(len(time_list)):
-        time_list[_x] = str(time_list[_x]) + time_suffix_list[_x]
+    for index in enumerate(time_list):
+        time_list[index[0]] = str(time_list[index[0]]) + time_suffix_list[index[0]]
     if len(time_list) == 4:
         up_time += time_list.pop() + ", "
 

@@ -13,9 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from anjani_bot import anjani
-from anjani_bot.core import setup_log
+from . import anjani, setup_log
 
 
 if __name__ == "__main__":

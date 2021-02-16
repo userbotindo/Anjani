@@ -35,11 +35,8 @@ def command(commands: Union[str, List[str]],
         text: str = message.text or message.caption
         message.command: List[str] = list()
 
-        if not text:
-            return False
-        elif not text.startswith("/"):
-            return False
-        elif text.startswith("/") and text.split(" ", 1)[0] == "/":
+        if not text or not text.startswith("/") or (text.startswith("/")
+                and text.split(" ", 1)[0] == "/"):
             return False
 
         regex = "^/+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(

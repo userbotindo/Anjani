@@ -20,8 +20,8 @@ from typing import ClassVar
 from datetime import datetime
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 
-from anjani_bot import anjani, plugin
-from anjani_bot.utils import (
+from .. import anjani, plugin
+from ..utils import (
     extract_user_and_text,
     user_ban_protected,
     adminlist,

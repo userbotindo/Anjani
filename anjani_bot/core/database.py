@@ -23,7 +23,7 @@ from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from motor.core import AgnosticCollection
 
-from .. import Config
+from ..config import Config
 
 LOGGER = logging.getLogger(__name__)
 

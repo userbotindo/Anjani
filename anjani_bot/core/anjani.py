@@ -28,9 +28,10 @@ import aiohttp
 from pyrogram import Client, idle
 from pyrogram.filters import Filter, create
 
-from . import cust_filter, pool, DataBase
+from . import cust_filter, pool
+from .database import DataBase
 from .plugin_extender import PluginExtender
-from .. import Config
+from ..config import Config
 from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
@@ -49,12 +50,14 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             "bot_token": Config.BOT_TOKEN,
             "session_name": ":memory:",
         }
-        self.http = aiohttp.ClientSession()
         self.modules = {}
         self._start_time = time.time()
         self._log_channel = Config.LOG_CHANNEL
         self.staff["owner"] = Config.OWNER_ID
         super().__init__(**kwargs)
+
+        # Initialized aiohttp last in case bot failed to init
+        self.http = aiohttp.ClientSession()
 
     def __str__(self):
         output = f"Name : {self.name}\n"

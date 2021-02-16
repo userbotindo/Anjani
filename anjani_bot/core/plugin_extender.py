@@ -18,9 +18,7 @@
 import inspect
 import logging
 from types import ModuleType
-from typing import Any, Iterable, MutableMapping, Optional, Type, List
-
-from pyrogram.types import InlineKeyboardButton
+from typing import Any, Iterable, MutableMapping, Optional, Type
 
 from .. import plugin
 
@@ -97,19 +95,3 @@ class PluginExtender:
         LOGGER.debug("Migrating chat from %s to %s", old_chat, new_chat)
         for mod in self.__migrateable:
             await mod.__migrate__(old_chat, new_chat)
-
-    async def help_builder(self, module_list: list, prefix: str, chat_id) -> List:
-        """ Build the help button """
-        modules = [
-            InlineKeyboardButton(
-                # await self.text(chat_id, f"{x.name.lower()}_button"),
-                x.name,
-                callback_data="{}_module({})".format(prefix, x.name.lower()))
-            for x in module_list
-        ]
-
-        pairs = [
-            modules[i * 3:(i + 1) * 3]
-            for i in range((len(modules) + 3 - 1) // 3)
-        ]
-        return pairs

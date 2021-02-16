@@ -20,7 +20,7 @@ from typing import ClassVar, Tuple
 
 from pyrogram import filters
 
-from anjani_bot import anjani, plugin
+from .. import anjani, plugin
 
 
 class NewChatMember:
