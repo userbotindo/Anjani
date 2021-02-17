@@ -29,6 +29,7 @@ from ..utils import nekobin, format_integer
 
 class Misc(plugin.Plugin):
     name: ClassVar[str] = "Miscs"
+    helpable: ClassVar[bool] = True
 
     @anjani.on_command("covid")
     async def covid(self, message):

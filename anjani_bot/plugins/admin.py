@@ -30,6 +30,7 @@ from ..utils import (
 
 class Admin(plugin.Plugin):
     name: ClassVar[str] = "Admins"
+    helpable: ClassVar[bool] = True
 
     @anjani.on_command("pin", can_pin=True)
     async def pin(self, message):

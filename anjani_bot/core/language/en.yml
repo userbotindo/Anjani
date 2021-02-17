@@ -22,6 +22,21 @@ help-chat-button : Help
 back-button : ⬅️ Back
 #endregion
 #region admin
+admins-button: Admins
+admins-help : |
+  Lazy to promote or demote someone for admins?
+  Want to see basic information about chat?
+  All stuff about chatroom such as admin lists,
+  pinning or grabbing an invite link can be done easily using the bot.\n
+  /adminlist: Display all admins in the chat.\n
+  **Admin only:**
+  /pin: Silently pins the message replied to - add loud, notify or violent to give notificaton to users.
+  /unpin: Unpin the latest pinned message. Reply to unpin the replied message - add all to unpin all messages. 
+  /del: Delete message replied to.
+  /purge | /prune : Deletes all messages between this and the replied to message.
+  /kick <userhandle>: Kicks a user, (via handle, or reply)
+  /ban <userhandle>: Bans a user. (via handle, or reply)
+  /unban <userhandle>: Unbans a user. (via handle, or reply)
 purge: purging...
 purge-done: "`Purged {} messages in {} second...`"
 no-kick-user: who should i kick?
@@ -35,11 +50,31 @@ unban-done: "`Unbanned...`"
 gpic-no-photo: Give me a photo!
 #endregion
 #region language
+language-button : Language
+language-help : |
+  This bot comes up with multi language support.
+  You can choose your language preference!\n
+  **Available languages:**
+  - 🇺🇸 English.
+  - 🇮🇩 Indonesia.\n
+  Commands:
+  - /setlang | /lang | /language : set your prefered language.\n
+  **Note**
+  You can use this command on group chats to change the language setting on that chat.
 current-language : "**{}** current language is **{}**\nSelect language bellow to change"
 language-code-error : An error has occured (No language code)... please contact support
 language-set-succes : Language set to {} successfully
 #endregion
 #region misc
+miscs-button : Misc
+miscs-help : |
+  An "odds and ends" module for small, simple commands which don't really fit anywhere.\n
+  **Commands:**
+  - /id : Get user id, message id, chat id and many more.
+  - /ping : Get bot latency.
+  - /paste : paste any text file to Nekobin.\n
+  **Special commands:**
+  - /covid <country> : Get Covid-19 data in your country.
 covid-text : |
   **Corona Virus Statistics in {country}**
   **on {date}**\n
@@ -56,6 +91,15 @@ wait-paste : "`Pasting to Nekobin...`"
 fail-paste : "`Failed to reach Nekobin`"
 #endregion
 #region greetings
+greetings-button : Greetings
+greetings-help : |
+  your group's welcome messages that can be personalised in multiple ways.\n
+  **Admin Commands:**
+  - /setwelcome <reply> : Sets a custom welcome message.
+  - /resetwelcome : Resets to bot default welcome message.
+  - /welcome <on/off> : enable/disable Welcome messages.
+  - /welcome : Display current welcome message and settings.
+  - /cleanservice <on/off> : Clean 'user is joined' service messages automatically. 
 bot-added: |
   Hi... Thanks for inviting me.
   Currently, I'm still in development.

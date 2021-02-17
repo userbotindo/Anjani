@@ -29,6 +29,7 @@ LOGGER = logging.getLogger(__name__)
 class Language(plugin.Plugin):
     """ Bot language plugin """
     name: ClassVar[str] = "Language"
+    helpable: ClassVar[bool] = True
 
     async def __migrate__(self, old_chat, new_chat):
         await anjani.lang_col.update_one(

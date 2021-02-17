@@ -147,6 +147,7 @@ class RawGreeting:
 
 class Greeting(plugin.Plugin, RawGreeting):
     name: ClassVar[str] = "Greetings"
+    helpable: ClassVar[bool] = True
 
     @anjani.on_message(filters.new_chat_members, group=3)
     async def new_member(self, message):
