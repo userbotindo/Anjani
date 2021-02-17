@@ -19,6 +19,7 @@ help-chat : Hubungi saya di pesan pribadi untuk mendapatkan daftar kemungkinan p
 add-to-group-button : Tambahkan ke grup 👥
 start-help-button : Bantuan & Perintah ❔
 help-chat-button : Bantuan
+back-button : ⬅️ Kembali
 #endregion
 #region admin
 purge : membersihkan pesan...

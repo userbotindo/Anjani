@@ -19,13 +19,7 @@ import inspect
 import logging
 import os.path
 
-from typing import (
-    ClassVar,
-    List,
-    Optional
-)
-
-from pyrogram.types import InlineKeyboardButton
+from typing import ClassVar, Optional
 
 
 class Plugin:
@@ -51,20 +45,3 @@ class Plugin:
 
     def __repr__(self):
         return f"< {self.format_desc(self.comment)} >"
-
-
-async def help_builder(module_list: list, prefix: str) -> List:
-    """ Build the help button """
-    modules = [
-        InlineKeyboardButton(
-            # await self.text(chat_id, f"{x.name.lower()}_button"),
-            x.name,
-            callback_data="{}_module({})".format(prefix, x.name.lower()))
-        for x in module_list
-    ]
-
-    pairs = [
-        modules[i * 3:(i + 1) * 3]
-        for i in range((len(modules) + 3 - 1) // 3)
-    ]
-    return pairs

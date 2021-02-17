@@ -76,7 +76,7 @@ class Main(plugin.Plugin):
                     ]
                 )
             )
-        keyboard = await plugin.help_builder(self.helpable, "help")
+        keyboard = await self.help_builder(chat_id)
         await message.reply_text(
             await self.text(chat_id, "help-pm", self.name),
             reply_markup=InlineKeyboardMarkup(keyboard)
@@ -101,12 +101,13 @@ class Main(plugin.Plugin):
                 text,
                 reply_markup=InlineKeyboardMarkup([[
                     InlineKeyboardButton(
-                        text="⬅️ Back", callback_data="help_back"
+                        await self.text(chat_id, "back-button"),
+                        callback_data="help_back"
                     )
                 ]])
             )
         elif back_match:
-            keyboard = await plugin.help_builder(self.helpable, "help")
+            keyboard = await self.help_builder(chat_id)
             await query.edit_message_text(
                 await self.text(chat_id, "help-pm", self.name),
                 reply_markup=InlineKeyboardMarkup(keyboard)
