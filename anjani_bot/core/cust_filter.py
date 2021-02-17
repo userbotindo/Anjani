@@ -35,25 +35,21 @@ def command(commands: Union[str, List[str]],
         text: str = message.text or message.caption
         message.command: List[str] = list()
 
-        if not text or not text.startswith("/") or (text.startswith("/")
-                and text.split(" ", 1)[0] == "/"):
+        if not text:
             return False
 
-        regex = "^/+\\b{regex}\\b(\\b@{bot_name}\\b)?(.*)".format(
-            regex="|".join(flt.commands).lower(),
-            bot_name=client.username.lower(),
+        regex = r"^/(\w+)(@{username})?(?: |$)(.*)".format(
+            username=client.username
         )
-
-        matches = re.compile(regex).search(text.lower())
+        matches = re.compile(regex).search(text)
 
         if matches:
-            if matches.group(1) is None and matches.group(2) is not None:
-                if matches.group(2).startswith("@"):
-                    return False
-            elif matches.group(2) is None:
+            if matches.group(1) not in flt.commands:
+                return False
+            elif matches.group(3) == "":
                 return True
             try:
-                for arg in shlex.split(matches.group(2)):
+                for arg in shlex.split(matches.group(3)):
                     message.command.append(arg)
             except ValueError:
                 pass
