@@ -21,7 +21,7 @@ import os
 
 from datetime import datetime
 from io import BytesIO
-from typing import ClassVar
+from typing import ClassVar, List
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors.exceptions.bad_request_400 import (
@@ -42,9 +42,22 @@ class Staff(plugin.Plugin):
     @anjani.on_command(["log", "logs"], staff_only=True)
     async def logs(self, message):
         """ Get bot logging as file """
-        log_file = f"anjani_bot/core/AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
+        corePath = "anjani_bot/core"
+        if message.command:
+            log_file = os.path.join(corePath, message.command[0])
+        else:
+            log_file = os.path.join(corePath,
+                                    f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
         if not os.path.exists(log_file):
-            return await message.reply_text("There's no log file for today")
+            files: List[str] = list()
+            for file in os.listdir(corePath):
+                if file.endswith(".log"):
+                    files.append(file)
+            text = "Here's the list available file:\n"
+            for logFile in files:
+                text += f"  **-** `{logFile}`\n"
+            await message.reply_text(text)
+            return
         with codecs.open(log_file, "r", encoding="utf-8") as logFile:
             data = logFile.read()
         key = await nekobin(self, data)
