@@ -21,9 +21,14 @@ import json
 import logging
 import signal
 import time
-from typing import Optional, Any, Awaitable, List, Union, MutableMapping, Dict
+from typing import Optional, List, Union, MutableMapping, Dict
 
 import aiohttp
+try:
+    import uvloop
+except ImportError:
+    pass
+
 from pyrogram import Client, idle
 from pyrogram.filters import Filter, create
 
@@ -59,11 +64,9 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         self.staff = {"owner": Config.OWNER_ID}
 
         try:
-            import uvloop
-        except ImportError:
-            pass
-        else:
             uvloop.install()
+        except NameError:
+            pass
         self.queue = asyncio.Queue()
 
         self._start_time = time.time()
