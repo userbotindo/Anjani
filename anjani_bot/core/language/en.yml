@@ -51,6 +51,7 @@ language-help : |
 current-language : "**{}** current language is **{}**\nSelect language bellow to change"
 language-code-error : An error has occured (No language code)... please contact support
 language-set-succes : Language set to {} successfully
+language-invalid : Invalid language code.\nAvailable language code {}
 #endregion
 #region misc
 miscs-button : Misc

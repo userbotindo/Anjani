@@ -62,31 +62,45 @@ class Language(plugin.Plugin):
                 return await message.reply_text(
                     await self.text(chat_id, "error-no-rights")
                 )
-        chat_name = message.chat.first_name or message.chat.title
-        lang = Language.parse_lang(await self.get_lang(chat_id))
-        keyboard = []
-        temp = []
 
-        for count, i in enumerate(self.language, start=1):
-            temp.append(
-                InlineKeyboardButton(
-                    Language.parse_lang(i), callback_data=f"set_lang_{i}"
+        if len(message.command) >= 1:
+            change = message.command[0]
+            if change in self.language:
+                await self.switch_lang(chat_id, change)
+                lang = Language.parse_lang(change)
+                await message.reply_text(
+                    text=await self.text(chat_id, "language-set-succes", lang),
                 )
+            else:
+                await message.reply_text(
+                    await self.text(chat_id, "language-invalid", self.language)
+                )
+        else:
+            chat_name = message.chat.first_name or message.chat.title
+            lang = Language.parse_lang(await self.get_lang(chat_id))
+            keyboard = []
+            temp = []
+
+            for count, i in enumerate(self.language, start=1):
+                temp.append(
+                    InlineKeyboardButton(
+                        Language.parse_lang(i), callback_data=f"set_lang_{i}"
+                    )
+                )
+                if count % 2 == 0:
+                    keyboard.append(temp)
+                    temp = []
+                if count == len(self.language):
+                    keyboard.append(temp)
+
+            keyboard += [[InlineKeyboardButton(
+                "Help us translating language", url="https://crowdin.com/project/anjani-bot"
+            )]]
+
+            await message.reply_text(
+                await self.text(chat_id, "current-language", chat_name, lang),
+                reply_markup=InlineKeyboardMarkup(keyboard),
             )
-            if count % 2 == 0:
-                keyboard.append(temp)
-                temp = []
-            if count == len(self.language):
-                keyboard.append(temp)
-
-        keyboard += [[InlineKeyboardButton(
-            "Help us translating language", url="https://crowdin.com/project/anjani-bot"
-        )]]
-
-        await message.reply_text(
-            await self.text(chat_id, "current-language", chat_name, lang),
-            reply_markup=InlineKeyboardMarkup(keyboard),
-        )
 
     @anjani.on_callback_query(filters.regex(r"set_lang_(.*?)"))
     async def _lang_button(self, query):
