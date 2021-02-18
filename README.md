@@ -6,6 +6,10 @@
 
 A modular Telegram group management bot running with Python based on [Pyrogram](https://github.com/pyrogram/pyrogram).
 
+Ca be found on Telegram as [Anjani](https://t.me/dAnjani_bot)
+
+Help us to cover more languages by contributin translation in [Crowdin](https://crowdin.com/project/anjani-bot)!
+
 
 ## Requirements
  - Python 3.8 or higher (recomended).
@@ -53,13 +57,6 @@ The `__migrate__()` function is used for migrating chats - when a chat is upgrad
 
 Define a `boolean` class variable named `helpable` which shows that the plugin has a helper (documentation) to the `/help` command. Then you can make the string on `anjani_bot/core/languages` with `{name}-help` and `{name}-button` key. `name` here is the value of the name ClassVar.
 
-## Translator
-
-  - English - [Mr.Miss](https://github.com/keselekpermen69) & [TomyPrs](https://github.com/TomyPrs)
-
-  - Indonesia - [TomyPrs](https://github.com/TomyPrs) & [Archiruz](https://github.com/Archiruz)
-
-You may send us a [pull request](https://github.com/userbotindo/Anjani/pulls) to help translating other languages.
 
 ## Credits
 

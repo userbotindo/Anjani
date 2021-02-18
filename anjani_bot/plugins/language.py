@@ -60,7 +60,7 @@ class Language(plugin.Plugin):
         """ Set user/chat language. """
         chat_id = message.chat.id
         if message.chat.type != "private":  # Check admin rights
-            if not (await Language.can_change_lang(self, message)):
+            if not await Language.can_change_lang(self, message):
                 return await message.reply_text(
                     await self.text(chat_id, "error-no-rights")
                 )
@@ -81,6 +81,10 @@ class Language(plugin.Plugin):
             if count == len(self.language):
                 keyboard.append(temp)
 
+        keyboard += [[InlineKeyboardButton(
+            "Help us translating language", url="https://crowdin.com/project/anjani-bot"
+        )]]
+
         await message.reply_text(
             await self.text(chat_id, "current-language", chat_name, lang),
             reply_markup=InlineKeyboardMarkup(keyboard),
@@ -93,7 +97,7 @@ class Language(plugin.Plugin):
         chat_id = query.message.chat.id
 
         if query.message.chat.type != "private":  # Check admin rights
-            if not (await Language.can_change_lang(self, query.message)):
+            if not await Language.can_change_lang(self, query.message):
                 return await query.answer(
                     await self.text(chat_id, "error-no-rights")
                 )
