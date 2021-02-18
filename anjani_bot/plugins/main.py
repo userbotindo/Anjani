@@ -34,8 +34,10 @@ class Main(plugin.Plugin):
 
         if message.chat.type == "private":  # only send in PM's
             if message.command and message.command[0] == "help":
+                keyboard = await self.help_builder(chat_id)
                 return await message.reply_text(
-                    await self.text(chat_id, "help-pm", self.name)
+                    await self.text(chat_id, "help-pm", self.name),
+                    reply_markup=InlineKeyboardMarkup(keyboard)
                 )
             buttons = [
                 [
