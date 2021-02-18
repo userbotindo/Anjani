@@ -110,6 +110,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         LOGGER.info("Starting Bot Client...")
         await super().start()
         await self._load_all_attribute()
+        await self.channel_log("Bot started successfully...")
 
     async def stop(self):  # pylint: disable=arguments-differ
         """ Stop client """
@@ -302,7 +303,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             :obj:`~types.Message`: On success, the sent text message is returned.
         """
         if self._log_channel == 0:
-            LOGGER.warning("No LOG_CHANNEL var! message not sended.")
+            LOGGER.warning("No LOG_CHANNEL var! message '%s' not sended.", text)
             return None
 
         return await self.send_message(
