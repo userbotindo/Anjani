@@ -145,7 +145,6 @@ class DataBase:
             return text if noformat else text.format(*args, **kwargs)
         err = "NO LANGUAGE STRING FOR {} in {}".format(name, _lang)
         LOGGER.warning(err)
-        await self.channel_log(err)  # log to channel
         # try to send the english string first if not found
         try:
             text = (

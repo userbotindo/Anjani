@@ -38,12 +38,10 @@ class Language(plugin.Plugin):
         )
 
     @staticmethod
-    async def can_change_lang(client, message) -> bool:
+    async def can_change_lang(client, chat_id, user_id) -> bool:
         """ Check if user have rights to change chat language """
-        user = await client.get_chat_member(message.chat.id, message.from_user.id)
-        if not user.can_change_info:
-            return False
-        return True
+        user = await client.get_chat_member(chat_id, user_id)
+        return not user.can_change_info
 
     @staticmethod
     def parse_lang(lang_id: str) -> str:
@@ -60,7 +58,7 @@ class Language(plugin.Plugin):
         """ Set user/chat language. """
         chat_id = message.chat.id
         if message.chat.type != "private":  # Check admin rights
-            if not await Language.can_change_lang(self, message):
+            if await Language.can_change_lang(self, chat_id, message.from_user.id):
                 return await message.reply_text(
                     await self.text(chat_id, "error-no-rights")
                 )
@@ -97,7 +95,7 @@ class Language(plugin.Plugin):
         chat_id = query.message.chat.id
 
         if query.message.chat.type != "private":  # Check admin rights
-            if not await Language.can_change_lang(self, query.message):
+            if await Language.can_change_lang(self, chat_id, query.from_user.id):
                 return await query.answer(
                     await self.text(chat_id, "error-no-rights")
                 )
