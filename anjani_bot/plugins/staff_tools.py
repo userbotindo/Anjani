@@ -17,6 +17,9 @@
 import asyncio
 import codecs
 import logging
+import os
+
+from datetime import datetime
 from io import BytesIO
 from typing import ClassVar
 
@@ -39,8 +42,11 @@ class Staff(plugin.Plugin):
     @anjani.on_command(["log", "logs"], staff_only=True)
     async def logs(self, message):
         """ Get bot logging as file """
-        with codecs.open("anjani_bot/core/AnjaniBot.log", "r", encoding="utf-8") as log_file:
-            data = log_file.read()
+        log_file = f"anjani_bot/core/AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
+        if not os.path.exists(log_file):
+            return await message.reply_text("There's no log file for today")
+        with codecs.open(log_file, "r", encoding="utf-8") as logFile:
+            data = logFile.read()
         key = await nekobin(self, data)
         if key:
             url = [[
@@ -48,9 +54,9 @@ class Staff(plugin.Plugin):
             ]]
             await self.send_document(
                 message.from_user.id,
-                "anjani_bot/core/AnjaniBot.log",
-                caption="Bot logs",
-                file_name="AnjaniBot.log",
+                log_file,
+                caption="**Bot logging**",
+                file_name=f"{log_file.split('/')[-1]}",
                 force_document=True,
                 reply_markup=InlineKeyboardMarkup(url),
             )
