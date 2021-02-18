@@ -16,7 +16,7 @@
 
 import asyncio
 from html import escape
-from typing import ClassVar, Tuple
+from typing import ClassVar, Tuple, Union
 
 from pyrogram import filters
 
@@ -79,7 +79,8 @@ class RawGreeting:
     @classmethod
     async def full_welcome(cls, chat_id) -> Tuple[bool, str, bool]:
         """ Get chat full welcome data """
-        sett, text = await cls.welc_pref(chat_id)
+        sett = await cls.welc_pref(chat_id)
+        text = await cls.welc_msg(chat_id)
         clean_serv = await cls.clean_service(chat_id)
         return sett, text, clean_serv
 
@@ -87,7 +88,7 @@ class RawGreeting:
     async def welc_pref(cls, chat_id) -> bool:
         """ Get chat welcome setting """
         setting = await cls.welcome_db.find_one({'chat_id': chat_id})
-        return setting["should_welcome"] if setting else True
+        return setting.get("should_welcome", True) if setting else True
 
     @classmethod
     async def welc_msg(cls, chat_id) -> str:
@@ -147,6 +148,19 @@ class RawGreeting:
                 upsert=True
             )
 
+    @classmethod
+    async def prev_welcome(cls, chat_id, msg_id: int) -> Union[int, bool]:
+        """ Save latest welcome msg_id and return previous msg_id"""
+        async with cls.lock:
+            data = await cls.welcome_db.find_one_and_update(
+                {'chat_id': chat_id},
+                {"$set": {'prev_welc': msg_id}},
+                upsert=True
+            )
+        if data:
+            return data.get("prev_welc", False)
+        return False
+
 
 class Greeting(plugin.Plugin, RawGreeting):
     name: ClassVar[str] = "Greetings"
@@ -185,11 +199,15 @@ class Greeting(plugin.Plugin, RawGreeting):
                         chatname=escape(chat.title),
                         id=new_member.id)
 
-                    await self.send_message(
+                    msg = await self.send_message(
                         chat.id,
                         formatted_text,
                         reply_to_message_id=reply
                     )
+
+                    prev_welc = await Greeting.prev_welcome(chat.id, msg.message_id)
+                    if prev_welc:
+                        await self.delete_messages(chat.id, prev_welc)
 
     @anjani.on_command("setwelcome", admin_only=True)
     async def set_welcome(self, message):
