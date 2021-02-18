@@ -22,16 +22,6 @@ help-chat-button : Bantuan
 back-button : ⬅️ Kembali
 #endregion
 #region admin
-purge : membersihkan pesan...
-purge-done : "`{} pesan dibershikan dalam {} detik...`"
-no-kick-user : siapa yang mau saya tendang?
-admin-kick : Yakin adminnya mau ditendang?
-kick-done : "`Tertendang!`"
-no-ban-user : siapa yang mau saya blokir dari grup?
-admin-ban : Saya tidak mau memblokir seorang admin, jangan sok lucu!
-ban-done : "`Terblokir!`"
-unban-no-user : berikan saya user untuk diblokir
-unban-done : "`Tidak jadi terblokir...`"
 gpic-no-photo : Berikan saya sebuah foto!
 #endregion
 #region language
@@ -55,7 +45,20 @@ covid-text : |
 wait-paste : "`Menyalin ke Nekobin...`"
 fail-paste : "`Gagal untuk menyalin ke Nekobin!`"
 #endregion
-#region Error
+#region purge
+purge-done : "`{} pesan dibershikan dalam {} detik...`"
+#endregion
+#region restrictions
+no-kick-user : siapa yang mau saya tendang?
+admin-kick : Yakin adminnya mau ditendang?
+kick-done : "`Tertendang!`"
+no-ban-user : siapa yang mau saya blokir dari grup?
+admin-ban : Saya tidak akan memblokir seorang admin, jangan sok lucu!
+ban-done : "`Terblokir!`"
+unban-no-user : berikan saya user untuk diblokir
+unban-done : "`blokir dihapus...`"
+#endregion
+#region common-error
 error-chat-private : "**kesalahan:** `Obrolan Pribadi`\nPerintah ini hanya untuk grup..."
 error-no-rights : "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 #endregion
