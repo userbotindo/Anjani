@@ -18,25 +18,26 @@ import os
 import logging
 import colorlog
 
+from datetime import datetime
+
 
 def setup_log():
     """Configures logging"""
     level = logging.INFO
-    file_path = 'anjani_bot/core/AnjaniBot.log'
-
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    file_path = f"anjani_bot/core/AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
+    
+    logging.root.setLevel(level)
 
     # Logging into file
-    file_format = "[%(asctime)s - %(levelname)s] - %(name)s - %(message)s"
+    file_format = "[ %(asctime)s: %(levelname)-7s ] %(name)-31s - %(message)s"
     logfile = logging.FileHandler(file_path)
     formatter = logging.Formatter(file_format, datefmt="%H:%M:%S")
     logfile.setFormatter(formatter)
     logfile.setLevel(level)
 
-    # Logging into stdout with color
-    term_format = ("%(bold)s%(asctime)s%(reset)s: "
-                   "%(log_color)s%(levelname)s%(reset)s - %(name)s - "
+    # Logging into stderr with color
+    term_format = ("  %(bold)s%(asctime)s%(reset)s: "
+                   "%(log_color)s%(levelname)-7s%(reset)s | %(name)-31s - "
                    "%(log_color)s%(message)s%(reset)s")
     stream = logging.StreamHandler()
     formatter = colorlog.ColoredFormatter(term_format, datefmt="%H:%M:%S")

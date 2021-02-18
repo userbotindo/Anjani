@@ -48,7 +48,8 @@ class DataBase:
         self.__strings = {}
         for i in self.__language:
             LOGGER.debug("Loading language: %s", i)
-            self.__strings[i] = full_load(open(f"anjani_bot/core/language/{i}.yml", "r"))
+            with open(f"anjani_bot/core/language/{i}.yml", "r") as text:
+                self.__strings[i] = full_load(text)
         LOGGER.info("Language %s loaded", self.__language)
 
     async def connect_db(self, db_name: str) -> None:

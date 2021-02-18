@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import asyncio
 import importlib
 import pkgutil
@@ -39,11 +38,10 @@ LOGGER = logging.getLogger(__name__)
 
 class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
-    staff = dict()
     http: aiohttp.ClientSession
+    staff = dict()
 
     def __init__(self, **kwargs):
-        LOGGER.info("Setting up bot client...")
         kwargs = {
             "api_id": Config.API_ID,
             "api_hash": Config.API_HASH,
@@ -99,6 +97,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
 
     async def start(self):
         """ Start client """
+        LOGGER.info("Starting Bot Client...")
         pool.start()
         await self.connect_db("AnjaniBot")
         self._load_language()
@@ -107,7 +106,6 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
         self.load_all_modules(submodules)
-        LOGGER.info("Starting Bot Client...")
         await super().start()
         await self._load_all_attribute()
         await self.channel_log("Bot started successfully...")
