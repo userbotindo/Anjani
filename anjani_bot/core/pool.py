@@ -24,14 +24,13 @@ from functools import wraps, partial
 
 WORKERS = os.cpu_count()
 THREAD_POOL: ThreadPoolExecutor
-ASYNC_Q = asyncio.Queue()
 TASKS: List[asyncio.Task] = []
 LOGGER = logging.getLogger(__name__)
 
 
-def submit_task(task: asyncio.coroutines.CoroWrapper) -> None:
+def submit_task(task: asyncio.coroutines.CoroWrapper, queue: asyncio.queues.Queue) -> None:
     """ submit task to task pool """
-    ASYNC_Q.put_nowait(task)
+    queue.put_nowait(task)
 
 
 def submit_thread(func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Future:
@@ -48,14 +47,14 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return wrapper
 
 
-def start():
+def start(queue: asyncio.queues.Queue):
     """ Start pooling"""
     global THREAD_POOL  # pylint: disable=global-statement
     THREAD_POOL = ThreadPoolExecutor(WORKERS)
 
     async def _task_worker():
         while True:
-            coro = await ASYNC_Q.get()
+            coro = await queue.get()
             if coro is None:
                 break
             await coro
@@ -65,11 +64,11 @@ def start():
     LOGGER.info("Started Pool : %s Workers", WORKERS)
 
 
-async def stop():
+async def stop(queue: asyncio.queues.Queue):
     """ stop pool """
     THREAD_POOL.shutdown()
     for _ in range(WORKERS):
-        ASYNC_Q.put_nowait(None)
+        queue.put_nowait(None)
     for task in TASKS:
         try:
             await asyncio.wait_for(task, timeout=0.3)

@@ -44,6 +44,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
     identifier: int
     modules: MutableMapping[str, plugin.Plugin]
     name: str
+    queue: asyncio.queues.Queue
     staff: Dict[str, Union[str, int]]
     username: str
 
@@ -56,6 +57,14 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         }
         self.modules = {}
         self.staff = {"owner": Config.OWNER_ID}
+
+        try:
+            import uvloop
+        except ImportError:
+            pass
+        else:
+            uvloop.install()
+        self.queue = asyncio.Queue()
 
         self._start_time = time.time()
         self._log_channel = Config.LOG_CHANNEL
@@ -106,7 +115,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
     async def _start(self):
         """ Start client """
         LOGGER.info("Starting Bot Client...")
-        pool.start()
+        pool.start(self.queue)
         await self.connect_db("AnjaniBot")
         self._load_language()
         submodules = [
@@ -124,11 +133,10 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         await super().stop()
         await self.http.close()
         await self.disconnect_db()
-        await pool.stop()
+        await pool.stop(self.queue)
 
-    def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
+    def begin(self) -> None:
         """Start AnjaniBot"""
-
         lock = asyncio.Lock()
         tasks: List[asyncio.Task] = []
 
@@ -155,12 +163,8 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         self.loop.run_until_complete(self._start())
 
         try:
-            if coro:
-                LOGGER.info("Running Coroutine")
-                self.loop.run_until_complete(coro)
-            else:
-                LOGGER.info("Idling")
-                idle()
+            LOGGER.info("Idling")
+            idle()
             self.loop.run_until_complete(finalized())
         except (asyncio.CancelledError, RuntimeError):
             pass
