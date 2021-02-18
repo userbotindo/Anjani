@@ -84,15 +84,18 @@ class RawGreeting:
         return sett, text, clean_serv
 
     @classmethod
-    async def welc_pref(cls, chat_id) -> Tuple[bool, str]:
+    async def welc_pref(cls, chat_id) -> bool:
         """ Get chat welcome setting """
         setting = await cls.welcome_db.find_one({'chat_id': chat_id})
-        if setting:
-            return (
-                setting["should_welcome"],
-                setting.get("custom_welcome", await cls.default_welc(chat_id))
-            )
-        return True, await cls.default_welc(chat_id)
+        return setting["should_welcome"] if setting else True
+
+    @classmethod
+    async def welc_msg(cls, chat_id) -> str:
+        """ Get chat welcome string """
+        data = await cls.welcome_db.find_one({'chat_id': chat_id})
+        if data:
+            return data.get("custom_welcome", await cls.default_welc(chat_id))
+        return await cls.default_welc(chat_id)
 
     @classmethod
     async def clean_service(cls, chat_id) -> bool:
@@ -155,7 +158,7 @@ class Greeting(plugin.Plugin, RawGreeting):
         chat = message.chat
         new_members = message.new_chat_members
 
-        should_welc, welcome_text = await Greeting.welc_pref(chat.id)
+        should_welc = await Greeting.welc_pref(chat.id)
         if should_welc:
             reply = message.message_id
             clean_serv = await Greeting.clean_service(chat.id)
@@ -170,6 +173,7 @@ class Greeting(plugin.Plugin, RawGreeting):
                         reply_to_message_id=reply
                     )
                 else:
+                    welcome_text = await Greeting.welc_msg(chat.id)
                     user = await Greeting.parse_user(new_member, chat.id)
                     formatted_text = welcome_text.format(
                         first=escape(user.first_name),
