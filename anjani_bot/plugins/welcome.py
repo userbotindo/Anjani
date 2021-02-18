@@ -180,7 +180,7 @@ class Greeting(plugin.Plugin, RawGreeting):
                 await message.delete()
                 reply = False
             for new_member in new_members:
-                if new_member.id == self.id:
+                if new_member.id == self.identifier:
                     await self.send_message(
                         chat.id,
                         await self.text(chat.id, "bot-added"),

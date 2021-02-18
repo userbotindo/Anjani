@@ -46,7 +46,7 @@ def command(commands: Union[str, List[str]],
         if matches:
             if matches.group(1) not in flt.commands:
                 return False
-            elif matches.group(3) == "":
+            if matches.group(3) == "":
                 return True
             try:
                 for arg in shlex.split(matches.group(3)):
@@ -117,30 +117,32 @@ async def check_perm(flt, client, message: Message) -> bool:
 
     bot = await client.get_chat_member(chat_id, 'me')
     user = await client.get_chat_member(chat_id, message.from_user.id)
+    perm = True
+
     if flt.can_change_info and not (
             bot.can_change_info and user.can_change_info):
-        return False
-    if flt.can_delete and not (
+        perm = False
+    elif flt.can_delete and not (
             bot.can_delete_messages and user.can_delete_messages):
-        return False
-    if flt.can_restrict and not (
+        perm = False
+    elif flt.can_restrict and not (
             bot.can_restrict_members and (
                 user.can_restrict_members or user in client.staff_id)):
-        return False
-    if flt.can_invite_users and not (
+        perm = False
+    elif flt.can_invite_users and not (
             bot.can_invite_users and user.can_invite_users):
-        return False
-    if flt.can_pin and not (
+        perm = False
+    elif flt.can_pin and not (
             bot.can_pin_messages and user.can_pin_messages):
-        return False
-    if flt.can_promote and not (
+        perm = False
+    elif flt.can_promote and not (
             bot.can_promote_members and (
                 user.can_promote_members or user in client.staff_id)):
-        return False
-    return True
+        perm = False
+
+    return perm
 
 
-# pylint: disable=invalid-name
 admin = create(_admin_filters)
 bot_admin = create(_bot_admin_filters)
 staff = create(_staff_filters)

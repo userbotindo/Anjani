@@ -18,7 +18,7 @@
 import inspect
 import logging
 from types import ModuleType
-from typing import Any, Iterable, MutableMapping, Optional, Type, List
+from typing import Iterable, MutableMapping, Optional, Type, List
 
 from pyrogram.types import InlineKeyboardButton
 
@@ -28,14 +28,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PluginExtender:
+    helpable: List[plugin.Plugin] = list()
+    loaded: List[str] = list()
     modules: MutableMapping[str, plugin.Plugin]
-    helpable = list()
-    __migrateable = list()
 
-    def __init__(self, **kwargs: Any) -> None:
-        self.modules = {}
-
-        super().__init__(**kwargs)
+    __migrateable: List[plugin.Plugin] = list()
 
     def load_module(
             self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None
@@ -76,7 +73,6 @@ class PluginExtender:
         """ Load available module """
         LOGGER.info("Loading plugins")
         self._load_all_from_metamod(submodules)
-        self.loaded = []
         for module in self.modules:
             self.loaded.append(module)
         self.helpable.sort(key=lambda x: x.name)

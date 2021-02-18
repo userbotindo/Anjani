@@ -21,7 +21,7 @@ import json
 import logging
 import signal
 import time
-from typing import Optional, Any, Awaitable, List, Union
+from typing import Optional, Any, Awaitable, List, Union, MutableMapping, Dict
 
 import aiohttp
 from pyrogram import Client, idle
@@ -30,6 +30,7 @@ from pyrogram.filters import Filter, create
 from . import cust_filter, pool
 from .database import DataBase
 from .plugin_extender import PluginExtender
+from .. import plugin
 from ..config import Config
 from ..utils import get_readable_time
 
@@ -38,8 +39,13 @@ LOGGER = logging.getLogger(__name__)
 
 class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
+    # pylint: disable=too-many-instance-attributes
     http: aiohttp.ClientSession
-    staff = dict()
+    identifier: int
+    modules: MutableMapping[str, plugin.Plugin]
+    name: str
+    staff: Dict[str, Union[str, int]]
+    username: str
 
     def __init__(self, **kwargs):
         kwargs = {
@@ -49,9 +55,11 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             "session_name": ":memory:",
         }
         self.modules = {}
+        self.staff = {"owner": Config.OWNER_ID}
+
         self._start_time = time.time()
         self._log_channel = Config.LOG_CHANNEL
-        self.staff["owner"] = Config.OWNER_ID
+
         super().__init__(**kwargs)
 
         # Initialized aiohttp last in case bot failed to init
@@ -60,7 +68,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
     def __str__(self):
         output = f"Name : {self.name}\n"
         output += f"Username : {self.username}\n"
-        output += f"ID : {self.id}\n"
+        output += f"ID : {self.identifier}\n"
         output += f"Uptime: {self.uptime}\n"
         output += f"Pyrogram: {self.app_version}\n"
         output += f"Language: {self.language}\n"
@@ -83,7 +91,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
     async def _load_all_attribute(self) -> None:
         """ Load all client attributes """
         bot = await self.get_me()
-        self.id = bot.id  # pylint: disable = C0103
+        self.identifier = bot.id
         self.username = bot.username
         if bot.last_name:
             self.name = bot.first_name + " " + bot.last_name
@@ -95,7 +103,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         async for i in _db.find():
             self.staff[i["rank"]].append(i["_id"])
 
-    async def start(self):
+    async def _start(self):
         """ Start client """
         LOGGER.info("Starting Bot Client...")
         pool.start()
@@ -110,7 +118,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         await self._load_all_attribute()
         await self.channel_log("Bot started successfully...")
 
-    async def stop(self):  # pylint: disable=arguments-differ
+    async def _stop(self):
         """ Stop client """
         LOGGER.info("Disconnecting...")
         await super().stop()
@@ -129,14 +137,14 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
                 for task in tasks:
                     task.cancel()
                 if self.is_initialized:
-                    await self.stop()
+                    await self._stop()
                 # pylint: disable=expression-not-assigned
                 [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
                 await self.loop.shutdown_asyncgens()
                 self.loop.stop()
                 LOGGER.info("Loop stopped")
 
-        async def shutdown(sig: signal.Signals) -> None:  # pylint: disable=no-member
+        async def shutdown(sig: signal.Signals) -> None:
             LOGGER.info("Received Stop Signal [%s], Exiting...", sig.name)
             await finalized()
 
@@ -144,7 +152,7 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
             self.loop.add_signal_handler(
                 sig, lambda sig=sig: self.loop.create_task(shutdown(sig)))
 
-        self.loop.run_until_complete(self.start())
+        self.loop.run_until_complete(self._start())
 
         try:
             if coro:

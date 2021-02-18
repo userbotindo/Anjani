@@ -32,8 +32,8 @@ class Config:  # pylint: disable=too-few-public-methods
     API_HASH = environ.get("API_HASH")
     # Required
     DB_URI = environ.get("DB_URI")
-    DOWNLOAD_PATH = environ.get("DOWNLOAD_PATH") or "./downloads"
+    DOWNLOAD_PATH = environ.get("DOWNLOAD_PATH", "./downloads")
     # Staff  required
-    OWNER_ID = int(environ.get("OWNER_ID") or 0)
+    OWNER_ID = int(environ.get("OWNER_ID", 0))
     # Recomended
-    LOG_CHANNEL = int(environ.get("LOG_CHANNEL") or 0)
+    LOG_CHANNEL = int(environ.get("LOG_CHANNEL", 0))

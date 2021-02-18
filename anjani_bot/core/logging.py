@@ -14,18 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+from datetime import datetime
+
 import logging
 import colorlog
-
-from datetime import datetime
 
 
 def setup_log():
     """Configures logging"""
     level = logging.INFO
     file_path = f"anjani_bot/core/AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
-    
+
     logging.root.setLevel(level)
 
     # Logging into file

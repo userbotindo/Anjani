@@ -17,10 +17,10 @@
 
 import logging
 from codecs import decode, encode
-from typing import Any, List, Union, Optional
+from typing import Any, List, Union, Optional, Dict
 
 from yaml import full_load
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from motor.core import AgnosticCollection
 
 from ..config import Config
@@ -30,6 +30,13 @@ LOGGER = logging.getLogger(__name__)
 
 class DataBase:
     """Client Database on MongoDB"""
+    _client: AsyncIOMotorClient
+    _db: AsyncIOMotorDatabase
+    _lang: AsyncIOMotorCollection
+    _list_collection: List[str]
+
+    __language: List[str] = ["en", "id"]
+    __strings: Dict[str, str] = {}
 
     @property
     def language(self) -> list:
@@ -44,8 +51,6 @@ class DataBase:
     def _load_language(self):
         """Load bot language."""
         LOGGER.info("Loading language...")
-        self.__language = ['en', 'id']
-        self.__strings = {}
         for i in self.__language:
             LOGGER.debug("Loading language: %s", i)
             with open(f"anjani_bot/core/language/{i}.yml", "r") as text:
@@ -59,13 +64,13 @@ class DataBase:
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self._client: AsyncIOMotorClient = AsyncIOMotorClient(Config.DB_URI, connect=False)
+        self._client = AsyncIOMotorClient(Config.DB_URI, connect=False)
         if db_name in await self._client.list_database_names():
             LOGGER.info("Database found, Logged in to Database...")
         else:
             LOGGER.info("Database not found! Creating New Database...")
-        self._db: AsyncIOMotorDatabase = self._client[db_name]
-        self._list_collection: List[str] = await self._db.list_collection_names()
+        self._db = self._client[db_name]
+        self._list_collection = await self._db.list_collection_names()
         LOGGER.info("Database connected")
         self._lang = self.get_collection("LANGUAGE")
 
