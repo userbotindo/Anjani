@@ -13,7 +13,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from . import main
+
+import logging
+
+from . import anjani, setup_log
 
 
-main.main()
+def main():
+    """Main entry point"""
+    log = logging.getLogger("Main")
+    setup_log()
+    log.info("Loading code...")
+    anjani.begin()
+
+
+if __name__ == "__main__":
+    main()

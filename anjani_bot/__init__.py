@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from .core import Anjani, setup_log
 
-anjani = Anjani()
+from .core import Anjani, setup_log, pool
+from .config import Config
+
+anjani = Anjani()  # pylint: disable=invalid-name
