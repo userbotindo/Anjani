@@ -28,6 +28,7 @@ class Plugin:
     disabled: ClassVar[bool] = False
 
     # Instance variables
+    bot: "Anjani"
     log: logging.Logger
     comment: Optional[str]
 
