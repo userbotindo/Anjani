@@ -108,3 +108,7 @@ class PluginExtender:
             for i in range((len(modules) + 3 - 1) // 3)
         ]
         return pairs
+
+
+class UnknownPluginError(Exception):
+    pass
