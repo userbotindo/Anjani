@@ -106,6 +106,19 @@ ban-done: "`Banned!`"
 unban-no-user: give me a user to unban
 unban-done: "`Unbanned...`"
 #endregion
+#region spam shield
+banned-text: |
+  #SPAM_SHIELD\n
+  **Name:** {}
+  **ID:** `{}`
+  **Reason**: {}
+  **Client:** {}
+  This Person has been detected as spambot and has been removed!
+spamshield-set: "Chat #SPAM_SHIELD turned {}"
+spamshield-view: |
+  Spam shield setting: {}.
+  Spam shield is a usefull module to help protect your group from spammers and trollers.
+#endregion
 #region greetings
 greetings-button : Greetings
 greetings-help : |
@@ -140,4 +153,5 @@ error-no-rights : "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!
 error-reply-to-message: Reply to a message!
+err-yes-no-args: Usage is on/yes or off/no
 #endregion

@@ -37,3 +37,4 @@ class Config:  # pylint: disable=too-few-public-methods
     OWNER_ID = int(environ.get("OWNER_ID", 0))
     # Recomended
     LOG_CHANNEL = int(environ.get("LOG_CHANNEL", 0))
+    SPAMWATCH_API = environ.get("SW_API", None)

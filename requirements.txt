@@ -6,5 +6,6 @@ motor
 pyrogram
 python-dotenv
 PyYAML
+spamwatch
 tgcrypto
 uvloop
