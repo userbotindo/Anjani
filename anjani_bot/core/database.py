@@ -23,20 +23,24 @@ from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from motor.core import AgnosticCollection
 
+from .base import Base
 from ..config import Config
 
 LOGGER = logging.getLogger(__name__)
 
 
-class DataBase:
+class DataBase(Base):
     """Client Database on MongoDB"""
     _client: AsyncIOMotorClient
     _db: AsyncIOMotorDatabase
     _lang: AsyncIOMotorCollection
     _list_collection: List[str]
 
-    __language: List[str] = ["en", "id"]
-    __strings: Dict[str, str] = {}
+    def __init__(self):
+        self.__language: List[str] = ["en", "id"]
+        self.__strings: Dict[str, str] = {}
+
+        super().__init__()
 
     @property
     def language(self) -> list:

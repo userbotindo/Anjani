@@ -18,21 +18,31 @@
 import inspect
 import logging
 from types import ModuleType
-from typing import Iterable, MutableMapping, Optional, Type, List
+from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type, List
 
 from pyrogram.types import InlineKeyboardButton
 
+from .base import Base
+
 from .. import plugin
+
+if TYPE_CHECKING:
+    from .anjani import Anjani
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PluginExtender:
+class PluginExtender(Base):
     helpable: List[plugin.Plugin] = list()
     loaded: List[str] = list()
-    modules: MutableMapping[str, plugin.Plugin]
+    plugins: MutableMapping[str, plugin.Plugin]
 
     __migrateable: List[plugin.Plugin] = list()
+
+    def __init__(self: "Anjani", **kwargs: Any) -> None:
+        self.plugins = {}
+
+        super().__init__(**kwargs)
 
     def load_module(
             self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None
@@ -42,7 +52,7 @@ class PluginExtender:
 
         mod = cls(self)
         mod.comment = comment
-        self.modules[cls.name] = mod
+        self.plugins[cls.name] = mod
         if hasattr(mod, "__migrate__"):
             self.__migrateable.append(mod)
         if hasattr(mod, "helpable"):
@@ -56,9 +66,9 @@ class PluginExtender:
         del self.modules[cls.name]
 
     def _load_all_from_metamod(
-            self, submodules: Iterable[ModuleType], *, comment: str = None
+            self, subplugins: Iterable[ModuleType], *, comment: str = None
         ) -> None:
-        for module_mod in submodules:
+        for module_mod in subplugins:
             for sym in dir(module_mod):
                 cls = getattr(module_mod, sym)
                 if (
@@ -69,12 +79,12 @@ class PluginExtender:
                     self.load_module(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
-    def load_all_modules(self, submodules: Iterable[ModuleType]) -> None:
+    def load_all_modules(self, subplugins: Iterable[ModuleType]) -> None:
         """ Load available module """
         LOGGER.info("Loading plugins")
-        self._load_all_from_metamod(submodules)
-        for module in self.modules:
-            self.loaded.append(module)
+        self._load_all_from_metamod(subplugins)
+        for ext in self.plugins:
+            self.loaded.append(ext)
         self.helpable.sort(key=lambda x: x.name)
         LOGGER.info("Plugins loaded %s", self.loaded)
 

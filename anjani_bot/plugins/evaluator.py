@@ -19,21 +19,20 @@ import sys
 import traceback
 from typing import ClassVar
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 
 class Evaluator(plugin.Plugin):
     name: ClassVar[str] = "Evaluator"
 
-    @staticmethod
-    async def aexec(code, message):
+    async def aexec(self, code, message):
         """ execute command """
         head = "async def __aexec(anjani, message):\n "
         code = ''.join((f'\n {line}' for line in code.split('\n')))
         exec(head + code)  # pylint: disable=exec-used
-        return await locals()['__aexec'](anjani, message)
+        return await locals()['__aexec'](self.bot, message)
 
-    @anjani.on_command("eval", staff_only=True)
+    @command.on_command("eval")
     async def eval(self, message):
         """ run a command """
         status = await message.reply_text("Processing...")

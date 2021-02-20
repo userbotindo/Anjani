@@ -22,7 +22,7 @@ from typing import Union, List
 from pyrogram.filters import create
 from pyrogram.types import Message
 
-from ..utils import adminlist
+from .utils import adminlist
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,8 +38,9 @@ def command(commands: Union[str, List[str]],
         if not text:
             return False
 
+        me = await client.get_me()
         regex = r"^/(\w+)(@{username})?(?: |$)(.*)".format(
-            username=client.username
+            username=me.username
         )
         matches = re.compile(regex).search(text)
 

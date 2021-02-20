@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import logging
 
 from . import anjani, setup_log
@@ -24,7 +25,16 @@ def main():
     log = logging.getLogger("Main")
     setup_log()
     log.info("Loading code...")
-    anjani.begin()
+
+    try:
+        import uvloop
+    except ImportError:
+        pass
+    else:
+        uvloop.install()
+
+    loop = asyncio.new_event_loop()
+    anjani.begin(loop=loop)
 
 
 if __name__ == "__main__":
