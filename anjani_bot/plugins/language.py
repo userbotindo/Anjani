@@ -21,7 +21,7 @@ from typing import ClassVar
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class Language(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     async def __migrate__(self, old_chat, new_chat):
-        await anjani.lang_col.update_one(
+        await self.lang_col.update_one(
             {'chat_id': old_chat},
             {"$set": {'chat_id': new_chat}},
         )
@@ -53,7 +53,7 @@ class Language(plugin.Plugin):
         LOGGER.error("Language code %s not defined", lang_id)
         return None
 
-    @anjani.on_command(["lang", "setlang", "language"])
+    @command.on_command(["lang", "setlang", "language"])
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id
@@ -102,7 +102,7 @@ class Language(plugin.Plugin):
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
 
-    @anjani.on_callback_query(filters.regex(r"set_lang_(.*?)"))
+    @command.on_callback_query(filters.regex(r"set_lang_(.*?)"))
     async def _lang_button(self, query):
         """ Set language query. """
         lang_match = re.findall(r"en|id", query.data)

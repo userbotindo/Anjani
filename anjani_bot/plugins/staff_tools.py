@@ -31,15 +31,16 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 )
 
 from .users import Users
-from .. import anjani, plugin
+from .. import command, plugin
 from ..utils import nekobin
 
 LOGGER = logging.getLogger(__name__)
 
+
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
 
-    @anjani.on_command(["log", "logs"], staff_only=True)
+    @command.on_command(["log", "logs"], staff_only=True)
     async def logs(self, message):
         """ Get bot logging as file """
         corePath = "anjani_bot/core"
@@ -78,7 +79,7 @@ class Staff(plugin.Plugin):
         else:
             await message.reply_text("Failed to reach Nekobin")
 
-    @anjani.on_command("broadcast", staff_only="owner")
+    @command.on_command("broadcast", staff_only="owner")
     async def broadcast(self, message):
         """ Broadcast a message to all chats """
         to_send = message.text.split(None, 1)
@@ -92,7 +93,7 @@ class Staff(plugin.Plugin):
                     # sleep every 25 msg sent to prevent flood limmit.
                     await asyncio.sleep(1)
                 try:
-                    await anjani.send_message(chat["chat_id"], text)
+                    await self.bot.client.send_message(chat["chat_id"], text)
                     sent += 1
                 except (PeerIdInvalid, ChannelInvalid):
                     failed += 1
@@ -106,7 +107,7 @@ class Staff(plugin.Plugin):
                 f"{sent} groups succeed, {failed} groups failed to receive the message"
             )
 
-    @anjani.on_command(["leave", "leavechat", "leavegroup"], staff_only=True)
+    @command.on_command(["leave", "leavechat", "leavegroup"], staff_only=True)
     async def leavechat(self, message):
         """ leave the given chat_id """
         try:
@@ -118,7 +119,7 @@ class Staff(plugin.Plugin):
             await message.reply_text("Give me the chat id!")
 
 
-    @anjani.on_command("chatlist", staff_only=True)
+    @command.on_command("chatlist", staff_only=True)
     async def chatlist(self, message):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"

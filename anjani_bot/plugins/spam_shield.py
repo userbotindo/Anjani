@@ -23,7 +23,7 @@ import spamwatch
 from pyrogram import filters, StopPropagation
 from spamwatch.types import Ban
 
-from .. import anjani, plugin, Config, pool
+from .. import command, plugin, Config
 from ..utils import user_ban_protected
 
 LOGGER = logging.getLogger(__name__)
@@ -32,10 +32,9 @@ LOGGER = logging.getLogger(__name__)
 class SpamCheck:
     lock = asyncio.Lock()
     spmwtc = Config.SPAMWATCH_API
-    shield_db = anjani.get_collection("GBAN_SETTINGS")
+    shield_db = command.anjani.get_collection("GBAN_SETTINGS")
 
     @classmethod
-    @pool.run_in_thread
     def sw_check(cls, user_id: int) -> Union[Ban, None]:
         """ Check on SpawmWatch """
         if not cls.spmwtc:
@@ -46,7 +45,7 @@ class SpamCheck:
     @staticmethod
     async def cas_check(user_id: int) -> Union[str, bool]:
         """ Check on CAS """
-        async with anjani.http.get(f"https://api.cas.chat/check?user_id={user_id}") as res:
+        async with command.anjani.http.get(f"https://api.cas.chat/check?user_id={user_id}") as res:
             data = json.loads(await res.text())
         if data["ok"]:
             return "https://cas.chat/query?u={}".format(user_id)
@@ -74,7 +73,7 @@ class SpamCheck:
 class SpamShield(plugin.Plugin, SpamCheck):
     name: ClassVar[str] = "SpamShield"
 
-    @anjani.on_message(filters.all & filters.group, group=1)
+    @command.on_message(filters.all & filters.group, group=1)
     async def shield(self, message):
         """ Check handler """
         if(
@@ -127,7 +126,7 @@ class SpamShield(plugin.Plugin, SpamCheck):
             raise StopPropagation
 
 
-    @anjani.on_command('spamshield', admin_only=True)
+    @command.on_command('spamshield', admin_only=True)
     async def shield_setting(self, message):
         """ Set spamshield setting """
         chat_id = message.chat.id

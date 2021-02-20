@@ -20,7 +20,7 @@ from typing import ClassVar, Tuple, Union
 
 from pyrogram import filters
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 
 class NewChatMember:
@@ -57,17 +57,17 @@ class NewChatMember:
 
     async def get_members(self, chat_id):
         """ Count chat member """
-        self.count = await anjani.get_chat_members_count(chat_id)
+        self.count = await command.anjani.get_chat_members_count(chat_id)
 
 
 class RawGreeting:
     lock = asyncio.Lock()
-    welcome_db = anjani.get_collection("WELCOME")
+    welcome_db = command.anjani.get_collection("WELCOME")
 
     @staticmethod
     async def default_welc(chat_id):
         """ Bot default welcome """
-        return await anjani.text(chat_id, "default-welcome", noformat=True)
+        return await command.anjani.text(chat_id, "default-welcome", noformat=True)
 
     @staticmethod
     async def parse_user(user, chat_id) -> NewChatMember:
@@ -166,7 +166,7 @@ class Greeting(plugin.Plugin, RawGreeting):
     name: ClassVar[str] = "Greetings"
     helpable: ClassVar[bool] = True
 
-    @anjani.on_message(filters.new_chat_members, group=5)
+    @command.on_message(filters.new_chat_members, group=5)
     async def new_member(self, message):
         """ Greet new member """
         chat = message.chat
@@ -209,7 +209,7 @@ class Greeting(plugin.Plugin, RawGreeting):
                     if prev_welc:
                         await self.delete_messages(chat.id, prev_welc)
 
-    @anjani.on_command("setwelcome", admin_only=True)
+    @command.on_command("setwelcome", admin_only=True)
     async def set_welcome(self, message):
         """ Set chat welcome message """
         chat = message.chat
@@ -221,14 +221,14 @@ class Greeting(plugin.Plugin, RawGreeting):
         await Greeting.set_custom_welcome(chat.id, msg.text)
         await message.reply_text(await self.text(chat.id, "cust-welcome-set"))
 
-    @anjani.on_command("resetwelcome", admin_only=True)
+    @command.on_command("resetwelcome", admin_only=True)
     async def reset_welcome(self, message):
         """ Reset saved welcome message """
         chat = message.chat
         await Greeting.set_custom_welcome(chat.id, await Greeting.default_welc(chat.id))
         await message.reply_text(await self.text(chat.id, "reset-welcome"))
 
-    @anjani.on_command("welcome", admin_only=True)
+    @command.on_command("welcome", admin_only=True)
     async def view_welcome(self, message):
         """ View current welcome message """
         chat_id = message.chat.id
@@ -252,7 +252,7 @@ class Greeting(plugin.Plugin, RawGreeting):
         await message.reply_text(text)
         await message.reply_text(welc_text)
 
-    @anjani.on_command("cleanservice", admin_only=True)
+    @command.on_command("cleanservice", admin_only=True)
     async def cleanserv(self, message):
         """ Clean service message on new members """
         chat_id = message.chat.id

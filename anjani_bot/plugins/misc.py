@@ -58,7 +58,7 @@ class Misc(plugin.Plugin):
 
         date = datetime.now().strftime("%d %b %Y")
 
-        output = await self.text(
+        output = await self.bot.text(
             message.chat.id,
             "covid-text",
             country=data['country'],
@@ -101,7 +101,7 @@ class Misc(plugin.Plugin):
         if not reply:
             return
         sent = await message.reply_text(
-            await self.text(message.chat.id, "wait-paste")
+            await self.bot.text(message.chat.id, "wait-paste")
         )
         if reply and reply.document:
             file = await reply.download(Config.DOWNLOAD_PATH)
@@ -112,13 +112,13 @@ class Misc(plugin.Plugin):
             data = reply.text
         else:
             return
-        key = await nekobin(self, data)
+        key = await nekobin(self.bot, data)
         if key:
             msg = f"**Pasted to Nekobin**\n[URL](https://nekobin.com/{key})"
             await sent.edit_text(msg, disable_web_page_preview=True)
         else:
             await sent.edit_text(
-                await self.text(message.chat.id, "fail-paste")
+                await self.bot.text(message.chat.id, "fail-paste")
             )
 
     @anjani.on_command("ping")

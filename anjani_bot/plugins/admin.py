@@ -16,7 +16,7 @@
 
 from typing import ClassVar
 
-from .. import anjani, plugin
+from .. import command, plugin
 from ..utils import adminlist
 
 
@@ -24,7 +24,7 @@ class Admin(plugin.Plugin):
     name: ClassVar[str] = "Admins"
     helpable: ClassVar[bool] = True
 
-    @anjani.on_command("pin", can_pin=True)
+    @command.on_command("pin", can_pin=True)
     async def pin(self, message):
         """ Pin message on chats """
         if message.reply_to_message is None:
@@ -38,7 +38,7 @@ class Admin(plugin.Plugin):
             is_silent = False
         await message.reply_to_message.pin(disable_notification=is_silent)
 
-    @anjani.on_command("unpin", can_pin=True)
+    @command.on_command("unpin", can_pin=True)
     async def unpin(self, message):
         """ Unpin message on chats """
         chat_id = message.chat.id
@@ -51,7 +51,7 @@ class Admin(plugin.Plugin):
         else:
             await message.reply_to_message.unpin()
 
-    @anjani.on_command("setgpic", can_change_info=True)
+    @command.on_command("setgpic", can_change_info=True)
     async def change_g_pic(self, message):
         """ Set group picture """
         msg = message.reply_to_message or message
@@ -61,7 +61,7 @@ class Admin(plugin.Plugin):
         else:
             await message.reply_text(await self.text(message.chat.id, "gpic-no-photo"))
 
-    @anjani.on_command("adminlist")
+    @command.on_command("adminlist")
     async def admin_list(self, message):
         """ Get list of chat admins """
         adm_list = await adminlist(self, message.chat.id, full=True)

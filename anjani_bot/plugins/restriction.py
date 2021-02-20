@@ -18,7 +18,7 @@ from typing import ClassVar
 
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 
-from .. import anjani, plugin
+from .. import command, plugin
 from ..utils import extract_user_and_text, user_ban_protected
 
 
@@ -26,7 +26,7 @@ class Restrictions(plugin.Plugin):
     name: ClassVar[str] = "Restriction"
     helpable: ClassVar[bool] = True
 
-    @anjani.on_command("kick", can_restrict=True)
+    @command.on_command("kick", can_restrict=True)
     async def kick_member(self, message):
         """ Kick chat member """
         user, _ = extract_user_and_text(message)
@@ -42,7 +42,7 @@ class Restrictions(plugin.Plugin):
         await message.reply_text(await self.text(chat_id, "kick-done"))
         await message.chat.unban_member(user)
 
-    @anjani.on_command("ban", can_restrict=True)
+    @command.on_command("ban", can_restrict=True)
     async def ban_member(self, message):
         """ Ban chat member """
         user, _ = extract_user_and_text(message)
@@ -57,7 +57,7 @@ class Restrictions(plugin.Plugin):
         await message.chat.kick_member(user)
         await message.reply_text(await self.text(chat_id, "ban-done"))
 
-    @anjani.on_command("unban", can_restrict=True)
+    @command.on_command("unban", can_restrict=True)
     async def unban_member(self, message):
         """ Unban chat member """
         user, _, = extract_user_and_text(message)

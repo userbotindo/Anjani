@@ -50,7 +50,7 @@ class Evaluator(plugin.Plugin):
         stdout, stderr, exc = None, None, None
 
         try:
-            returned = await Evaluator.aexec(cmd, message)
+            returned = await self.aexec(cmd, message)
         except Exception:  # pylint: disable=broad-except
             exc = traceback.format_exc()
 

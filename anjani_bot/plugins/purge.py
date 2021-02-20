@@ -18,14 +18,14 @@ import asyncio
 from datetime import datetime
 from typing import ClassVar
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 
 class Purges(plugin.Plugin):
     name: ClassVar[str] = "Purges"
     helpable: ClassVar[bool] = True
 
-    @anjani.on_command("del", can_delete=True)
+    @command.on_command("del", can_delete=True)
     async def del_message(self, message):
         """ Delete replied message """
         if message.reply_to_message:
@@ -34,7 +34,7 @@ class Purges(plugin.Plugin):
         else:
             await message.reply_text(await self.text(message.chat.id, "error-reply-to-message"))
 
-    @anjani.on_command(["purge", "prune"], can_delete=True)
+    @command.on_command(["purge", "prune"], can_delete=True)
     async def purge_message(self, message):
         """ purge message from message replied """
         if not message.reply_to_message:

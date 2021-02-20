@@ -19,13 +19,13 @@ from typing import ClassVar
 
 from pyrogram import filters
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
-    users_db = anjani.get_collection("USERS")
-    chats_db = anjani.get_collection("CHATS")
+    users_db = command.anjani.get_collection("USERS")
+    chats_db = command.anjani.get_collection("CHATS")
     lock = asyncio.Lock()
 
     async def __migrate__(self, old_chat, new_chat):
@@ -44,7 +44,7 @@ class Users(plugin.Plugin):
                 {"$set": {'chat_id': new_chat}}
             )
 
-    @anjani.on_message(filters.all & filters.group, group=4)
+    @command.on_message(filters.all & filters.group, group=4)
     async def log_user(self, message):
         """ User database. """
         chat = message.chat
@@ -75,7 +75,7 @@ class Users(plugin.Plugin):
                 upsert=True,
             )
 
-    @anjani.on_message(filters.left_chat_member, group=7)
+    @command.on_message(filters.left_chat_member, group=7)
     async def del_log_user(self, message):
         """ Delete user data from chats """
         chat_id = message.chat.id
@@ -92,7 +92,7 @@ class Users(plugin.Plugin):
                 {"$pull": {'member': user_id}}
             )
 
-    @anjani.on_message(filters.migrate_from_chat_id)
+    @command.on_message(filters.migrate_from_chat_id)
     async def __chat_migrate(self, message):
         """ Chat migrate handler """
         old_chat = message.migrate_from_chat_id

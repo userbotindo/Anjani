@@ -20,14 +20,14 @@ from typing import ClassVar
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .. import anjani, plugin
+from .. import command, plugin
 
 
 class Main(plugin.Plugin):
     """ Bot main Commands """
     name: ClassVar[str] = "Main"
 
-    @anjani.on_command("start")
+    @command.on_command("start")
     async def start(self, message):
         """ Bot start command """
         chat_id = message.chat.id
@@ -43,11 +43,11 @@ class Main(plugin.Plugin):
                 [
                     InlineKeyboardButton(
                         text=await self.text(chat_id, "add-to-group-button"),
-                        url=f"t.me/{anjani.username}?startgroup=true"
+                        url=f"t.me/{self.username}?startgroup=true"
                     ),
                     InlineKeyboardButton(
                         text=await self.text(chat_id, "start-help-button"),
-                        url=f"t.me/{anjani.username}?start=help",
+                        url=f"t.me/{self.username}?start=help",
                     ),
                 ]
             ]
@@ -59,7 +59,7 @@ class Main(plugin.Plugin):
             )
         return await message.reply_text(await self.text(chat_id, "start-chat"))
 
-    @anjani.on_command("help")
+    @command.on_command("help")
     async def help(self, message):
         """ Bot modules helper """
         chat_id = message.chat.id
@@ -72,7 +72,7 @@ class Main(plugin.Plugin):
                         [
                             InlineKeyboardButton(
                                 text=await self.text(chat_id, "help-chat-button"),
-                                url=f"t.me/{anjani.username}?start=help"
+                                url=f"t.me/{self.username}?start=help"
                             )
                         ]
                     ]
@@ -84,7 +84,7 @@ class Main(plugin.Plugin):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    @anjani.on_callback_query(filters.regex(r"help_(.*?)"))
+    @command.on_callback_query(filters.regex(r"help_(.*?)"))
     async def help_button(self, query):
         """ Bot helper button """
         mod_match = re.match(r"help_module\((.+?)\)", query.data)
