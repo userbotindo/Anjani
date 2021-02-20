@@ -23,8 +23,7 @@ from yaml import full_load
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from motor.core import AgnosticCollection
 
-from .base import Base
-from ..config import Config
+from .base import Base  # pylint: disable=R0401
 
 LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +67,7 @@ class DataBase(Base):
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self._client = AsyncIOMotorClient(Config.DB_URI, connect=False)
+        self._client = AsyncIOMotorClient(self.get_config("DB_URI"), connect=False)
         if db_name in await self._client.list_database_names():
             LOGGER.info("Database found, Logged in to Database...")
         else:

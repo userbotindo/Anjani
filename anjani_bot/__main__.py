@@ -16,6 +16,7 @@
 
 import asyncio
 import logging
+import uvloop
 
 from . import anjani, setup_log
 
@@ -25,13 +26,7 @@ def main():
     log = logging.getLogger("Main")
     setup_log()
     log.info("Loading code...")
-
-    try:
-        import uvloop
-    except ImportError:
-        pass
-    else:
-        uvloop.install()
+    uvloop.install()
 
     loop = asyncio.new_event_loop()
     anjani.begin(loop=loop)

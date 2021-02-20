@@ -143,6 +143,7 @@ disable=print-statement,
         too-few-public-methods,
         missing-class-docstring,
         attribute-defined-outside-init,
+        too-many-ancestors,
         too-many-arguments,
         # false-positive
         # the object instance in every plugin was overwritten by the client

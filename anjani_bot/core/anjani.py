@@ -25,15 +25,14 @@ import aiohttp
 import pyrogram
 
 from .database import DataBase
-from .plugin_extender import PluginExtender
-from .telegram_bot import TelegramBot
-from ..config import Config
+from .plugin_extender import PluginExtender  # pylint: disable=R0401
+from .telegram_bot import TelegramBot  # pylint: disable=R0401
 from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(DataBase, PluginExtender, TelegramBot):  # pylint: disable=too-many-ancestors
+class Anjani(TelegramBot, DataBase, PluginExtender):
     """ AnjaniBot Client """
     # pylint: disable=too-many-instance-attributes
     client: pyrogram.Client
@@ -52,7 +51,6 @@ class Anjani(DataBase, PluginExtender, TelegramBot):  # pylint: disable=too-many
         self.stopping = False
 
         self._start_time = time.time()
-        self._log_channel = Config.LOG_CHANNEL
 
         super().__init__()
 
@@ -64,7 +62,7 @@ class Anjani(DataBase, PluginExtender, TelegramBot):  # pylint: disable=too-many
         output += f"Username : {self.username}\n"
         output += f"ID : {self.identifier}\n"
         output += f"Uptime: {self.uptime}\n"
-        output += f"Pyrogram: {self.app_version}\n"
+        output += f"Pyrogram: {self.client.app_version}\n"
         output += f"Language: {self.language}\n"
         output += f"Loaded Modules:{json.dumps(self.loaded, indent=2)}\n"
         output += f"Staff list:{json.dumps(self.staff, indent=2)}\n"

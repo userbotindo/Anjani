@@ -38,9 +38,9 @@ def command(commands: Union[str, List[str]],
         if not text:
             return False
 
-        me = await client.get_me()
+        _me = await client.get_me()
         regex = r"^/(\w+)(@{username})?(?: |$)(.*)".format(
-            username=me.username
+            username=_me.username
         )
         matches = re.compile(regex).search(text)
 
@@ -143,7 +143,7 @@ async def check_perm(flt, client, message: Message) -> bool:
 
     return perm
 
-
+# pylint: disable=C0103
 admin = create(_admin_filters)
 bot_admin = create(_bot_admin_filters)
 staff = create(_staff_filters)

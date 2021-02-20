@@ -19,7 +19,7 @@ import sys
 import traceback
 from typing import ClassVar
 
-from .. import command, plugin
+from .. import listener, plugin
 
 
 class Evaluator(plugin.Plugin):
@@ -32,7 +32,7 @@ class Evaluator(plugin.Plugin):
         exec(head + code)  # pylint: disable=exec-used
         return await locals()['__aexec'](self.bot, message)
 
-    @command.on_command("eval")
+    @listener.on("eval", staff_only=True)
     async def eval(self, message):
         """ run a command """
         status = await message.reply_text("Processing...")
@@ -64,7 +64,7 @@ class Evaluator(plugin.Plugin):
         output += f"```{cmd}```\n\n"
         try:  # handle the error while stringifying the result
             output += "**OUTPUT:**\n"
-            output += f"```{evaluation}```\n"
+            output += f"```{self.bot.redact_message(str(evaluation))}```\n"
         except Exception:  # pylint: disable=broad-except
             output += "**Exception:**\n"
             output += f"```{traceback.format_exc()}```\n"

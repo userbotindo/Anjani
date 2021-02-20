@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type,
 
 from pyrogram.types import InlineKeyboardButton
 
-from .base import Base
+from .base import Base  # pylint: disable=R0401
 
 from .. import plugin
 

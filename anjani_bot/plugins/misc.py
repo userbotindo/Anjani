@@ -17,14 +17,14 @@
 from datetime import datetime
 from typing import ClassVar
 
-from .. import command, plugin
+from .. import listener, plugin
 
 
 class Misc(plugin.Plugin):
     name: ClassVar[str] = "Miscs"
     helpable: ClassVar[bool] = True
 
-    @command.on_command("ping")
+    @listener.on("ping")
     async def ping(self, message):
         """ Get bot latency """
         print(dir(self.bot))

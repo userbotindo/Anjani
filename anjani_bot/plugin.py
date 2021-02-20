@@ -19,7 +19,10 @@ import inspect
 import logging
 import os.path
 
-from typing import ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
+
+if TYPE_CHECKING:
+    from .core import Anjani
 
 
 class Plugin:
@@ -46,3 +49,7 @@ class Plugin:
 
     def __repr__(self):
         return f"< {self.format_desc(self.comment)} >"
+
+
+class PluginError(Exception):
+    pass
