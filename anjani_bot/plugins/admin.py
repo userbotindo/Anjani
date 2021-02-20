@@ -16,7 +16,7 @@
 
 from typing import ClassVar
 
-from .. import command, plugin
+from .. import listener, plugin
 from ..utils import adminlist
 
 
@@ -24,11 +24,12 @@ class Admin(plugin.Plugin):
     name: ClassVar[str] = "Admins"
     helpable: ClassVar[bool] = True
 
-    @command.on_command("pin", can_pin=True)
+    @listener.on("pin", can_pin=True)
     async def pin(self, message):
         """ Pin message on chats """
         if message.reply_to_message is None:
-            return await message.reply(await self.text(message.chat.id, "error-reply-to-message"))
+            return await message.reply(
+                await self.bot.text(message.chat.id, "error-reply-to-message"))
         is_silent = True
         if message.command and message.command[0] in [
                 "notify",
@@ -38,33 +39,33 @@ class Admin(plugin.Plugin):
             is_silent = False
         await message.reply_to_message.pin(disable_notification=is_silent)
 
-    @command.on_command("unpin", can_pin=True)
+    @listener.on("unpin", can_pin=True)
     async def unpin(self, message):
         """ Unpin message on chats """
         chat_id = message.chat.id
-        chat = await self.get_chat(chat_id)
+        chat = await self.bot.client.get_chat(chat_id)
         if message.command and message.command[0] == "all":
-            await self.unpin_all_chat_messages(chat_id)
+            await self.bot.client.unpin_all_chat_messages(chat_id)
         elif message.reply_to_message is None:
             pinned = chat.pinned_message.message_id
-            await self.unpin_chat_message(chat_id, pinned)
+            await self.bot.client.unpin_chat_message(chat_id, pinned)
         else:
             await message.reply_to_message.unpin()
 
-    @command.on_command("setgpic", can_change_info=True)
+    @listener.on("setgpic", can_change_info=True)
     async def change_g_pic(self, message):
         """ Set group picture """
         msg = message.reply_to_message or message
         file = msg.photo or None
         if file:
-            await self.set_chat_photo(message.chat.id, photo=file.file_id)
+            await self.bot.client.set_chat_photo(message.chat.id, photo=file.file_id)
         else:
-            await message.reply_text(await self.text(message.chat.id, "gpic-no-photo"))
+            await message.reply_text(await self.bot.text(message.chat.id, "gpic-no-photo"))
 
-    @command.on_command("adminlist")
+    @listener.on("adminlist")
     async def admin_list(self, message):
         """ Get list of chat admins """
-        adm_list = await adminlist(self, message.chat.id, full=True)
+        adm_list = await adminlist(self.bot.client, message.chat.id, full=True)
         admins = ""
         for i in adm_list:
             admins += f"- [{i['name']}](tg://user?id={i['id']})\n"

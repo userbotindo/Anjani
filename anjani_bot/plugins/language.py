@@ -21,7 +21,7 @@ from typing import ClassVar
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .. import command, plugin
+from .. import listener, plugin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,14 +37,12 @@ class Language(plugin.Plugin):
             {"$set": {'chat_id': new_chat}},
         )
 
-    @staticmethod
-    async def can_change_lang(client, chat_id, user_id) -> bool:
+    async def can_change_lang(self, chat_id, user_id) -> bool:
         """ Check if user have rights to change chat language """
-        user = await client.get_chat_member(chat_id, user_id)
+        user = await self.bot.client.get_chat_member(chat_id, user_id)
         return not user.can_change_info
 
-    @staticmethod
-    def parse_lang(lang_id: str) -> str:
+    def parse_lang(self, lang_id: str) -> str:
         """ Return language name from language id. """
         if lang_id == 'en':
             return f"{emoji.FLAG_UNITED_STATES} English"
@@ -53,44 +51,44 @@ class Language(plugin.Plugin):
         LOGGER.error("Language code %s not defined", lang_id)
         return None
 
-    @command.on_command(["lang", "setlang", "language"])
+    @listener.on(["lang", "setlang", "language"])
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id
         if message.chat.type != "private":  # Check admin rights
-            if await Language.can_change_lang(self, chat_id, message.from_user.id):
+            if await self.can_change_lang(chat_id, message.from_user.id):
                 return await message.reply_text(
-                    await self.text(chat_id, "error-no-rights")
+                    await self.bot.text(chat_id, "error-no-rights")
                 )
 
         if len(message.command) >= 1:
             change = message.command[0]
-            if change in self.language:
-                await self.switch_lang(chat_id, change)
-                lang = Language.parse_lang(change)
+            if change in self.bot.language:
+                await self.bot.switch_lang(chat_id, change)
+                lang = self.parse_lang(change)
                 await message.reply_text(
-                    text=await self.text(chat_id, "language-set-succes", lang),
+                    text=await self.bot.text(chat_id, "language-set-succes", lang),
                 )
             else:
                 await message.reply_text(
-                    await self.text(chat_id, "language-invalid", self.language)
+                    await self.bot.text(chat_id, "language-invalid", self.language)
                 )
         else:
             chat_name = message.chat.first_name or message.chat.title
-            lang = Language.parse_lang(await self.get_lang(chat_id))
+            lang = self.parse_lang(await self.bot.get_lang(chat_id))
             keyboard = []
             temp = []
 
-            for count, i in enumerate(self.language, start=1):
+            for count, i in enumerate(self.bot.language, start=1):
                 temp.append(
                     InlineKeyboardButton(
-                        Language.parse_lang(i), callback_data=f"set_lang_{i}"
+                        self.parse_lang(i), callback_data=f"set_lang_{i}"
                     )
                 )
                 if count % 2 == 0:
                     keyboard.append(temp)
                     temp = []
-                if count == len(self.language):
+                if count == len(self.bot.language):
                     keyboard.append(temp)
 
             keyboard += [[InlineKeyboardButton(
@@ -98,29 +96,29 @@ class Language(plugin.Plugin):
             )]]
 
             await message.reply_text(
-                await self.text(chat_id, "current-language", chat_name, lang),
+                await self.bot.text(chat_id, "current-language", chat_name, lang),
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
 
-    @command.on_callback_query(filters.regex(r"set_lang_(.*?)"))
+    @listener.on(filters=filters.regex(r"set_lang_(.*?)"), update="callbackquery")
     async def _lang_button(self, query):
         """ Set language query. """
         lang_match = re.findall(r"en|id", query.data)
         chat_id = query.message.chat.id
 
         if query.message.chat.type != "private":  # Check admin rights
-            if await Language.can_change_lang(self, chat_id, query.from_user.id):
+            if await self.can_change_lang(chat_id, query.from_user.id):
                 return await query.answer(
-                    await self.text(chat_id, "error-no-rights")
+                    await self.bot.text(chat_id, "error-no-rights")
                 )
 
         if lang_match:
-            lang = Language.parse_lang(lang_match[0])
+            lang = self.parse_lang(lang_match[0])
             if lang is None:
                 return await query.edit_message_text(
-                    await self.text(chat_id, "language-code-error")
+                    await self.bot.text(chat_id, "language-code-error")
                 )
-            await self.switch_lang(chat_id, lang_match[0])
+            await self.bot.switch_lang(chat_id, lang_match[0])
             await query.edit_message_text(
-                text=await self.text(chat_id, "language-set-succes", lang),
+                text=await self.bot.text(chat_id, "language-set-succes", lang),
             )

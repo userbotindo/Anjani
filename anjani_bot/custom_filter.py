@@ -38,9 +38,8 @@ def command(commands: Union[str, List[str]],
         if not text:
             return False
 
-        _me = await client.get_me()
         regex = r"^/(\w+)(@{username})?(?: |$)(.*)".format(
-            username=_me.username
+            username=client._bot.username
         )
         matches = re.compile(regex).search(text)
 
@@ -113,7 +112,7 @@ async def check_perm(flt, client, message: Message) -> bool:
     # Check Chat type first
     if message.chat.type == "private":
         return await message.reply_text(
-            await client.text(chat_id, "error-chat-private")
+            await client._bot.text(chat_id, "error-chat-private")
         )
 
     bot = await client.get_chat_member(chat_id, 'me')

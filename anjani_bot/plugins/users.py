@@ -19,32 +19,32 @@ from typing import ClassVar
 
 from pyrogram import filters
 
-from .. import command, plugin
+from .. import listener, plugin
 
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
-    users_db = command.anjani.get_collection("USERS")
-    chats_db = command.anjani.get_collection("CHATS")
+    users_db = listener.bot.get_collection("USERS")
+    chats_db = listener.bot.get_collection("CHATS")
     lock = asyncio.Lock()
 
     async def __migrate__(self, old_chat, new_chat):
-        async with Users.lock:
-            await Users.users_db.update_many(
+        async with self.lock:
+            await self.users_db.update_many(
                 {'chats': old_chat},
                 {"$push": {'chats': new_chat}},
             )
-            await Users.users_db.update_many(
+            await self.users_db.update_many(
                 {'chats': old_chat},
                 {"$pull": {'chats': old_chat}},
             )
 
-            await Users.chats_db.update_one(
+            await self.chats_db.update_one(
                 {'chat_id': old_chat},
                 {"$set": {'chat_id': new_chat}}
             )
 
-    @command.on_message(filters.all & filters.group, group=4)
+    @listener.on(filters=filters.all & filters.group, group=4, update="message")
     async def log_user(self, message):
         """ User database. """
         chat = message.chat
@@ -53,8 +53,8 @@ class Users(plugin.Plugin):
         if not user:  # sanity check for service message
             return
 
-        async with Users.lock:
-            await Users.users_db.update_one(
+        async with self.lock:
+            await self.users_db.update_one(
                 {'_id': user.id},
                 {
                     "$set": {'username': user.username},
@@ -66,7 +66,7 @@ class Users(plugin.Plugin):
             if not (chat.id or chat.title):
                 return
 
-            await Users.chats_db.update_one(
+            await self.chats_db.update_one(
                 {'chat_id': chat.id},
                 {
                     "$set": {'chat_name': chat.title},
@@ -75,26 +75,26 @@ class Users(plugin.Plugin):
                 upsert=True,
             )
 
-    @command.on_message(filters.left_chat_member, group=7)
+    @listener.on(filters=filters.left_chat_member, group=7, update="message")
     async def del_log_user(self, message):
         """ Delete user data from chats """
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
 
-        async with Users.lock:
-            await Users.users_db.update_one(
+        async with self.lock:
+            await self.users_db.update_one(
                 {'_id': user_id},
                 {"$pull": {'chats': chat_id}}
             )
 
-            await Users.chats_db.update_one(
+            await self.chats_db.update_one(
                 {'chat_id': chat_id},
                 {"$pull": {'member': user_id}}
             )
 
-    @command.on_message(filters.migrate_from_chat_id)
+    @listener.on(filters=filters.migrate_from_chat_id, update="message")
     async def __chat_migrate(self, message):
         """ Chat migrate handler """
         old_chat = message.migrate_from_chat_id
         new_chat = message.chat.id
-        await self.migrate_chat(old_chat, new_chat)
+        await self.bot.migrate_chat(old_chat, new_chat)

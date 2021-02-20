@@ -108,8 +108,8 @@ class Client(pyrogram.Client):
                 The group identifier, defaults to 0.
         """
         def decorator(func: Callable) -> callable:
-            async def wrapper(_: Client, message: Message) -> None:
-                return await self._update(func, message)
+            async def wrapper(_: Client, query: CallbackQuery) -> None:
+                return await self._update(func, query)
 
             self.add_handler(CallbackQueryHandler(wrapper, filters=filters), group)
             return func

@@ -31,7 +31,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 )
 
 from .users import Users
-from .. import command, plugin
+from .. import listener, plugin
 from ..utils import nekobin
 
 LOGGER = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ LOGGER = logging.getLogger(__name__)
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
 
-    @command.on_command(["log", "logs"], staff_only=True)
+    @listener.on(["log", "logs"], staff_only=True)
     async def logs(self, message):
         """ Get bot logging as file """
         corePath = "anjani_bot/core"
@@ -61,12 +61,12 @@ class Staff(plugin.Plugin):
             return
         with codecs.open(log_file, "r", encoding="utf-8") as logFile:
             data = logFile.read()
-        key = await nekobin(self, data)
+        key = await nekobin(self.bot, data)
         if key:
             url = [[
                 InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
             ]]
-            await self.send_document(
+            await self.bot.client.send_document(
                 message.from_user.id,
                 log_file,
                 caption="**Bot logging**",
@@ -79,7 +79,7 @@ class Staff(plugin.Plugin):
         else:
             await message.reply_text("Failed to reach Nekobin")
 
-    @command.on_command("broadcast", staff_only="owner")
+    @listener.on("broadcast", staff_only="owner")
     async def broadcast(self, message):
         """ Broadcast a message to all chats """
         to_send = message.text.split(None, 1)
@@ -107,19 +107,18 @@ class Staff(plugin.Plugin):
                 f"{sent} groups succeed, {failed} groups failed to receive the message"
             )
 
-    @command.on_command(["leave", "leavechat", "leavegroup"], staff_only=True)
+    @listener.on(["leave", "leavechat", "leavegroup"], staff_only=True)
     async def leavechat(self, message):
         """ leave the given chat_id """
         try:
-            await anjani.leave_chat(message.command[0])
+            await self.bot.client.leave_chat(message.command[0])
             await message.reply_text("Left the group successfully!")
         except (PeerIdInvalid, UserNotParticipant):
             await message.reply_text("I'm not a member on that group")
         except IndexError:
             await message.reply_text("Give me the chat id!")
 
-
-    @command.on_command("chatlist", staff_only=True)
+    @listener.on("chatlist", staff_only=True)
     async def chatlist(self, message):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"

@@ -75,12 +75,13 @@ def on(
     """
 
     def listener_decorator(func: Callable) -> callable:
-        _filters = None
-
-        if cmd != "":
+        if update == "command":
             _filters = custom_filter.command(commands=cmd)
-        if filters:
-            _filters = _filters & filters
+            if filters:
+                _filters = _filters & filters
+        else:
+            if filters:
+                _filters = filters
 
         perm = (can_change_info or can_delete or
                 can_restrict or can_invite_users or
