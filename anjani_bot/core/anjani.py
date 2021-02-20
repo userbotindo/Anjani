@@ -21,7 +21,7 @@ import json
 import logging
 import signal
 import time
-from typing import Optional, List, Union, MutableMapping, Dict, Callable
+from typing import Optional, List, Union, MutableMapping, Dict
 
 import aiohttp
 try:
@@ -29,14 +29,12 @@ try:
 except ImportError:
     pass
 
-from pyrogram import Client, idle, StopPropagation, ContinuePropagation
-from pyrogram.filters import Filter, create
-from pyrogram.handlers import MessageHandler
-from pyrogram.types import Message
+from pyrogram import Client, idle
 
-from . import cust_filter, pool
+from . import pool
 from .database import DataBase
-from .plugin_extender import PluginExtender, UnknownPluginError
+from .decorators import Decorators
+from .plugin_extender import PluginExtender
 from .. import plugin
 from ..config import Config
 from ..utils import get_readable_time
@@ -44,7 +42,7 @@ from ..utils import get_readable_time
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
+class Anjani(Client, DataBase, Decorators, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     # pylint: disable=too-many-instance-attributes
     http: aiohttp.ClientSession
@@ -176,122 +174,6 @@ class Anjani(Client, DataBase, PluginExtender):  # pylint: disable=too-many-ance
         finally:
             self.loop.close()
             LOGGER.info("Loop closed")
-
-    def on_command(
-            self,
-            cmd: Union[str, List[str]],
-            filters: Optional[Filter] = None,
-            admin_only: Optional[bool] = False,
-            can_change_info: Optional[bool] = False,
-            can_delete: Optional[bool] = False,
-            can_restrict: Optional[bool] = False,
-            can_invite_users: Optional[bool] = False,
-            can_pin: Optional[bool] = False,
-            can_promote: Optional[bool] = False,
-            staff_only: Optional[Union[bool, str]] = False,
-            group: int = 0
-        ) -> callable:
-        """Decorator for handling commands
-
-        Parameters:
-            cmd (`str` | List of `str`):
-                Pass one or more commands to trigger your function.
-
-            filters (:obj:`~pyrogram.filters`, *optional*):
-                aditional build-in pyrogram filters to allow only a subset of messages to
-                be passed in your function.
-
-            admin_only (`bool`, *optional*):
-                Pass True if the command only used by admins (bot staff included).
-                The bot need to be an admin as well. This parameters also means
-                that the command won't run in private (PM`s).
-
-            can_change_info (`bool`, *optional*):
-                check if user and bot can change the chat title, photo and other settings.
-                default False.
-
-            can_delete (`bool`, *optional*):
-                check if user and bot can delete messages of other users.
-                default False
-
-            can_restrict (`bool`, *optional*):
-                check if user and bot can restrict, ban or unban chat members.
-                default False.
-
-            can_invite_users (`bool`, *optional*):
-                check if user and bot is allowed to invite new users to the chat.
-                default False.
-
-            can_pin (`bool`, *optional*):
-                check if user and bot is allowed to pin messages.
-                default False.
-
-            can_promote (`bool`, *optional*):
-                check if user and bot can add new administrator.
-                default False
-
-            staff_only (`bool` | 'str', *optional*):
-                Pass True if the command only used by all staff or pass the rank string
-                if the command only available for those rank.
-                Eg: "owner" or "dev"
-        """
-
-        _filters = cust_filter.command(commands=cmd)
-        if filters:
-            _filters = _filters & filters
-
-        perm = (can_change_info or can_delete or
-                can_restrict or can_invite_users or
-                can_pin or can_promote)
-        if perm:
-            _filters = _filters & (
-                create(
-                    cust_filter.check_perm,
-                    "CheckPermission",
-                    can_change_info=can_change_info,
-                    can_delete=can_delete,
-                    can_restrict=can_restrict,
-                    can_invite_users=can_invite_users,
-                    can_pin=can_pin,
-                    can_promote=can_promote
-                )
-            )
-
-        if admin_only:
-            _filters = _filters & cust_filter.admin & cust_filter.bot_admin
-        elif staff_only:
-            if isinstance(staff_only, bool):
-                _filters = _filters & cust_filter.staff
-            else:
-                _filters = _filters & create(
-                    cust_filter.staff_rank,
-                    "CheckStaffRank",
-                    rank=staff_only
-                )
-
-        def decorator(func: Callable) -> callable:
-            # Wrapper for decorator so func return `class` & `message`
-            async def wrapper(client: Client, message: Message) -> None:
-                func.__self__ = None
-                # Get class of func itself
-                for name, cls in self.modules.items():
-                    if str(cls).strip(">").split("from")[-1].strip() == (
-                            func.__module__.replace(".", "/") + ".py"):
-                        func.__self__ = cls
-                        break
-                else:
-                    # for now raise for exception if func couldn't get the class itself
-                    raise UnknownPluginError("Uncaught plugin error...")
-
-                try:
-                    await func(func.__self__, message)
-                except (StopPropagation, ContinuePropagation):
-                    raise
-
-            self.add_handler(MessageHandler(wrapper, filters=_filters), group)
-
-            return func
-        return decorator
 
     async def channel_log(
             self,
