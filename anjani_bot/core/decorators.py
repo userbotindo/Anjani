@@ -18,15 +18,21 @@ from typing import Union, Optional, Callable, List
 
 from pyrogram import Client, StopPropagation, ContinuePropagation
 from pyrogram.filters import Filter, create
-from pyrogram.handlers import MessageHandler
-from pyrogram.types import Message
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
+from pyrogram.types import Message, CallbackQuery
 
 from . import cust_filter
+from .raw_client import RawClient
 from .plugin_extender import UnknownPluginError
 
 
-class Decorators:
-    async def _mod(self, func, message):
+class Decorators(RawClient):
+    # pylint: disable=signature-differs
+    async def _mod(
+            self,
+            func: Callable,
+            message: Union[Message, CallbackQuery]
+    ):
         func.__self__ = None
         # Get class of func itself
         for _, cls in self.modules.items():
@@ -154,8 +160,6 @@ class Decorators:
             group: int = 0
     ) -> callable:
         """Decorator for handling messages.
-        This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
-        :obj:`~pyrogram.handlers.MessageHandler`.
 
         Parameters:
             filters (:obj:`~pyrogram.filters`, *optional*):
@@ -166,11 +170,35 @@ class Decorators:
                 The group identifier, defaults to 0.
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable) -> callable:
             async def wrapper(_: Client, message: Message) -> None:
                 return await self._mod(func, message)
 
             self.add_handler(MessageHandler(wrapper, filters=filters), group)
+            return func
+
+        return decorator
+
+    def on_callback_query(
+            self=None,
+            filters=None,
+            group: int = 0
+    ) -> callable:
+        """Decorator for handling callback queries.
+
+        Parameters:
+            filters (:obj:`~pyrogram.filters`, *optional*):
+                Pass one or more filters to allow only a subset of callback queries to be passed
+                in your function.
+
+            group (``int``, *optional*):
+                The group identifier, defaults to 0.
+        """
+        def decorator(func: Callable) -> callable:
+            async def wrapper(_: Client, message: Message) -> None:
+                return await self._mod(func, message)
+
+            self.add_handler(CallbackQueryHandler(wrapper, filters=filters), group)
             return func
 
         return decorator

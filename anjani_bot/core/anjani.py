@@ -29,11 +29,11 @@ try:
 except ImportError:
     pass
 
-from pyrogram import Client, idle
+from pyrogram import idle
 
 from . import pool
-from .database import DataBase
 from .decorators import Decorators
+from .database import DataBase
 from .plugin_extender import PluginExtender
 from .. import plugin
 from ..config import Config
@@ -42,7 +42,7 @@ from ..utils import get_readable_time
 LOGGER = logging.getLogger(__name__)
 
 
-class Anjani(Client, DataBase, Decorators, PluginExtender):  # pylint: disable=too-many-ancestors
+class Anjani(Decorators, DataBase, PluginExtender):  # pylint: disable=too-many-ancestors
     """ AnjaniBot Client """
     # pylint: disable=too-many-instance-attributes
     http: aiohttp.ClientSession
