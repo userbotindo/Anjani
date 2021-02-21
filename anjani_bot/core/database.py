@@ -67,7 +67,7 @@ class DataBase(Base):
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self._client = AsyncIOMotorClient(self.get_config("DB_URI"), connect=False)
+        self._client = AsyncIOMotorClient(self.get_config.DB_URI, connect=False)
         if db_name in await self._client.list_database_names():
             LOGGER.info("Database found, Logged in to Database...")
         else:

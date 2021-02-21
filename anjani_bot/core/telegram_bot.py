@@ -24,6 +24,7 @@ import pyrogram
 
 from . import pool
 from .base import Base
+from .config import BotConfig
 from .client import Client
 if TYPE_CHECKING:
     from .anjani import Anjani
@@ -34,24 +35,25 @@ LOG = logging.getLogger(__name__)
 
 class TelegramBot(Base):
     client: pyrogram.Client
+    get_config: BotConfig
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
+        self.get_config = BotConfig()
         self.staff = {}
 
         super().__init__(**kwargs)
 
     async def init_client(self: "Anjani") -> None:
         """ Initialize pyrogram client """
-        try:
-            api_id = int(self.get_config("API_ID"))
-        except ValueError:
-            raise TypeError("API ID is not a valid integer")
+        api_id = self.get_config.API_ID
+        if api_id == 0:
+            raise TypeError("API ID is required")
 
-        api_hash = self.get_config("API_HASH")
+        api_hash = self.get_config.API_HASH
         if not isinstance(api_hash, str):
             raise TypeError("API HASH must be a string")
 
-        bot_token = self.get_config("BOT_TOKEN")
+        bot_token = self.get_config.BOT_TOKEN
         if not isinstance(bot_token, str):
             raise TypeError("BOT TOKEN must be a string")
 
@@ -62,14 +64,11 @@ class TelegramBot(Base):
             bot_token=bot_token,
             session_name=":memory:"
         )
-        try:
-            owner = int(self.get_config("OWNER_ID"))
-        except ValueError:
-            owner = 0
+        owner = self.get_config.OWNER_ID
 
         self.staff = {"owner": owner}
 
-    async def start(self: "Anjani"):
+    async def start(self: "Anjani") -> None:
         """ Start client """
         LOG.info("Starting Bot Client...")
         await self.init_client()
@@ -106,16 +105,11 @@ class TelegramBot(Base):
         finally:
             await self.stop()
 
-    @staticmethod
-    def get_config(name: str) -> Union[str, int]:
-        """ Get variable from Config """
-        return os.environ.get(name)
-
     def redact_message(self, text: str) -> str:
         """ Secure any secret variable"""
-        api_id = self.get_config("API_ID")
-        api_hash = self.get_config("API_HASH")
-        bot_token = self.get_config("BOT_TOKEN")
+        api_id = self.get_config.API_ID
+        api_hash = self.get_config.API_HASH
+        bot_token = self.get_config.BOT_TOKEN
 
         if api_id in text:
             text = text.replace(api_id, "[REDACTED]")
@@ -192,10 +186,9 @@ class TelegramBot(Base):
         Returns:
             :obj:`~types.Message`: On success, the sent text message is returned.
         """
-        try:
-            log_channel = int(self.get_config("LOG_CHANNEL"))
-        except (TypeError, ValueError):
-            LOG.warning(f"LOG_CHANNEL is not exists nor valid, message '{text}' not send.")
+        log_channel = self.get_config.LOG_CHANNEL
+        if log_channel == 0:
+            LOG.warning(f"LOG_CHANNEL is empty nor valid, message '{text}' not send.")
             return
 
         return await self.client.send_message(

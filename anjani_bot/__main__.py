@@ -19,7 +19,6 @@ import logging
 
 import aiorun
 import uvloop
-from dotenv import load_dotenv
 
 from . import anjani, setup_log
 
@@ -39,5 +38,4 @@ def main():
 
 
 if __name__ == "__main__":
-    load_dotenv("config.env")
     main()

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 from datetime import datetime
 from typing import ClassVar
 
@@ -32,7 +34,6 @@ class Misc(plugin.Plugin):
     @listener.on("ping")
     async def ping(self, message):
         """ Get bot latency """
-        print(dir(self.bot))
         start = datetime.now()
         msg = await message.reply_text('`Pong!`')
         end = datetime.now()
