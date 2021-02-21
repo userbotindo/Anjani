@@ -21,24 +21,25 @@ from typing import ClassVar, Union
 
 import spamwatch
 from pyrogram import filters, StopPropagation
+from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from spamwatch.types import Ban
 
-from .. import listener, plugin
-from ..utils import user_ban_protected
+from anjani_bot import listener, plugin
+from anjani_bot.utils import user_ban_protected
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SpamCheck:
     lock = asyncio.Lock()
+    spmwtc = listener.bot.get_collection("SPAMWATCH_API")
 
     def sw_check(self, user_id: int) -> Union[Ban, None]:
         """ Check on SpawmWatch """
-        spmwtc = self.bot.get_config("SPAMWATCH_API")
-        if not spmwtc:
+        if not self.spmwtc:
             LOGGER.warning("No SpamWatch API!")
             return None
-        return spamwatch.Client(spmwtc).get_ban(user_id)
+        return spamwatch.Client(self.spmwtc).get_ban(user_id)
 
     async def cas_check(self, user_id: int) -> Union[str, bool]:
         """ Check on CAS """
@@ -73,18 +74,21 @@ class SpamShield(plugin.Plugin, SpamCheck):
     @listener.on(filters=filters.all & filters.group, group=1, update="message")
     async def shield(self, message):
         """ Check handler """
-        if(
-                await self.chat_gban(message.chat.id) and
-                (await self.bot.client.get_chat_member(message.chat.id, 'me')
-                 ).can_restrict_members
-        ):
-            user = message.from_user
-            chat = message.chat
-            if user and not await user_ban_protected(self.bot.client, chat.id, user.id):
-                await self.check_and_ban(user, chat.id)
-            elif message.new_chat_members:
-                for member in message.new_chat_members:
-                    await self.check_and_ban(member, chat.id)
+        try:
+            if(
+                    await self.chat_gban(message.chat.id) and
+                    (await self.bot.client.get_chat_member(message.chat.id, 'me')
+                    ).can_restrict_members
+            ):
+                user = message.from_user
+                chat = message.chat
+                if user and not await user_ban_protected(self.bot.client, chat.id, user.id):
+                    await self.check_and_ban(user, chat.id)
+                elif message.new_chat_members:
+                    for member in message.new_chat_members:
+                        await self.check_and_ban(member, chat.id)
+        except UserNotParticipant:
+            pass
 
     async def check_and_ban(self, user, chat_id):
         """ Shield Check users. """

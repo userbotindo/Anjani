@@ -20,7 +20,7 @@ from typing import ClassVar, Tuple, Union
 
 from pyrogram import filters
 
-from .. import listener, plugin
+from anjani_bot import listener, plugin
 
 
 class NewChatMember:
@@ -55,9 +55,9 @@ class NewChatMember:
             self.username = self.mention
         self.count = None
 
-    async def get_members(self, chat_id):
+    async def get_members(self, client, chat_id):
         """ Count chat member """
-        self.count = await self.bot.client.get_chat_members_count(chat_id)
+        self.count = await client.get_chat_members_count(chat_id)
 
 
 class RawGreeting:
@@ -68,10 +68,10 @@ class RawGreeting:
         """ Bot default welcome """
         return await self.bot.text(chat_id, "default-welcome", noformat=True)
 
-    async def parse_user(self, user, chat_id) -> NewChatMember:
+    @staticmethod
+    async def parse_user(user) -> NewChatMember:
         """ Get user attribute """
         parsed_user = NewChatMember(user)
-        await parsed_user.get_members(chat_id)
         return parsed_user
 
     async def full_welcome(self, chat_id) -> Tuple[bool, str, bool]:
@@ -120,10 +120,7 @@ class RawGreeting:
         async with self.lock:
             await self.welcome_db.update_one(
                 {'chat_id': chat_id},
-                {
-                    "$set": {
-                        'clean_service': setting
-                    }
+                {"$set": {'clean_service': setting}
                 },
                 upsert=True
             )
@@ -133,9 +130,7 @@ class RawGreeting:
         async with self.lock:
             await self.welcome_db.update_one(
                 {'chat_id': chat_id},
-                {
-                    "$set": {'should_welcome': setting}
-                },
+                {"$set": {'should_welcome': setting}},
                 upsert=True
             )
 
@@ -178,7 +173,8 @@ class Greeting(plugin.Plugin, RawGreeting):
                     )
                 else:
                     welcome_text = await self.welc_msg(chat.id)
-                    user = await self.parse_user(new_member, chat.id)
+                    user = await self.parse_user(new_member)
+                    await user.get_members(self.bot.client, chat.id)
                     formatted_text = welcome_text.format(
                         first=escape(user.first_name),
                         last=escape(new_member.last_name or user.first_name),

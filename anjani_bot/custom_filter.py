@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# pylint: disable=W0212, C0103
 
 import logging
 import re
@@ -142,7 +143,6 @@ async def check_perm(flt, client, message: Message) -> bool:
 
     return perm
 
-# pylint: disable=C0103
 admin = create(_admin_filters)
 bot_admin = create(_bot_admin_filters)
 staff = create(_staff_filters)

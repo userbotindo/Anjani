@@ -30,9 +30,9 @@ from pyrogram.errors.exceptions.bad_request_400 import (
     UserNotParticipant
 )
 
-from .users import Users
-from .. import listener, plugin
-from ..utils import nekobin
+from anjani_bot import listener, plugin
+from anjani_bot.utils import nekobin
+from anjani_bot.plugins.users import Users
 
 LOGGER = logging.getLogger(__name__)
 

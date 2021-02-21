@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# pylint: disable=C0103
 
 from typing import Callable, List, Optional, Union
 
@@ -64,7 +65,7 @@ def on(
         can_promote (`bool`, *optional*):
             check if user and bot can add new administrator.
             default False
-        staff_only (`bool`, *optional*):
+        staff_only (`bool` | `str`, *optional*):
             Pass True if the command only used by Staff (SUDO and OWNER).
         update (`str`, *optional*):
             Option are [`command`, `message`, `callbackquery`].
@@ -103,7 +104,19 @@ def on(
         if admin_only:
             _filters = _filters & custom_filter.admin & custom_filter.bot_admin
         elif staff_only:
-            _filters = _filters & custom_filter.staff
+            if isinstance(staff_only, bool):
+                _filters = _filters & custom_filter.staff
+            elif isinstance(staff_only, str):
+                _filters = _filters & create(
+                    custom_filter.staff_rank,
+                    "CheckStaffRank",
+                    rank=staff_only
+                )
+            else:
+                raise TypeError(
+                    "staff_only arguments must be a string or bool not {}"
+                    .format(type(staff_only))
+                )
 
         # default update handler are command
         dec = bot.client.on_command(filters=_filters, group=group)

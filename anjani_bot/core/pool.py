@@ -40,8 +40,9 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         return await loop.run_in_executor(exe, partial(func, *args, **kwargs))
     return wrapper
 
-
+# pylint: disable=W0212
 def start() -> ThreadPoolExecutor:
+    """ start pool """
     LOGGER.info(f"Started Pool : {exe._max_workers} Workers")
     return exe
 

@@ -140,6 +140,7 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         # custom disable report
+        logging-format-interpolation,
         too-few-public-methods,
         missing-class-docstring,
         attribute-defined-outside-init,

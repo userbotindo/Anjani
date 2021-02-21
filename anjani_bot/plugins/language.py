@@ -21,7 +21,7 @@ from typing import ClassVar
 from pyrogram import emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .. import listener, plugin
+from anjani_bot import listener, plugin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class Language(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     async def __migrate__(self, old_chat, new_chat):
-        await self.lang_col.update_one(
+        await self.bot.lang_col.update_one(
             {'chat_id': old_chat},
             {"$set": {'chat_id': new_chat}},
         )
@@ -42,7 +42,8 @@ class Language(plugin.Plugin):
         user = await self.bot.client.get_chat_member(chat_id, user_id)
         return not user.can_change_info
 
-    def parse_lang(self, lang_id: str) -> str:
+    @staticmethod
+    def parse_lang(lang_id: str) -> str:
         """ Return language name from language id. """
         if lang_id == 'en':
             return f"{emoji.FLAG_UNITED_STATES} English"

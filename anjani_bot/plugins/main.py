@@ -20,7 +20,7 @@ from typing import ClassVar
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .. import listener, plugin
+from anjani_bot import listener, plugin
 
 
 class Main(plugin.Plugin):

@@ -21,7 +21,6 @@ import pkgutil
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import pyrogram
-from pyrogram import types
 
 from . import pool
 from .base import Base
@@ -156,12 +155,12 @@ class TelegramBot(Base):
             disable_web_page_preview: bool = None,
             disable_notification: bool = None,
             reply_markup: Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply"
+                "pyrogram.types.InlineKeyboardMarkup",
+                "pyrogram.types.ReplyKeyboardMarkup",
+                "pyrogram.types.ReplyKeyboardRemove",
+                "pyrogram.types.ForceReply"
             ] = None
-        ) -> Union["types.Message", None]:
+        ) -> Union["pyrogram.types.Message", None]:
         """Shortcut method to send message to log channel.
 
         Parameters:

@@ -16,8 +16,8 @@
 
 from typing import ClassVar
 
-from .. import listener, plugin
-from ..utils import adminlist
+from anjani_bot import listener, plugin
+from anjani_bot.utils import adminlist
 
 
 class Admin(plugin.Plugin):
