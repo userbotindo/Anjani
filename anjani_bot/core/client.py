@@ -42,6 +42,7 @@ class Client(pyrogram.Client):
             message: Union[Message, CallbackQuery],
         ):
         func.__self__ = None
+
         # Get class of func itself
         for _, cls in self._bot.plugins.items():
             if str(cls).strip(">").split("from")[-1].strip() == (
@@ -51,10 +52,6 @@ class Client(pyrogram.Client):
         else:
             # for now raise for exception if func couldn't get the class itself
             raise plugin.PluginError("Uncaught plugin error...")
-
-        # If plugin have to load database load the db
-        if "on_load" in dir(func.__self__):
-            await func.__self__.on_load()
 
         try:
             await func(func.__self__, message)

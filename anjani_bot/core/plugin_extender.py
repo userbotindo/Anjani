@@ -58,6 +58,11 @@ class PluginExtender(Base):
         if hasattr(mod, "helpable"):
             self.helpable.append(mod)
 
+        # load database
+        if hasattr(mod, "on_load"):
+            self.loop.create_task(mod.on_load())
+            LOGGER.debug(f"Database plugin '{cls.name}' loaded.")
+
     def unload_module(self, mod: plugin.Plugin) -> None:
         """ Unload bot module """
         cls = type(mod)
