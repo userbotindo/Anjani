@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
 import importlib
 import logging
 import os
 import pkgutil
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import pyrogram
 from pyrogram import types
@@ -142,6 +141,13 @@ class TelegramBot(Base):
         self.staff.update({'dev': [], 'sudo': []})
         async for i in _db.find():
             self.staff[i["rank"]].append(i["_id"])
+
+    @property
+    def staff_id(self) -> List[int]:
+        """ Get bot staff ids as a list """
+        _id = [self.staff.get("owner")]
+        _id.extend(self.staff.get("dev") + self.staff.get("sudo"))
+        return _id
 
     async def channel_log(
             self,

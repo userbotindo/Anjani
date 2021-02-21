@@ -1,5 +1,5 @@
 """Extend default Client"""
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import pyrogram
 
@@ -115,10 +115,3 @@ class Client(pyrogram.Client):
             return func
 
         return decorator
-
-    @property
-    def staff_id(self) -> List[int]:
-        """ Get bot staff ids as a list """
-        _id = [self._bot.staff.get("owner")]
-        _id.extend(self._bot.staff.get("dev") + self._bot.staff.get("sudo"))
-        return _id

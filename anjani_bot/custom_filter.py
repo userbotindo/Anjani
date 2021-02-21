@@ -73,7 +73,7 @@ async def _admin_filters(_, client, message: Message) -> bool:
         user_id = message.from_user.id
         return bool(
             user_id in await adminlist(client, chat_id)
-            or user_id in client.staff_id
+            or user_id in client._bot.staff_id
         )
     return False
 
@@ -89,18 +89,18 @@ async def _bot_admin_filters(_, client, message: Message) -> bool:
 
 async def _staff_filters(_, client, message: Message) -> bool:
     user_id = message.from_user.id
-    return bool(user_id in client.staff_id)
+    return bool(user_id in client._bot.staff_id)
 
 
 async def staff_rank(flt, client, message: Message) -> bool:
     """ Check staff rank """
     user_id = message.from_user.id
     if flt.rank == "owner":
-        return bool(user_id == client.staff.get("owner"))
+        return bool(user_id == client._bot.staff.get("owner"))
     if flt.rank == "dev":
         return bool(
-            user_id in client.staff.get("dev")
-            or user_id == client.staff.get("owner")
+            user_id in client._bot.staff.get("dev")
+            or user_id == client._bot.staff.get("owner")
         )
     LOGGER.error("Unknown rank '%s'! Avalaible rank ['owner', 'dev']", flt.rank)
     return False
@@ -127,7 +127,7 @@ async def check_perm(flt, client, message: Message) -> bool:
         perm = False
     elif flt.can_restrict and not (
             bot.can_restrict_members and (
-                user.can_restrict_members or user in client.staff_id)):
+                user.can_restrict_members or user in client._bot.staff_id)):
         perm = False
     elif flt.can_invite_users and not (
             bot.can_invite_users and user.can_invite_users):
@@ -137,7 +137,7 @@ async def check_perm(flt, client, message: Message) -> bool:
         perm = False
     elif flt.can_promote and not (
             bot.can_promote_members and (
-                user.can_promote_members or user in client.staff_id)):
+                user.can_promote_members or user in client._bot.staff_id)):
         perm = False
 
     return perm
