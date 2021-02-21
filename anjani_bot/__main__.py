@@ -14,11 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import aiorun
 import asyncio
 import logging
 import uvloop
+from dotenv import load_dotenv
 
 from . import anjani, setup_log
+
+
+aiorun.logger.disabled = True
 
 
 def main():
@@ -29,8 +34,9 @@ def main():
     uvloop.install()
 
     loop = asyncio.new_event_loop()
-    anjani.begin(loop=loop)
+    aiorun.run(anjani.begin(loop=loop), loop=loop)
 
 
 if __name__ == "__main__":
+    load_dotenv("config.env")
     main()

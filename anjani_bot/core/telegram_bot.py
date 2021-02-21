@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import asyncio
 import importlib
 import logging
 import os
@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import pyrogram
 from pyrogram import types
 
+from . import pool
 from .base import Base
 from .client import Client
 if TYPE_CHECKING:
@@ -74,6 +75,12 @@ class TelegramBot(Base):
         """ Start client """
         LOG.info("Starting Bot Client...")
         await self.init_client()
+
+        # Initialize pool
+        self.client.executor.shutdown()
+        self.client.executor = pool.start()
+        self.executor = self.client.executor
+
         await self.connect_db("AnjaniBot")
         self._load_language()
         subplugins = [

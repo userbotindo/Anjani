@@ -18,12 +18,14 @@ import asyncio
 import json
 import logging
 import time
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import aiohttp
+import aiorun
 
 import pyrogram
 
+from . import pool
 from .database import DataBase
 from .plugin_extender import PluginExtender  # pylint: disable=R0401
 from .telegram_bot import TelegramBot  # pylint: disable=R0401
@@ -40,21 +42,18 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
     identifier: int
     loop: asyncio.AbstractEventLoop
     name: str
-    queue: asyncio.queues.Queue
     staff: Dict[str, Union[str, int]]
     stopping: bool
     username: str
 
     def __init__(self):
-        self.loop = asyncio.get_event_loop()
-        self.queue = asyncio.Queue()
         self.stopping = False
 
         self._start_time = time.time()
 
         super().__init__()
 
-        # Initialized aiohttp last in case bot failed to init
+        # Initialize aiohttp last in case bot failed to init
         self.http = aiohttp.ClientSession()
 
     def __str__(self):
@@ -73,17 +72,20 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
         """ Get bot uptime """
         return get_readable_time(time.time() - self._start_time)
 
-    def begin(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
+    async def begin(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
         """Start AnjaniBot"""
         if loop:
             asyncio.set_event_loop(loop)
+            self.loop = loop
 
         try:
-            self.loop.run_until_complete(self.run())
+            await self.run()
+        except (asyncio.exceptions.CancelledError, RuntimeError):
+            pass
         finally:
             if not self.stopping:
                 LOGGER.info("Loop stopped")
-                asyncio.get_event_loop().stop()
+                self.loop.stop()
 
     async def stop(self) -> None:
         """ Stop client """
@@ -91,7 +93,23 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
 
         self.stopping = True
 
-        if self.client.is_initialized:
-            await self.client.stop()
         await self.http.close()
         await self.disconnect_db()
+
+        async def finalize() -> None:
+            lock = asyncio.Lock()
+            running_tasks: List[asyncio.Task] = []
+
+            async with lock:
+                for task in running_tasks:
+                    task.cancel()
+                if self.client.is_initialized:
+                    await self.client.stop()
+                else:
+                    pool.stop()
+                for task in asyncio.all_tasks():
+                    if task is not asyncio.current_task():
+                        task.cancel()
+                await self.loop.shutdown_asyncgens()
+                self.loop.stop()
+        await aiorun.shutdown_waits_for(finalize())
