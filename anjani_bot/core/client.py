@@ -36,6 +36,10 @@ class Client(pyrogram.Client):
             # for now raise for exception if func couldn't get the class itself
             raise plugin.PluginError("Uncaught plugin error...")
 
+        # If plugin have to load database load the db
+        if "on_load" in dir(func.__self__):
+            await func.__self__.on_load()
+
         try:
             await func(func.__self__, message)
         except (StopPropagation, ContinuePropagation):  # pylint: disable=try-except-raise
