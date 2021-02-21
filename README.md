@@ -39,19 +39,36 @@ We try our best to simplify module creation.
 
 All you need is a `<plugin-name>.py` file in `anjani_bot/plugins`.
 
-Import the Client `from .. import anjani, plugins`.
+Import the Listener `from .. import listener, plugin`.
 
-Create a class that inherit with `plugins.Plugins` And give that Class name attribute to name the plugin. eg:
+Create a class that inherit with `plugin.Plugin` And give that Class name attribute to name the plugin. eg:
 
 ```python
-from .. import anjani, plugin
+from .. import listener, plugin
 
 class PluginClass(plugin.Plugin):
     name = "plugin name"
     helpable = True
+
+    # class function that don't need decorator
+    # This sometimes need to simplify your main plugin
+    async def hi(self, chat_id):
+        # self have the client too!
+        self.bot.client.send_message(
+            chat_id=chat_id,
+            text="hi again",
+        )
+        # for client refer to `~pyrogram.Client`
+
+    # filters is Optional
+    @listener.on("hello", filters=filter)
+    async def hello(self, message):
+        message.reply("hi")
+        await self.hi(message.chat.id) # Simplified
 ```
 
-Then to add a handler use a decorator `@anjani.on_command("<trigger>")` or other update handler. Command Trigger can be a `string` or a `list of strings`.
+Command Trigger can be a `string` or a `list of strings`.  
+parameter `filters` is `pyrogram.filters` but it's optional.
 
 The `__migrate__()` function is used for migrating chats - when a chat is upgraded to a supergroup, the ID changes, so it is necessary to migrate it in the DB.
 
