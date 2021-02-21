@@ -20,6 +20,7 @@ import json
 from typing import ClassVar, Union
 
 import spamwatch
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters, StopPropagation
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from spamwatch.types import Ban
@@ -30,9 +31,17 @@ from anjani_bot.utils import user_ban_protected
 LOGGER = logging.getLogger(__name__)
 
 
-class SpamCheck:
-    lock = asyncio.Lock()
-    spmwtc = listener.bot.get_collection("SPAMWATCH_API")
+class SpamShield(plugin.Plugin):
+    name: ClassVar[str] = "SpamShield"
+
+    db: AsyncIOMotorCollection
+    lock: asyncio.locks.Lock
+    spmwtch: str
+
+    async def on_load(self) -> None:
+        self.db = self.bot.get_collection("GBAN_SETTINGS")
+        self.lock = asyncio.Lock()
+        self.spmwtc = self.bot.get_config.SPAMWATCH_API
 
     def sw_check(self, user_id: int) -> Union[Ban, None]:
         """ Check on SpawmWatch """
@@ -51,25 +60,19 @@ class SpamCheck:
 
     async def chat_gban(self, chat_id) -> bool:
         """ Return Spam_Shield setting """
-        shield_db = self.bot.get_collection("GBAN_SETTINGS")
-        setting = await shield_db.find_one({'chat_id': chat_id})
+        setting = await self.db.find_one({'chat_id': chat_id})
         return setting["setting"] if setting else True
 
     async def shield_pref(self, chat_id, setting: bool):
         """ Turn on/off SpamShield in chats """
-        shield_db = self.bot.get_collection("GBAN_SETTINGS")
         async with self.lock:
-            await shield_db.update_one(
+            await self.db.update_one(
                 {'chat_id': chat_id},
                 {
                     "$set": {'setting': setting}
                 },
                 upsert=True
             )
-
-
-class SpamShield(plugin.Plugin, SpamCheck):
-    name: ClassVar[str] = "SpamShield"
 
     @listener.on(filters=filters.all & filters.group, group=1, update="message")
     async def shield(self, message):
@@ -78,7 +81,7 @@ class SpamShield(plugin.Plugin, SpamCheck):
             if(
                     await self.chat_gban(message.chat.id) and
                     (await self.bot.client.get_chat_member(message.chat.id, 'me')
-                    ).can_restrict_members
+                     ).can_restrict_members
             ):
                 user = message.from_user
                 chat = message.chat
@@ -126,7 +129,6 @@ class SpamShield(plugin.Plugin, SpamCheck):
                 )
             )
             raise StopPropagation
-
 
     @listener.on('spamshield', admin_only=True)
     async def shield_setting(self, message):
