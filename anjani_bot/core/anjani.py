@@ -51,10 +51,8 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
 
         self._start_time = time.time()
 
+        # Init Base
         super().__init__()
-
-        # Initialize aiohttp last in case bot failed to init
-        self.http = aiohttp.ClientSession()
 
     def __str__(self):
         output = f"Name : {self.name}\n"
@@ -77,6 +75,10 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
         if loop:
             asyncio.set_event_loop(loop)
             self.loop = loop
+
+        # Initialize aiohttp inside coro because in __init__
+        # will raise RuntimeError
+        self.http = aiohttp.ClientSession()
 
         try:
             await self.run()
