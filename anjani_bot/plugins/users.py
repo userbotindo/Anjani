@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import ClassVar
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 
 from anjani_bot import listener, plugin
@@ -87,17 +87,25 @@ class Users(plugin.Plugin):
         """ Delete user data from chats """
         chat_id = message.chat.id
         user_id = message.left_chat_member.id
-
         async with self.lock:
-            await self.users_db.update_one(
-                {'_id': user_id},
-                {"$pull": {'chats': chat_id}}
-            )
+            if user_id == self.bot.identifier:
+                await self.chats_db.delete_one(
+                    {'chat_id': chat_id}
+                )
+                await self.users_db.update_many(
+                    {'chats': chat_id},
+                    {"$pull": {'chats': chat_id}},
+                )
+            else:
+                await self.users_db.update_one(
+                    {'_id': user_id},
+                    {"$pull": {'chats': chat_id}}
+                )
 
-            await self.chats_db.update_one(
-                {'chat_id': chat_id},
-                {"$pull": {'member': user_id}}
-            )
+                await self.chats_db.update_one(
+                    {'chat_id': chat_id},
+                    {"$pull": {'member': user_id}}
+                )
 
     @listener.on(filters=filters.migrate_from_chat_id, update="message")
     async def __chat_migrate(self, message):

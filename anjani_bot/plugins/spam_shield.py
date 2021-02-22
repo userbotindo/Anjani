@@ -81,7 +81,7 @@ class SpamShield(plugin.Plugin):
                 upsert=True
             )
 
-    @listener.on(filters=filters.all & ~filters.channel, group=1, update="message")
+    @listener.on(filters=filters.all & filters.group, group=1, update="message")
     async def shield(self, message):
         """ Check handler """
         if message.chat is None:  # sanity check
