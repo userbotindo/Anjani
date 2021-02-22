@@ -92,7 +92,7 @@ class SpamShield(plugin.Plugin):
             ):
                 user = message.from_user
                 chat = message.chat
-                if user and not await user_ban_protected(self.bot.client, chat.id, user.id):
+                if user and not await user_ban_protected(self.bot, chat.id, user.id):
                     await self.check_and_ban(user, chat.id)
                 elif message.new_chat_members:
                     for member in message.new_chat_members:

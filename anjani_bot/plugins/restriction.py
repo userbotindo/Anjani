@@ -34,7 +34,7 @@ class Restrictions(plugin.Plugin):
         if user is None:
             return await message.reply_text(await self.bot.text(chat_id, "no-kick-user"))
         try:
-            if await user_ban_protected(self.bot.client, chat_id, user):
+            if await user_ban_protected(self.bot, chat_id, user):
                 return await message.reply_text(await self.bot.text(chat_id, "admin-kick"))
         except UserNotParticipant:
             return await message.reply_text(await self.bot.text(chat_id, "err-not-participant"))
@@ -50,7 +50,7 @@ class Restrictions(plugin.Plugin):
         if user is None:
             return await message.reply_text(await self.bot.text(chat_id, "no-ban-user"))
         try:
-            if await user_ban_protected(self.bot.client, chat_id, user):
+            if await user_ban_protected(self.bot, chat_id, user):
                 return await message.reply_text(await self.bot.text(chat_id, "admin-ban"))
         except UserNotParticipant:
             return await message.reply_text(await self.bot.text(chat_id, "err-not-participant"))
