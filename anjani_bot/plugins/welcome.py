@@ -61,8 +61,17 @@ class NewChatMember:
 
 
 class RawGreeting:
-    lock = asyncio.Lock()
-    welcome_db = listener.bot.get_collection("WELCOME")
+
+    async def on_load(self):
+        self.welcome_db = self.bot.get_collection("WELCOME")
+        self.lock = asyncio.Lock()
+
+    async def __migrate__(self, old_chat, new_chat):
+        async with self.lock:
+            await self.welcome_db.update_one(
+                {'chat_id': old_chat},
+                {"$set": {'chat_id': new_chat}},
+            )
 
     async def default_welc(self, chat_id):
         """ Bot default welcome """

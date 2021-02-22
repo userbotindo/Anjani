@@ -35,12 +35,19 @@ LOGGER = logging.getLogger(__name__)
 class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
 
-    db: AsyncIOMotorCollection
+    gban_setting: AsyncIOMotorCollection
     lock: asyncio.locks.Lock
     spmwtch: str
 
+    async def __migrate__(self, old_chat, new_chat):
+        async with self.lock:
+            await self.gban_setting.update_one(
+                {'chat_id': old_chat},
+                {"$set": {'chat_id': new_chat}}
+            )
+
     async def on_load(self) -> None:
-        self.db = self.bot.get_collection("GBAN_SETTINGS")
+        self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
         self.lock = asyncio.Lock()
         self.spmwtc = self.bot.get_config.SPAMWATCH_API
 
@@ -62,17 +69,15 @@ class SpamShield(plugin.Plugin):
 
     async def chat_gban(self, chat_id) -> bool:
         """ Return Spam_Shield setting """
-        setting = await self.db.find_one({'chat_id': chat_id})
+        setting = await self.gban_setting.find_one({'chat_id': chat_id})
         return setting["setting"] if setting else True
 
     async def shield_pref(self, chat_id, setting: bool):
         """ Turn on/off SpamShield in chats """
         async with self.lock:
-            await self.db.update_one(
+            await self.gban_setting.update_one(
                 {'chat_id': chat_id},
-                {
-                    "$set": {'setting': setting}
-                },
+                {"$set": {'setting': setting}},
                 upsert=True
             )
 

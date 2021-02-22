@@ -24,9 +24,11 @@ from anjani_bot import listener, plugin
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
-    users_db = listener.bot.get_collection("USERS")
-    chats_db = listener.bot.get_collection("CHATS")
-    lock = asyncio.Lock()
+
+    async def on_load(self):
+        self.users_db = self.bot.get_collection("USERS")
+        self.chats_db = self.bot.get_collection("CHATS")
+        self.lock = asyncio.Lock()
 
     async def __migrate__(self, old_chat, new_chat):
         async with self.lock:
