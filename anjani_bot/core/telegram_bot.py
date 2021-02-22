@@ -118,13 +118,19 @@ class TelegramBot(Base):
         api_id = str(self.get_config.api_id)
         api_hash = self.get_config.api_hash
         bot_token = self.get_config.bot_token
+        db_uri = self.get_config.db_uri
+        spamwatch_api = self.get_config.spamwatch_api
 
         if api_id in text:
             text = text.replace(api_id, "[REDACTED]")
-        if api_hash in text:
+        if api_hash is not None and api_hash in text:
             text = text.replace(api_hash, "[REDACTED]")
-        if bot_token in text:
+        if bot_token is not None and bot_token in text:
             text = text.replace(bot_token, "[REDACTED]")
+        if db_uri is not None and db_uri in text:
+            text = text.replace(db_uri, "[REDACTED]")
+        if spamwatch_api is not None and spamwatch_api in text:
+            text = text.replace(spamwatch_api, "[REDACTED]")
 
         return text
 
