@@ -66,13 +66,14 @@ def on(
             check if user and bot can add new administrator.
             default False
         staff_only (`bool` | `str`, *optional*):
-            Pass True if the command only used by Staff (SUDO and OWNER).
+            Pass True if the command only used by all staff or pass the rank string
+            if the command only available for those rank (eg: "owner" or "dev").
         update (`str`, *optional*):
             Option are [`command`, `message`, `callbackquery`].
             Pass one of the Options to use the update handler type.
-            `command` -> `~pyrogram.Client.on_command`,
-            `message` -> `~pyrogram.Client.on_message`,
-            `callbackquery` -> `~pyrogram.Client.on_callback_query`.
+            `command` -> `~Anjani.Client.on_command`,
+            `message` -> `~Anjani.Client.on_message`,
+            `callbackquery` -> `~Anjani.Client.on_callback_query`.
     """
 
     def listener_decorator(func: Callable) -> callable:
@@ -118,9 +119,9 @@ def on(
                     .format(type(staff_only))
                 )
 
-        # default update handler are command
-        dec = __bot__.client.on_command(filters=_filters, group=group)
-        if update == "message":
+        if update == "command":
+            dec = __bot__.client.on_command(filters=_filters, group=group)
+        elif update == "message":
             dec = __bot__.client.on_message(filters=_filters, group=group)
         elif update == "callbackquery":
             dec = __bot__.client.on_callback_query(filters=_filters, group=group)
