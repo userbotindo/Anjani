@@ -16,7 +16,6 @@
 
 import importlib
 import logging
-import os
 import pkgutil
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
@@ -107,7 +106,7 @@ class TelegramBot(Base):
 
     def redact_message(self, text: str) -> str:
         """ Secure any secret variable"""
-        api_id = self.get_config.API_ID
+        api_id = str(self.get_config.API_ID)
         api_hash = self.get_config.API_HASH
         bot_token = self.get_config.BOT_TOKEN
 
