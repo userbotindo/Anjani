@@ -20,6 +20,7 @@ import logging
 import os
 
 from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorCollection
 from io import BytesIO
 from typing import ClassVar, List
 
@@ -32,13 +33,17 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import nekobin
-from anjani_bot.plugins.users import Users
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
+
+    db: AsyncIOMotorCollection
+
+    async def __on_load__(self) -> None:
+        self.db = self.bot.get_collection("CHATS")
 
     @listener.on(["log", "logs"], staff_only=True)
     async def logs(self, message):
@@ -88,7 +93,7 @@ class Staff(plugin.Plugin):
             sent = 0
             text = to_send[1] + "\n\n*This is a broadcast message."
             msg = await message.reply_text("sending broadcast...")
-            async for chat in Users.chats_db.find({}):
+            async for chat in self.db.find({}):
                 if sent % 25 == 0:
                     # sleep every 25 msg sent to prevent flood limmit.
                     await asyncio.sleep(1)
@@ -122,7 +127,7 @@ class Staff(plugin.Plugin):
     async def chatlist(self, message):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"
-        async for chat in Users.chats_db.find({}):
+        async for chat in self.db.find({}):
             chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
