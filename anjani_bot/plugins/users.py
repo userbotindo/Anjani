@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import ClassVar
 
 from pyrogram import filters
@@ -25,12 +26,16 @@ from anjani_bot import listener, plugin
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
-    async def __on_load__(self):
-        self.users_db = self.bot.get_collection("USERS")
+    db_chats: AsyncIOMotorCollection
+    db_users: AsyncIOMotorCollection
+    lock = asyncio.locks.Lock
+
+    async def __on_load__(self) -> None:
         self.chats_db = self.bot.get_collection("CHATS")
+        self.users_db = self.bot.get_collection("USERS")
         self.lock = asyncio.Lock()
 
-    async def __migrate__(self, old_chat, new_chat):
+    async def __migrate__(self, old_chat, new_chat) -> None:
         async with self.lock:
             await self.users_db.update_many(
                 {'chats': old_chat},
