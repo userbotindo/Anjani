@@ -16,6 +16,7 @@
 
 import asyncio
 from html import escape
+from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import ClassVar, Tuple, Union
 
 from pyrogram import filters
@@ -61,6 +62,8 @@ class NewChatMember:
 
 
 class RawGreeting:
+    welcome_db: AsyncIOMotorCollection
+    lock: asyncio.locks.Lock
 
     async def __on_load__(self):
         self.welcome_db = self.bot.get_collection("WELCOME")
