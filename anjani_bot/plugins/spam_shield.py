@@ -26,6 +26,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin
+from anjani_bot.core import pool
 from anjani_bot.utils import user_ban_protected
 
 LOGGER = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class SpamShield(plugin.Plugin):
         self.lock = asyncio.Lock()
         self.spmwtc = self.bot.get_config.SPAMWATCH_API
 
+    @pool.run_in_thread
     def sw_check(self, user_id: int) -> Union[Ban, None]:
         """ Check on SpawmWatch """
         if not self.spmwtc:
@@ -74,7 +76,7 @@ class SpamShield(plugin.Plugin):
                 upsert=True
             )
 
-    @listener.on(filters=filters.all & filters.group, group=1, update="message")
+    @listener.on(filters=filters.all & ~filters.channel, group=1, update="message")
     async def shield(self, message):
         """ Check handler """
         try:
