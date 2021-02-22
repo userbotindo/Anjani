@@ -46,7 +46,7 @@ class SpamShield(plugin.Plugin):
                 {"$set": {'chat_id': new_chat}}
             )
 
-    async def on_load(self) -> None:
+    async def __on_load__(self) -> None:
         self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
         self.lock = asyncio.Lock()
         self.spmwtc = self.bot.get_config.SPAMWATCH_API

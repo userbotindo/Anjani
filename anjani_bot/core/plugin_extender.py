@@ -59,12 +59,12 @@ class PluginExtender(Base):
         self.plugins[cls.name] = mod
         if hasattr(mod, "__migrate__"):
             self.__migrateable.append(mod)
-        if hasattr(mod, "helpable"):
+        if hasattr(mod, "helpable") and mod.helpable is True:
             self.helpable.append(mod)
 
         # load database
-        if hasattr(mod, "on_load"):
-            self.loop.create_task(mod.on_load())
+        if hasattr(mod, "__on_load__"):
+            self.loop.create_task(mod.__on_load__())
             LOGGER.debug(f"Database plugin '{cls.name}' loaded.")
 
     def unload_module(self, mod: plugin.Plugin) -> None:
@@ -72,7 +72,7 @@ class PluginExtender(Base):
         cls = type(mod)
         LOGGER.info("Unloading %s", mod.format_desc(mod.comment))
 
-        del self.modules[cls.name]
+        del self.plugins[cls.name]
 
     def _load_all_from_metamod(
             self, subplugins: Iterable[ModuleType], *, comment: str = None

@@ -76,9 +76,9 @@ class PluginClass(plugin.Plugin):
 
 Define a `boolean` class variable named `helpable` which shows that the plugin has a helper (documentation) to the `/help` command. Then you can make the string on `anjani_bot/core/languages` with `{name}-help` and `{name}-button` key. `name` here is the value of the name variable on the plugin class.
 
-The `on_load()` *(coroutine) function is called when the plugin loaded on the startup. This method only takes the class instance. You can use this to load the database collection on the plugin.
-
 To use the bot multi languages, all you need is to use `await self.bot.text(chat_id, "<keyword>", *args, **kwargs)`. `keyword` is the string keyword on the language file (`anjani_bot/core/languages`). and you can simply put any args or kwargs that should be formatted and inserted in the string.
+
+The `__on_load__()` *(coroutine) function is called when the plugin loaded on the startup. This method only takes the class instance. You can use this to load the database collection on the plugin.
 
 The `__migrate__()` *(coroutine) function is used for migrating chats - when a chat is upgraded to a supergroup, the ID changes, so it is necessary to migrate it in the DB. This method takes 3 parameters instance of the class, old chat id and new chat id eg:`self, old_chat, new_chat`.
 

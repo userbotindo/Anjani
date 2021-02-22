@@ -25,7 +25,7 @@ from anjani_bot import listener, plugin
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
-    async def on_load(self):
+    async def __on_load__(self):
         self.users_db = self.bot.get_collection("USERS")
         self.chats_db = self.bot.get_collection("CHATS")
         self.lock = asyncio.Lock()

@@ -62,7 +62,7 @@ class NewChatMember:
 
 class RawGreeting:
 
-    async def on_load(self):
+    async def __on_load__(self):
         self.welcome_db = self.bot.get_collection("WELCOME")
         self.lock = asyncio.Lock()
 
