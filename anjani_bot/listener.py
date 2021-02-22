@@ -19,7 +19,7 @@ from typing import Callable, List, Optional, Union
 
 from pyrogram.filters import Filter, create
 
-from . import anjani as bot, custom_filter
+from . import anjani as __bot__, custom_filter
 
 
 def on(
@@ -119,11 +119,11 @@ def on(
                 )
 
         # default update handler are command
-        dec = bot.client.on_command(filters=_filters, group=group)
+        dec = __bot__.client.on_command(filters=_filters, group=group)
         if update == "message":
-            dec = bot.client.on_message(filters=_filters, group=group)
+            dec = __bot__.client.on_message(filters=_filters, group=group)
         elif update == "callbackquery":
-            dec = bot.client.on_callback_query(filters=_filters, group=group)
+            dec = __bot__.client.on_callback_query(filters=_filters, group=group)
 
         return dec(func)
 
