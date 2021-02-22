@@ -22,7 +22,7 @@ from typing import ClassVar, Union
 import spamwatch
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters, StopPropagation
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
+from pyrogram.errors.exceptions.bad_request_400 import ChannelPrivate, UserNotParticipant
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin
@@ -84,6 +84,9 @@ class SpamShield(plugin.Plugin):
     @listener.on(filters=filters.all & ~filters.channel, group=1, update="message")
     async def shield(self, message):
         """ Check handler """
+        if message.chat is None:  # sanity check
+            return
+
         try:
             if(
                     await self.chat_gban(message.chat.id) and
@@ -97,7 +100,7 @@ class SpamShield(plugin.Plugin):
                 elif message.new_chat_members:
                     for member in message.new_chat_members:
                         await self.check_and_ban(member, chat.id)
-        except UserNotParticipant:
+        except (ChannelPrivate, UserNotParticipant):
             pass
 
     async def check_and_ban(self, user, chat_id):
