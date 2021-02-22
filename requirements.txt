@@ -1,4 +1,5 @@
 aiohttp
+aiorun
 colorlog
 covid
 dnspython
@@ -9,3 +10,4 @@ PyYAML
 spamwatch
 tgcrypto
 uvloop
+
