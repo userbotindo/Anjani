@@ -49,7 +49,7 @@ class SpamShield(plugin.Plugin):
     async def __on_load__(self) -> None:
         self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
         self.lock = asyncio.Lock()
-        self.spmwtc = self.bot.get_config.SPAMWATCH_API
+        self.spmwtc = self.bot.get_config.spamwatch_api
 
     @pool.run_in_thread
     def sw_check(self, user_id: int) -> Union[Ban, None]:

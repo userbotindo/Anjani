@@ -16,29 +16,32 @@
 
 import os
 
-from dotenv import load_dotenv
 from typing import Union
+from dataclasses import dataclass
+from dotenv import load_dotenv
 
 
+@dataclass
 class BotConfig:
     """
     Bot configuration
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self) -> Union[str, int]:
         if os.path.isfile("config.env"):
             load_dotenv("config.env")
 
         # Core config
-        self.API_ID = int(os.environ.get("API_ID", 0))
-        self.API_HASH = os.environ.get("API_HASH")
-        self.BOT_TOKEN = os.environ.get("BOT_TOKEN")
-        self.DB_URI = os.environ.get("DB_URI")
+        self.api_id = int(os.environ.get("API_ID", 0))
+        self.api_hash = os.environ.get("API_HASH")
+        self.bot_token = os.environ.get("BOT_TOKEN")
+        self.db_uri = os.environ.get("DB_URI")
 
         # Optional
-        self.DOWNLOAD_PATH = os.environ.get("DOWNLOAD_PATH", "./downloads")
-        self.LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", 0))
-        self.SPAMWATCH_API = os.environ.get("SW_API", None)
+        self.download_path = os.environ.get("DOWNLOAD_PATH", "./downloads")
+        self.log_channel = int(os.environ.get("LOG_CHANNEL", 0))
+        self.spamwatch_api = os.environ.get("SW_API", None)
 
         # Manager required
-        self.OWNER_ID = int(os.environ.get("OWNER_ID", 0))
+        self.owner_id = int(os.environ.get("OWNER_ID", 0))

@@ -30,7 +30,9 @@ if TYPE_CHECKING:
     from .anjani import Anjani
 
 
-class Client(pyrogram.Client):
+class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
+    """ `~pyrogram.Client` overwrite decorator """
+
     def __init__(self, bot: "Anjani", **kwargs: Any) -> None:
         self._bot = bot
 

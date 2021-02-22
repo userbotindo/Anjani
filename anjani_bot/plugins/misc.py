@@ -112,7 +112,7 @@ class Misc(plugin.Plugin):
             await self.bot.text(message.chat.id, "wait-paste")
         )
         if reply and reply.document:
-            file = await reply.download(self.bot.get_config.DOWNLOAD_PATH)
+            file = await reply.download(self.bot.get_config.download_path)
             with open(file, 'r') as text:
                 data = text.read()
             os.remove(file)

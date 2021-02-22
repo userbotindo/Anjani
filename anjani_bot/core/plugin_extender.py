@@ -33,6 +33,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PluginExtender(Base):
+    """ Core plugin.Plugin Initialization """
     helpable: List[plugin.Plugin]
     loaded: List[str]
     plugins: MutableMapping[str, plugin.Plugin]
@@ -65,7 +66,7 @@ class PluginExtender(Base):
         # load database
         if hasattr(mod, "__on_load__"):
             self.loop.create_task(mod.__on_load__())
-            LOGGER.debug(f"Database plugin '{cls.name}' loaded.")
+            LOGGER.debug("Database plugin '%s' loaded.", cls.name)
 
     def unload_module(self, mod: plugin.Plugin) -> None:
         """ Unload bot module """
@@ -127,7 +128,3 @@ class PluginExtender(Base):
             for i in range((len(modules) + 3 - 1) // 3)
         ]
         return pairs
-
-
-class UnknownPluginError(Exception):
-    pass

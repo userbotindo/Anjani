@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 
 
 class Plugin:
+    """ Plugins extender """
     # Class variables
     name: ClassVar[str] = "Unnamed"
     disabled: ClassVar[bool] = False
@@ -52,4 +53,4 @@ class Plugin:
 
 
 class PluginError(Exception):
-    pass
+    """ Plugins Exception """

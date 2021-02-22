@@ -18,7 +18,7 @@ import asyncio
 import json
 import logging
 import time
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 
 import aiohttp
 import aiorun
@@ -39,12 +39,7 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
     # pylint: disable=too-many-instance-attributes
     client: pyrogram.Client
     http: aiohttp.ClientSession
-    identifier: int
     loop: asyncio.AbstractEventLoop
-    name: str
-    staff: Dict[str, Union[str, int]]
-    stopping: bool
-    username: str
 
     def __init__(self):
         self.stopping = False
