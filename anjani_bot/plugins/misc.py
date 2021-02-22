@@ -88,18 +88,18 @@ class Misc(plugin.Plugin):
     async def get_id(self, message):
         """ Display ID's """
         msg = message.reply_to_message or message
-        out_str = f"👥 Chat ID : `{(msg.forward_from_chat or msg.chat).id}`\n"
-        out_str += f"💬 Message ID : `{msg.forward_from_message_id or msg.message_id}`\n"
+        out_str = f"👥 **Chat ID :** `{(msg.forward_from_chat or msg.chat).id}`\n"
+        out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.message_id}`\n"
         if msg.from_user:
-            out_str += f"🙋‍♂️ From User ID : `{msg.from_user.id}`\n"
+            out_str += f"🙋‍♂️ **From User ID :** `{msg.from_user.id}`\n"
         file = (
             msg.audio or msg.animation or msg.document
             or msg.photo or msg.sticker or msg.voice
             or msg.video_note or msg.video
         ) or None
         if file:
-            out_str += f"📄 Media Type: `{file.__class__.__name__}`\n"
-            out_str += f"📄 File ID: {file.file_id}"
+            out_str += f"📄 **Media Type :** `{file.__class__.__name__}`\n"
+            out_str += f"📄 **File ID :** `{file.file_id}`"
         await message.reply_text(out_str)
 
     @listener.on("paste")
