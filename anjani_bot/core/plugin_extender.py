@@ -33,14 +33,18 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PluginExtender(Base):
-    helpable: List[plugin.Plugin] = list()
-    loaded: List[str] = list()
+    helpable: List[plugin.Plugin]
+    loaded: List[str]
     plugins: MutableMapping[str, plugin.Plugin]
 
-    __migrateable: List[plugin.Plugin] = list()
+    __migrateable: List[plugin.Plugin]
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
+        self.helpable = list()
+        self.loaded = list()
         self.plugins = {}
+
+        self.__migrateable = list()
 
         super().__init__(**kwargs)
 
