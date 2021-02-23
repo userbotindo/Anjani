@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import logging
+import os
 from codecs import decode, encode
 from typing import Any, List, Union, Optional, Dict
 
@@ -30,35 +30,40 @@ LOGGER = logging.getLogger(__name__)
 
 class DataBase(Base):
     """Client Database on MongoDB"""
-    _client: AsyncIOMotorClient
-    _db: AsyncIOMotorDatabase
-    _lang: AsyncIOMotorCollection
-    _list_collection: List[str]
+    __client__: AsyncIOMotorClient
+    __db__: AsyncIOMotorDatabase
+    __lang__: AsyncIOMotorCollection
+    __language__: List[str]
+    __list_collection__: List[str]
+    __strings__: Dict[str, str]
 
     def __init__(self):
-        self.__language: List[str] = ["en", "id"]
-        self.__strings: Dict[str, str] = {}
+        self.__language__ = sorted([
+             os.path.splitext(filename)[0]
+             for filename in os.listdir("anjani_bot/core/language")
+        ])
+        self.__strings__ = {}
 
         super().__init__()
 
     @property
     def language(self) -> list:
         """ Return list of bot suported languages """
-        return self.__language
+        return self.__language__
 
     @property
     def lang_col(self) -> AgnosticCollection:
         """ Return client language collection """
-        return self._lang
+        return self.__lang__
 
     def _load_language(self):
         """Load bot language."""
         LOGGER.info("Loading language...")
-        for i in self.__language:
+        for i in self.__language__:
             LOGGER.debug("Loading language: %s", i)
             with open(f"anjani_bot/core/language/{i}.yml", "r") as text:
-                self.__strings[i] = full_load(text)
-        LOGGER.info("Language %s loaded", self.__language)
+                self.__strings__[i] = full_load(text)
+        LOGGER.info("Language %s loaded", self.__language__)
 
     async def connect_db(self, db_name: str) -> None:
         """Connect to MongoDB client
@@ -67,19 +72,19 @@ class DataBase(Base):
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self._client = AsyncIOMotorClient(self.get_config.db_uri, connect=False)
-        if db_name in await self._client.list_database_names():
+        self.__client__ = AsyncIOMotorClient(self.get_config.db_uri, connect=False)
+        if db_name in await self.__client__.list_database_names():
             LOGGER.info("Database found, Logged in to Database...")
         else:
             LOGGER.info("Database not found! Creating New Database...")
-        self._db = self._client[db_name]
-        self._list_collection = await self._db.list_collection_names()
+        self.__db__ = self.__client__[db_name]
+        self.__list_collection__ = await self.__db__.list_collection_names()
         LOGGER.info("Database connected")
-        self._lang = self.get_collection("LANGUAGE")
+        self.__lang__ = self.get_collection("LANGUAGE")
 
     async def disconnect_db(self) -> None:
         """Disconnect database client"""
-        self._client.close()
+        self.__client__.close()
         LOGGER.info("Disconnected from database")
 
     def get_collection(self, name: str) -> AgnosticCollection:
@@ -88,24 +93,31 @@ class DataBase(Base):
         Parameters:
             name (`str`): Collection name to fetch
         """
-        if name in self._list_collection:
+        if name in self.__list_collection__:
             LOGGER.debug("Collection %s Found, fetching...", name)
         else:
             LOGGER.debug("Collection %s Not Found, Creating New Collection...", name)
-        return self._db[name]
+        return self.__db__[name]
 
     async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        data = await self._lang.find_one({'chat_id': chat_id})
+        data = await self.__lang__.find_one({'chat_id': chat_id})
         return data["language"] if data else 'en'  # default english
 
     async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
         """ Change chat language setting. """
-        await self._lang.update_one(
+        await self.__lang__.update_one(
             {'chat_id': int(chat_id)},
             {"$set": {'language': language}},
             upsert=True,
         )
+
+    async def migrate_chat(self, old_chat: int, new_chat: int):
+        """ Run all migrate handler on every migrateable plugin """
+        LOGGER.debug("Migrating chat from %s to %s", old_chat, new_chat)
+        for plugin in list(self.plugins.values()):
+            if hasattr(plugin, "__migrate__"):
+                await plugin.__migrate__(old_chat, new_chat)
 
     async def text(
             self,
@@ -137,14 +149,14 @@ class DataBase(Base):
                     Default to False.
 
         """
-        _lang = await self.get_lang(chat_id)
+        lang = await self.get_lang(chat_id)
         noformat = bool(kwargs.get("noformat", False))
 
-        if _lang in self.__language and name in self.__strings[_lang]:
+        if lang in self.__language__ and name in self.__strings__[lang]:
             text = (
                 decode(
                     encode(
-                        self.__strings[_lang][name],
+                        self.__strings__[lang][name],
                         'latin-1',
                         'backslashreplace',
                     ),
@@ -152,14 +164,14 @@ class DataBase(Base):
                 )
             )
             return text if noformat else text.format(*args, **kwargs)
-        err = "NO LANGUAGE STRING FOR {} in {}".format(name, _lang)
+        err = "NO LANGUAGE STRING FOR {} in {}".format(name, lang)
         LOGGER.warning(err)
         # try to send the english string first if not found
         try:
             text = (
                 decode(
                     encode(
-                        self.__strings["en"][name],
+                        self.__strings__["en"][name],
                         'latin-1',
                         'backslashreplace',
                     ),

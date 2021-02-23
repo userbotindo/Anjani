@@ -61,7 +61,7 @@ class Main(plugin.Plugin):
 
     @listener.on("help")
     async def help(self, message):
-        """ Bot modules helper """
+        """ Bot plugins helper """
         chat_id = message.chat.id
 
         if message.chat.type != "private":  # only send in PM's
@@ -87,16 +87,16 @@ class Main(plugin.Plugin):
     @listener.on(filters=filters.regex(r"help_(.*?)"), update="callbackquery")
     async def help_button(self, query):
         """ Bot helper button """
-        mod_match = re.match(r"help_module\((.+?)\)", query.data)
+        plugin_match = re.match(r"help_plugin\((.+?)\)", query.data)
         back_match = re.match(r"help_back", query.data)
         chat_id = query.message.chat.id
 
-        if mod_match:
-            module = mod_match.group(1)
+        if plugin_match:
+            extension = plugin_match.group(1)
             text = (
-                "Here is the help for the **{}** module:\n{}".format(
-                    module.capitalize(),
-                    await self.bot.text(chat_id, f"{module}-help")
+                "Here is the help for the **{}** plugin:\n{}".format(
+                    extension.capitalize(),
+                    await self.bot.text(chat_id, f"{extension}-help")
                 )
             )
             await query.edit_message_text(

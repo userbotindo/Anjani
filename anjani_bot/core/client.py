@@ -34,11 +34,11 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
     """ `~pyrogram.Client` overwrite decorator """
 
     def __init__(self, bot: "Anjani", **kwargs: Any) -> None:
-        self._bot = bot
+        self.__bot__ = bot
 
         super().__init__(**kwargs)
 
-    async def _update(
+    async def __update__(
             self,
             func: Callable,
             message: Union[Message, CallbackQuery],
@@ -46,17 +46,18 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         func.__self__ = None
 
         # Get class of func itself
-        for _, cls in self._bot.plugins.items():
-            if str(cls).strip(">").split("from")[-1].strip() == (
-                    func.__module__.replace(".", "/") + ".py"):
+        for cls in list(self.__bot__.plugins.values()):
+            if (str(cls).strip(">").split("from")[-1].strip().strip(".py")
+               .replace("/", ".") == func.__module__):
                 func.__self__ = cls
                 break
         else:
             # for now raise for exception if func couldn't get the class itself
             raise plugin.PluginError("Uncaught plugin error...")
 
+        func = getattr(func.__self__, func.__name__)
         try:
-            await func(func.__self__, message)
+            await func(message)
         except (StopPropagation, ContinuePropagation):  # pylint: disable=try-except-raise
             raise
 
@@ -65,7 +66,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             filters: Optional[Filter] = None,
             group: int = 0
         ) -> callable:
-        """Decorator for handling commands
+        """Decorator for handling commands.
 
         Parameters:
             filters (:obj:`~pyrogram.filters`, *optional*):
@@ -79,7 +80,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         def decorator(func: Callable) -> callable:
             # Wrapper for decorator so func return `class` & `message`
             async def wrapper(_: Client, message: Message) -> None:
-                return await self._update(func, message)
+                return await self.__update__(func, message)
 
             self.add_handler(MessageHandler(wrapper, filters=filters), group)
             return func
@@ -104,7 +105,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
 
         def decorator(func: Callable) -> callable:
             async def wrapper(_: Client, message: Message) -> None:
-                return await self._update(func, message)
+                return await self.__update__(func, message)
 
             self.add_handler(MessageHandler(wrapper, filters=filters), group)
             return func
@@ -128,7 +129,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         """
         def decorator(func: Callable) -> callable:
             async def wrapper(_: Client, query: CallbackQuery) -> None:
-                return await self._update(func, query)
+                return await self.__update__(func, query)
 
             self.add_handler(CallbackQueryHandler(wrapper, filters=filters), group)
             return func

@@ -36,7 +36,6 @@ LOGGER = logging.getLogger(__name__)
 
 class Anjani(TelegramBot, DataBase, PluginExtender):
     """ AnjaniBot Client """
-    # pylint: disable=too-many-instance-attributes
     client: pyrogram.Client
     http: aiohttp.ClientSession
     loop: asyncio.AbstractEventLoop
@@ -56,7 +55,7 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
         output += f"Uptime: {self.uptime}\n"
         output += f"Pyrogram: {self.client.app_version}\n"
         output += f"Language: {self.language}\n"
-        output += f"Loaded Modules:{json.dumps(self.loaded, indent=2)}\n"
+        output += f"Loaded Plugins:{json.dumps(list(self.plugins.keys()), indent=2)}\n"
         output += f"Staff list:{json.dumps(self.staff, indent=2)}\n"
         return output
 

@@ -84,7 +84,6 @@ class TelegramBot(Base):
         # Initialize pool
         self.client.executor.shutdown()
         self.client.executor = pool.start()
-        self.executor = self.client.executor
 
         await self.connect_db("AnjaniBot")
         self._load_language()
@@ -92,7 +91,7 @@ class TelegramBot(Base):
             importlib.import_module("anjani_bot.plugins." + info.name, __name__)
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
-        self.load_all_modules(subplugins)
+        self.load_all_plugins(subplugins)
         await self.client.start()
         await self._load_all_attribute()
         await self.channel_log("Bot started successfully...")

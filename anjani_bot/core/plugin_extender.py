@@ -34,97 +34,79 @@ LOGGER = logging.getLogger(__name__)
 
 class PluginExtender(Base):
     """ Core plugin.Plugin Initialization """
-    helpable: List[plugin.Plugin]
-    loaded: List[str]
     plugins: MutableMapping[str, plugin.Plugin]
 
-    __migrateable: List[plugin.Plugin]
-
     def __init__(self: "Anjani", **kwargs: Any) -> None:
-        self.helpable = list()
-        self.loaded = list()
         self.plugins = {}
-
-        self.__migrateable = list()
 
         super().__init__(**kwargs)
 
-    def load_module(
+    def load_plugin(
             self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None
         ) -> None:
-        """ Load bot module"""
+        """ Load bot plugin"""
         LOGGER.debug("Loading %s", cls.format_desc(comment))
 
-        mod = cls(self)
-        mod.comment = comment
-        self.plugins[cls.name] = mod
-        if hasattr(mod, "__migrate__"):
-            self.__migrateable.append(mod)
-        if hasattr(mod, "helpable") and mod.helpable is True:
-            self.helpable.append(mod)
+        ext = cls(self)
+        ext.comment = comment
+        self.plugins[cls.name] = ext
 
         # load database
-        if hasattr(mod, "__on_load__"):
-            self.loop.create_task(mod.__on_load__())
+        if hasattr(ext, "__on_load__"):
+            self.loop.create_task(ext.__on_load__())
             LOGGER.debug("Database plugin '%s' loaded.", cls.name)
 
-    def unload_module(self, mod: plugin.Plugin) -> None:
-        """ Unload bot module """
-        cls = type(mod)
-        LOGGER.info("Unloading %s", mod.format_desc(mod.comment))
+    def unload_plugin(self, ext: plugin.Plugin) -> None:
+        """ Unload bot plugin """
+        cls = type(ext)
+        LOGGER.info("Unloading %s", ext.format_desc(ext.comment))
 
         del self.plugins[cls.name]
 
-    def _load_all_from_metamod(
+    def _load_all_from_metaplugin(
             self, subplugins: Iterable[ModuleType], *, comment: str = None
         ) -> None:
-        for module_mod in subplugins:
-            for sym in dir(module_mod):
-                cls = getattr(module_mod, sym)
+        for extension in subplugins:
+            for sym in dir(extension):
+                cls = getattr(extension, sym)
                 if (
                         inspect.isclass(cls)
                         and issubclass(cls, plugin.Plugin)
                         and not cls.disabled
                     ):
-                    self.load_module(cls, comment=comment)
+                    self.load_plugin(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
-    def load_all_modules(self, subplugins: Iterable[ModuleType]) -> None:
-        """ Load available module """
+    def load_all_plugins(self, subplugins: Iterable[ModuleType]) -> None:
+        """ Load available plugin """
         LOGGER.info("Loading plugins")
-        self._load_all_from_metamod(subplugins)
-        for ext in self.plugins:
-            self.loaded.append(ext)
-        self.helpable.sort(key=lambda x: x.name)
-        LOGGER.info("Plugins loaded %s", self.loaded)
+        self._load_all_from_metaplugin(subplugins)
+        self.plugins = dict(sorted(self.plugins.items()))
+        LOGGER.info("Plugins loaded %s", list(self.plugins.keys()))
 
-    def unload_all_modules(self) -> None:
-        """ Unload modules """
-        LOGGER.info("Unloading modules...")
-
+    def unload_all_plugins(self) -> None:
+        """ Unload plugins """
+        LOGGER.info("Unloading plugins...")
         # Can't modify while iterating, so collect a list first
-        for mod in list(self.modules.values()):
-            self.unload_module(mod)
+        for ext in list(self.plugins.values()):
+            self.unload_plugin(ext)
 
-        LOGGER.info("All modules unloaded.")
-
-    async def migrate_chat(self, old_chat: int, new_chat: int):
-        """ Run all migrate handler on every migrateable module """
-        LOGGER.debug("Migrating chat from %s to %s", old_chat, new_chat)
-        for mod in self.__migrateable:
-            await mod.__migrate__(old_chat, new_chat)
+        LOGGER.info("All plugins unloaded.")
 
     async def help_builder(self, chat_id: int) -> List:
         """ Build the help button """
-        modules = [
-            InlineKeyboardButton(
-                await self.text(chat_id, f"{x.name.lower()}-button"),
-                callback_data="help_module({})".format(x.name.lower()))
-            for x in self.helpable
-        ]
+        plugins: List[InlineKeyboardButton] = list()
+        for cls in list(self.plugins.values()):
+            if hasattr(cls, "helpable") and cls.helpable is True:
+                plugins.append(
+                    InlineKeyboardButton(
+                        await self.text(chat_id, f"{cls.name.lower()}-button"),
+                        callback_data="help_plugin({})".format(cls.name.lower())
+                    )
+                )
 
         pairs = [
-            modules[i * 3:(i + 1) * 3]
-            for i in range((len(modules) + 3 - 1) // 3)
+            plugins[i * 3:(i + 1) * 3]
+            for i in range((len(plugins) + 3 - 1) // 3)
         ]
         return pairs

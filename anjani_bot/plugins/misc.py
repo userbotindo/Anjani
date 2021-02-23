@@ -40,6 +40,7 @@ class Misc(plugin.Plugin):
         latency = (end - start).microseconds / 1000
         await msg.edit(f"**Pong!**\n`{latency} ms`")
 
+    @listener.on("covid")
     async def covid(self, message):
         """ Fetch stats about Covid-19 """
         cov = await run_in_thread(Covid)(source="worldometers")

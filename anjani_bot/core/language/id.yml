@@ -56,7 +56,7 @@ language-invalid: Kode bahasa tidak cocok.\nKode bahasa yang tersedia {}
 #region misc
 miscs-button: Lainnya
 miscs-help: |
-  An "odds and ends" module for small, simple commands which don't really fit anywhere.\n
+  An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
   ×  /ping : Get bot latency.
@@ -91,7 +91,7 @@ purge-done: "`{} pesan dibershikan dalam {} detik...`"
 restriction-button: Pembatasan
 restriction-help: |
   Orang yang mengirim spam, mengolok-olok, atau mengganggu perlu dibatasi.
-  Dengan modul ini, admin grup dapat dengan mudah membatasi anggota yang melanggar. \n
+  Dengan ekstensi ini, admin grup dapat dengan mudah membatasi anggota yang melanggar. \n
   **Hanya Admin:**
   × /kick <userhandle>: Menendang pengguna, (melalui handle, atau balas pesan)
   × /ban <userhandle>: Mencekal pengguna. (melalui handle, atau balas pesan)
@@ -117,7 +117,7 @@ banned-text: |
 spamshield-set: "Chat #SPAM_SHIELD turned {}"
 spamshield-view: |
   Spam shield setting: {}.
-  Spam shield is a usefull module to help protect your group from spammers and trollers.
+  Spam shield is a usefull plugin to help protect your group from spammers and trollers.
 #endregion
 #region greetings
 greetings-button: Sambutan

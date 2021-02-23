@@ -56,7 +56,7 @@ language-invalid : Invalid language code.\nAvailable language code {}
 #region misc
 miscs-button : Misc
 miscs-help : |
-  An "odds and ends" module for small, simple commands which don't really fit anywhere.\n
+  An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
   ×  /ping : Get bot latency.
@@ -91,7 +91,7 @@ purge-done: "`Purged {} messages in {} second(s)...`"
 restriction-button: Restrictions
 restriction-help: |
   People spamming, trolling or interfering need to be restricted.
-  With this module group admins can easily restrict violating members.\n
+  With this plugin group admins can easily restrict violating members.\n
   **Admin Only:**
   × /kick <userhandle>: Kicks a user, (via handle, or reply)
   × /ban <userhandle>: Bans a user. (via handle, or reply)
@@ -117,7 +117,7 @@ banned-text: |
 spamshield-set: "Chat #SPAM_SHIELD turned {}"
 spamshield-view: |
   Spam shield setting: {}.
-  Spam shield is a usefull module to help protect your group from spammers and trollers.
+  Spam shield is a usefull plugin to help protect your group from spammers and trollers.
 #endregion
 #region greetings
 greetings-button : Greetings

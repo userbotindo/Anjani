@@ -43,13 +43,13 @@ class Plugin:
 
     @classmethod
     def format_desc(cls, comment: Optional[str] = None):
-        """ module description """
+        """ plugin description """
         _comment = comment + " " if comment else ""
         return (f"{_comment}plugin {cls.name} ({cls.__name__}) "
                 f"from {os.path.relpath(inspect.getfile(cls))}")
 
     def __repr__(self):
-        return f"< {self.format_desc(self.comment)} >"
+        return f"<{self.format_desc(self.comment)}>"
 
 
 class PluginError(Exception):
