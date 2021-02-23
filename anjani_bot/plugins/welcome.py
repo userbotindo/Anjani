@@ -117,14 +117,16 @@ class RawGreeting:
         async with self.lock:
             await self.welcome_db.update_one(
                 {'chat_id': chat_id},
-                {
-                    "$set": {
-                        'should_welcome': True,
-                        'custom_welcome': text,
-                        'clean_service': False
-                    }
-                },
+                {"$set": {'custom_welcome': text}},
                 upsert=True
+            )
+
+    async def del_custom_welcome(self, chat_id):
+        """ Delete custom welcome msg """
+        async with self.lock:
+            await self.welcome_db.update_one(
+                {'chat_id': chat_id},
+                {"$unset": {'custom_welcome': ""}}
             )
 
     async def set_cleanserv(self, chat_id, setting):
@@ -223,7 +225,7 @@ class Greeting(plugin.Plugin, RawGreeting):
     async def reset_welcome(self, message):
         """ Reset saved welcome message """
         chat = message.chat
-        await self.set_custom_welcome(chat.id, await self.default_welc(chat.id))
+        await self.del_custom_welcome(chat.id)
         await message.reply_text(await self.bot.text(chat.id, "reset-welcome"))
 
     @listener.on("welcome", admin_only=True)

@@ -143,8 +143,8 @@ cust-welcome-set: Successfully set custom welcome message!
 reset-welcome: Successfully reset welcome message to default!
 view-welcome: |
   **This chat has the welcome setting:**
-  ``Welcoming user`` = ``{}``
-  ``Clean service message`` = ``{}``
+  `Welcoming user` = `{}`
+  `Clean service message` = `{}`
   And the welcome message of this chat is:
 #endregion
 #region common-error

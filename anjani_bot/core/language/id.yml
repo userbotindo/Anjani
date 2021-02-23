@@ -19,7 +19,7 @@ help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah.
 add-to-group-button: Tambahkan ke grup 👥
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
-back-button: '⬅️ Kembali'
+back-button: ⬅️ Kembali
 #endregion
 #region admin
 admins-button: Admin
@@ -143,8 +143,8 @@ cust-welcome-set: Berhasil menyetel pesan sambutan kustom!
 reset-welcome: Berhasil menyetel ulang pesan sambutan ke semula!
 view-welcome: |
   ** Obrolan ini memiliki pengaturan: **
-  ``Menyambut pengguna`` = `` {} ``
-  ``Pembersihan Pesan layanan`` = `` {} ``
+  `Menyambut pengguna` = `{}`
+  `Pembersihan Pesan layanan` = `{}`
   Dan pesan sambutan dari obrolan ini adalah:
 #endregion
 #region common-error
