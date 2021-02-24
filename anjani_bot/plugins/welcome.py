@@ -231,19 +231,19 @@ class Greeting(plugin.Plugin, RawGreeting):
     async def view_welcome(self, message):
         """ View current welcome message """
         chat_id = message.chat.id
-        if len(message.command) >= 1:
+        if message.command:
             arg = message.command[0]
             if arg in ["yes", "on"]:
                 await self.set_welc_pref(chat_id, True)
                 return await message.reply_text(await self.bot.text(
                     chat_id, "welcome-set", "on"))
-            elif arg in ["no", "off"]:
+            if arg in ["no", "off"]:
                 await self.set_welc_pref(chat_id, False)
                 return await message.reply_text(await self.bot.text(
                     chat_id, "welcome-set", "off"))
-            else:
-                return await message.reply_text(await self.bot.text(
-                    chat_id, "err-invalid-option"))
+
+            return await message.reply_text(await self.bot.text(
+                chat_id, "err-invalid-option"))
         sett, welc_text, clean_serv = await self.full_welcome(chat_id)
         text = await self.bot.text(chat_id, "view-welcome", sett, clean_serv)
         await message.reply_text(text)
