@@ -35,4 +35,7 @@ restylers:
         - ["--style", "google"]
   - prettier:
       include:
-        - ["**/*.yml", "**/*.md"]
+        - "**/*.md"
+  - prettier:
+      include:
+        - "**/*.yml"
