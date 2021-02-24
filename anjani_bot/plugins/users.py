@@ -28,7 +28,7 @@ class Users(plugin.Plugin):
 
     db_chats: AsyncIOMotorCollection
     db_users: AsyncIOMotorCollection
-    lock = asyncio.locks.Lock
+    lock: asyncio.locks.Lock
 
     async def __on_load__(self) -> None:
         self.chats_db = self.bot.get_collection("CHATS")
