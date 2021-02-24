@@ -32,7 +32,7 @@ restylers:
   - isort
   - yapf:
       arguments:
-        - ["--style", "google"]
+        - ["--style google"]
   - prettier:
       include:
         - "**/*.md"
