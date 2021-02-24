@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import inspect
 import logging
 from types import ModuleType
@@ -41,9 +40,10 @@ class PluginExtender(Base):
 
         super().__init__(**kwargs)
 
-    def load_plugin(
-            self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None
-        ) -> None:
+    def load_plugin(self,
+                    cls: Type[plugin.Plugin],
+                    *,
+                    comment: Optional[str] = None) -> None:
         """ Load bot plugin"""
         LOGGER.debug("Loading %s", cls.format_desc(comment))
 
@@ -63,17 +63,15 @@ class PluginExtender(Base):
 
         del self.plugins[cls.name]
 
-    def _load_all_from_metaplugin(
-            self, subplugins: Iterable[ModuleType], *, comment: str = None
-        ) -> None:
+    def _load_all_from_metaplugin(self,
+                                  subplugins: Iterable[ModuleType],
+                                  *,
+                                  comment: str = None) -> None:
         for extension in subplugins:
             for sym in dir(extension):
                 cls = getattr(extension, sym)
-                if (
-                        inspect.isclass(cls)
-                        and issubclass(cls, plugin.Plugin)
-                        and not cls.disabled
-                    ):
+                if (inspect.isclass(cls) and issubclass(cls, plugin.Plugin)
+                        and not cls.disabled):
                     self.load_plugin(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
@@ -101,9 +99,8 @@ class PluginExtender(Base):
                 plugins.append(
                     InlineKeyboardButton(
                         await self.text(chat_id, f"{cls.name.lower()}-button"),
-                        callback_data="help_plugin({})".format(cls.name.lower())
-                    )
-                )
+                        callback_data="help_plugin({})".format(
+                            cls.name.lower())))
 
         pairs = [
             plugins[i * 3:(i + 1) * 3]

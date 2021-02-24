@@ -30,7 +30,6 @@ from .client import Client
 if TYPE_CHECKING:
     from .anjani import Anjani
 
-
 LOG = logging.getLogger(__name__)
 
 
@@ -66,13 +65,11 @@ class TelegramBot(Base):
         if not isinstance(bot_token, str):
             raise TypeError("BOT TOKEN must be a string")
 
-        self.client = Client(
-            self,
-            api_id=api_id,
-            api_hash=api_hash,
-            bot_token=bot_token,
-            session_name=":memory:"
-        )
+        self.client = Client(self,
+                             api_id=api_id,
+                             api_hash=api_hash,
+                             bot_token=bot_token,
+                             session_name=":memory:")
         owner = self.get_config.owner_id
 
         self.staff = {"owner": owner}
@@ -89,7 +86,8 @@ class TelegramBot(Base):
         await self.connect_db("AnjaniBot")
         self._load_language()
         subplugins = [
-            importlib.import_module("anjani_bot.plugins." + info.name, __name__)
+            importlib.import_module("anjani_bot.plugins." + info.name,
+                                    __name__)
             for info in pkgutil.iter_modules(["anjani_bot/plugins"])
         ]
         self.load_all_plugins(subplugins)
@@ -157,18 +155,16 @@ class TelegramBot(Base):
         return _id
 
     async def channel_log(
-            self,
-            text: str,
-            parse_mode: Optional[str] = object,
-            disable_web_page_preview: bool = None,
-            disable_notification: bool = None,
-            reply_markup: Union[
-                "pyrogram.types.InlineKeyboardMarkup",
-                "pyrogram.types.ReplyKeyboardMarkup",
-                "pyrogram.types.ReplyKeyboardRemove",
-                "pyrogram.types.ForceReply"
-            ] = None
-        ) -> Union["pyrogram.types.Message", None]:
+        self,
+        text: str,
+        parse_mode: Optional[str] = object,
+        disable_web_page_preview: bool = None,
+        disable_notification: bool = None,
+        reply_markup: Union["pyrogram.types.InlineKeyboardMarkup",
+                            "pyrogram.types.ReplyKeyboardMarkup",
+                            "pyrogram.types.ReplyKeyboardRemove",
+                            "pyrogram.types.ForceReply"] = None
+    ) -> Union["pyrogram.types.Message", None]:
         """Shortcut method to send message to log channel.
 
         Parameters:
@@ -202,7 +198,8 @@ class TelegramBot(Base):
         """
         log_channel = self.get_config.log_channel
         if log_channel == 0:
-            LOG.warning("LOG_CHANNEL is empty nor valid, message '%s' not send.", text)
+            LOG.warning(
+                "LOG_CHANNEL is empty nor valid, message '%s' not send.", text)
             return
 
         return await self.client.send_message(
@@ -211,5 +208,4 @@ class TelegramBot(Base):
             parse_mode=parse_mode,
             disable_web_page_preview=disable_web_page_preview,
             disable_notification=disable_notification,
-            reply_markup=reply_markup
-        )
+            reply_markup=reply_markup)

@@ -37,27 +37,24 @@ class Main(plugin.Plugin):
                 keyboard = await self.bot.help_builder(chat_id)
                 return await message.reply_text(
                     await self.bot.text(chat_id, "help-pm", self.bot.name),
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
-            buttons = [
-                [
-                    InlineKeyboardButton(
-                        text=await self.bot.text(chat_id, "add-to-group-button"),
-                        url=f"t.me/{self.bot.username}?startgroup=true"
-                    ),
-                    InlineKeyboardButton(
-                        text=await self.bot.text(chat_id, "start-help-button"),
-                        url=f"t.me/{self.bot.username}?start=help",
-                    ),
-                ]
-            ]
+                    reply_markup=InlineKeyboardMarkup(keyboard))
+            buttons = [[
+                InlineKeyboardButton(
+                    text=await self.bot.text(chat_id, "add-to-group-button"),
+                    url=f"t.me/{self.bot.username}?startgroup=true"),
+                InlineKeyboardButton(
+                    text=await self.bot.text(chat_id, "start-help-button"),
+                    url=f"t.me/{self.bot.username}?start=help",
+                ),
+            ]]
             return await message.reply_text(
                 await self.bot.text(chat_id, "start-pm", self.bot.name),
                 reply_markup=InlineKeyboardMarkup(buttons),
                 disable_web_page_preview=True,
                 parse_mode="markdown",
             )
-        return await message.reply_text(await self.bot.text(chat_id, "start-chat"))
+        return await message.reply_text(await
+                                        self.bot.text(chat_id, "start-chat"))
 
     @listener.on("help")
     async def help(self, message):
@@ -67,22 +64,15 @@ class Main(plugin.Plugin):
         if message.chat.type != "private":  # only send in PM's
             return await message.reply_text(
                 await self.bot.text(chat_id, "help-chat"),
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text=await self.bot.text(chat_id, "help-chat-button"),
-                                url=f"t.me/{self.bot.username}?start=help"
-                            )
-                        ]
-                    ]
-                )
-            )
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton(
+                        text=await self.bot.text(chat_id, "help-chat-button"),
+                        url=f"t.me/{self.bot.username}?start=help")
+                ]]))
         keyboard = await self.bot.help_builder(chat_id)
-        await message.reply_text(
-            await self.bot.text(chat_id, "help-pm", self.bot.name),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        await message.reply_text(await self.bot.text(chat_id, "help-pm",
+                                                     self.bot.name),
+                                 reply_markup=InlineKeyboardMarkup(keyboard))
 
     @listener.on(filters=filters.regex(r"help_(.*?)"), update="callbackquery")
     async def help_button(self, query):
@@ -93,24 +83,18 @@ class Main(plugin.Plugin):
 
         if plugin_match:
             extension = plugin_match.group(1)
-            text = (
-                "Here is the help for the **{}** plugin:\n{}".format(
-                    extension.capitalize(),
-                    await self.bot.text(chat_id, f"{extension}-help")
-                )
-            )
+            text = ("Here is the help for the **{}** plugin:\n{}".format(
+                extension.capitalize(), await
+                self.bot.text(chat_id, f"{extension}-help")))
             await query.edit_message_text(
                 text,
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton(
-                        await self.bot.text(chat_id, "back-button"),
-                        callback_data="help_back"
-                    )
-                ]])
-            )
+                    InlineKeyboardButton(await
+                                         self.bot.text(chat_id, "back-button"),
+                                         callback_data="help_back")
+                ]]))
         elif back_match:
             keyboard = await self.bot.help_builder(chat_id)
             await query.edit_message_text(
                 await self.bot.text(chat_id, "help-pm", self.bot.name),
-                reply_markup=InlineKeyboardMarkup(keyboard)
-            )
+                reply_markup=InlineKeyboardMarkup(keyboard))

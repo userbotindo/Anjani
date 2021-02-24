@@ -49,8 +49,9 @@ class Staff(plugin.Plugin):
         if message.command:
             log_file = os.path.join(corePath, message.command[0])
         else:
-            log_file = os.path.join(corePath,
-                                    f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
+            log_file = os.path.join(
+                corePath,
+                f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
         if not os.path.exists(log_file):
             files: List[str] = list()
             for file in os.listdir(corePath):
@@ -66,7 +67,8 @@ class Staff(plugin.Plugin):
         key = await nekobin(self.bot, data)
         if key:
             url = [[
-                InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
+                InlineKeyboardButton(text="View raw",
+                                     url=f"https://nekobin.com/raw/{key}"),
             ]]
             await self.bot.client.send_document(
                 message.from_user.id,
@@ -99,11 +101,8 @@ class Staff(plugin.Plugin):
                     sent += 1
                 except (PeerIdInvalid, ChannelInvalid):
                     failed += 1
-                    LOGGER.warning(
-                        "Can't send broadcast to \"%s\" with id %s",
-                        chat["chat_name"],
-                        chat["chat_id"]
-                    )
+                    LOGGER.warning("Can't send broadcast to \"%s\" with id %s",
+                                   chat["chat_name"], chat["chat_id"])
             await msg.edit_text(
                 "Broadcast complete!\n"
                 f"{sent} groups succeed, {failed} groups failed to receive the message"
@@ -125,7 +124,8 @@ class Staff(plugin.Plugin):
         """ Send file of chat's I'm in """
         chatfile = "List of chats.\n"
         async for chat in self.db.find({}):
-            chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
+            chatfile += "{} - ({})\n".format(chat["chat_name"],
+                                             chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
             output.name = "chatlist.txt"

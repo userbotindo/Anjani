@@ -1,4 +1,6 @@
 """Admin check utils"""
+
+
 # Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,14 +15,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 async def adminlist(client, chat_id, full=False):
     """This Function to get admin list."""
     admins = []
     async for i in client.iter_chat_members(chat_id, filter="administrators"):
         if full:
-            admins.append({"name": i.user.first_name or i.user.last_name, "id": i.user.id})
+            admins.append({
+                "name": i.user.first_name or i.user.last_name,
+                "id": i.user.id
+            })
         else:
             admins.append(i.user.id)
     return admins
@@ -29,7 +32,5 @@ async def adminlist(client, chat_id, full=False):
 async def user_ban_protected(bot, chat_id, user_id) -> bool:
     """ Return True if user can't be banned """
     user = await bot.client.get_chat_member(chat_id=chat_id, user_id=user_id)
-    return bool(
-        user.status in ["creator", "administrator"]
-        or user_id in bot.staff_id
-    )
+    return bool(user.status in ["creator", "administrator"]
+                or user_id in bot.staff_id)

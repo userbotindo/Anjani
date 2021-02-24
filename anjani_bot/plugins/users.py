@@ -39,19 +39,25 @@ class Users(plugin.Plugin):
         async with self.lock:
             await self.users_db.update_many(
                 {'chats': old_chat},
-                {"$push": {'chats': new_chat}},
+                {"$push": {
+                    'chats': new_chat
+                }},
             )
             await self.users_db.update_many(
                 {'chats': old_chat},
-                {"$pull": {'chats': old_chat}},
+                {"$pull": {
+                    'chats': old_chat
+                }},
             )
 
-            await self.chats_db.update_one(
-                {'chat_id': old_chat},
-                {"$set": {'chat_id': new_chat}}
-            )
+            await self.chats_db.update_one({'chat_id': old_chat},
+                                           {"$set": {
+                                               'chat_id': new_chat
+                                           }})
 
-    @listener.on(filters=filters.all & filters.group, group=4, update="message")
+    @listener.on(filters=filters.all & filters.group,
+                 group=4,
+                 update="message")
     async def log_user(self, message):
         """ User database. """
         chat = message.chat
@@ -64,8 +70,12 @@ class Users(plugin.Plugin):
             await self.users_db.update_one(
                 {'_id': user.id},
                 {
-                    "$set": {'username': user.username},
-                    "$addToSet": {'chats': chat.id}
+                    "$set": {
+                        'username': user.username
+                    },
+                    "$addToSet": {
+                        'chats': chat.id
+                    }
                 },
                 upsert=True,
             )
@@ -76,8 +86,12 @@ class Users(plugin.Plugin):
             await self.chats_db.update_one(
                 {'chat_id': chat.id},
                 {
-                    "$set": {'chat_name': chat.title},
-                    "$addToSet": {'member': user.id}
+                    "$set": {
+                        'chat_name': chat.title
+                    },
+                    "$addToSet": {
+                        'member': user.id
+                    }
                 },
                 upsert=True,
             )
@@ -89,23 +103,23 @@ class Users(plugin.Plugin):
         user_id = message.left_chat_member.id
         async with self.lock:
             if user_id == self.bot.identifier:
-                await self.chats_db.delete_one(
-                    {'chat_id': chat_id}
-                )
+                await self.chats_db.delete_one({'chat_id': chat_id})
                 await self.users_db.update_many(
                     {'chats': chat_id},
-                    {"$pull": {'chats': chat_id}},
+                    {"$pull": {
+                        'chats': chat_id
+                    }},
                 )
             else:
-                await self.users_db.update_one(
-                    {'_id': user_id},
-                    {"$pull": {'chats': chat_id}}
-                )
+                await self.users_db.update_one({'_id': user_id},
+                                               {"$pull": {
+                                                   'chats': chat_id
+                                               }})
 
-                await self.chats_db.update_one(
-                    {'chat_id': chat_id},
-                    {"$pull": {'member': user_id}}
-                )
+                await self.chats_db.update_one({'chat_id': chat_id},
+                                               {"$pull": {
+                                                   'member': user_id
+                                               }})
 
     @listener.on(filters=filters.migrate_from_chat_id, update="message")
     async def __chat_migrate(self, message):

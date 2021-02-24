@@ -92,11 +92,9 @@ class Misc(plugin.Plugin):
         out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.message_id}`\n"
         if msg.from_user:
             out_str += f"🙋‍♂️ **From User ID :** `{msg.from_user.id}`\n"
-        file = (
-            msg.audio or msg.animation or msg.document
-            or msg.photo or msg.sticker or msg.voice
-            or msg.video_note or msg.video
-        ) or None
+        file = (msg.audio or msg.animation or msg.document or msg.photo
+                or msg.sticker or msg.voice or msg.video_note
+                or msg.video) or None
         if file:
             out_str += f"📄 **Media Type :** `{file.__class__.__name__}`\n"
             out_str += f"📄 **File ID :** `{file.file_id}`"
@@ -108,9 +106,9 @@ class Misc(plugin.Plugin):
         reply = message.reply_to_message
         if not reply:
             return
-        sent = await message.reply_text(
-            await self.bot.text(message.chat.id, "wait-paste")
-        )
+        sent = await message.reply_text(await
+                                        self.bot.text(message.chat.id,
+                                                      "wait-paste"))
         if reply and reply.document:
             file = await reply.download(self.bot.get_config.download_path)
             with open(file, 'r') as text:
@@ -125,9 +123,8 @@ class Misc(plugin.Plugin):
             msg = f"**Pasted to Nekobin**\n[URL](https://nekobin.com/{key})"
             await sent.edit_text(msg, disable_web_page_preview=True)
         else:
-            await sent.edit_text(
-                await self.bot.text(message.chat.id, "fail-paste")
-            )
+            await sent.edit_text(await self.bot.text(message.chat.id,
+                                                     "fail-paste"))
 
     @listener.on("source", filters.private)
     async def src(self, message):
@@ -135,5 +132,4 @@ class Misc(plugin.Plugin):
         await message.reply_text(
             "[GitHub repo](https://github.com/userbotindo/Anjani)\n" +
             "[Support](https://t.me/userbotindo)",
-            disable_web_page_preview=True
-        )
+            disable_web_page_preview=True)

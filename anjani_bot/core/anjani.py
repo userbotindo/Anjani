@@ -63,7 +63,9 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
         """ Get bot uptime """
         return get_readable_time(time.time() - self._start_time)
 
-    async def begin(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
+    async def begin(
+            self,
+            loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
         """Start AnjaniBot"""
         if loop:
             asyncio.set_event_loop(loop)
@@ -107,4 +109,5 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
                         task.cancel()
                 await self.loop.shutdown_asyncgens()
                 self.loop.stop()
+
         await aiorun.shutdown_waits_for(finalize())

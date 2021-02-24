@@ -26,7 +26,8 @@ from motor.frameworks.asyncio import _EXECUTOR as exe
 LOGGER = logging.getLogger(__name__)
 
 
-def submit_thread(func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Future:
+def submit_thread(func: Callable[[Any], Any], *args: Any,
+                  **kwargs: Any) -> Future:
     """ submit thread to thread pool """
     return exe.submit(func, *args, **kwargs)
 
@@ -37,6 +38,7 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(exe, partial(func, *args, **kwargs))
+
     return wrapper
 
 

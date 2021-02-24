@@ -34,7 +34,8 @@ def get_readable_time(seconds: int) -> str:
         seconds = int(remainder)
 
     for index in enumerate(time_list):
-        time_list[index[0]] = str(time_list[index[0]]) + time_suffix_list[index[0]]
+        time_list[index[0]] = str(
+            time_list[index[0]]) + time_suffix_list[index[0]]
     if len(time_list) == 4:
         up_time += time_list.pop() + ", "
 

@@ -42,10 +42,10 @@ class SpamShield(plugin.Plugin):
 
     async def __migrate__(self, old_chat, new_chat):
         async with self.lock:
-            await self.gban_setting.update_one(
-                {'chat_id': old_chat},
-                {"$set": {'chat_id': new_chat}}
-            )
+            await self.gban_setting.update_one({'chat_id': old_chat},
+                                               {"$set": {
+                                                   'chat_id': new_chat
+                                               }})
 
     async def __on_load__(self) -> None:
         self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
@@ -62,7 +62,8 @@ class SpamShield(plugin.Plugin):
 
     async def cas_check(self, user_id: int) -> Union[str, bool]:
         """ Check on CAS """
-        async with self.bot.http.get(f"https://api.cas.chat/check?user_id={user_id}") as res:
+        async with self.bot.http.get(
+                f"https://api.cas.chat/check?user_id={user_id}") as res:
             data = json.loads(await res.text())
         if data["ok"]:
             return "https://cas.chat/query?u={}".format(user_id)
@@ -76,27 +77,28 @@ class SpamShield(plugin.Plugin):
     async def shield_pref(self, chat_id, setting: bool):
         """ Turn on/off SpamShield in chats """
         async with self.lock:
-            await self.gban_setting.update_one(
-                {'chat_id': chat_id},
-                {"$set": {'setting': setting}},
-                upsert=True
-            )
+            await self.gban_setting.update_one({'chat_id': chat_id},
+                                               {"$set": {
+                                                   'setting': setting
+                                               }},
+                                               upsert=True)
 
-    @listener.on(filters=filters.all & filters.group, group=1, update="message")
+    @listener.on(filters=filters.all & filters.group,
+                 group=1,
+                 update="message")
     async def shield(self, message):
         """ Check handler """
         if message.chat is None:  # sanity check
             return
 
         try:
-            if(
-                    await self.chat_gban(message.chat.id) and
-                    (await self.bot.client.get_chat_member(message.chat.id, 'me')
-                     ).can_restrict_members
-            ):
+            if (await self.chat_gban(message.chat.id)
+                    and (await self.bot.client.get_chat_member(
+                        message.chat.id, 'me')).can_restrict_members):
                 user = message.from_user
                 chat = message.chat
-                if user and not await user_ban_protected(self.bot, chat.id, user.id):
+                if user and not await user_ban_protected(
+                        self.bot, chat.id, user.id):
                     await self.check_and_ban(user, chat.id)
                 elif message.new_chat_members:
                     for member in message.new_chat_members:
@@ -116,14 +118,8 @@ class SpamShield(plugin.Plugin):
                 banner = "[Combot Anti Spam](t.me/combot)"
             else:
                 banner = "[Spam Watch](t.me/SpamWatch)"
-            text = await self.bot.text(
-                chat_id,
-                "banned-text",
-                userlink,
-                user_id,
-                reason,
-                banner
-            )
+            text = await self.bot.text(chat_id, "banned-text", userlink,
+                                       user_id, reason, banner)
             await asyncio.gather(
                 self.bot.client.kick_chat_member(chat_id, user_id),
                 self.bot.client.send_message(
@@ -136,9 +132,7 @@ class SpamShield(plugin.Plugin):
                     "#SPAM_SHIELD LOG\n"
                     f"**User**: {userlink} banned on {chat_id}\n"
                     f"**ID**: {user_id}\n"
-                    f"**Reason**: {reason}"
-                )
-            )
+                    f"**Reason**: {reason}"))
             raise StopPropagation
 
     @listener.on('spamshield', admin_only=True)
@@ -149,12 +143,21 @@ class SpamShield(plugin.Plugin):
             arg = message.command[0]
             if arg.lower() in ["on", "true", "enable"]:
                 await self.shield_pref(chat_id, True)
-                await message.reply_text(await self.bot.text(chat_id, "spamshield-set", "on"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "spamshield-set", "on"))
             elif arg.lower() in ["off", "false", "disable"]:
                 await self.shield_pref(chat_id, False)
-                await message.reply_text(await self.bot.text(chat_id, "spamshield-set", "off"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "spamshield-set",
+                                                       "off"))
             else:
-                await message.reply_text(await self.bot.text(chat_id, "err-invalid-option"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "err-invalid-option"))
         else:
             setting = await self.chat_gban(message.chat.id)
-            await message.reply_text(await self.bot.text(chat_id, "spamshield-view", setting))
+            await message.reply_text(await
+                                     self.bot.text(chat_id, "spamshield-view",
+                                                   setting))
