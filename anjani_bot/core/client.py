@@ -44,7 +44,8 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         # Get class of func itself
         for cls in list(self.__bot__.plugins.values()):
             if (str(cls).strip(">").split("from")[-1].strip().strip(
-                    ".py").replace("/", ".") == func.__module__ and not cls.disabled):
+                    ".py").replace("/", ".") == func.__module__
+                    and not cls.disabled):
                 func.__self__ = cls
                 break
         else:
