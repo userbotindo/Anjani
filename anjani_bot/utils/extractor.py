@@ -13,12 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Optional, Tuple, Union
 
-from pyrogram.types import Message
-from pyrogram.types import User
+from pyrogram.types import Message, User
 
 
 def extract_user_and_text(
