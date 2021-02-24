@@ -137,7 +137,7 @@ bot-added: |
   Kami sangat menghargai laporan tentang dukungan kelompok kami.
   Terima kasih 😊
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
-clean-serv-set: 'Setting pembersihan pesan layanan : {}.'
+clean-serv-set: "Setting pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
 cust-welcome-set: Berhasil menyetel pesan sambutan kustom!
 reset-welcome: Berhasil menyetel ulang pesan sambutan ke semula!

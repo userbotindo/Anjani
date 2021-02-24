@@ -1,12 +1,12 @@
 #region Main
-start-pm : |
+start-pm: |
   Hey there! my name is **{}**.
   Any questions on how to use me? use /help
   Join Our [Group](https://t.me/userbotindo) If You wanna Report Issue 🙂
   I'm here to make your group management fun and easy!
   **Managed With ❤️ By :** [UserbotIndo Team](https://t.me/userbotindo)
   Wanna Add me to your Group? Just click the button below!
-help-pm : |
+help-pm: |
   Hello there! My name is **{}**.
   I'm a modular group management bot with a few fun extras! Have a look at the following for an idea of some of \
   the things I can help you with.
@@ -14,16 +14,16 @@ help-pm : |
   × /start: Starts me, can be used to check i'm alive or not.
   × /help: PM's you this message.
   × /setlang: Change your language preference.
-start-chat : Sending you a warm hi & wishing your day is a happy one!
-help-chat : Contact me in PM to get the list of possible commands.
-add-to-group-button : Add to Group 👥
-start-help-button : Help & Commands ❔
-help-chat-button : Help
-back-button : ⬅️ Back
+start-chat: Sending you a warm hi & wishing your day is a happy one!
+help-chat: Contact me in PM to get the list of possible commands.
+add-to-group-button: Add to Group 👥
+start-help-button: Help & Commands ❔
+help-chat-button: Help
+back-button: ⬅️ Back
 #endregion
 #region admin
 admins-button: Admins
-admins-help : |
+admins-help: |
   Lazy to promote or demote someone for admins?
   Want to see basic information about chat?
   All stuff about chatroom such as admin lists,
@@ -36,8 +36,8 @@ admins-help : |
 gpic-no-photo: Give me a photo!
 #endregion
 #region language
-language-button : Language
-language-help : |
+language-button: Language
+language-help: |
   This bot comes up with multi language support.
   You can choose your language preference!\n
   **Available languages:**
@@ -48,14 +48,14 @@ language-help : |
   **Note**
   You can use this command on group chats to change the language setting on that chat.\n
   Help us to cover more languages to the bot by contributing in [Crowdin!](https://crowdin.com/project/anjani-bot)
-current-language : "**{}** current language is **{}**\nSelect language bellow to change"
-language-code-error : An error has occured (No language code)... please contact support
-language-set-succes : Language set to {} successfully
-language-invalid : Invalid language code.\nAvailable language code {}
+current-language: "**{}** current language is **{}**\nSelect language bellow to change"
+language-code-error: An error has occured (No language code)... please contact support
+language-set-succes: Language set to {} successfully
+language-invalid: Invalid language code.\nAvailable language code {}
 #endregion
 #region misc
-miscs-button : Misc
-miscs-help : |
+miscs-button: Misc
+miscs-help: |
   An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
@@ -63,7 +63,7 @@ miscs-help : |
   ×  /paste : paste any text file to Nekobin.\n
   **Special commands:**
   ×  /covid <country> : Get Covid-19 data in your country.
-covid-text : |
+covid-text: |
   **Corona Virus Statistics in {country}**
   **on {date}**\n
   **Confirmed Cases :** `{confirmed}`
@@ -75,8 +75,8 @@ covid-text : |
   **Critical Cases :** `{critical}`
   **Total Tests :** `{total_tests}`\n
   Data provided by [Worldometer]({link})
-wait-paste : "`Pasting to Nekobin...`"
-fail-paste : "`Failed to reach Nekobin`"
+wait-paste: "`Pasting to Nekobin...`"
+fail-paste: "`Failed to reach Nekobin`"
 #endregion
 #region purge
 purges-button: Purges
@@ -120,15 +120,15 @@ spamshield-view: |
   Spam shield is a usefull plugin to help protect your group from spammers and trollers.
 #endregion
 #region greetings
-greetings-button : Greetings
-greetings-help : |
+greetings-button: Greetings
+greetings-help: |
   your group's welcome messages that can be personalised in multiple ways.\n
   **Admin Commands:**
   × /setwelcome <reply> : Sets a custom welcome message.
   × /resetwelcome : Resets to bot default welcome message.
   × /welcome <on/off> : enable/disable Welcome messages.
   × /welcome : Display current welcome message and settings.
-  × /cleanservice <on/off> : Clean 'user is joined' service messages automatically. 
+  × /cleanservice <on/off> : Clean 'user is joined' service messages automatically.
 bot-added: |
   Hi... Thanks for inviting me.
   Currently, I'm still in development.
@@ -148,8 +148,8 @@ view-welcome: |
   And the welcome message of this chat is:
 #endregion
 #region common-error
-error-chat-private : "**Error:** `Chat type private`\nThis command for groups only..."
-error-no-rights : "You don't have rights to use this command!"
+error-chat-private: "**Error:** `Chat type private`\nThis command for groups only..."
+error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!
 error-reply-to-message: Reply to a message!
