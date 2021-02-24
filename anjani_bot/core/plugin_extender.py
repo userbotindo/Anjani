@@ -93,7 +93,7 @@ class PluginExtender(Base):
 
     async def help_builder(self, chat_id: int) -> List:
         """ Build the help button """
-        plugins: List[InlineKeyboardButton] = list()
+        plugins: List[InlineKeyboardButton] = []
         for cls in list(self.plugins.values()):
             if hasattr(cls, "helpable") and cls.helpable is True:
                 plugins.append(

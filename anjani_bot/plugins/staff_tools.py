@@ -53,7 +53,7 @@ class Staff(plugin.Plugin):
                 corePath,
                 f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
         if not os.path.exists(log_file):
-            files: List[str] = list()
+            files: List[str] = []
             for file in os.listdir(corePath):
                 if file.endswith(".log"):
                     files.append(file)

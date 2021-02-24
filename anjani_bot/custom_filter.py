@@ -32,7 +32,7 @@ def command(commands: Union[str, List[str]], case_sensitive: bool = False):
     """Build a command that accept bot username eg: /start@AnjaniBot"""
     async def func(flt, client, message: Message):
         text: str = message.text or message.caption
-        message.command: List[str] = list()
+        message.command: List[str] = []
 
         if not text:
             return False

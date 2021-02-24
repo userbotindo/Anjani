@@ -58,12 +58,14 @@ class Language(plugin.Plugin):
     async def set_lang(self, message):
         """ Set user/chat language. """
         chat_id = message.chat.id
-        if message.chat.type != "private":  # Check admin rights
-            if await self.can_change_lang(chat_id, message.from_user.id):
-                return await message.reply_text(await self.bot.text(
-                    chat_id, "error-no-rights"))
 
-        if len(message.command) >= 1:
+        # Check admin rights
+        if (message.chat.type != "private"
+                and await self.can_change_lang(chat_id, message.from_user.id)):
+            return await message.reply_text(await self.bot.text(
+                chat_id, "error-no-rights"))
+
+        if message.command:
             change = message.command[0]
             if change in self.bot.language:
                 await self.bot.switch_lang(chat_id, change)
@@ -112,10 +114,11 @@ class Language(plugin.Plugin):
         lang_match = re.findall(r"en|id", query.data)
         chat_id = query.message.chat.id
 
-        if query.message.chat.type != "private":  # Check admin rights
-            if await self.can_change_lang(chat_id, query.from_user.id):
-                return await query.answer(await self.bot.text(
-                    chat_id, "error-no-rights"))
+        # Check admin rights
+        if (query.message.chat.type != "private"
+                and await self.can_change_lang(chat_id, query.from_user.id)):
+            return await query.answer(await self.bot.text(
+                chat_id, "error-no-rights"))
 
         if lang_match:
             lang = self.parse_lang(lang_match[0])

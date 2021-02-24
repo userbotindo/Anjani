@@ -253,22 +253,21 @@ class Greeting(plugin.Plugin, RawGreeting):
     async def cleanserv(self, message):
         """ Clean service message on new members """
         chat_id = message.chat.id
-        if len(message.command) >= 1:
+        if message.command:
             arg = message.command[0]
             if arg in ["yes", "on"]:
                 await self.set_cleanserv(chat_id, True)
                 await message.reply_text(await
                                          self.bot.text(chat_id,
                                                        "clean-serv-set", "on"))
-            elif arg in ["no", "off"]:
+            if arg in ["no", "off"]:
                 await self.set_cleanserv(chat_id, False)
                 await message.reply_text(await
                                          self.bot.text(chat_id,
                                                        "clean-serv-set",
                                                        "off"))
-            else:
-                await message.reply_text(await
-                                         self.bot.text(chat_id,
-                                                       "err-invalid-option"))
+            await message.reply_text(await
+                                     self.bot.text(chat_id,
+                                                   "err-invalid-option"))
         else:
-            await message.reply_Text("Usage is on/yes or off/no")
+            await message.reply_text("Usage is on/yes or off/no")
