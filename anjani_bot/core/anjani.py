@@ -22,14 +22,13 @@ from typing import List, Optional
 
 import aiohttp
 import aiorun
-
 import pyrogram
 
+from ..utils import get_readable_time
 from . import pool
 from .database import DataBase
 from .plugin_extender import PluginExtender  # pylint: disable=R0401
 from .telegram_bot import TelegramBot  # pylint: disable=R0401
-from ..utils import get_readable_time
 
 LOGGER = logging.getLogger(__name__)
 

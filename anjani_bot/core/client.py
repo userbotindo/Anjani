@@ -18,11 +18,10 @@
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import pyrogram
-
-from pyrogram import StopPropagation, ContinuePropagation
+from pyrogram import ContinuePropagation, StopPropagation
 from pyrogram.filters import Filter
-from pyrogram.handlers import MessageHandler, CallbackQueryHandler
-from pyrogram.types import Message, CallbackQuery
+from pyrogram.handlers import CallbackQueryHandler, MessageHandler
+from pyrogram.types import CallbackQuery, Message
 
 from .. import plugin
 

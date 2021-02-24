@@ -17,11 +17,12 @@
 import logging
 import os
 from codecs import decode, encode
-from typing import Any, List, Union, Optional, Dict
+from typing import Any, Dict, List, Optional, Union
 
-from yaml import full_load
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from motor.core import AgnosticCollection
+from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
+                                 AsyncIOMotorDatabase)
+from yaml import full_load
 
 from .base import Base  # pylint: disable=R0401
 

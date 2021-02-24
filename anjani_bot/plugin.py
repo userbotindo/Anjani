@@ -18,7 +18,6 @@
 import inspect
 import logging
 import os.path
-
 from typing import TYPE_CHECKING, ClassVar, Optional
 
 if TYPE_CHECKING:

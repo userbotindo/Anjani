@@ -15,14 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import logging
 import json
+import logging
 from typing import ClassVar, Union
 
 import spamwatch
 from motor.motor_asyncio import AsyncIOMotorCollection
-from pyrogram import filters, StopPropagation
-from pyrogram.errors.exceptions.bad_request_400 import ChannelPrivate, UserNotParticipant
+from pyrogram import StopPropagation, filters
+from pyrogram.errors.exceptions.bad_request_400 import (ChannelPrivate,
+                                                        UserNotParticipant)
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin

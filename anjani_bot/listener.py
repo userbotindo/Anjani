@@ -19,7 +19,8 @@ from typing import Callable, List, Optional, Union
 
 from pyrogram.filters import Filter, create
 
-from . import anjani as __bot__, custom_filter
+from . import anjani as __bot__
+from . import custom_filter
 
 
 def on(

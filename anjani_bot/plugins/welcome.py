@@ -16,9 +16,9 @@
 
 import asyncio
 from html import escape
-from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import ClassVar, Tuple, Union
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 
 from anjani_bot import listener, plugin

@@ -18,13 +18,13 @@
 import inspect
 import logging
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type, List
+from typing import (TYPE_CHECKING, Any, Iterable, List, MutableMapping,
+                    Optional, Type)
 
 from pyrogram.types import InlineKeyboardButton
 
-from .base import Base  # pylint: disable=R0401
-
 from .. import plugin
+from .base import Base  # pylint: disable=R0401
 
 if TYPE_CHECKING:
     from .anjani import Anjani

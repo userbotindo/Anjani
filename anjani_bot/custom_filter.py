@@ -18,7 +18,7 @@
 import logging
 import re
 import shlex
-from typing import Union, List
+from typing import List, Union
 
 from pyrogram.filters import create
 from pyrogram.types import Message

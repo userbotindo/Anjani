@@ -17,10 +17,9 @@
 
 import asyncio
 import logging
-
+from concurrent.futures import Future, ThreadPoolExecutor
+from functools import partial, wraps
 from typing import Any, Callable
-from concurrent.futures import ThreadPoolExecutor, Future
-from functools import wraps, partial
 
 from motor.frameworks.asyncio import _EXECUTOR as exe
 

@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
 from datetime import datetime
 from typing import ClassVar
 
@@ -24,7 +23,7 @@ from pyrogram import filters
 
 from anjani_bot import listener, plugin
 from anjani_bot.core.pool import run_in_thread
-from anjani_bot.utils import nekobin, format_integer
+from anjani_bot.utils import format_integer, nekobin
 
 
 class Misc(plugin.Plugin):

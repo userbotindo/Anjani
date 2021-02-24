@@ -22,10 +22,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import pyrogram
 
+from ..utils import BotConfig
 from . import pool
 from .base import Base
 from .client import Client
-from ..utils import BotConfig
+
 if TYPE_CHECKING:
     from .anjani import Anjani
 
