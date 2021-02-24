@@ -19,7 +19,8 @@ from typing import Optional, Tuple, Union
 from pyrogram.types import Message, User
 
 
-def extract_user_and_text(message: Message) -> Tuple[Union[str, int], Optional[str]]:
+def extract_user_and_text(
+        message: Message) -> Tuple[Union[str, int], Optional[str]]:
     """ extract user and text from message.
     Prioritize user from replied message.
     Returns:
