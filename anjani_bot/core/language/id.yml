@@ -76,6 +76,7 @@ covid-text: |
   **Total Tes :** `{total_tests}`\n
   Data berasal dari [Worldometer]({link})
 wait-paste: "`Menyalin ke Nekobin...`"
+paste-succes: "**Berhasil Ditempel..!**"
 fail-paste: "`Gagal untuk menyalin ke Nekobin!`"
 #endregion
 #region purge

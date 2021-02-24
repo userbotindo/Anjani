@@ -20,6 +20,7 @@ from typing import ClassVar
 
 from covid import Covid
 from pyrogram import filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from anjani_bot import listener, plugin
 from anjani_bot.core.pool import run_in_thread
@@ -120,8 +121,17 @@ class Misc(plugin.Plugin):
             return
         key = await nekobin(self.bot, data)
         if key:
-            msg = f"**Pasted to Nekobin**\n[URL](https://nekobin.com/{key})"
-            await sent.edit_text(msg, disable_web_page_preview=True)
+            btn = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Nekobin",
+                            url=f"https://nekobin.com/{key}"),
+                        InlineKeyboardButton(
+                            text="Nekobin Raw",
+                            url=f"https://nekobin.com/raw/{key}"),
+                    ]])
+            await sent.edit_text(await self.bot.text(message.chat.id, "paste-succes"), reply_markup=btn)
         else:
             await sent.edit_text(await self.bot.text(message.chat.id,
                                                      "fail-paste"))

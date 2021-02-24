@@ -76,6 +76,7 @@ covid-text: |
   **Total Tests :** `{total_tests}`\n
   Data provided by [Worldometer]({link})
 wait-paste: "`Pasting to Nekobin...`"
+paste-succes: "**Pasted successfully..!**"
 fail-paste: "`Failed to reach Nekobin`"
 #endregion
 #region purge
