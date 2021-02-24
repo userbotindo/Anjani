@@ -16,9 +16,9 @@
 
 import asyncio
 from html import escape
-from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import ClassVar, Tuple, Union
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 
 from anjani_bot import listener, plugin
@@ -73,7 +73,9 @@ class RawGreeting:
         async with self.lock:
             await self.welcome_db.update_one(
                 {'chat_id': old_chat},
-                {"$set": {'chat_id': new_chat}},
+                {"$set": {
+                    'chat_id': new_chat
+                }},
             )
 
     async def default_welc(self, chat_id):
@@ -116,46 +118,45 @@ class RawGreeting:
         """ Set custome welcome """
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id},
-                {"$set": {'custom_welcome': text}},
-                upsert=True
-            )
+                {'chat_id': chat_id}, {"$set": {
+                    'custom_welcome': text
+                }},
+                upsert=True)
 
     async def del_custom_welcome(self, chat_id):
         """ Delete custom welcome msg """
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id},
-                {"$unset": {'custom_welcome': ""}}
-            )
+                {'chat_id': chat_id}, {"$unset": {
+                    'custom_welcome': ""
+                }})
 
     async def set_cleanserv(self, chat_id, setting):
         """ Clean service db """
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id},
-                {"$set": {'clean_service': setting}
-                },
-                upsert=True
-            )
+                {'chat_id': chat_id}, {"$set": {
+                    'clean_service': setting
+                }},
+                upsert=True)
 
     async def set_welc_pref(self, chat_id, setting: bool):
         """ Turn on/off welcome in chats """
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id},
-                {"$set": {'should_welcome': setting}},
-                upsert=True
-            )
+                {'chat_id': chat_id}, {"$set": {
+                    'should_welcome': setting
+                }},
+                upsert=True)
 
     async def prev_welcome(self, chat_id, msg_id: int) -> Union[int, bool]:
         """ Save latest welcome msg_id and return previous msg_id"""
         async with self.lock:
             data = await self.welcome_db.find_one_and_update(
-                {'chat_id': chat_id},
-                {"$set": {'prev_welc': msg_id}},
-                upsert=True
-            )
+                {'chat_id': chat_id}, {"$set": {
+                    'prev_welc': msg_id
+                }},
+                upsert=True)
         if data:
             return data.get("prev_welc", False)
         return False
@@ -183,8 +184,7 @@ class Greeting(plugin.Plugin, RawGreeting):
                     await self.bot.client.send_message(
                         chat.id,
                         await self.bot.text(chat.id, "bot-added"),
-                        reply_to_message_id=reply
-                    )
+                        reply_to_message_id=reply)
                 else:
                     welcome_text = await self.welc_msg(chat.id)
                     user = await self.parse_user(new_member)
@@ -200,26 +200,25 @@ class Greeting(plugin.Plugin, RawGreeting):
                         id=new_member.id)
 
                     msg = await self.bot.client.send_message(
-                        chat.id,
-                        formatted_text,
-                        reply_to_message_id=reply
-                    )
+                        chat.id, formatted_text, reply_to_message_id=reply)
 
-                    prev_welc = await self.prev_welcome(chat.id, msg.message_id)
+                    prev_welc = await self.prev_welcome(
+                        chat.id, msg.message_id)
                     if prev_welc:
-                        await self.bot.client.delete_messages(chat.id, prev_welc)
+                        await self.bot.client.delete_messages(
+                            chat.id, prev_welc)
 
     @listener.on("setwelcome", admin_only=True)
     async def set_welcome(self, message):
         """ Set chat welcome message """
         chat = message.chat
         if not message.reply_to_message:
-            return await message.reply_text(
-                await self.bot.text(chat.id, "err-reply-to-msg")
-            )
+            return await message.reply_text(await self.bot.text(
+                chat.id, "err-reply-to-msg"))
         msg = message.reply_to_message
         await self.set_custom_welcome(chat.id, msg.text)
-        await message.reply_text(await self.bot.text(chat.id, "cust-welcome-set"))
+        await message.reply_text(await self.bot.text(chat.id,
+                                                     "cust-welcome-set"))
 
     @listener.on("resetwelcome", admin_only=True)
     async def reset_welcome(self, message):
@@ -236,19 +235,17 @@ class Greeting(plugin.Plugin, RawGreeting):
             arg = message.command[0]
             if arg in ["yes", "on"]:
                 await self.set_welc_pref(chat_id, True)
-                return await message.reply_text(await self.bot.text(chat_id, "welcome-set", "on"))
+                return await message.reply_text(await self.bot.text(
+                    chat_id, "welcome-set", "on"))
             elif arg in ["no", "off"]:
                 await self.set_welc_pref(chat_id, False)
-                return await message.reply_text(await self.bot.text(chat_id, "welcome-set", "off"))
+                return await message.reply_text(await self.bot.text(
+                    chat_id, "welcome-set", "off"))
             else:
-                return await message.reply_text(await self.bot.text(chat_id, "err-invalid-option"))
+                return await message.reply_text(await self.bot.text(
+                    chat_id, "err-invalid-option"))
         sett, welc_text, clean_serv = await self.full_welcome(chat_id)
-        text = await self.bot.text(
-            chat_id,
-            "view-welcome",
-            sett,
-            clean_serv
-        )
+        text = await self.bot.text(chat_id, "view-welcome", sett, clean_serv)
         await message.reply_text(text)
         await message.reply_text(welc_text)
 
@@ -260,11 +257,18 @@ class Greeting(plugin.Plugin, RawGreeting):
             arg = message.command[0]
             if arg in ["yes", "on"]:
                 await self.set_cleanserv(chat_id, True)
-                await message.reply_text(await self.bot.text(chat_id, "clean-serv-set", "on"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "clean-serv-set", "on"))
             elif arg in ["no", "off"]:
                 await self.set_cleanserv(chat_id, False)
-                await message.reply_text(await self.bot.text(chat_id, "clean-serv-set", "off"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "clean-serv-set",
+                                                       "off"))
             else:
-                await message.reply_text(await self.bot.text(chat_id, "err-invalid-option"))
+                await message.reply_text(await
+                                         self.bot.text(chat_id,
+                                                       "err-invalid-option"))
         else:
             await message.reply_Text("Usage is on/yes or off/no")

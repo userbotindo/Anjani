@@ -15,5 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from .core import Anjani, setup_log
 
-
 anjani = Anjani()  # pylint: disable=C0103

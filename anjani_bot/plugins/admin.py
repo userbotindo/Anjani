@@ -28,8 +28,9 @@ class Admin(plugin.Plugin):
     async def pin(self, message):
         """ Pin message on chats """
         if message.reply_to_message is None:
-            return await message.reply(
-                await self.bot.text(message.chat.id, "error-reply-to-message"))
+            return await message.reply(await
+                                       self.bot.text(message.chat.id,
+                                                     "error-reply-to-message"))
         is_silent = True
         if message.command and message.command[0] in [
                 "notify",
@@ -58,9 +59,12 @@ class Admin(plugin.Plugin):
         msg = message.reply_to_message or message
         file = msg.photo or None
         if file:
-            await self.bot.client.set_chat_photo(message.chat.id, photo=file.file_id)
+            await self.bot.client.set_chat_photo(message.chat.id,
+                                                 photo=file.file_id)
         else:
-            await message.reply_text(await self.bot.text(message.chat.id, "gpic-no-photo"))
+            await message.reply_text(await
+                                     self.bot.text(message.chat.id,
+                                                   "gpic-no-photo"))
 
     @listener.on("adminlist")
     async def admin_list(self, message):

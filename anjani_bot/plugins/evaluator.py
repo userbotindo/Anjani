@@ -72,11 +72,9 @@ class Evaluator(plugin.Plugin):
         if len(output) > 4096:
             with io.BytesIO(str.encode(output)) as out_file:
                 out_file.name = "eval.text"
-                await reply_to.reply_document(
-                    document=out_file,
-                    caption=cmd,
-                    disable_notification=True
-                )
+                await reply_to.reply_document(document=out_file,
+                                              caption=cmd,
+                                              disable_notification=True)
             await status.delete()
         else:
             await status.edit(output, parse_mode="md")

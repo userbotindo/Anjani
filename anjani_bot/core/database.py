@@ -17,11 +17,12 @@
 import logging
 import os
 from codecs import decode, encode
-from typing import Any, List, Union, Optional, Dict
+from typing import Any, Dict, List, Optional, Union
 
-from yaml import full_load
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from motor.core import AgnosticCollection
+from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
+                                 AsyncIOMotorDatabase)
+from yaml import full_load
 
 from .base import Base  # pylint: disable=R0401
 
@@ -39,8 +40,8 @@ class DataBase(Base):
 
     def __init__(self):
         self.__language__ = sorted([
-             os.path.splitext(filename)[0]
-             for filename in os.listdir("anjani_bot/core/language")
+            os.path.splitext(filename)[0]
+            for filename in os.listdir("anjani_bot/core/language")
         ])
         self.__strings__ = {}
 
@@ -72,7 +73,8 @@ class DataBase(Base):
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self.__client__ = AsyncIOMotorClient(self.get_config.db_uri, connect=False)
+        self.__client__ = AsyncIOMotorClient(self.get_config.db_uri,
+                                             connect=False)
         if db_name in await self.__client__.list_database_names():
             LOGGER.info("Database found, Logged in to Database...")
         else:
@@ -96,7 +98,8 @@ class DataBase(Base):
         if name in self.__list_collection__:
             LOGGER.debug("Collection %s Found, fetching...", name)
         else:
-            LOGGER.debug("Collection %s Not Found, Creating New Collection...", name)
+            LOGGER.debug("Collection %s Not Found, Creating New Collection...",
+                         name)
         return self.__db__[name]
 
     async def get_lang(self, chat_id) -> str:
@@ -104,11 +107,14 @@ class DataBase(Base):
         data = await self.__lang__.find_one({'chat_id': chat_id})
         return data["language"] if data else 'en'  # default english
 
-    async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
+    async def switch_lang(self, chat_id: Union[str, int],
+                          language: str) -> None:
         """ Change chat language setting. """
         await self.__lang__.update_one(
             {'chat_id': int(chat_id)},
-            {"$set": {'language': language}},
+            {"$set": {
+                'language': language
+            }},
             upsert=True,
         )
 
@@ -120,12 +126,12 @@ class DataBase(Base):
                 await plugin.__migrate__(old_chat, new_chat)
 
     async def text(
-            self,
-            chat_id: int,
-            name: str,
-            *args: Optional[Any],
-            **kwargs: Optional[Any],
-        ) -> str:
+        self,
+        chat_id: int,
+        name: str,
+        *args: Optional[Any],
+        **kwargs: Optional[Any],
+    ) -> str:
         """Parse the string with user language setting.
 
         Parameters:
@@ -153,31 +159,27 @@ class DataBase(Base):
         noformat = bool(kwargs.get("noformat", False))
 
         if lang in self.__language__ and name in self.__strings__[lang]:
-            text = (
-                decode(
-                    encode(
-                        self.__strings__[lang][name],
-                        'latin-1',
-                        'backslashreplace',
-                    ),
-                    'unicode-escape',
-                )
-            )
+            text = (decode(
+                encode(
+                    self.__strings__[lang][name],
+                    'latin-1',
+                    'backslashreplace',
+                ),
+                'unicode-escape',
+            ))
             return text if noformat else text.format(*args, **kwargs)
         err = "NO LANGUAGE STRING FOR {} in {}".format(name, lang)
         LOGGER.warning(err)
         # try to send the english string first if not found
         try:
-            text = (
-                decode(
-                    encode(
-                        self.__strings__["en"][name],
-                        'latin-1',
-                        'backslashreplace',
-                    ),
-                    'unicode-escape',
-                )
-            )
+            text = (decode(
+                encode(
+                    self.__strings__["en"][name],
+                    'latin-1',
+                    'backslashreplace',
+                ),
+                'unicode-escape',
+            ))
             return text if noformat else text.format(*args, **kwargs)
         except KeyError:
             return err + "\nPlease forward this to @userbotindo."
