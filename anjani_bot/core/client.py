@@ -23,8 +23,6 @@ from pyrogram.filters import Filter
 from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 from pyrogram.types import CallbackQuery, Message
 
-from .. import plugin
-
 if TYPE_CHECKING:
     from .anjani import Anjani
 
@@ -46,12 +44,11 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         # Get class of func itself
         for cls in list(self.__bot__.plugins.values()):
             if (str(cls).strip(">").split("from")[-1].strip().strip(
-                    ".py").replace("/", ".") == func.__module__):
+                    ".py").replace("/", ".") == func.__module__ and not cls.disabled):
                 func.__self__ = cls
                 break
         else:
-            # for now raise for exception if func couldn't get the class itself
-            raise plugin.PluginError("Uncaught plugin error...")
+            return
 
         func = getattr(func.__self__, func.__name__)
         try:
