@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
 class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
     """ `~pyrogram.Client` overwrite decorator """
+
     def __init__(self, bot: "Anjani", **kwargs: Any) -> None:
         self.__bot__ = bot
 
@@ -44,7 +45,8 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         # Get class of func itself
         for cls in list(self.__bot__.plugins.values()):
             if (str(cls).strip(">").split("from")[-1].strip().strip(
-                    ".py").replace("/", ".") == func.__module__ and not cls.disabled):
+                    ".py").replace("/", ".") == func.__module__ and
+                    not cls.disabled):
                 func.__self__ = cls
                 break
         else:
@@ -69,6 +71,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             group (`int`, *optional*):
                 The group identifier, defaults to 0.
         """
+
         def decorator(func: Callable) -> callable:
             # Wrapper for decorator so func return `class` & `message`
             async def wrapper(_: Client, message: Message) -> None:
@@ -92,7 +95,9 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
         """
+
         def decorator(func: Callable) -> callable:
+
             async def wrapper(_: Client, message: Message) -> None:
                 return await self.__update__(func, message)
 
@@ -114,7 +119,9 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
         """
+
         def decorator(func: Callable) -> callable:
+
             async def wrapper(_: Client, query: CallbackQuery) -> None:
                 return await self.__update__(func, query)
 
