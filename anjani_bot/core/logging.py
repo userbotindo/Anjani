@@ -34,11 +34,9 @@ def setup_log():
     logfile.setLevel(level)
 
     # Logging into stderr with color
-    term_format = (
-        "  %(bold)s%(asctime)s%(reset)s: "
-        "%(log_color)s%(levelname)-7s%(reset)s | %(name)-31s - "
-        "%(log_color)s%(message)s%(reset)s"
-    )
+    term_format = ("  %(bold)s%(asctime)s%(reset)s: "
+                   "%(log_color)s%(levelname)-7s%(reset)s | %(name)-31s - "
+                   "%(log_color)s%(message)s%(reset)s")
     stream = logging.StreamHandler()
     formatter = colorlog.ColoredFormatter(term_format, datefmt="%H:%M:%S")
     stream.setLevel(level)
