@@ -30,10 +30,9 @@ restylers_version: stable
 
 restylers:
   - isort
-  - yapf
-  - name: prettier
-    include:
-      - "**/*.yml"
-  - name: prettier
-    include:
-      - "**/*.md"
+  - yapf:
+      arguments:
+        - ["--style", "google"]
+  - prettier:
+      include:
+        - ["**/*.yml", "**/*.md"]
