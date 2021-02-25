@@ -34,6 +34,9 @@ admins-help: |
   × /unpin: Unpin the latest pinned message. Reply to unpin the replied message - add all to unpin all messages.
   × /setgpic : Changes the group's display picture to the replied images.
 gpic-no-photo: Berikan saya sebuah foto!
+finding-zombie: "`Mencari akun zombie...!`"
+cleaning-zombie: "**{}** `Zombie ditemukan, dan telah ditendang..!` 🚮"
+zombie-clean: "`Zombie tidak di temukan, Grup bersih` 🙌"
 #endregion
 #region language
 language-button: Bahasa
