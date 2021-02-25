@@ -37,7 +37,7 @@ admins-help: |
 gpic-no-photo: Give me a photo!
 finding-zombie: "`Find zombies account.. please wait!!`"
 cleaning-zombie: "**{}** `zombies found and has been removed`"
-zombie-clean: "`Zombies not found, group are clean..`""
+zombie-clean: "`Zombies not found, group are clean..`"
 #endregion
 #region language
 language-button: Language
