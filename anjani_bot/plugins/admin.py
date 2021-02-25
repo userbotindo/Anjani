@@ -83,15 +83,18 @@ class Admin(plugin.Plugin):
         zombie = 0
         zombies = []
 
-        msg = await message.reply(await self.bot.text(chat_id, "finding-zombie"))
+        msg = await message.reply(await self.bot.text(chat_id,
+                                                      "finding-zombie"))
         async for member in self.bot.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
                 zombie += 1
                 zombies.append(member.user.id)
 
         if zombie == 0:
-            return await message.reply(await self.bot.text(chat_id, "zombie-clean"))
+            return await message.reply(await
+                                       self.bot.text(chat_id, "zombie-clean"))
         for member in zombies:
-            await asyncio.gather(await self.client.kick_chat_members(chat_id, member),
-                                 await msg.edit_text(await self.bot.text(chat_id,
-                                 "cleaning-zombie", zombie)))
+            await asyncio.gather(
+                await self.client.kick_chat_members(chat_id, member), await
+                msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie",
+                                                  zombie)))
