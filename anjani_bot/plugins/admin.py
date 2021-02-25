@@ -17,6 +17,8 @@
 import asyncio
 from typing import ClassVar
 
+from pyrogram.errors import UserAdminInvalid, FloodWait
+
 from anjani_bot import listener, plugin
 from anjani_bot.utils import adminlist
 
@@ -81,20 +83,20 @@ class Admin(plugin.Plugin):
         """ Kick all deleted acc in group. """
         chat_id = message.chat.id
         zombie = 0
-        zombies = []
 
         msg = await message.reply(await self.bot.text(chat_id,
                                                       "finding-zombie"))
         async for member in self.bot.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
                 zombie += 1
-                zombies.append(member.user.id)
+                try:
+                    await self.bot.client.kick_chat_member(chat_id, member)
+                except UserAdminInvalid:
+                    zombie -= 1
+                except FloodWait as flood:
+                    await asyncio.sleep(flood.x)
 
         if zombie == 0:
-            return await message.reply(await
-                                       self.bot.text(chat_id, "zombie-clean"))
-        for member in zombies:
-            await asyncio.gather(
-                await self.client.kick_chat_members(chat_id, member), await
-                msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie",
-                                                  zombie)))
+            return await msg.edit(await self.bot.text(chat_id, "zombie-clean"))
+        await msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie",
+                                                  zombie))
