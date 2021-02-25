@@ -32,8 +32,12 @@ admins-help: |
   **Admin only:**
   × /pin: Silently pins the message replied to - add loud, notify or violent to give notificaton to users.
   × /unpin: Unpin the latest pinned message. Reply to unpin the replied message - add all to unpin all messages.
-  × /setgpic : Changes the group's display picture to the replied images.
+  × /setgpic : Changes the group's display picture to the replied images
+  × /zombies : Clean deleted account from your group.
 gpic-no-photo: Give me a photo!
+finding-zombie: "`Find zombies account.. please wait!!`"
+cleaning-zombie: "**{}** `zombies found and has been removed`"
+zombie-clean: "`Zombies not found, group are clean..`"
 #endregion
 #region language
 language-button: Language

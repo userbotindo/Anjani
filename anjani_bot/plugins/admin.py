@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 from typing import ClassVar
 
 from anjani_bot import listener, plugin
@@ -74,3 +75,26 @@ class Admin(plugin.Plugin):
         for i in adm_list:
             admins += f"- [{i['name']}](tg://user?id={i['id']})\n"
         await message.reply_text(admins)
+
+    @listener.on("zombies", can_restrict=True)
+    async def zombie_clean(self, message):
+        """ Kick all deleted acc in group. """
+        chat_id = message.chat.id
+        zombie = 0
+        zombies = []
+
+        msg = await message.reply(await self.bot.text(chat_id,
+                                                      "finding-zombie"))
+        async for member in self.bot.client.iter_chat_members(chat_id):
+            if member.user.is_deleted:
+                zombie += 1
+                zombies.append(member.user.id)
+
+        if zombie == 0:
+            return await message.reply(await
+                                       self.bot.text(chat_id, "zombie-clean"))
+        for member in zombies:
+            await asyncio.gather(
+                await self.client.kick_chat_members(chat_id, member), await
+                msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie",
+                                                  zombie)))
