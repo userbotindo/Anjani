@@ -17,5 +17,11 @@
 from .admin_check import adminlist, user_ban_protected
 from .config import BotConfig
 from .extractor import extract_user, extract_user_and_text
-from .tools import (format_integer, get_readable_time, nekobin, rand_array,
-                    rand_key)
+from .tools import (
+    format_integer,
+    extract_time,
+    get_readable_time,
+    nekobin,
+    rand_array,
+    rand_key
+)

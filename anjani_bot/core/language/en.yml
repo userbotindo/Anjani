@@ -83,6 +83,29 @@ wait-paste: "`Pasting to Nekobin...`"
 paste-succes: "**Pasted successfully..!**"
 fail-paste: "`Failed to reach Nekobin`"
 #endregion
+#region mute
+muting-button: muting
+muting-help: |
+  Some spammers, annoyances, or trolls need to be diciplined.
+  With this plugin you can easily mute someone.\n
+  **Admin Only:**
+  × /mute <userhandle>: Mute member in the supergroup.
+  × /mute <userhandle> X<m|h|d>: Temporary mute a member for X time.
+  × /unmute <usehandle>: Unmutes any muted member.\n
+  Example for temporary mute:
+  m = Minutes, h = Hours and d = Days.
+  ``/mute @username 2h``; This mute a user for 2 hours.
+invalid-time-flag: Invalid time type specified. Expected m,h, or d.
+no-mute-user: Give me a user to mute
+no-unmute-user: Give me a user to unmute
+mute-success: Successfully muted!
+mute-success-time: Successfully muted for {}!
+unmute-done: Unmuted!\nthis user can start talking again.
+cant-mute-admin: i'm not gonna stop an admin from talking!
+self-muting: Yeahh... I'm not muting myself!
+already-muted: This user is already muted!
+user-not-muted: This user already has the rights to chat!
+#endregion
 #region purge
 purges-button: Purges
 purges-help: |
@@ -157,6 +180,7 @@ error-chat-private: "**Error:** `Chat type private`\nThis command for groups onl
 error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!
+err-invalid-username-id : "`Invalid username or userid!`"
 error-reply-to-message: Reply to a message!
 err-yes-no-args: Usage is on/yes or off/no
 #endregion

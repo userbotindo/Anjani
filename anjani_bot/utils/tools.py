@@ -13,7 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import time
 from random import choice
+from typing import Union
 from uuid import uuid4
 
 
@@ -43,6 +46,24 @@ def get_readable_time(seconds: int) -> str:
     up_time += ":".join(time_list)
 
     return up_time
+
+
+async def extract_time(time_text) -> Union[int, bool]:
+    """ Extract time from time flags """
+    if any(time_text.endswith(unit) for unit in ("m", "h", "d")):
+        unit = time_text[-1]
+        time_num = time_text[:-1]
+        if not time_num.isdigit():
+            return False
+
+        if unit == "m":
+            bantime = int(time.time() + int(time_num) * 60)
+        elif unit == "h":
+            bantime = int(time.time() + int(time_num) * 60 * 60)
+        elif unit == "d":
+            bantime = int(time.time() + int(time_num) * 24 * 60 * 60)
+        return bantime
+    return False
 
 
 async def nekobin(client, data: str) -> str:
