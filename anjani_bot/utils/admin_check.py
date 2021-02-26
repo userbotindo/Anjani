@@ -31,6 +31,7 @@ async def adminlist(client, chat_id, full=False):
 
 async def user_ban_protected(bot, chat_id, user_id) -> bool:
     """ Return True if user can't be banned """
-    user = await bot.client.get_chat_member(chat_id=chat_id, user_id=user_id)
-    return bool(user.status in ["creator", "administrator"]
-                or user_id in bot.staff_id)
+    member = await bot.client.get_chat_member(chat_id=chat_id, user_id=user_id)
+    return bool(member.status in ["creator", "administrator"]
+                or user_id in bot.staff_id
+                or member.user.id in bot.staff_id)

@@ -19,7 +19,7 @@ from pyrogram.errors import (
     UserAdminInvalid, UsernameNotOccupied, UsernameInvalid, PeerIdInvalid)
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import extract_user_and_text, extract_time
+from anjani_bot.utils import extract_user_and_text, extract_time, user_ban_protected
 
 
 class Muting(plugin.Plugin):
@@ -62,6 +62,10 @@ class Muting(plugin.Plugin):
         if user_id in [self.bot.identifier, f"@{self.bot.username}"]:
             return await message.reply_text(
                 await self.bot.text(chat_id, "self-muting")
+            )
+        if await user_ban_protected(self.bot, chat_id, user_id):
+            return await message.reply_text(
+                await self.bot.text(chat_id, "cant-mute-admin")
             )
 
         if res:
