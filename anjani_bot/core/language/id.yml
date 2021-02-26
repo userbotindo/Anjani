@@ -113,7 +113,7 @@ unban-done: "`blokir dihapus...`"
 #region spam shield
 banned-text: |
   #SPAM_SHIELD\n
-  **Name:** `{}`
+  **Name:** {}
   **ID:** `{}`
   **Reason**: {}
   **Client:** {}
