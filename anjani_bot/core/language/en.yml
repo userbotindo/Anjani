@@ -98,8 +98,8 @@ muting-help: |
 invalid-time-flag: Invalid time type specified. Expected m,h, or d.
 no-mute-user: Give me a user to mute
 no-unmute-user: Give me a user to unmute
-mute-success: Successfully muted!
-mute-success-time: Successfully muted for {}!
+mute-success: Successfully muted **{}**!
+mute-success-time: Successfully muted **{}** for {}!
 unmute-done: Unmuted!\nthis user can start talking again.
 cant-mute-admin: i'm not gonna stop an admin from talking!
 self-muting: Yeahh... I'm not muting myself!
@@ -127,12 +127,12 @@ restriction-help: |
   \nhandle can be a user_id's or username
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
-kick-done: "`{} Kicked!`"
+kick-done: "**{}** Kicked!"
 no-ban-user: who should i ban?
 admin-ban: I'm not gonna ban an admin, don't make fun of yourself!
-ban-done: "`Banned {}!`"
+ban-done: "Banned **{}**!"
 unban-no-user: give me a user to unban
-unban-done: "`{} Unbanned!`"
+unban-done: "**{}** Unbanned!"
 #endregion
 #region spam shield
 banned-text: |

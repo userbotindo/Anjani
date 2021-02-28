@@ -19,12 +19,23 @@ from pyrogram.errors import (
     UserAdminInvalid, UsernameNotOccupied, UsernameInvalid, PeerIdInvalid)
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import extract_user_and_text, extract_time, user_ban_protected
+from anjani_bot.utils import (
+    ParsedChatMember,
+    extract_time,
+    extract_user,
+    extract_user_and_text,
+    user_ban_protected
+)
 
 
 class Muting(plugin.Plugin):
     name = "Muting"
     helpable = True
+
+    async def parse_member(self, user_ids) -> ParsedChatMember:
+        """ Get member atrribute """
+        member = await extract_user(self.bot.client, user_ids)
+        return ParsedChatMember(member)
 
     async def _muter(self, message, user_id, time=0):
         chat_id = message.chat.id
@@ -82,8 +93,9 @@ class Muting(plugin.Plugin):
             until = 0
         muted = await self._muter(message, user_id, until)
         if muted:
+            member = (await self.parse_member(user_id)).first_name
             await message.reply_text(
-                await self.bot.text(chat_id, tr_string, timeflag)
+                await self.bot.text(chat_id, tr_string, member, timeflag)
             )
 
     @listener.on("unmute", can_restrict=True)

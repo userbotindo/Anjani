@@ -103,12 +103,12 @@ restriction-help: |
   \nhandle bisa menjadi Id pengguna atau username pengguna
 no-kick-user: siapa yang harus saya tendang?
 admin-kick: Mari kita mulai menendang admin?
-kick-done: "`{} Tertendang!`"
+kick-done: "**{}** Tertendang!"
 no-ban-user: siapa yang harus saya blokir?
 admin-ban: Saya tidak akan melarang admin!
-ban-done: "` {} Terblokir!`"
+ban-done: "**{}** Terblokir!"
 unban-no-user: berikan saya pengguna untuk diblokir
-unban-done: "`blokir {} dihapus...`"
+unban-done: "blokir **{}** dihapus..."
 #endregion
 #region spam shield
 banned-text: |
