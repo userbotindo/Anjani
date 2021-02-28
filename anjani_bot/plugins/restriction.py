@@ -16,15 +16,25 @@
 
 from typing import ClassVar
 
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
+from pyrogram.errors import UserNotParticipant
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import extract_user_and_text, user_ban_protected
+from anjani_bot.utils import (
+    ParsedChatMember,
+    extract_user,
+    extract_user_and_text,
+    user_ban_protected
+)
 
 
 class Restrictions(plugin.Plugin):
     name: ClassVar[str] = "Restriction"
     helpable: ClassVar[bool] = True
+
+    async def parse_member(self, user_ids) -> ParsedChatMember:
+        """ Get member atrribute """
+        member = await extract_user(self.bot.client, user_ids)
+        return ParsedChatMember(member)
 
     @listener.on("kick", can_restrict=True)
     async def kick_member(self, message):
@@ -42,7 +52,10 @@ class Restrictions(plugin.Plugin):
             return await message.reply_text(await self.bot.text(
                 chat_id, "err-not-participant"))
         await message.chat.kick_member(user)
-        await message.reply_text(await self.bot.text(chat_id, "kick-done"))
+        kicked = await self.parse_member(user)
+        await message.reply_text(
+            await self.bot.text(chat_id, "kick-done", kicked.first_name)
+        )
         await message.chat.unban_member(user)
 
     @listener.on("ban", can_restrict=True)
@@ -61,7 +74,10 @@ class Restrictions(plugin.Plugin):
             return await message.reply_text(await self.bot.text(
                 chat_id, "err-not-participant"))
         await message.chat.kick_member(user)
-        await message.reply_text(await self.bot.text(chat_id, "ban-done"))
+        banned = await self.parse_member(user)
+        await message.reply_text(
+            await self.bot.text(chat_id, "ban-done", banned.first_name)
+        )
 
     @listener.on("unban", can_restrict=True)
     async def unban_member(self, message):
@@ -71,5 +87,7 @@ class Restrictions(plugin.Plugin):
             return await message.reply_text(await self.bot.text(
                 message.chat.id, "unban-no-user"))
         await message.chat.unban_member(user)
-        await message.reply_text(await self.bot.text(message.chat.id,
-                                                     "unban-done"))
+        unbanned = await self.parse_member(user)
+        await message.reply_text(
+            await self.bot.text(message.chat.id, "unban-done", unbanned.first_name)
+        )

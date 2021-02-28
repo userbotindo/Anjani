@@ -22,43 +22,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 
 from anjani_bot import listener, plugin
-
-
-class NewChatMember:
-    """ A new joined user Attribute
-
-    Attributes:
-        first_name (`str`):
-            User's or bot's first name.
-
-        fullname (`str`):
-            User's full name. use user first_name if not exist.
-
-        mention (`str`):
-            A text mention for this user.
-
-        username (`str`):
-            User's username.
-
-        count (`int`, *Optional*):
-            Number of members in the chat.
-    """
-    def __init__(self, user):
-        self.first_name = user.first_name
-        if user.last_name:
-            self.fullname = self.first_name + user.last_name
-        else:
-            self.fullname = self.first_name
-        self.mention = user.mention(style="html")
-        if user.username:
-            self.username = f"@{user.username}"
-        else:
-            self.username = self.mention
-        self.count = None
-
-    async def get_members(self, client, chat_id):
-        """ Count chat member """
-        self.count = await client.get_chat_members_count(chat_id)
+from anjani_bot.utils import ParsedChatMember
 
 
 class RawGreeting:
@@ -83,9 +47,9 @@ class RawGreeting:
         return await self.bot.text(chat_id, "default-welcome", noformat=True)
 
     @staticmethod
-    async def parse_user(user) -> NewChatMember:
+    async def parse_user(user) -> ParsedChatMember:
         """ Get user attribute """
-        parsed_user = NewChatMember(user)
+        parsed_user = ParsedChatMember(user)
         return parsed_user
 
     async def full_welcome(self, chat_id) -> Tuple[bool, str, bool]:

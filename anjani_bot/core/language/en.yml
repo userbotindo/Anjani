@@ -127,12 +127,12 @@ restriction-help: |
   \nhandle can be a user_id's or username
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
-kick-done: "`Kicked!`"
+kick-done: "`{} Kicked!`"
 no-ban-user: who should i ban?
 admin-ban: I'm not gonna ban an admin, don't make fun of yourself!
-ban-done: "`Banned!`"
+ban-done: "`Banned {}!`"
 unban-no-user: give me a user to unban
-unban-done: "`Unbanned...`"
+unban-done: "`{} Unbanned!`"
 #endregion
 #region spam shield
 banned-text: |
