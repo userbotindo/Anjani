@@ -20,6 +20,7 @@ from typing import ClassVar, Tuple, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
+from pyrogram.errors import MessageDeleteForbidden
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import ParsedChatMember
@@ -141,7 +142,10 @@ class Greeting(plugin.Plugin, RawGreeting):
             reply = message.message_id
             clean_serv = await self.clean_service(chat.id)
             if clean_serv:
-                await message.delete()
+                try:
+                    await message.delete()
+                except MessageDeleteForbidden:
+                    pass
                 reply = False
             for new_member in new_members:
                 if new_member.id == self.bot.identifier:
@@ -169,8 +173,11 @@ class Greeting(plugin.Plugin, RawGreeting):
                     prev_welc = await self.prev_welcome(
                         chat.id, msg.message_id)
                     if prev_welc:
-                        await self.bot.client.delete_messages(
-                            chat.id, prev_welc)
+                        try:
+                            await self.bot.client.delete_messages(
+                                chat.id, prev_welc)
+                        except MessageDeleteForbidden:
+                            pass
 
     @listener.on("setwelcome", admin_only=True)
     async def set_welcome(self, message):
