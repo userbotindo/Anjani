@@ -183,4 +183,5 @@ err-invalid-option: Invalid option!
 err-invalid-username-id : "`Invalid username or userid!`"
 error-reply-to-message: Reply to a message!
 err-yes-no-args: Usage is on/yes or off/no
+err-peer-invalid: PEER_ID_INVALID\ncan't execute command, I haven't met this person before.
 #endregion

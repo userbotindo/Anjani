@@ -16,7 +16,7 @@
 
 from typing import ClassVar
 
-from pyrogram.errors import UserNotParticipant
+from pyrogram.errors import UserNotParticipant, PeerIdInvalid
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import (
@@ -86,7 +86,12 @@ class Restrictions(plugin.Plugin):
         if user is None:
             return await message.reply_text(await self.bot.text(
                 message.chat.id, "unban-no-user"))
-        await message.chat.unban_member(user)
+        try:
+            await message.chat.unban_member(user)
+        except PeerIdInvalid:
+            return await message.reply_text(
+                await self.bot.text(message.chat.id, "err-peer-invalid")
+            )
         unbanned = await self.parse_member(user)
         await message.reply_text(
             await self.bot.text(message.chat.id, "unban-done", unbanned.first_name)
