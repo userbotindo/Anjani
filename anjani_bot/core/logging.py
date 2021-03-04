@@ -14,15 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from os import environ
 from datetime import datetime
 
 import logging
 import colorlog
 
 
+def _level_check(level):
+    _str_to_lvl = {
+        'CRITICAL': logging.CRITICAL,
+        'ERROR': logging.ERROR,
+        'WARNING': logging.WARNING,
+        'INFO': logging.INFO,
+        'DEBUG': logging.DEBUG,
+    }
+    if level not in _str_to_lvl:
+        return logging.INFO
+    return _str_to_lvl[level]
+
+
 def setup_log():
     """Configures logging"""
-    level = logging.INFO
+    log_level = environ.get("LOG_LEVEL", "info")
+    level = _level_check(log_level.upper())
     file_path = f"anjani_bot/core/AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
 
     logging.root.setLevel(level)
