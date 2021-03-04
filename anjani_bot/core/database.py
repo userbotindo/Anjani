@@ -41,7 +41,7 @@ class DataBase(Base):
     def __init__(self):
         self.__language__ = sorted([
             os.path.splitext(filename)[0]
-            for filename in os.listdir("anjani_bot/core/language")
+            for filename in os.listdir("./language")
         ])
         self.__strings__ = {}
 
@@ -62,7 +62,7 @@ class DataBase(Base):
         LOGGER.info("Loading language...")
         for i in self.__language__:
             LOGGER.debug("Loading language: %s", i)
-            with open(f"anjani_bot/core/language/{i}.yml", "r") as text:
+            with open(f"./language/{i}.yml", "r") as text:
                 self.__strings__[i] = full_load(text)
         LOGGER.info("Language %s loaded", self.__language__)
 
