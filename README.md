@@ -8,18 +8,15 @@
 
 A modular Telegram group management bot running with Python based on [Pyrogram](https://github.com/pyrogram/pyrogram).
 
-Ca be found on Telegram as [Anjani](https://t.me/dAnjani_bot)
+Can be found on Telegram as [Anjani](https://t.me/dAnjani_bot).
 
-Help us to cover more languages by contributing translation in [Crowdin](https://crowdin.com/project/anjani-bot)!
+Help us to cover more languages by contributing in [Crowdin](https://crowdin.com/project/anjani-bot)!
 
 ## Requirements
 
 - Python 3.8 or higher (recomended).
-
 - [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
-
 - [Telegram Bot Token](https://t.me/botfather)
-
 - [MongoDB Database](https://cloud.mongodb.com/).
 
 ## Set Up
