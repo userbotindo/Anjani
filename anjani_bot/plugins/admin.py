@@ -31,9 +31,8 @@ class Admin(plugin.Plugin):
     async def pin(self, message):
         """ Pin message on chats """
         if message.reply_to_message is None:
-            return await message.reply(await
-                                       self.bot.text(message.chat.id,
-                                                     "error-reply-to-message"))
+            return await message.reply(
+                await self.bot.text(message.chat.id, "error-reply-to-message"))
         is_silent = True
         if message.command and message.command[0] in [
                 "notify",
@@ -65,13 +64,16 @@ class Admin(plugin.Plugin):
             await self.bot.client.set_chat_photo(message.chat.id,
                                                  photo=file.file_id)
         else:
-            await message.reply_text(await
-                                     self.bot.text(message.chat.id,
-                                                   "gpic-no-photo"))
+            await message.reply_text(
+                await self.bot.text(message.chat.id, "gpic-no-photo"))
 
     @listener.on("adminlist")
     async def admin_list(self, message):
         """ Get list of chat admins """
+        if message.chat.type == "private":
+            return await message.reply_text(
+                await self.bot.text(message.chat.id, "error-chat-private")
+            )
         adm_list = await adminlist(self.bot.client, message.chat.id, full=True)
         admins = ""
         for i in adm_list:
@@ -84,8 +86,8 @@ class Admin(plugin.Plugin):
         chat_id = message.chat.id
         zombie = 0
 
-        msg = await message.reply(await self.bot.text(chat_id,
-                                                      "finding-zombie"))
+        msg = await message.reply(
+            await self.bot.text(chat_id, "finding-zombie"))
         async for member in self.bot.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
                 zombie += 1
@@ -98,5 +100,5 @@ class Admin(plugin.Plugin):
 
         if zombie == 0:
             return await msg.edit(await self.bot.text(chat_id, "zombie-clean"))
-        await msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie",
-                                                  zombie))
+        await msg.edit_text(
+            await self.bot.text(chat_id, "cleaning-zombie", zombie))
