@@ -35,10 +35,10 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         super().__init__(**kwargs)
 
     async def __update__(
-        self,
-        func: Callable,
-        message: Union[Message, CallbackQuery],
-    ):
+            self,
+            func: Callable,
+            message: Union[Message, CallbackQuery],
+        ):
         func.__self__ = None
 
         # Get class of func itself

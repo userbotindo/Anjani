@@ -126,12 +126,12 @@ class DataBase(Base):
                 await plugin.__migrate__(old_chat, new_chat)
 
     async def text(
-        self,
-        chat_id: int,
-        name: str,
-        *args: Optional[Any],
-        **kwargs: Optional[Any],
-    ) -> str:
+            self,
+            chat_id: int,
+            name: str,
+            *args: Optional[Any],
+            **kwargs: Optional[Any],
+        ) -> str:
         """Parse the string with user language setting.
 
         Parameters:

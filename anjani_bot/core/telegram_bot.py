@@ -155,16 +155,16 @@ class TelegramBot(Base):
         return _id
 
     async def channel_log(
-        self,
-        text: str,
-        parse_mode: Optional[str] = object,
-        disable_web_page_preview: bool = None,
-        disable_notification: bool = None,
-        reply_markup: Union["pyrogram.types.InlineKeyboardMarkup",
-                            "pyrogram.types.ReplyKeyboardMarkup",
-                            "pyrogram.types.ReplyKeyboardRemove",
-                            "pyrogram.types.ForceReply"] = None
-    ) -> Union["pyrogram.types.Message", None]:
+            self,
+            text: str,
+            parse_mode: Optional[str] = object,
+            disable_web_page_preview: bool = None,
+            disable_notification: bool = None,
+            reply_markup: Union["pyrogram.types.InlineKeyboardMarkup",
+                                "pyrogram.types.ReplyKeyboardMarkup",
+                                "pyrogram.types.ReplyKeyboardRemove",
+                                "pyrogram.types.ForceReply"] = None
+        ) -> Union["pyrogram.types.Message", None]:
         """Shortcut method to send message to log channel.
 
         Parameters:
