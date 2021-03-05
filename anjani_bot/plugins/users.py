@@ -122,7 +122,7 @@ class Users(plugin.Plugin):
                                                }})
 
     @listener.on(filters=filters.migrate_from_chat_id, update="message")
-    async def __chat_migrate(self, message):
+    async def chat_migrate(self, message):
         """ Chat migrate handler """
         old_chat = message.migrate_from_chat_id
         new_chat = message.chat.id
