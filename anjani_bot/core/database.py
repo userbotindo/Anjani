@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Union
 from motor.core import AgnosticCollection
 from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
                                  AsyncIOMotorDatabase)
+from pymongo.errors import OperationFailure
 from yaml import full_load
 
 from .base import Base  # pylint: disable=R0401
@@ -73,12 +74,18 @@ class DataBase(Base):
             db_name (`str`): Database name to log in. Will create new Database if not found.
         """
         LOGGER.info("Connecting to MongoDB...")
-        self.__client__ = AsyncIOMotorClient(self.get_config.db_uri,
-                                             connect=False)
-        if db_name in await self.__client__.list_database_names():
-            LOGGER.info("Database found, Logged in to Database...")
-        else:
-            LOGGER.info("Database not found! Creating New Database...")
+        try:
+            self.__client__ = AsyncIOMotorClient(self.get_config.db_uri,
+                                                 connect=False)
+            if db_name in await self.__client__.list_database_names():
+                LOGGER.info("Database found, Logged in to Database...")
+            else:
+                LOGGER.info("Database not found! Creating New Database...")
+        except OperationFailure as err:
+            LOGGER.critical("DATABASE AUTHENTICATION FAILED\n%s", err)
+            LOGGER.warning("Canceling startup...")
+            self.stopping = True
+
         self.__db__ = self.__client__[db_name]
         self.__list_collection__ = await self.__db__.list_collection_names()
         LOGGER.info("Database connected")
