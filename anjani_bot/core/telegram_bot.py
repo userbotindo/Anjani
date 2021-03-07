@@ -192,9 +192,6 @@ class TelegramBot(Base):
                 Additional interface options. An object for an inline keyboard,
                 custom reply keyboard, instructions to remove reply keyboard or
                 to force a reply from the user.
-
-        Returns:
-            :obj:`~types.Message`: On success, the sent text message is returned.
         """
         log_channel = self.get_config.log_channel
         if log_channel == 0:
@@ -202,10 +199,13 @@ class TelegramBot(Base):
                 "LOG_CHANNEL is empty nor valid, message '%s' not send.", text)
             return
 
-        return await self.client.send_message(
-            chat_id=log_channel,
-            text=text,
-            parse_mode=parse_mode,
-            disable_web_page_preview=disable_web_page_preview,
-            disable_notification=disable_notification,
-            reply_markup=reply_markup)
+        try:
+            await self.client.send_message(
+                chat_id=log_channel,
+                text=text,
+                parse_mode=parse_mode,
+                disable_web_page_preview=disable_web_page_preview,
+                disable_notification=disable_notification,
+                reply_markup=reply_markup)
+        except ValueError as err:
+            LOG.error("Invalid LOG_CHANNEL: %s", err)
