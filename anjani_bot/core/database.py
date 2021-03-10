@@ -16,6 +16,7 @@
 
 import logging
 import os
+import traceback
 from codecs import decode, encode
 from typing import Any, Dict, List, Optional, Union
 
@@ -82,9 +83,9 @@ class DataBase(Base):
             else:
                 LOGGER.info("Database not found! Creating New Database...")
         except OperationFailure as err:
+            traceback.print_exc()
             LOGGER.critical("DATABASE AUTHENTICATION FAILED\n%s", err)
-            LOGGER.warning("Canceling startup...")
-            self.stopping = True
+            await self.loop.stop()
 
         self.__db__ = self.__client__[db_name]
         self.__list_collection__ = await self.__db__.list_collection_names()

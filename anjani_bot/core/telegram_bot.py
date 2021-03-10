@@ -17,10 +17,12 @@
 import importlib
 import logging
 import pkgutil
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import pyrogram
+from pyrogram.errors import AccessTokenExpired, AccessTokenInvalid
 
 from ..utils import BotConfig
 from . import pool
@@ -85,13 +87,22 @@ class TelegramBot(Base):
 
         await self.connect_db("AnjaniBot")
         self._load_language()
-        subplugins = [
-            importlib.import_module("anjani_bot.plugins." + info.name,
-                                    __name__)
-            for info in pkgutil.iter_modules(["anjani_bot/plugins"])
-        ]
+        try:
+            subplugins = [
+                importlib.import_module("anjani_bot.plugins." + info.name,
+                                        __name__)
+                for info in pkgutil.iter_modules(["anjani_bot/plugins"])
+            ]
+        except ModuleNotFoundError as err:
+            traceback.print_exc()
+            LOG.critical(err)
+            await self.loop.stop()
         self.load_all_plugins(subplugins)
-        await self.client.start()
+        try:
+            await self.client.start()
+        except (AccessTokenInvalid, AccessTokenExpired) as err:
+            LOG.critical(err)
+            self.loop.stop()
         await self._load_all_attribute()
         await self.channel_log("Bot started successfully...")
 
