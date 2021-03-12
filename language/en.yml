@@ -23,10 +23,10 @@ back-button: ⬅️ Back
 markdown-helper: |
   Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that saved messages are correctly parsed, and to allow you to create buttons.\n
   <b>Supported Markdown:</b>
-  - <code>_italic_</code>: Underscores will produce <i>italic</i> text.
-  - <code>*bold*</code>: Asterisks will produce <b>bold</b> text
+  - <code>__italic__</code>: Double underscores will produce <i>italic</i> text.
+  - <code>**bold**</code>: Double asterisks will produce <b>bold</b> text
   - <code>`code`</code>: Backticks will produce <code>monospace</code> text.
-  - <code>~strike~</code>: Tildes will produce <del>strikethrough</del> text
+  - <code>~~strike~~</code>: Double tildes will produce <del>strikethrough</del> text
   - <code>--underline--</code> Double Hyphen will produce <u>underline</u> text
   - <code>[sometext](someURL)</code>: this will create a link - the message will just show sometext, and tapping on it will open the page at someURL.
   EG: <code>[test](example.com)</code>
@@ -136,7 +136,7 @@ notes-help: |
   **Admin commands:**
   × /save <notename> <note text>: Save a new note named "<notename>". Replying to a message will save the replied message.
   × /clear <notename> | /delnote <notename>: Delete the matched note if exist.
-  \nCheck /markdownhelp for more info.
+  \nCheck /markdownhelp for more notes formatting info.
 notes-invalid-args : |
   Reply to a message with text or provide text after notes name.
   E.g.: /save <notename> <msg/reply to msg> 

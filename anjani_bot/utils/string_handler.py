@@ -119,12 +119,12 @@ class MessageParser:
         buttons = []
 
         if not msg.reply_to_message:
-            args = msg.text.split(" ", 2)
+            args = msg.text.markdown.split(" ", 2)
             msg_text, buttons = self.parse_button(args[2])
             msg_type = Types.BUTTON_TEXT if buttons else Types.TEXT
         elif msg.reply_to_message:
             text = msg.reply_to_message.text or msg.reply_to_message.caption
-            msg_text, buttons = self.parse_button(text)
+            msg_text, buttons = self.parse_button(text.markdown)
             if msg.reply_to_message.text:
                 msg_type = Types.BUTTON_TEXT if buttons else Types.TEXT
             elif msg.reply_to_message.sticker:
@@ -145,5 +145,4 @@ class MessageParser:
             elif msg.reply_to_message.video:
                 msg_content = msg.reply_to_message.video.file_id
                 msg_type = Types.VIDEO
-
         return msg_text, msg_type, msg_content, buttons
