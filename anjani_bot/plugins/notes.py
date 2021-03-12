@@ -159,6 +159,9 @@ class NotesPlugin(plugin.Plugin, NotesBase):
     async def get_notes_hash(self, message):
         """Notes hashtag trigger."""
         msg = message.text
+        if not msg:
+            return
+
         args = msg.split()
         if len(args) >= 2 and args[1].lower() == "noformat":
             await self.get_note(message, args[0][1:], noformat=True)
