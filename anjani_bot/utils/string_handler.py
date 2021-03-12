@@ -16,9 +16,9 @@
 
 import re
 from enum import IntEnum, unique
-from typing import List
+from typing import List, Union
 
-from pyrogram.types import Message, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 
 
 @unique
@@ -55,18 +55,20 @@ class SendFormating:
 class MessageParser:
 
     @staticmethod
-    def build_button(buttons: List):
+    def build_button(buttons: List) -> Union[InlineKeyboardMarkup, None]:
         """ Build saved button format """
+        if not buttons:
+            return None
         keyb = []
         for btn in buttons:
             if btn[2] and keyb:
                 keyb[-1].append(InlineKeyboardButton(btn[0], url=btn[1]))
             else:
                 keyb.append([InlineKeyboardButton(btn[0], url=btn[1])])
-        return keyb
+        return InlineKeyboardMarkup(keyb)
 
     @staticmethod
-    def revert_button(button: List):
+    def revert_button(button: List) -> str:
         """ Revert button format """
         res = ""
         for btn in button:

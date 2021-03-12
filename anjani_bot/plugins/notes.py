@@ -19,7 +19,7 @@ from functools import partial
 from typing import Any, ClassVar, Dict, List, Match, Union
 
 from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, Message
+from pyrogram.types import Message
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from anjani_bot import listener, plugin
@@ -67,14 +67,14 @@ class NotesBase(SendFormating, MessageParser):
         )
 
         if note:
-            button = note.get("button")
+            button = note.get("button", None)
             if noformat:
                 parse_mode = None
                 btn_text = self.revert_button(button)
                 keyb = None
             else:
                 parse_mode = "markdown"
-                keyb = InlineKeyboardMarkup(self.build_button(button))
+                keyb = self.build_button(button)
                 btn_text = ""
 
             if note.get("type") in (Types.TEXT, Types.BUTTON_TEXT):
