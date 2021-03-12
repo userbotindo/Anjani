@@ -20,6 +20,25 @@ add-to-group-button: Add to Group 👥
 start-help-button: Help & Commands ❔
 help-chat-button: Help
 back-button: ⬅️ Back
+markdown-helper: |
+  Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that saved messages are correctly parsed, and to allow you to create buttons.\n
+  <b>Supported Markdown:</b>
+  - <code>_italic_</code>: Underscores will produce <i>italic</i> text.
+  - <code>*bold*</code>: Asterisks will produce <b>bold</b> text
+  - <code>`code`</code>: Backticks will produce <code>monospace</code> text.
+  - <code>~strike~</code>: Tildes will produce <del>strikethrough</del> text
+  - <code>--underline--</code> Double Hyphen will produce <u>underline</u> text
+  - <code>[sometext](someURL)</code>: this will create a link - the message will just show sometext, and tapping on it will open the page at someURL.
+  EG: <code>[test](example.com)</code>
+  - <code>[buttontext](buttonurl:someURL)</code>: This is the formatting to create a telegram button. buttontext will be what is displayed on the button, and someurl will be the url to redirect.
+  EG: <code>[This is a button](buttonurl:google.com)</code>
+
+  If you want multiple buttons on the same line, use :same, as such:
+  <code>[one](buttonurl://example.com)</code>
+  <code>[two](buttonurl://google.com:same)</code>
+  This will create two buttons on a single line, instead of one button per line.
+
+  Keep in mind that your message <b>MUST</b> contain some text other than just a button!
 #endregion
 #region admin
 admins-button: Admins
@@ -105,6 +124,28 @@ cant-mute-admin: i'm not gonna stop an admin from talking!
 self-muting: Yeahh... I'm not muting myself!
 already-muted: This user is already muted!
 user-not-muted: This user already has the rights to chat!
+#endregion
+#region note
+notes-button: notes
+notes-help: |
+  \nSave data for future use with notes!\n
+  **User commands:**
+  × /get <notename>: Get the note with this notename.
+  × #<notename>: Same as /get.
+  × /notes: List all notes in current chats.\n
+  **Admin commands:**
+  × /save <notename> <note text>: Save a new note named "<notename>". Replying to a message will save the replied message.
+  × /clear <notename> | /delnote <notename>: Delete the matched note if exist.
+  \nCheck /markdownhelp for more info.
+notes-invalid-args : |
+  Reply to a message with text or provide text after notes name.
+  E.g.: /save <notename> <msg/reply to msg> 
+note-saved: "Notes saved as `{}`."
+note-list: "**Note List in {}:**\n"
+no-notes: "`No notes saved in this chat!`"
+notes-del-noargs: Sent me a note names to delete
+notes-not-exist: No such notes exist in this chat!
+notes-deleted: "Note `{}` deleted."
 #endregion
 #region purge
 purges-button: Purges

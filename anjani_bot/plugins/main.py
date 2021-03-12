@@ -98,3 +98,15 @@ class Main(plugin.Plugin):
             await query.edit_message_text(
                 await self.bot.text(chat_id, "help-pm", self.bot.name),
                 reply_markup=InlineKeyboardMarkup(keyboard))
+
+    @listener.on("markdownhelp")
+    async def markdown_helper(self, message):
+        await message.reply_text(
+            await self.bot.text(
+                message.chat.id,
+                "markdown-helper",
+                self.bot.name
+            ),
+            parse_mode="html",
+            disable_web_page_preview=True
+        )

@@ -17,6 +17,7 @@
 from .admin_check import adminlist, user_ban_protected
 from .config import BotConfig
 from .extractor import ParsedChatMember, extract_user, extract_user_and_text
+from .string_handler import MessageParser, SendFormating, Types
 from .tools import (
     format_integer,
     extract_time,
