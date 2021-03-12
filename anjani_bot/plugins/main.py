@@ -89,18 +89,21 @@ class Main(plugin.Plugin):
             await query.edit_message_text(
                 text,
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton(await
-                                         self.bot.text(chat_id, "back-button"),
-                                         callback_data="help_back")
-                ]]))
+                    InlineKeyboardButton(
+                        await self.bot.text(chat_id, "back-button"),
+                        callback_data="help_back")
+                ]]),
+                parse_mode="markdown")
         elif back_match:
             keyboard = await self.bot.help_builder(chat_id)
             await query.edit_message_text(
                 await self.bot.text(chat_id, "help-pm", self.bot.name),
-                reply_markup=InlineKeyboardMarkup(keyboard))
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="markdown")
 
     @listener.on("markdownhelp")
     async def markdown_helper(self, message):
+        """Send markdown helper."""
         await message.reply_text(
             await self.bot.text(
                 message.chat.id,
