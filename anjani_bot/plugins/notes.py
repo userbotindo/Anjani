@@ -70,7 +70,7 @@ class NotesBase(SendFormating, MessageParser):
             button = note.get("button", None)
             if noformat:
                 parse_mode = None
-                btn_text = self.revert_button(button)
+                btn_text = "\n\n" + self.revert_button(button)
                 keyb = None
             else:
                 parse_mode = "markdown"

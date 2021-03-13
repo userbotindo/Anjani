@@ -109,7 +109,7 @@ class MessageParser:
 
         parser_data += text[prev:]
 
-        return parser_data, buttons
+        return parser_data.rstrip(), buttons
 
     def get_msg_type(self, msg: Message):
         """Parse recieved message and return all its content"""
