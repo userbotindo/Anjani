@@ -59,11 +59,13 @@ gpic-no-photo: Give me a photo!
 finding-zombie: "`Finding zombies account...`"
 cleaning-zombie: "**{}** `zombies found and has been removed..!` 🚮"
 zombie-clean: "`Zombies not found, group are clean..` "
-not-promoter: "`You Don't have right to demote This Admin..!`"
-demote-succes: "`Demote successfully..`"
+promote-error-invalid: "**User id invalid**\n`make sure he is a member here, and you enter the correct id!`"
+demote-success: "`Demoted successfully..`"
+demote-error-perm: "`I don't have permission to demote, I can only demote the ones I promote..`"
 no-demote-user: "`Bruh tell me who you want to demote..` 😒"
-promote-succes: "`Successfully Promoted..` ❤️"
-no-promote-user: "`Whho do you want to promote??\nYou not give me anything!!!`"
+promote-success: "`Successfully Promoted..` ❤️"
+promote-error-perm: "`This user is already an admin!`"
+no-promote-user: "`Who should I promote?\nGive me some user!`"
 #endregion
 #region language
 language-button: Language
@@ -224,6 +226,7 @@ view-welcome: |
   And the welcome message of this chat is:
 #endregion
 #region common-error
+error-its-myself: "I can't do anything for myself 😒"
 error-chat-private: "**Error:** `Chat type private`\nThis command for groups only..."
 error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"

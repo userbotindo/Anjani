@@ -17,10 +17,10 @@
 import asyncio
 from typing import ClassVar
 
-from pyrogram.errors import UserAdminInvalid, FloodWait
+from pyrogram.errors import UserAdminInvalid, FloodWait, ChatAdminRequired, UserIdInvalid
 
-from anjani_bot import listener, plugin, extract_user_and_text
-from anjani_bot.utils import adminlist
+from anjani_bot import listener, plugin
+from anjani_bot.utils import adminlist, extract_user_and_text
 
 
 class Admin(plugin.Plugin):
@@ -106,51 +106,55 @@ class Admin(plugin.Plugin):
         chat_id = message.chat.id
         user, _ = extract_user_and_text(message)
 
-        if user is None:
-            return await message.reply(await self.bot.text(chat_id, "no-promote-user"))
+        if not user:
+            return await message.reply_text(await self.bot.text(chat_id, "no-promote-user"))
+        if user == self.bot.identifier:
+            return await message.reply_text(await self.bot.text(chat_id, "error-its-myself"))
 
         # bot can't assign higher perms than itself!
-        bot_perm = await self.bot.client.get_chat_member(chat_id, "me")
-        await self.bot.client.promote_chat_member(
-            chat_id=chat_id,
-            user_id=user,
-            can_change_info=bot_perm.can_change_info,
-            can_post_messages=bot_perm.can_post_messages,
-            can_edit_messages=bot_perm.can_edit_messages,
-            can_be_edited=bot_perm.can_be_edited,
-            can_delete_messages=bot_perm.can_delete_messages,
-            can_restrict_members=bot_perm.can_restrict_members,
-            can_promote_members=bot_perm.can_promote_members,
-            can_invite_users=bot_perm.can_invite_users,
-            can_pin_messages=bot_perm.can_pin_messages,
-        )
-        await message.reply_text(await self.bot.text(chat_id, "promote-succes"))
+        # bot_perm = await self.bot.client.get_chat_member(chat_id, "me")
+        bot_perm = await message.chat.get_member("me")
+        try:
+            await message.chat.promote_member(
+                user_id=user,
+                can_change_info=bot_perm.can_change_info,
+                can_post_messages=bot_perm.can_post_messages,
+                can_edit_messages=bot_perm.can_edit_messages,
+                can_delete_messages=bot_perm.can_delete_messages,
+                can_restrict_members=bot_perm.can_restrict_members,
+                can_promote_members=bot_perm.can_promote_members,
+                can_invite_users=bot_perm.can_invite_users,
+                can_pin_messages=bot_perm.can_pin_messages,
+            )
+        except ChatAdminRequired:
+            return await message.reply_text(await self.bot.text(chat_id, "promote-error-perm"))
+        except UserIdInvalid:
+            return await message.reply_text(await self.bot.text(chat_id, "promote-error-invalid"))
+        await message.reply_text(await self.bot.text(chat_id, "promote-success"))
 
     @listener.on("demote", can_promote=True)
     async def demoter(self, message):
         """ Demoter Just owner and promoter can demote admin."""
         chat_id = message.chat.id
-        user, _ = extract_user_and_text
-        prmtby = (await self.bot.client.get_chat_member(chat_id, user)).promoted_by.id
-        dmtr = await self.bot.client.get_chat_memeber(chat_id, message.from_user.id)
+        user, _ = extract_user_and_text(message)
 
-        if user is None:
-            return await message.reply(await self.bot.text(chat_id, "no-demote-user"))
-        # Demoter must be owners or promoter
-        if dmtr != prmtby and dmtr.status != "creator":
-            return await message.reply(await self.bot.text(chat_id, "not-promoter"))
+        if not user:
+            return await message.reply_text(await self.bot.text(chat_id, "no-demote-user"))
+        if user == self.bot.identifier:
+            return await message.reply_text(await self.bot.text(chat_id, "error-its-myself"))
 
-        await self.bot.client.promote_chat_member(
-            chat_id=chat_id,
-            user_id=user,
-            can_change_info=False,
-            can_post_messages=False,
-            can_edit_messages=False,
-            can_be_edited=False,
-            can_delete_messages=False,
-            can_restrict_members=False,
-            can_promote_members=False,
-            can_invite_users=False,
-            can_pin_messages=False,
-        )
-        await message.reply(await self.bot.text(chat_id, "demote-succes"))
+        try:
+            await message.chat.promote_member(
+                user_id=user,
+                can_change_info=False,
+                can_post_messages=False,
+                can_edit_messages=False,
+                can_delete_messages=False,
+                can_restrict_members=False,
+                can_promote_members=False,
+                can_invite_users=False,
+                can_pin_messages=False,
+            )
+        except ChatAdminRequired:
+            return await message.reply_text(await self.bot.text(chat_id, "demote-error-perm"))
+        await message.reply_text(await self.bot.text(chat_id, "demote-success"))
