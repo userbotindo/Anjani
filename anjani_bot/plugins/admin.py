@@ -19,7 +19,7 @@ from typing import ClassVar
 
 from pyrogram.errors import UserAdminInvalid, FloodWait
 
-from anjani_bot import listener, plugin
+from anjani_bot import listener, plugin, extract_user_and_text
 from anjani_bot.utils import adminlist
 
 
@@ -32,12 +32,13 @@ class Admin(plugin.Plugin):
         """ Pin message on chats """
         if message.reply_to_message is None:
             return await message.reply(
-                await self.bot.text(message.chat.id, "error-reply-to-message"))
+                await self.bot.text(message.chat.id, "error-reply-to-message")
+            )
         is_silent = True
         if message.command and message.command[0] in [
-                "notify",
-                "loud",
-                "violence",
+            "notify",
+            "loud",
+            "violence",
         ]:
             is_silent = False
         await message.reply_to_message.pin(disable_notification=is_silent)
@@ -61,11 +62,9 @@ class Admin(plugin.Plugin):
         msg = message.reply_to_message or message
         file = msg.photo or None
         if file:
-            await self.bot.client.set_chat_photo(message.chat.id,
-                                                 photo=file.file_id)
+            await self.bot.client.set_chat_photo(message.chat.id, photo=file.file_id)
         else:
-            await message.reply_text(
-                await self.bot.text(message.chat.id, "gpic-no-photo"))
+            await message.reply_text(await self.bot.text(message.chat.id, "gpic-no-photo"))
 
     @listener.on("adminlist")
     async def admin_list(self, message):
@@ -86,8 +85,7 @@ class Admin(plugin.Plugin):
         chat_id = message.chat.id
         zombie = 0
 
-        msg = await message.reply(
-            await self.bot.text(chat_id, "finding-zombie"))
+        msg = await message.reply(await self.bot.text(chat_id, "finding-zombie"))
         async for member in self.bot.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
                 zombie += 1
@@ -100,5 +98,59 @@ class Admin(plugin.Plugin):
 
         if zombie == 0:
             return await msg.edit(await self.bot.text(chat_id, "zombie-clean"))
-        await msg.edit_text(
-            await self.bot.text(chat_id, "cleaning-zombie", zombie))
+        await msg.edit_text(await self.bot.text(chat_id, "cleaning-zombie", zombie))
+
+    @listener.on("promote", can_promote=True)
+    async def promoter(self, message):
+        """ Bot promote member, required Both permission of can_promote"""
+        chat_id = message.chat.id
+        user, _ = extract_user_and_text(message)
+
+        if user is None:
+            return await message.reply(await self.bot.text(chat_id, "no-promote-user"))
+
+        # bot can't assign higher perms than itself!
+        bot_perm = await self.bot.client.get_chat_member(chat_id, "me")
+        await self.bot.client.promote_chat_member(
+            chat_id=chat_id,
+            user_id=user,
+            can_change_info=bot_perm.can_change_info,
+            can_post_messages=bot_perm.can_post_messages,
+            can_edit_messages=bot_perm.can_edit_messages,
+            can_be_edited=bot_perm.can_be_edited,
+            can_delete_messages=bot_perm.can_delete_messages,
+            can_restrict_members=bot_perm.can_restrict_members,
+            can_promote_members=bot_perm.can_promote_members,
+            can_invite_users=bot_perm.can_invite_users,
+            can_pin_messages=bot_perm.can_pin_messages,
+        )
+        await message.reply_text(await self.bot.text(chat_id, "promote-succes"))
+
+    @listener.on("demote", can_promote=True)
+    async def demoter(self, message):
+        """ Demoter Just owner and promoter can demote admin."""
+        chat_id = message.chat.id
+        user, _ = extract_user_and_text
+        prmtby = (await self.bot.client.get_chat_member(chat_id, user)).promoted_by.id
+        dmtr = await self.bot.client.get_chat_memeber(chat_id, message.from_user.id)
+
+        if user is None:
+            return await message.reply(await self.bot.text(chat_id, "no-demote-user"))
+        # Demoter must be owners or promoter
+        if dmtr != prmtby and dmtr.status != "creator":
+            return await message.reply(await self.bot.text(chat_id, "not-promoter"))
+
+        await self.bot.client.promote_chat_member(
+            chat_id=chat_id,
+            user_id=user,
+            can_change_info=False,
+            can_post_messages=False,
+            can_edit_messages=False,
+            can_be_edited=False,
+            can_delete_messages=False,
+            can_restrict_members=False,
+            can_promote_members=False,
+            can_invite_users=False,
+            can_pin_messages=False,
+        )
+        await message.reply(await self.bot.text(chat_id, "demote-succes"))

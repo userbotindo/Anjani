@@ -53,10 +53,17 @@ admins-help: |
   × /unpin: Unpin the latest pinned message. Reply to unpin the replied message - add all to unpin all messages.
   × /setgpic : Changes the group's display picture to the replied images
   × /zombies : Clean deleted account from your group.
+  × /promote <user_id/username> : Promote member to administrator
+  × /demote <user_id/username> : Demote administrator to members.
 gpic-no-photo: Give me a photo!
 finding-zombie: "`Finding zombies account...`"
 cleaning-zombie: "**{}** `zombies found and has been removed..!` 🚮"
 zombie-clean: "`Zombies not found, group are clean..` "
+not-promoter: "`You Don't have right to demote This Admin..!`"
+demote-succes: "`Demote successfully..`"
+no-demote-user: "`Bruh tell me who you want to demote..` 😒"
+promote-succes: "`Successfully Promoted..` ❤️"
+no-promote-user: "`Whho do you want to promote??\nYou not give me anything!!!`"
 #endregion
 #region language
 language-button: Language
