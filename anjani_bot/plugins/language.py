@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import logging
 import re
 from typing import ClassVar
@@ -31,13 +32,28 @@ class Language(plugin.Plugin):
     name: ClassVar[str] = "Language"
     helpable: ClassVar[bool] = True
 
+    async def __on_load__(self):
+        self.lock = asyncio.Lock()
+
     async def __migrate__(self, old_chat, new_chat):
-        await self.bot.lang_col.update_one(
-            {'chat_id': old_chat},
-            {"$set": {
-                'chat_id': new_chat
-            }},
-        )
+        async with self.lock:
+            await self.bot.lang_col.update_one(
+                {'chat_id': old_chat},
+                {"$set": {
+                    'chat_id': new_chat
+                }},
+            )
+
+    async def __backup__(self, chat_id, data=None):
+        if data and data.get(self.name):
+            async with self.lock:
+                await self.bot.lang_col.update_one(
+                    {'chat_id': chat_id},
+                    {"$set": data[self.name]},
+                    upsert=True
+                )
+        elif not data:
+            return await self.bot.lang_col.find_one({'chat_id': chat_id}, {'_id': False})
 
     async def can_change_lang(self, chat_id, user_id) -> bool:
         """ Check if user have rights to change chat language """

@@ -17,13 +17,12 @@
 import asyncio
 import json
 import logging
-from typing import ClassVar, Union
+from typing import ClassVar, Dict, Union
 
 import spamwatch
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import StopPropagation, filters
-from pyrogram.errors.exceptions.bad_request_400 import (ChannelPrivate,
-                                                        UserNotParticipant)
+from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin
@@ -40,17 +39,27 @@ class SpamShield(plugin.Plugin):
     lock: asyncio.locks.Lock
     spmwtch: str
 
-    async def __migrate__(self, old_chat, new_chat):
-        async with self.lock:
-            await self.gban_setting.update_one({'chat_id': old_chat},
-                                               {"$set": {
-                                                   'chat_id': new_chat
-                                               }})
-
     async def __on_load__(self) -> None:
         self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
         self.lock = asyncio.Lock()
         self.spmwtc = self.bot.get_config.spamwatch_api
+
+    async def __migrate__(self, old_chat, new_chat):
+        async with self.lock:
+            await self.gban_setting.update_one(
+                {'chat_id': old_chat},
+                {"$set": {'chat_id': new_chat}})
+
+    async def __backup__(self, chat_id, data=None) -> Union[Dict, None]:
+        if data and data.get(self.name):
+            async with self.lock:
+                await self.gban_setting.update_one(
+                    {'chat_id': chat_id},
+                    {"$set": data[self.name]},
+                    upsert=True,
+                )
+        elif not data:
+            return await self.gban_setting.find_one({'chat_id': chat_id}, {'_id': False})
 
     @pool.run_in_thread
     def sw_check(self, user_id: int) -> Union[Ban, None]:

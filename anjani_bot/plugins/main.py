@@ -83,7 +83,7 @@ class Main(plugin.Plugin):
 
         if plugin_match:
             extension = plugin_match.group(1)
-            text = ("Here is the help for the **{}** plugin:\n{}".format(
+            text = ("Here is the help for the **{}** plugin:\n\n{}".format(
                 extension.capitalize(), await
                 self.bot.text(chat_id, f"{extension}-help")))
             await query.edit_message_text(

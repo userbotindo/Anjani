@@ -16,7 +16,7 @@
 
 import asyncio
 from html import escape
-from typing import ClassVar, Tuple, Union
+from typing import ClassVar, Dict, Tuple, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
@@ -42,6 +42,18 @@ class RawGreeting:
                     'chat_id': new_chat
                 }},
             )
+
+    async def __backup__(self, chat_id, data=None) -> Union[Dict, None]:
+        if data and data.get(self.name):
+            async with self.lock:
+                await self.welcome_db.update_one(
+                    {'chat_id': chat_id},
+                    {"$set": data[self.name]},
+                    upsert=True
+                )
+        elif not data:
+            return await self.welcome_db.find_one(
+                {'chat_id': chat_id}, {'_id': False, 'prev_welc': False})
 
     async def default_welc(self, chat_id):
         """ Bot default welcome """

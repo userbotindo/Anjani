@@ -40,6 +40,17 @@ class NotesBase(SendFormating, MessageParser):
                 {"$set": {"chat_id": new_chat}},
             )
 
+    async def __backup__(self, chat_id, data=None):
+        if data and data.get(self.name):
+            async with self.lock:
+                await self.notes_db.update_one(
+                    {'chat_id': chat_id},
+                    {"$set": data[self.name]},
+                    upsert=True
+                )
+        elif not data:
+            return await self.notes_db.find_one({'chat_id': chat_id}, {'_id': False})
+
     def _reply_note(self, match: Match[str]) -> str:
 
         async def get_data(key):
