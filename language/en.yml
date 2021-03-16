@@ -67,6 +67,28 @@ promote-success: "`Successfully Promoted..` ❤️"
 promote-error-perm: "`This user is already an admin!`"
 no-promote-user: "`Who should I promote?\nGive me some user!`"
 #endregion
+#region Backups
+backups-button: Backups
+backups-help: |
+  **Only for chat administrator:**\n
+  × /backup: Backup the group data E.G.: Notes, Greeting, spam shield, etc. that have a data stored on my database.
+  \n× /restore: Reply to the backup file to restore the group data.
+  \nNote: Backup file of a chat can't be restored to another chat.
+backup-doc: |
+  **Successfully backup:**
+  Chat: `{}`
+  Chat ID: `{}`
+  Time: `{}`
+  \nThis file contains backup of:{}
+backup-null: This chat doesn't have any data saved in my database.
+backup-data-null: No data to restore
+backup-progress: Backing up chat data...
+backup-id-invalid: This is a backup from another chat! I can't restore another chat data!
+backup-done: Data restored successfully
+invalid-backup-file: It seems that this file isn't a backup from me. I can't restore from such file!
+no-backup-file: Reply to the backup file!
+restore-progress: Restoring data...
+#endregion
 #region language
 language-button: Language
 language-help: |

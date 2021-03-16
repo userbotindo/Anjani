@@ -191,3 +191,47 @@ class DataBase(Base):
             return text if noformat else text.format(*args, **kwargs)
         except KeyError:
             return err + "\nPlease forward this to @userbotindo."
+
+    async def backup_plugin_data(
+            self,
+            chat_id: int,
+            data: Optional[Dict] = None) -> Union[Dict, None]:
+        """Backup chat data
+
+        Parameters:
+            chat_id (`int`):
+                Id of the sender(PM's) or chat_id to fetch the user language setting.
+            data (`dict`, *Optional*):
+                Data to restore. Only pass this if you want to restore.
+
+        Returns:
+            dict of backup if no data passed, otherwise None.
+        """
+        if not isinstance(data, (type(None), dict)):
+            raise BackupError("Data must be a dict or Nonetype "
+                              f"not {data.__class__.__name__}")
+
+        LOGGER.debug("%s chat data from %s", "Importing" if data else "Exporting", chat_id)
+        result = {"chat_id": chat_id}
+        for plugin in list(self.plugins.values()):
+            if hasattr(plugin, "__backup__"):
+                if not data:
+                    LOGGER.debug("Backing up %s data", plugin.name)
+                    plugin_data = await plugin.__backup__(chat_id)
+                    if not isinstance(plugin_data, (type(None), dict)):
+                        raise BackupError(
+                            f"Unexpected return value type from `{plugin.name}` plugin: "
+                            "expecting a dict or NoneType, "
+                            f"got {plugin_data.__class__.__name__}"
+                        )
+                    if not plugin_data:  # skip plugin if no data
+                        continue
+                    result.update({plugin.name: plugin_data})
+                else:
+                    LOGGER.debug("restoring %s data", plugin.name)
+                    await plugin.__backup__(chat_id, data)
+        return result if not data else None
+
+
+class BackupError(Exception):
+    """ Unexpected backup data type """
