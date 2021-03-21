@@ -140,19 +140,9 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         # custom disable report
-        logging-format-interpolation,
         too-few-public-methods,
         missing-class-docstring,
         attribute-defined-outside-init,
-        too-many-ancestors,
-        too-many-arguments,
-        # false-positive
-        # the object instance in every plugin was overwritten by the client
-        # that makes pylint expect no member on that dynamic object
-        no-member,
-        # temporarily; false-positive error on python 3.9
-        # (see https://github.com/PyCQA/pylint/issues/3882)
-        unsubscriptable-object,
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -495,7 +485,7 @@ min-similarity-lines=4
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=15
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7

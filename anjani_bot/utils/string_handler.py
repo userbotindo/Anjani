@@ -37,6 +37,8 @@ class Types(IntEnum):
 
 class SendFormating:
     """ A message sending method mapper based on message type """
+    bot: "~Anjani"
+
     def __init__(self):
         self.send_format = {
             Types.TEXT.value: self.bot.client.send_message,
