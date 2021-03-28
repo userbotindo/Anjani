@@ -134,7 +134,7 @@ paste-succes: "**Pasted successfully..!**"
 fail-paste: "`Failed to reach Nekobin`"
 #endregion
 #region mute
-muting-button: muting
+muting-button: Muting
 muting-help: |
   Some spammers, annoyances, or trolls need to be diciplined.
   With this plugin you can easily mute someone.\n
@@ -157,7 +157,7 @@ already-muted: This user is already muted!
 user-not-muted: This user already has the rights to chat!
 #endregion
 #region note
-notes-button: notes
+notes-button: Notes
 notes-help: |
   \nSave data for future use with notes!\n
   **User commands:**
