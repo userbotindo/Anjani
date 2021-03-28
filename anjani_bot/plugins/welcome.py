@@ -23,10 +23,10 @@ from pyrogram import filters
 from pyrogram.errors import MessageDeleteForbidden
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import ParsedChatMember
+from anjani_bot.utils import ParsedChatMember, MessageParser
 
 
-class RawGreeting:
+class RawGreeting(MessageParser):
     welcome_db: AsyncIOMotorCollection
     lock: asyncio.locks.Lock
 
@@ -68,9 +68,9 @@ class RawGreeting:
     async def full_welcome(self, chat_id) -> Tuple[bool, str, bool]:
         """ Get chat full welcome data """
         sett = await self.welc_pref(chat_id)
-        text = await self.welc_msg(chat_id)
+        text, button = await self.welc_msg(chat_id)
         clean_serv = await self.clean_service(chat_id)
-        return sett, text, clean_serv
+        return sett, text, clean_serv, button
 
     async def welc_pref(self, chat_id) -> bool:
         """ Get chat welcome setting """
@@ -80,9 +80,9 @@ class RawGreeting:
     async def welc_msg(self, chat_id) -> str:
         """ Get chat welcome string """
         data = await self.welcome_db.find_one({'chat_id': chat_id})
-        if data:
-            return data.get("custom_welcome", await self.default_welc(chat_id))
-        return await self.default_welc(chat_id)
+        if message := data.get("custom_welcome"):
+            return message, data.get('button')
+        return await self.default_welc(chat_id), None
 
     async def clean_service(self, chat_id) -> bool:
         """ Fetch clean service setting """
@@ -91,12 +91,15 @@ class RawGreeting:
             return clean.get("clean_service", False)
         return False
 
-    async def set_custom_welcome(self, chat_id, text):
+    async def set_custom_welcome(self, chat_id, raw_text):
         """ Set custome welcome """
+        msg, button = self.parse_button(raw_text.markdown)
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id}, {"$set": {
-                    'custom_welcome': text
+                {'chat_id': chat_id},
+                {"$set": {
+                    'custom_welcome': msg,
+                    'button': button
                 }},
                 upsert=True)
 
@@ -104,8 +107,10 @@ class RawGreeting:
         """ Delete custom welcome msg """
         async with self.lock:
             await self.welcome_db.update_one(
-                {'chat_id': chat_id}, {"$unset": {
-                    'custom_welcome': ""
+                {'chat_id': chat_id}, 
+                {"$unset": {
+                    'custom_welcome': "",
+                    'button': ""
                 }})
 
     async def set_cleanserv(self, chat_id, setting):
@@ -166,7 +171,7 @@ class Greeting(plugin.Plugin, RawGreeting):
                         await self.bot.text(chat.id, "bot-added"),
                         reply_to_message_id=reply)
                 else:
-                    welcome_text = await self.welc_msg(chat.id)
+                    welcome_text, raw_button = await self.welc_msg(chat.id)
                     user = await self.parse_user(new_member)
                     await user.get_members(self.bot.client, chat.id)
                     formatted_text = welcome_text.format(
@@ -178,9 +183,16 @@ class Greeting(plugin.Plugin, RawGreeting):
                         count=user.count,
                         chatname=escape(chat.title),
                         id=new_member.id)
+                    if raw_button:
+                        button = self.build_button(raw_button)
+                    else:
+                        button = None
 
                     msg = await self.bot.client.send_message(
-                        chat.id, formatted_text, reply_to_message_id=reply)
+                        chat.id,
+                        formatted_text,
+                        reply_to_message_id=reply,
+                        reply_markup=button)
 
                     prev_welc = await self.prev_welcome(
                         chat.id, msg.message_id)
@@ -197,7 +209,7 @@ class Greeting(plugin.Plugin, RawGreeting):
         chat = message.chat
         if not message.reply_to_message:
             return await message.reply_text(await self.bot.text(
-                chat.id, "err-reply-to-msg"))
+                chat.id, "error-reply-to-message"))
         msg = message.reply_to_message
         await self.set_custom_welcome(chat.id, msg.text)
         await message.reply_text(await self.bot.text(chat.id,
@@ -214,6 +226,7 @@ class Greeting(plugin.Plugin, RawGreeting):
     async def view_welcome(self, message):
         """ View current welcome message """
         chat_id = message.chat.id
+        noformat = False
         if message.command:
             arg = message.command[0]
             if arg in ["yes", "on"]:
@@ -224,13 +237,27 @@ class Greeting(plugin.Plugin, RawGreeting):
                 await self.set_welc_pref(chat_id, False)
                 return await message.reply_text(await self.bot.text(
                     chat_id, "welcome-set", "off"))
+            if arg.lower() == "noformat":
+                noformat = True
+            else:
+                return await message.reply_text(await self.bot.text(
+                    chat_id, "err-invalid-option"))
+        sett, welc_text, clean_serv, raw_button = await self.full_welcome(chat_id)
 
-            return await message.reply_text(await self.bot.text(
-                chat_id, "err-invalid-option"))
-        sett, welc_text, clean_serv = await self.full_welcome(chat_id)
-        text = await self.bot.text(chat_id, "view-welcome", sett, clean_serv)
-        await message.reply_text(text)
-        await message.reply_text(welc_text)
+        if noformat:
+            parse_mode = None
+            welc_text += "\n\n" + self.revert_button(raw_button)
+            button = None
+        else:
+            parse_mode = "markdown"
+            button = self.build_button(raw_button)
+        await message.reply_text(
+            await self.bot.text(chat_id, "view-welcome", sett, clean_serv))
+        await message.reply_text(
+            welc_text,
+            reply_markup=button,
+            parse_mode=parse_mode,
+            disable_web_page_preview=True)
 
     @listener.on("cleanservice", admin_only=True)
     async def cleanserv(self, message):
