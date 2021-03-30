@@ -131,7 +131,9 @@ class Misc(plugin.Plugin):
                             text="Nekobin Raw",
                             url=f"https://nekobin.com/raw/{key}"),
                     ]])
-            await sent.edit_text(await self.bot.text(message.chat.id, "paste-succes"), reply_markup=btn)
+            await sent.edit_text(
+                await self.bot.text(message.chat.id, "paste-succes"),
+                reply_markup=btn)
         else:
             await sent.edit_text(await self.bot.text(message.chat.id,
                                                      "fail-paste"))
@@ -143,18 +145,21 @@ class Misc(plugin.Plugin):
             "[GitHub repo](https://github.com/userbotindo/Anjani)\n" +
             "[Support](https://t.me/userbotindo)",
             disable_web_page_preview=True)
- 
-    @listener.on('slap', filters.group)
+
+    @listener.on("slap", filters.group)
     async def neko_slap(self, message):
-      """ Slap member with neko slap. """
-      chat_id = message.chat.id
-      async with self.bot.http.get('https://www.nekos.life/api/v2/img/slap') as r:
-        res = await r.json()
-        if r.status != 200:
-            await message.reply(await self.bot.text(chat_id, "err-api-down"))
-        else:
-            reply_to = message.reply_to_message
-            if reply_to:
-                await reply_to.reply_animation(res['url'])
-            else:
-                await message.reply_animation(res['url'])
+        """ Slap member with neko slap. """
+        chat_id = message.chat.id
+        async with self.bot.http.get(
+            'https://www.nekos.life/api/v2/img/slap') as slap:
+            if slap.status != 200:
+                return await message.reply(
+                    await self.bot.text(chat_id, "err-api-down"))
+            res = await slap.json()
+
+        reply_to = message.reply_to_message or message
+        await self.bot.client.send_animation(
+            message.chat.id,
+            res["url"],
+            reply_to_message_id=reply_to.message_id
+        )
