@@ -265,19 +265,15 @@ class Greeting(plugin.Plugin, RawGreeting):
         chat_id = message.chat.id
         if message.command:
             arg = message.command[0]
-            if arg in ["yes", "on"]:
+            if arg in ["yes", "on", "true"]:
                 await self.set_cleanserv(chat_id, True)
-                await message.reply_text(await
-                                         self.bot.text(chat_id,
-                                                       "clean-serv-set", "on"))
-            if arg in ["no", "off"]:
+                return await message.reply_text(
+                    await self.bot.text(chat_id, "clean-serv-set", "on"))
+            if arg in ["no", "off", "false"]:
                 await self.set_cleanserv(chat_id, False)
-                await message.reply_text(await
-                                         self.bot.text(chat_id,
-                                                       "clean-serv-set",
-                                                       "off"))
-            await message.reply_text(await
-                                     self.bot.text(chat_id,
-                                                   "err-invalid-option"))
+                return await message.reply_text(
+                    await self.bot.text(chat_id,"clean-serv-set", "off"))
+            await message.reply_text(
+                await self.bot.text(chat_id, "err-invalid-option"))
         else:
             await message.reply_text("Usage is on/yes or off/no")
