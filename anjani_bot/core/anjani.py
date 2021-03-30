@@ -19,12 +19,14 @@ import json
 import logging
 import time
 from typing import List, Optional
+from sys import version_info
 
 import aiohttp
 import aiorun
 import pyrogram
 
 from ..utils import get_readable_time
+from ..version import __version__
 from . import pool
 from .database import DataBase
 from .plugin_extender import PluginExtender  # pylint: disable=R0401
@@ -42,6 +44,7 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
     def __init__(self):
         self.stopping = False
 
+        self.version = __version__
         self._start_time = time.time()
 
         # Init Base
@@ -52,10 +55,12 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
         output += f"Username : {self.username}\n"
         output += f"ID : {self.identifier}\n"
         output += f"Uptime: {self.uptime}\n"
-        output += f"Pyrogram: {self.client.app_version}\n"
         output += f"Language: {self.language}\n"
         output += f"Loaded Plugins:{json.dumps(list(self.plugins.keys()), indent=2)}\n"
         output += f"Staff list:{json.dumps(self.staff, indent=2)}\n"
+        output += f"Python: {version_info[0]}.{version_info[1]}.{version_info[2]}\n"
+        output += f"Pyrogram: {pyrogram.__version__}\n"
+        output += f"Anjani: {self.version}\n"
         return output
 
     @property
