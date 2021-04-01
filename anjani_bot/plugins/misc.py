@@ -149,6 +149,7 @@ class Misc(plugin.Plugin):
     @listener.on("slap", filters.group)
     async def neko_slap(self, message):
         """ Slap member with neko slap. """
+        text = " ".join(message.command)
         chat_id = message.chat.id
         async with self.bot.http.get(
             'https://www.nekos.life/api/v2/img/slap') as slap:
@@ -161,5 +162,5 @@ class Misc(plugin.Plugin):
         await self.bot.client.send_animation(
             message.chat.id,
             res["url"],
-            reply_to_message_id=reply_to.message_id
+            reply_to_message_id=reply_to.message_id, caption=text,
         )
