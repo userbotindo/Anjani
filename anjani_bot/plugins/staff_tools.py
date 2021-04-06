@@ -57,11 +57,16 @@ class Staff(plugin.Plugin):
             for file in os.listdir(corePath):
                 if file.endswith(".log"):
                     files.append(file)
-            text = "Here's the list available file:\n"
-            for logFile in files:
-                text += f"  **-** `{logFile}`\n"
-            await message.reply_text(text)
-            return
+
+            if len(files) == 1:
+                log_file = files[0]
+            else:
+                text = "Here's the list available file:\n"
+                for logFile in files:
+                    text += f"  **-** `{logFile}`\n"
+                await message.reply_text(text)
+                return
+
         with codecs.open(log_file, "r", encoding="utf-8") as logFile:
             data = logFile.read()
         key = await nekobin(self.bot, data)
