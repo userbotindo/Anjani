@@ -18,6 +18,7 @@ import re
 from typing import ClassVar
 
 from pyrogram import filters
+from pyrogram.errors import MessageNotModified
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
@@ -86,20 +87,26 @@ class Main(plugin.Plugin):
             text = ("Here is the help for the **{}** plugin:\n\n{}".format(
                 extension.capitalize(), await
                 self.bot.text(chat_id, f"{extension}-help")))
-            await query.edit_message_text(
-                text,
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton(
-                        await self.bot.text(chat_id, "back-button"),
-                        callback_data="help_back")
-                ]]),
-                parse_mode="markdown")
+            try:
+                await query.edit_message_text(
+                    text,
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton(
+                            await self.bot.text(chat_id, "back-button"),
+                            callback_data="help_back")
+                    ]]),
+                    parse_mode="markdown")
+            except MessageNotModified:
+                pass
         elif back_match:
             keyboard = await self.bot.help_builder(chat_id)
-            await query.edit_message_text(
-                await self.bot.text(chat_id, "help-pm", self.bot.name),
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode="markdown")
+            try:
+                await query.edit_message_text(
+                    await self.bot.text(chat_id, "help-pm", self.bot.name),
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode="markdown")
+            except MessageNotModified:
+                pass
 
     @listener.on("markdownhelp")
     async def markdown_helper(self, message):
