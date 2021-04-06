@@ -14,6 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 __license__ = "GNU General Public License v3.0 or later (GPLv3+)"
 __copyright__ = "Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>"
