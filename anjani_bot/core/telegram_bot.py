@@ -93,7 +93,7 @@ class TelegramBot(Base):
                                         __name__)
                 for info in pkgutil.iter_modules(["anjani_bot/plugins"])
             ]
-        except ModuleNotFoundError as err:
+        except Exception as err:  # pylint: disable=broad-except
             traceback.print_exc()
             LOG.critical(err)
             await self.loop.stop()
