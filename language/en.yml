@@ -187,6 +187,34 @@ purges-help: |
   × /purge | /prune : Deletes all messages until the replied to message.
 purge-done: "`Purged {} messages in {} second(s)...`"
 #endregion
+#region reporting
+reporting-button: Reporting
+reporting-help: |
+  **Admin commands:**
+  × /reports <yes/no/on/off>: Enable/disable reports.
+    - if executed in chat will change chat settings.
+    - if executed in PM's will change your settings.
+  \n**User commands:**
+  × /report: Reply to a message to report it for admins to review.
+  × @admin: Same as /report.
+  \nSimply reply to a message with @admin or /report. I will notify all
+  chat admins about the message you replied.
+  **Note** /reports and @admin won't triggered by chat admin.
+report-on: Turned on reporting! You'll be notified whenever a reports happened in group.
+chat-report-on: Turned on reporting! Admins who have turned on reports will be notified when /report or @admin are called.
+report-off: Turned off reporting! You wont get any reports from your moderated group.
+chat-report-off: Turned off reporting! No admins will be notified on /report or @admin.
+report-setting: "This chat's current reports setting is: `{}`"
+chat-report-setting: "Your current report preference is: `{}`"
+no-report-user: Who should i report??
+cant-report-me: No, i will not report myself!!
+cant-self-report: Hold on... Why you're reporting yourself?
+report-notif: Reported {} to the admins!
+report-admin-format: |
+  **Report from: {chat}**
+  × **Report by: ** {by_user} ``{by_user_id}``
+  × **Reported user: ** {reported_mention} ``{reported_id}``
+#endregion
 #region restrictions
 restriction-button: Restrictions
 restriction-help: |
