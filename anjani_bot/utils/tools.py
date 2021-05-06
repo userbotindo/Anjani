@@ -79,25 +79,9 @@ async def nekobin(client, data: str) -> str:
     return None
 
 
-def format_integer(number, thousand_separator="."):
+def format_integer(number: int, separator: str='.') -> str:
     """ make an integer easy to read """
-    def _reverse(string):
-        string = "".join(reversed(string))
-        return string
-
-    string = _reverse(str(number))
-    count = 0
-    result = ""
-    for char in string:
-        count += 1
-        if count % 3 == 0:
-            if len(string) == count:
-                result = char + result
-            else:
-                result = thousand_separator + char + result
-        else:
-            result = char + result
-    return result
+    return "{:,}".format(number).replace(',', separator)
 
 
 def rand_array(array: list):
