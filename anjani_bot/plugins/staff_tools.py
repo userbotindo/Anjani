@@ -45,30 +45,30 @@ class Staff(plugin.Plugin):
     @listener.on(["log", "logs"], staff_only=True)
     async def logs(self, message):
         """ Get bot logging as file """
-        corePath = "anjani_bot/core"
+        core_path = "anjani_bot/core"
         if message.command:
-            log_file = os.path.join(corePath, message.command[0])
+            log_file = os.path.join(core_path, message.command[0])
         else:
             log_file = os.path.join(
-                corePath,
+                core_path,
                 f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
         if not os.path.exists(log_file):
             files: List[str] = []
-            for file in os.listdir(corePath):
+            for file in os.listdir(core_path):
                 if file.endswith(".log"):
                     files.append(file)
 
             if len(files) == 1:
-                log_file = files[0]
+                log_file = os.path.join(core_path, files[0])
             else:
                 text = "Here's the list available file:\n"
-                for logFile in files:
-                    text += f"  **-** `{logFile}`\n"
+                for log_file in files:
+                    text += f"  **-** `{log_file}`\n"
                 await message.reply_text(text)
                 return
 
-        with codecs.open(log_file, "r", encoding="utf-8") as logFile:
-            data = logFile.read()
+        with codecs.open(log_file, "r", encoding="utf-8") as log_file:
+            data = log_file.read()
         key = await nekobin(self.bot, data)
         if key:
             url = [[
