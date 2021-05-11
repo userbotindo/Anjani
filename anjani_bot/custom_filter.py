@@ -22,6 +22,7 @@ from typing import List, Union
 
 from pyrogram.filters import create
 from pyrogram.types import Message
+from pyrogram.errors import ChannelPrivate
 
 from .utils import adminlist
 
@@ -107,9 +108,12 @@ async def check_perm(flt, client, message: Message) -> bool:
         await message.reply_text(
             await client.__bot__.text(chat_id, "error-chat-private"))
         return False
-
-    bot = await client.get_chat_member(chat_id, 'me')
-    user = await client.get_chat_member(chat_id, message.from_user.id)
+    try:
+        bot = await client.get_chat_member(chat_id, 'me')
+        user = await client.get_chat_member(chat_id, message.from_user.id)
+    except (ChannelPrivate, AttributeError) as err:
+        LOGGER.warning("Failed getting chat member of:\n%s\n%s", message, err)
+        return False
     perm = True
 
     if flt.can_change_info and not (bot.can_change_info
