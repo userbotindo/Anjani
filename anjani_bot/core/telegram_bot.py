@@ -36,7 +36,8 @@ LOG = logging.getLogger(__name__)
 
 
 class TelegramBot(Base):
-    """ Extended `~pyrogram.Client` """
+    """Extended `~pyrogram.Client`"""
+
     client: pyrogram.Client
     get_config: BotConfig
 
@@ -54,7 +55,7 @@ class TelegramBot(Base):
         super().__init__(**kwargs)
 
     async def init_client(self: "Anjani") -> None:
-        """ Initialize pyrogram client """
+        """Initialize pyrogram client"""
         api_id = self.get_config.api_id
         if api_id == 0:
             raise TypeError("API ID is required")
@@ -67,19 +68,26 @@ class TelegramBot(Base):
         if not isinstance(bot_token, str):
             raise TypeError("BOT TOKEN must be a string")
 
-        self.client = Client(self,
-                             api_id=api_id,
-                             api_hash=api_hash,
-                             bot_token=bot_token,
-                             session_name=":memory:")
+        self.client = Client(
+            self,
+            api_id=api_id,
+            api_hash=api_hash,
+            bot_token=bot_token,
+            session_name=":memory:",
+        )
         owner = self.get_config.owner_id
 
         self.staff = {"owner": owner}
 
     async def start(self: "Anjani") -> None:
-        """ Start client """
+        """Start client"""
         LOG.info("Starting Bot Client...")
-        await self.init_client()
+        try:
+            await self.init_client()
+        except TypeError as err:
+            LOG.critical(err)
+            await self.stop()
+            return
 
         # Initialize pool
         self.client.executor.shutdown()
@@ -89,8 +97,7 @@ class TelegramBot(Base):
         self._load_language()
         try:
             subplugins = [
-                importlib.import_module("anjani_bot.plugins." + info.name,
-                                        __name__)
+                importlib.import_module("anjani_bot.plugins." + info.name, __name__)
                 for info in pkgutil.iter_modules(["anjani_bot/plugins"])
             ]
         except Exception as err:  # pylint: disable=broad-except
@@ -107,7 +114,7 @@ class TelegramBot(Base):
         await self.channel_log("Bot started successfully...")
 
     async def run(self: "Anjani") -> None:
-        """ Run PyroClient """
+        """Run PyroClient"""
         try:
             # Start client
             try:
@@ -117,13 +124,13 @@ class TelegramBot(Base):
                 return
 
             # idle until disconnected
-            LOG.info("Idling")
+            LOG.info("Idling... Press Ctrl+V to stop")
             await pyrogram.idle()
         finally:
             await self.stop()
 
     def redact_message(self, text: str) -> str:
-        """ Secure any secret variable"""
+        """Secure any secret variable"""
         api_id = str(self.get_config.api_id)
         api_hash = self.get_config.api_hash
         bot_token = self.get_config.bot_token
@@ -144,7 +151,7 @@ class TelegramBot(Base):
         return text
 
     async def _load_all_attribute(self) -> None:
-        """ Load all client attributes """
+        """Load all client attributes"""
         bot = await self.client.get_me()
         self.identifier = bot.id
         self.username = bot.username
@@ -154,28 +161,30 @@ class TelegramBot(Base):
             self.name = bot.first_name
 
         _db = self.get_collection("STAFF")
-        self.staff.update({'dev': [], 'sudo': []})
+        self.staff.update({"dev": [], "sudo": []})
         async for i in _db.find():
             self.staff[i["rank"]].append(i["_id"])
 
     @property
     def staff_id(self) -> List[int]:
-        """ Get bot staff ids as a list """
+        """Get bot staff ids as a list"""
         _id = [self.staff.get("owner")]
         _id.extend(self.staff.get("dev") + self.staff.get("sudo"))
         return _id
 
     async def channel_log(
-            self,
-            text: str,
-            parse_mode: Optional[str] = object,
-            disable_web_page_preview: bool = None,
-            disable_notification: bool = None,
-            reply_markup: Union["pyrogram.types.InlineKeyboardMarkup",
-                                "pyrogram.types.ReplyKeyboardMarkup",
-                                "pyrogram.types.ReplyKeyboardRemove",
-                                "pyrogram.types.ForceReply"] = None
-        ) -> Union["pyrogram.types.Message", None]:
+        self,
+        text: str,
+        parse_mode: Optional[str] = object,
+        disable_web_page_preview: bool = None,
+        disable_notification: bool = None,
+        reply_markup: Union[
+            "pyrogram.types.InlineKeyboardMarkup",
+            "pyrogram.types.ReplyKeyboardMarkup",
+            "pyrogram.types.ReplyKeyboardRemove",
+            "pyrogram.types.ForceReply",
+        ] = None,
+    ) -> Union["pyrogram.types.Message", None]:
         """Shortcut method to send message to log channel.
 
         Parameters:
@@ -206,8 +215,7 @@ class TelegramBot(Base):
         """
         log_channel = self.get_config.log_channel
         if log_channel == 0:
-            LOG.warning(
-                "LOG_CHANNEL is empty nor valid, message '%s' not send.", text)
+            LOG.warning(f"LOG_CHANNEL is empty nor valid, message '{text}' not sent.")
             return
 
         try:
@@ -217,6 +225,7 @@ class TelegramBot(Base):
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
                 disable_notification=disable_notification,
-                reply_markup=reply_markup)
+                reply_markup=reply_markup,
+            )
         except ValueError as err:
-            LOG.error("Invalid LOG_CHANNEL: %s", err)
+            LOG.error(f"Invalid LOG_CHANNEL: {err}")

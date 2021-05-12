@@ -18,7 +18,7 @@ import re
 from enum import IntEnum, unique
 from typing import List, Union
 
-from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 
 @unique
@@ -36,7 +36,8 @@ class Types(IntEnum):
 
 
 class SendFormating:
-    """ A message sending method mapper based on message type """
+    """A message sending method mapper based on message type"""
+
     bot: "~Anjani"
 
     def __init__(self):
@@ -55,10 +56,9 @@ class SendFormating:
 
 
 class MessageParser:
-
     @staticmethod
     def build_button(buttons: List) -> Union[InlineKeyboardMarkup, None]:
-        """ Build saved button format """
+        """Build saved button format"""
         if not buttons:
             return None
         keyb = []
@@ -71,7 +71,7 @@ class MessageParser:
 
     @staticmethod
     def revert_button(button: List) -> str:
-        """ Revert button format """
+        """Revert button format"""
         res = ""
         for btn in button:
             if btn[2]:
@@ -82,7 +82,7 @@ class MessageParser:
 
     @staticmethod
     def parse_button(text):
-        """ Parse button to save """
+        """Parse button to save"""
         btn_regex = re.compile(r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
 
         prev = 0

@@ -20,18 +20,17 @@ async def adminlist(client, chat_id, full=False):
     admins = []
     async for i in client.iter_chat_members(chat_id, filter="administrators"):
         if full:
-            admins.append({
-                "name": i.user.first_name or i.user.last_name,
-                "id": i.user.id
-            })
+            admins.append({"name": i.user.first_name or i.user.last_name, "id": i.user.id})
         else:
             admins.append(i.user.id)
     return admins
 
 
 async def user_ban_protected(bot, chat_id, user_id) -> bool:
-    """ Return True if user can't be banned """
+    """Return True if user can't be banned"""
     member = await bot.client.get_chat_member(chat_id=chat_id, user_id=user_id)
-    return bool(member.status in ["creator", "administrator"]
-                or user_id in bot.staff_id
-                or member.user.id in bot.staff_id)
+    return bool(
+        member.status in ["creator", "administrator"]
+        or user_id in bot.staff_id
+        or member.user.id in bot.staff_id
+    )

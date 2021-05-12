@@ -26,14 +26,14 @@ from motor.frameworks.asyncio import _EXECUTOR as exe
 LOGGER = logging.getLogger(__name__)
 
 
-def submit_thread(func: Callable[[Any], Any], *args: Any,
-                  **kwargs: Any) -> Future:
-    """ submit thread to thread pool """
+def submit_thread(func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Future:
+    """submit thread to thread pool"""
     return exe.submit(func, *args, **kwargs)
 
 
 def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """ run in a thread """
+    """run in a thread"""
+
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
         loop = asyncio.get_running_loop()
@@ -44,12 +44,12 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
 
 # pylint: disable=W0212
 def start() -> ThreadPoolExecutor:
-    """ start pool """
-    LOGGER.info("Started Pool : %s Workers", exe._max_workers)
+    """start pool"""
+    LOGGER.info(f"Started Pool : {exe._max_workers} Workers")
     return exe
 
 
 def stop():
-    """ stop pool """
+    """stop pool"""
     exe.shutdown()
-    LOGGER.info("Stopped Pool : %s Workers", exe._max_workers)
+    LOGGER.info(f"Stopped Pool : {exe._max_workers} Workers")

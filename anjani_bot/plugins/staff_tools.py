@@ -23,9 +23,11 @@ from io import BytesIO
 from typing import ClassVar, List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
-from pyrogram.errors.exceptions.bad_request_400 import (ChannelInvalid,
-                                                        PeerIdInvalid,
-                                                        UserNotParticipant)
+from pyrogram.errors.exceptions.bad_request_400 import (
+    ChannelInvalid,
+    PeerIdInvalid,
+    UserNotParticipant,
+)
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
@@ -44,14 +46,14 @@ class Staff(plugin.Plugin):
 
     @listener.on(["log", "logs"], staff_only=True)
     async def logs(self, message):
-        """ Get bot logging as file """
+        """Get bot logging as file"""
         core_path = "anjani_bot/core"
         if message.command:
             log_file = os.path.join(core_path, message.command[0])
         else:
             log_file = os.path.join(
-                core_path,
-                f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log")
+                core_path, f"AnjaniBot-{datetime.now().strftime('%Y-%m-%d')}.log"
+            )
         if not os.path.exists(log_file):
             files: List[str] = []
             for file in os.listdir(core_path):
@@ -71,10 +73,11 @@ class Staff(plugin.Plugin):
             data = log_file.read()
         key = await nekobin(self.bot, data)
         if key:
-            url = [[
-                InlineKeyboardButton(text="View raw",
-                                     url=f"https://nekobin.com/raw/{key}"),
-            ]]
+            url = [
+                [
+                    InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
+                ]
+            ]
             await self.bot.client.send_document(
                 message.from_user.id,
                 log_file,
@@ -90,7 +93,7 @@ class Staff(plugin.Plugin):
 
     @listener.on("broadcast", staff_only="owner")
     async def broadcast(self, message):
-        """ Broadcast a message to all chats """
+        """Broadcast a message to all chats"""
         to_send = message.text.split(None, 1)
         if len(to_send) >= 2:
             failed = 0
@@ -106,8 +109,10 @@ class Staff(plugin.Plugin):
                     sent += 1
                 except (PeerIdInvalid, ChannelInvalid):
                     failed += 1
-                    LOGGER.warning("Can't send broadcast to \"%s\" with id %s",
-                                   chat["chat_name"], chat["chat_id"])
+                    LOGGER.warning(
+                        f"Can't send broadcast to \"{chat['chat_name']}\" "
+                        f"with id {chat['chat_id']}",
+                    )
             await msg.edit_text(
                 "Broadcast complete!\n"
                 f"{sent} groups succeed, {failed} groups failed to receive the message"
@@ -115,7 +120,7 @@ class Staff(plugin.Plugin):
 
     @listener.on(["leave", "leavechat", "leavegroup"], staff_only=True)
     async def leavechat(self, message):
-        """ leave the given chat_id """
+        """leave the given chat_id"""
         try:
             await self.bot.client.leave_chat(message.command[0])
             await message.reply_text("Left the group successfully!")
@@ -126,11 +131,10 @@ class Staff(plugin.Plugin):
 
     @listener.on("chatlist", staff_only=True)
     async def chatlist(self, message):
-        """ Send file of chat's I'm in """
+        """Send file of chat's I'm in"""
         chatfile = "List of chats.\n"
         async for chat in self.db.find({}):
-            chatfile += "{} - ({})\n".format(chat["chat_name"],
-                                             chat["chat_id"])
+            chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
             output.name = "chatlist.txt"

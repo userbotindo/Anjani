@@ -23,18 +23,20 @@ from . import anjani as __bot__
 from . import custom_filter
 
 
-def on(cmd: Optional[Union[str, List[str]]] = "",
-       filters: Optional[Filter] = None,
-       admin_only: Optional[bool] = False,
-       can_change_info: Optional[bool] = False,
-       can_delete: Optional[bool] = False,
-       can_restrict: Optional[bool] = False,
-       can_invite_users: Optional[bool] = False,
-       can_pin: Optional[bool] = False,
-       can_promote: Optional[bool] = False,
-       staff_only: Optional[bool] = False,
-       group: Optional[int] = 0,
-       update: Optional[str] = "command") -> callable:
+def on(
+    cmd: Optional[Union[str, List[str]]] = "",
+    filters: Optional[Filter] = None,
+    admin_only: Optional[bool] = False,
+    can_change_info: Optional[bool] = False,
+    can_delete: Optional[bool] = False,
+    can_restrict: Optional[bool] = False,
+    can_invite_users: Optional[bool] = False,
+    can_pin: Optional[bool] = False,
+    can_promote: Optional[bool] = False,
+    staff_only: Optional[bool] = False,
+    group: Optional[int] = 0,
+    update: Optional[str] = "command",
+) -> callable:
     """Decorator for handling Update
     Parameters:
         cmd (`str` | List of `str`):
@@ -74,6 +76,7 @@ def on(cmd: Optional[Union[str, List[str]]] = "",
             `message` -> `~Anjani.Client.on_message`,
             `callbackquery` -> `~Anjani.Client.on_callback_query`.
     """
+
     def listener_decorator(func: Callable) -> callable:
         if update == "command":
             _filters = custom_filter.command(commands=cmd)
@@ -83,17 +86,27 @@ def on(cmd: Optional[Union[str, List[str]]] = "",
             if filters:
                 _filters = filters
 
-        perm = (can_change_info or can_delete or can_restrict
-                or can_invite_users or can_pin or can_promote)
+        perm = (
+            can_change_info
+            or can_delete
+            or can_restrict
+            or can_invite_users
+            or can_pin
+            or can_promote
+        )
         if perm:
-            _filters = _filters & (create(custom_filter.check_perm,
-                                          "CheckPermission",
-                                          can_change_info=can_change_info,
-                                          can_delete=can_delete,
-                                          can_restrict=can_restrict,
-                                          can_invite_users=can_invite_users,
-                                          can_pin=can_pin,
-                                          can_promote=can_promote))
+            _filters = _filters & (
+                create(
+                    custom_filter.check_perm,
+                    "CheckPermission",
+                    can_change_info=can_change_info,
+                    can_delete=can_delete,
+                    can_restrict=can_restrict,
+                    can_invite_users=can_invite_users,
+                    can_pin=can_pin,
+                    can_promote=can_promote,
+                )
+            )
 
         if admin_only:
             _filters = _filters & custom_filter.admin & custom_filter.bot_admin
@@ -101,21 +114,20 @@ def on(cmd: Optional[Union[str, List[str]]] = "",
             if isinstance(staff_only, bool):
                 _filters = _filters & custom_filter.staff
             elif isinstance(staff_only, str):
-                _filters = _filters & create(custom_filter.staff_rank,
-                                             "CheckStaffRank",
-                                             rank=staff_only)
+                _filters = _filters & create(
+                    custom_filter.staff_rank, "CheckStaffRank", rank=staff_only
+                )
             else:
                 raise TypeError(
-                    "staff_only arguments must be a string or bool not {}".
-                    format(type(staff_only)))
+                    "staff_only arguments must be a string or bool not {}".format(type(staff_only))
+                )
 
         if update == "command":
             dec = __bot__.client.on_command(filters=_filters, group=group)
         elif update == "message":
             dec = __bot__.client.on_message(filters=_filters, group=group)
         elif update == "callbackquery":
-            dec = __bot__.client.on_callback_query(filters=_filters,
-                                                   group=group)
+            dec = __bot__.client.on_callback_query(filters=_filters, group=group)
 
         return dec(func)
 

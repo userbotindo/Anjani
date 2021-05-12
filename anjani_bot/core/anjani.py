@@ -18,15 +18,15 @@ import asyncio
 import json
 import logging
 import time
-from typing import List, Optional
 from sys import version_info
+from typing import List, Optional
 
 import aiohttp
 import aiorun
 import pyrogram
+import toml
 
 from ..utils import get_readable_time
-from ..version import __version__
 from . import pool
 from .database import DataBase
 from .plugin_extender import PluginExtender  # pylint: disable=R0401
@@ -36,7 +36,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Anjani(TelegramBot, DataBase, PluginExtender):
-    """ AnjaniBot Client """
+    """AnjaniBot Client"""
+
     client: pyrogram.Client
     http: aiohttp.ClientSession
     loop: asyncio.AbstractEventLoop
@@ -44,7 +45,8 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
     def __init__(self):
         self.stopping = False
 
-        self.version = __version__
+        with open("pyproject.toml", "r") as file:
+            self.version = toml.load(file)["tool"]["poetry"]["version"]
         self._start_time = time.time()
 
         # Init Base
@@ -65,12 +67,10 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
 
     @property
     def uptime(self) -> str:
-        """ Get bot uptime """
+        """Get bot uptime"""
         return get_readable_time(time.time() - self._start_time)
 
-    async def begin(
-            self,
-            loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
+    async def begin(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> "Anjani":
         """Start AnjaniBot"""
         if loop:
             asyncio.set_event_loop(loop)
@@ -90,13 +90,14 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
                 self.loop.stop()
 
     async def stop(self) -> None:
-        """ Stop client """
+        """Stop client"""
+        if self.stopping:
+            # Return if client in stopping process
+            return
+        self.stopping = True
         LOGGER.info("Disconnecting...")
 
-        self.stopping = True
-
         await self.http.close()
-        await self.disconnect_db()
 
         async def finalize() -> None:
             lock = asyncio.Lock()
@@ -105,7 +106,8 @@ class Anjani(TelegramBot, DataBase, PluginExtender):
             async with lock:
                 for task in running_tasks:
                     task.cancel()
-                if self.client.is_initialized:
+                if hasattr(self, "client") and self.client.is_initialized:
+                    await self.disconnect_db()
                     await self.client.stop()
                 else:
                     pool.stop()

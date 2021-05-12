@@ -37,8 +37,7 @@ def get_readable_time(seconds: int) -> str:
         seconds = int(remainder)
 
     for index in enumerate(time_list):
-        time_list[index[0]] = str(
-            time_list[index[0]]) + time_suffix_list[index[0]]
+        time_list[index[0]] = str(time_list[index[0]]) + time_suffix_list[index[0]]
     if len(time_list) == 4:
         up_time += time_list.pop() + ", "
 
@@ -49,7 +48,7 @@ def get_readable_time(seconds: int) -> str:
 
 
 async def extract_time(time_text) -> Union[int, bool]:
-    """ Extract time from time flags """
+    """Extract time from time flags"""
     if any(time_text.endswith(unit) for unit in ("m", "h", "d")):
         unit = time_text[-1]
         time_num = time_text[:-1]
@@ -67,21 +66,21 @@ async def extract_time(time_text) -> Union[int, bool]:
 
 
 async def nekobin(client, data: str) -> str:
-    """ return the nekobin pasted key """
+    """return the nekobin pasted key"""
     async with client.http.post(
-            "https://nekobin.com/api/documents",
-            json={"content": data},
+        "https://nekobin.com/api/documents",
+        json={"content": data},
     ) as resp:
         if resp.status != 200:
             response = await resp.json()
-            key = response['result']['key']
+            key = response["result"]["key"]
             return key
     return None
 
 
-def format_integer(number: int, separator: str='.') -> str:
-    """ make an integer easy to read """
-    return "{:,}".format(number).replace(',', separator)
+def format_integer(number: int, separator: str = ".") -> str:
+    """make an integer easy to read"""
+    return "{:,}".format(number).replace(",", separator)
 
 
 def rand_array(array: list):

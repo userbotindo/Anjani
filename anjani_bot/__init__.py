@@ -13,6 +13,35 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import asyncio
+import logging
+
+import aiorun
+
 from .core import Anjani, setup_log
 
-anjani = Anjani()  # pylint: disable=C0103
+aiorun.logger.disabled = True
+log = logging.getLogger("Main")
+anjani = Anjani()
+
+
+def start():
+    """Main entry point"""
+    setup_log()
+    log.info("Loading code...")
+
+    try:
+        import uvloop  # pylint: disable=C0415
+    except ImportError:
+        log.warning("uvloop not installed! Skipping...")
+        print(
+            "\nuvloop not installed! "
+            "bot will work the same, but in a bit slower speed.\n"
+            'You may install it by "poetry install -E uvloop" or "pip install uvloop"\n'
+        )
+    else:
+        uvloop.install()
+
+    loop = asyncio.new_event_loop()
+    aiorun.run(anjani.begin(loop=loop), loop=loop)

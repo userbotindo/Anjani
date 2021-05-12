@@ -14,20 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import environ
-from datetime import datetime
-
 import logging
+from datetime import datetime
+from os import environ
+
 import colorlog
 
 
 def _level_check(level):
     _str_to_lvl = {
-        'CRITICAL': logging.CRITICAL,
-        'ERROR': logging.ERROR,
-        'WARNING': logging.WARNING,
-        'INFO': logging.INFO,
-        'DEBUG': logging.DEBUG,
+        "CRITICAL": logging.CRITICAL,
+        "ERROR": logging.ERROR,
+        "WARNING": logging.WARNING,
+        "INFO": logging.INFO,
+        "DEBUG": logging.DEBUG,
     }
     if level not in _str_to_lvl:
         return logging.INFO
@@ -50,9 +50,11 @@ def setup_log():
     logfile.setLevel(level)
 
     # Logging into stderr with color
-    term_format = ("  %(bold)s%(asctime)s%(reset)s: "
-                   "%(log_color)s%(levelname)-9s%(reset)s | %(name)-31s - "
-                   "%(log_color)s%(message)s%(reset)s")
+    term_format = (
+        "  %(bold)s%(asctime)s%(reset)s: "
+        "%(log_color)s%(levelname)-9s%(reset)s | %(name)-31s - "
+        "%(log_color)s%(message)s%(reset)s"
+    )
     stream = logging.StreamHandler()
     formatter = colorlog.ColoredFormatter(term_format, datefmt="%H:%M:%S")
     stream.setLevel(level)

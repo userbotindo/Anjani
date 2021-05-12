@@ -18,16 +18,15 @@ import asyncio
 from functools import partial
 from typing import Any, ClassVar, Dict, List, Match, Union
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 from pyrogram.types import Message
-from motor.motor_asyncio import AsyncIOMotorCollection
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import MessageParser, SendFormating, Types
 
 
 class NotesBase(SendFormating, MessageParser):
-
     async def __on_load__(self):
         self.notes_db = self.bot.get_collection("NOTES")
         self.lock = asyncio.Lock()
@@ -44,15 +43,12 @@ class NotesBase(SendFormating, MessageParser):
         if data and data.get(self.name):
             async with self.lock:
                 await self.notes_db.update_one(
-                    {'chat_id': chat_id},
-                    {"$set": data[self.name]},
-                    upsert=True
+                    {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
                 )
         elif not data:
-            return await self.notes_db.find_one({'chat_id': chat_id}, {'_id': False})
+            return await self.notes_db.find_one({"chat_id": chat_id}, {"_id": False})
 
     def _reply_note(self, match: Match[str]) -> str:
-
         async def get_data(key):
             data = self.cache.get("notes")
             return data.get(key)
@@ -73,8 +69,7 @@ class NotesBase(SendFormating, MessageParser):
             return
 
         note = await self.bot.loop.run_in_executor(
-            self.bot.client.executor,
-            partial(self._reply_note, name)
+            self.bot.client.executor, partial(self._reply_note, name)
         )
 
         if note:
@@ -95,7 +90,7 @@ class NotesBase(SendFormating, MessageParser):
                     disable_web_page_preview=True,
                     reply_to_message_id=reply_to,
                     reply_markup=keyb,
-                    parse_mode=parse_mode
+                    parse_mode=parse_mode,
                 )
             elif note.get("type") == Types.STICKER:
                 await self.send_format[note.get("type")](
@@ -110,19 +105,19 @@ class NotesBase(SendFormating, MessageParser):
                     caption=note.get("text") + btn_text,
                     reply_to_message_id=reply_to,
                     reply_markup=keyb,
-                    parse_mode=parse_mode
+                    parse_mode=parse_mode,
                 )
 
     async def add_note(
-            self,
-            chat_title: str,
-            chat_id: str,
-            note_name: str,
-            text: str,
-            msg_type: Types,
-            content: Union[str, None],
-            buttons: List
-        ) -> None:
+        self,
+        chat_title: str,
+        chat_id: str,
+        note_name: str,
+        text: str,
+        msg_type: Types,
+        content: Union[str, None],
+        buttons: List,
+    ) -> None:
         """Add new chat note"""
         async with self.lock:
             await self.notes_db.update_one(
@@ -134,15 +129,15 @@ class NotesBase(SendFormating, MessageParser):
                             "text": text,
                             "type": msg_type,
                             "content": content,
-                            "button": buttons
-                        }
+                            "button": buttons,
+                        },
                     }
                 },
-                upsert=True
+                upsert=True,
             )
 
     async def del_note(self, chat_id: str, name: str):
-        """Delete db note data """
+        """Delete db note data"""
         async with self.lock:
             await self.notes_db.update_one(
                 {"chat_id": chat_id},
@@ -184,9 +179,7 @@ class NotesPlugin(plugin.Plugin, NotesBase):
         """Save notes."""
         chat_id = message.chat.id
         if len(message.command) < 2 and not message.reply_to_message:
-            return await message.reply_text(
-                await self.bot.text(chat_id, "notes-invalid-args")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "notes-invalid-args"))
 
         name = message.command[0]
         text, msg_type, content, buttons = self.get_msg_type(message)
@@ -199,9 +192,7 @@ class NotesPlugin(plugin.Plugin, NotesBase):
             content,
             buttons,
         )
-        await message.reply_text(
-            await self.bot.text(chat_id, "note-saved", name)
-        )
+        await message.reply_text(await self.bot.text(chat_id, "note-saved", name))
 
     @listener.on("notes")
     async def cmd_notelist(self, message) -> str:
@@ -210,9 +201,7 @@ class NotesPlugin(plugin.Plugin, NotesBase):
         check = await self.notes_db.find_one({"chat_id": chat_id})
 
         if not check or not check.get("notes"):
-            return await message.reply_text(
-                await self.bot.text(chat_id, "no-notes")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "no-notes"))
 
         notes = await self.bot.text(chat_id, "note-list", message.chat.title)
         for key in check.get("notes").keys():
@@ -224,20 +213,14 @@ class NotesPlugin(plugin.Plugin, NotesBase):
         """Delete chat note."""
         chat_id = message.chat.id
         if not message.command:
-            return await message.reply_text(
-                await self.bot.text(chat_id, "notes-del-noargs")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "notes-del-noargs"))
         name = message.command[0]
 
         check = await self.notes_db.find_one({"chat_id": chat_id})
         if check is None:
             return await message.reply_text(await self.bot.text(chat_id, "no-notes"))
         if check is not None and not check.get("notes").get(name):
-            return await message.reply_text(
-                await self.bot.text(chat_id, "notes-not-exist")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "notes-not-exist"))
 
         await self.del_note(chat_id, name)
-        return await message.reply_text(
-            await self.bot.text(chat_id, "notes-deleted", name)
-        )
+        return await message.reply_text(await self.bot.text(chat_id, "notes-deleted", name))

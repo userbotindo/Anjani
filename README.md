@@ -43,4 +43,6 @@ If you want to make your custom plugins, refer to [Anjani's Wiki](https://github
 
 ## Credits
 
+- [Userge](https://github.com/UsergeTeam/Userge)
+- [Marie](https://github.com/PaulSonOfLars/tgbot)
 - [All Contributors 👥](https://github.com/userbotindo/Anjani/graphs/contributors)

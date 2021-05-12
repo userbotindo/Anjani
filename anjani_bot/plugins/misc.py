@@ -20,7 +20,7 @@ from typing import ClassVar
 
 from covid import Covid
 from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
 from anjani_bot.core.pool import run_in_thread
@@ -33,16 +33,16 @@ class Misc(plugin.Plugin):
 
     @listener.on("ping")
     async def ping(self, message):
-        """ Get bot latency """
+        """Get bot latency"""
         start = datetime.now()
-        msg = await message.reply_text('`Pong!`')
+        msg = await message.reply_text("`Pong!`")
         end = datetime.now()
         latency = (end - start).microseconds / 1000
         await msg.edit(f"**Pong!**\n`{latency} ms`")
 
     @listener.on("covid")
     async def covid(self, message):
-        """ Fetch stats about Covid-19 """
+        """Fetch stats about Covid-19"""
         cov = await run_in_thread(Covid)(source="worldometers")
 
         if message.command:
@@ -70,15 +70,15 @@ class Misc(plugin.Plugin):
         output = await self.bot.text(
             message.chat.id,
             "covid-text",
-            country=data['country'],
+            country=data["country"],
             date=date,
-            confirmed=format_integer(data['confirmed']),
-            active=format_integer(data['active']),
-            deaths=format_integer(data['deaths']),
-            recovered=format_integer(data['recovered']),
-            new_cases=format_integer(data['new_cases']),
-            new_deaths=format_integer(data['new_deaths']),
-            critical=format_integer(data['critical']),
+            confirmed=format_integer(data["confirmed"]),
+            active=format_integer(data["active"]),
+            deaths=format_integer(data["deaths"]),
+            recovered=format_integer(data["recovered"]),
+            new_cases=format_integer(data["new_cases"]),
+            new_deaths=format_integer(data["new_deaths"]),
+            critical=format_integer(data["critical"]),
             total_tests=format_integer(total_tests),
             link=link,
         )
@@ -87,15 +87,22 @@ class Misc(plugin.Plugin):
 
     @listener.on(["id", "ids"])
     async def get_id(self, message):
-        """ Display ID's """
+        """Display ID's"""
         msg = message.reply_to_message or message
         out_str = f"👥 **Chat ID :** `{(msg.forward_from_chat or msg.chat).id}`\n"
         out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.message_id}`\n"
         if msg.from_user:
             out_str += f"🙋‍♂️ **From User ID :** `{msg.from_user.id}`\n"
-        file = (msg.audio or msg.animation or msg.document or msg.photo
-                or msg.sticker or msg.voice or msg.video_note
-                or msg.video) or None
+        file = (
+            msg.audio
+            or msg.animation
+            or msg.document
+            or msg.photo
+            or msg.sticker
+            or msg.voice
+            or msg.video_note
+            or msg.video
+        ) or None
         if file:
             out_str += f"📄 **Media Type :** `{file.__class__.__name__}`\n"
             out_str += f"📄 **File ID :** `{file.file_id}`"
@@ -103,16 +110,14 @@ class Misc(plugin.Plugin):
 
     @listener.on("paste")
     async def paste(self, message):
-        """ Paste a text to Nekobin """
+        """Paste a text to Nekobin"""
         reply = message.reply_to_message
         if not reply:
             return
-        sent = await message.reply_text(await
-                                        self.bot.text(message.chat.id,
-                                                      "wait-paste"))
+        sent = await message.reply_text(await self.bot.text(message.chat.id, "wait-paste"))
         if reply and reply.document:
             file = await reply.download(self.bot.get_config.download_path)
-            with open(file, 'r') as text:
+            with open(file, "r") as text:
                 data = text.read()
             os.remove(file)
         elif reply and reply.text:
@@ -124,43 +129,42 @@ class Misc(plugin.Plugin):
             btn = InlineKeyboardMarkup(
                 [
                     [
+                        InlineKeyboardButton(text="Nekobin", url=f"https://nekobin.com/{key}"),
                         InlineKeyboardButton(
-                            text="Nekobin",
-                            url=f"https://nekobin.com/{key}"),
-                        InlineKeyboardButton(
-                            text="Nekobin Raw",
-                            url=f"https://nekobin.com/raw/{key}"),
-                    ]])
+                            text="Nekobin Raw", url=f"https://nekobin.com/raw/{key}"
+                        ),
+                    ]
+                ]
+            )
             await sent.edit_text(
-                await self.bot.text(message.chat.id, "paste-succes"),
-                reply_markup=btn)
+                await self.bot.text(message.chat.id, "paste-succes"), reply_markup=btn
+            )
         else:
-            await sent.edit_text(await self.bot.text(message.chat.id,
-                                                     "fail-paste"))
+            await sent.edit_text(await self.bot.text(message.chat.id, "fail-paste"))
 
     @listener.on("source", filters.private)
     async def src(self, message):
-        """ Send the bot source code """
+        """Send the bot source code"""
         await message.reply_text(
-            "[GitHub repo](https://github.com/userbotindo/Anjani)\n" +
-            "[Support](https://t.me/userbotindo)",
-            disable_web_page_preview=True)
+            "[GitHub repo](https://github.com/userbotindo/Anjani)\n"
+            + "[Support](https://t.me/userbotindo)",
+            disable_web_page_preview=True,
+        )
 
     @listener.on("slap", filters.group)
     async def neko_slap(self, message):
-        """ Slap member with neko slap. """
+        """Slap member with neko slap."""
         text = " ".join(message.command)
         chat_id = message.chat.id
-        async with self.bot.http.get(
-            'https://www.nekos.life/api/v2/img/slap') as slap:
+        async with self.bot.http.get("https://www.nekos.life/api/v2/img/slap") as slap:
             if slap.status != 200:
-                return await message.reply(
-                    await self.bot.text(chat_id, "err-api-down"))
+                return await message.reply(await self.bot.text(chat_id, "err-api-down"))
             res = await slap.json()
 
         reply_to = message.reply_to_message or message
         await self.bot.client.send_animation(
             message.chat.id,
             res["url"],
-            reply_to_message_id=reply_to.message_id, caption=text,
+            reply_to_message_id=reply_to.message_id,
+            caption=text,
         )

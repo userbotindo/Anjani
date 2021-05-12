@@ -14,27 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
-import logging
-
-import aiorun
-import uvloop
-
-from . import anjani, setup_log
-
-aiorun.logger.disabled = True
-
-
-def main():
-    """Main entry point"""
-    log = logging.getLogger("Main")
-    setup_log()
-    log.info("Loading code...")
-    uvloop.install()
-
-    loop = asyncio.new_event_loop()
-    aiorun.run(anjani.begin(loop=loop), loop=loop)
-
+from anjani_bot import start
 
 if __name__ == "__main__":
-    main()
+    start()

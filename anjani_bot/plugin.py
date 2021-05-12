@@ -24,7 +24,8 @@ if TYPE_CHECKING:
 
 
 class Plugin:
-    """ Plugins extender """
+    """Plugins extender"""
+
     # Class variables
     name: ClassVar[str] = "Unnamed"
     disabled: ClassVar[bool] = False
@@ -41,14 +42,16 @@ class Plugin:
 
     @classmethod
     def format_desc(cls, comment: Optional[str] = None):
-        """ plugin description """
+        """plugin description"""
         _comment = comment + " " if comment else ""
-        return (f"{_comment}plugin {cls.name} ({cls.__name__}) "
-                f"from {os.path.relpath(inspect.getfile(cls))}")
+        return (
+            f"{_comment}plugin {cls.name} ({cls.__name__}) "
+            f"from {os.path.relpath(inspect.getfile(cls))}"
+        )
 
     def __repr__(self):
         return f"<{self.format_desc(self.comment)}>"
 
 
 class PluginError(Exception):
-    """ Plugins Exception """
+    """Plugins Exception"""

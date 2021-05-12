@@ -17,8 +17,7 @@
 import inspect
 import logging
 from types import ModuleType
-from typing import (TYPE_CHECKING, Any, Iterable, List, MutableMapping,
-                    Optional, Type)
+from typing import TYPE_CHECKING, Any, Iterable, List, MutableMapping, Optional, Type
 
 from pyrogram.types import InlineKeyboardButton
 
@@ -32,7 +31,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PluginExtender(Base):
-    """ Core plugin.Plugin Initialization """
+    """Core plugin.Plugin Initialization"""
+
     plugins: MutableMapping[str, plugin.Plugin]
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
@@ -40,12 +40,9 @@ class PluginExtender(Base):
 
         super().__init__(**kwargs)
 
-    def load_plugin(self,
-                    cls: Type[plugin.Plugin],
-                    *,
-                    comment: Optional[str] = None) -> None:
-        """ Load bot plugin"""
-        LOGGER.debug("Loading %s", cls.format_desc(comment))
+    def load_plugin(self, cls: Type[plugin.Plugin], *, comment: Optional[str] = None) -> None:
+        """Load bot plugin"""
+        LOGGER.debug(f"Loading {cls.format_desc(comment)}")
 
         ext = cls(self)
         ext.comment = comment
@@ -54,36 +51,34 @@ class PluginExtender(Base):
         # load database
         if hasattr(ext, "__on_load__"):
             self.loop.create_task(ext.__on_load__())
-            LOGGER.debug("Database plugin '%s' loaded.", cls.name)
+            LOGGER.debug(f"Database plugin '{cls.name}' loaded.")
 
     def unload_plugin(self, ext: plugin.Plugin) -> None:
-        """ Unload bot plugin """
+        """Unload bot plugin"""
         cls = type(ext)
-        LOGGER.info("Unloading %s", ext.format_desc(ext.comment))
+        LOGGER.info(f"Unloading {ext.format_desc(ext.comment)}")
 
         del self.plugins[cls.name]
 
-    def _load_all_from_metaplugin(self,
-                                  subplugins: Iterable[ModuleType],
-                                  *,
-                                  comment: str = None) -> None:
+    def _load_all_from_metaplugin(
+        self, subplugins: Iterable[ModuleType], *, comment: str = None
+    ) -> None:
         for extension in subplugins:
             for sym in dir(extension):
                 cls = getattr(extension, sym)
-                if (inspect.isclass(cls) and issubclass(cls, plugin.Plugin)
-                        and not cls.disabled):
+                if inspect.isclass(cls) and issubclass(cls, plugin.Plugin) and not cls.disabled:
                     self.load_plugin(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
     def load_all_plugins(self, subplugins: Iterable[ModuleType]) -> None:
-        """ Load available plugin """
+        """Load available plugin"""
         LOGGER.info("Loading plugins")
         self._load_all_from_metaplugin(subplugins)
         self.plugins = dict(sorted(self.plugins.items()))
-        LOGGER.info("Plugins loaded %s", list(self.plugins.keys()))
+        LOGGER.info(f"Plugins loaded {list(self.plugins.keys())}")
 
     def unload_all_plugins(self) -> None:
-        """ Unload plugins """
+        """Unload plugins"""
         LOGGER.info("Unloading plugins...")
         # Can't modify while iterating, so collect a list first
         for ext in list(self.plugins.values()):
@@ -92,18 +87,16 @@ class PluginExtender(Base):
         LOGGER.info("All plugins unloaded.")
 
     async def help_builder(self, chat_id: int) -> List:
-        """ Build the help button """
+        """Build the help button"""
         plugins: List[InlineKeyboardButton] = []
         for cls in list(self.plugins.values()):
             if hasattr(cls, "helpable") and cls.helpable is True:
                 plugins.append(
                     InlineKeyboardButton(
                         await self.text(chat_id, f"{cls.name.lower()}-button"),
-                        callback_data="help_plugin({})".format(
-                            cls.name.lower())))
+                        callback_data="help_plugin({})".format(cls.name.lower()),
+                    )
+                )
 
-        pairs = [
-            plugins[i * 3:(i + 1) * 3]
-            for i in range((len(plugins) + 3 - 1) // 3)
-        ]
+        pairs = [plugins[i * 3 : (i + 1) * 3] for i in range((len(plugins) + 3 - 1) // 3)]
         return pairs

@@ -35,42 +35,35 @@ class Reporting(plugin.Plugin):
     async def __migrate__(self, old_chat_id, new_chat_id):
         async with self.lock:
             await self.report_db.update_one(
-                {'chat_id': old_chat_id},
-                {"$set": {'chat_id': new_chat_id}}
+                {"chat_id": old_chat_id}, {"$set": {"chat_id": new_chat_id}}
             )
 
     async def __backup__(self, chat_id, data=None):
         if data and data.get(self.name):
             async with self.lock:
                 await self.report_db.update_one(
-                    {'chat_id': chat_id},
-                    {"$set": data[self.name]},
-                    upsert=True
+                    {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
                 )
         elif not data:
-            return await self.report_db.find_one({'chat_id': chat_id}, {'_id': False})
+            return await self.report_db.find_one({"chat_id": chat_id}, {"_id": False})
 
     async def _change_setting(self, chat_id, is_private, setting) -> None:
         async with self.lock:
             if is_private:
                 await self.user_report_db.update_one(
-                    {'_id': chat_id},
-                    {"$set": {'setting': setting}},
-                    upsert=True
+                    {"_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
                 )
             else:
                 await self.report_db.update_one(
-                    {'chat_id': chat_id},
-                    {"$set": {'setting': setting}},
-                    upsert=True
+                    {"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
                 )
 
     async def get_setting(self, identifier, is_private) -> bool:
         """Get current setting"""
         if is_private:
-            data = await self.user_report_db.find_one({'_id': identifier})
+            data = await self.user_report_db.find_one({"_id": identifier})
         else:
-            data = await self.report_db.find_one({'chat_id': identifier})
+            data = await self.report_db.find_one({"chat_id": identifier})
         if not data:
             return True
         return data.get("setting", True)
@@ -99,25 +92,17 @@ class Reporting(plugin.Plugin):
             return  # ignore command from admins
 
         if not message.reply_to_message:
-            return await message.reply_text(
-                await self.bot.text(chat_id, "no-report-user")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "no-report-user"))
         reported_user = message.reply_to_message.from_user
 
         chat_name = message.chat.title or message.chat.first_name or message.chat.last_name
 
         if message.reply_to_message.from_user.id == self.bot.identifier:
-            return await message.reply_text(
-                await self.bot.text(chat_id, "cant-report-me")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "cant-report-me"))
         if message.reply_to_message.from_user.id == message.from_user.id:
-            return await message.reply_text(
-                await self.bot.text(chat_id, "cant-self-report")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "cant-self-report"))
         if await user_ban_protected(self.bot, chat_id, reported_user.id):
-            return await message.reply_text(
-                await self.bot.text(chat_id, "cant-report-admin")
-            )
+            return await message.reply_text(await self.bot.text(chat_id, "cant-report-admin"))
 
         reported_mention = reported_user.mention
         reply_text = await self.bot.text(chat_id, "report-notif", reported_mention)
@@ -128,7 +113,7 @@ class Reporting(plugin.Plugin):
             by_user=message.from_user.mention,
             by_user_id=message.from_user.id,
             reported_mention=reported_mention,
-            reported_id=reported_user.id
+            reported_id=reported_user.id,
         )
         forward = False
         if username := message.chat.username:
@@ -137,8 +122,7 @@ class Reporting(plugin.Plugin):
             forward = message.reply_to_message.message_id
 
         await asyncio.gather(
-            self._send_report(report_text, chat_id, forward),
-            message.reply(reply_text)
+            self._send_report(report_text, chat_id, forward), message.reply(reply_text)
         )
 
     @listener.on("reports")
@@ -158,19 +142,13 @@ class Reporting(plugin.Plugin):
             if args in ["on", "true", "yes"]:
                 await self._change_setting(chat_id, private, True)
                 key = "report-on" if private else "chat-report-on"
-                await message.reply_text(
-                    await self.bot.text(chat_id, key)
-                )
+                await message.reply_text(await self.bot.text(chat_id, key))
             elif args in ["off", "false", "no"]:
                 await self._change_setting(chat_id, private, False)
                 key = "report-off" if private else "chat-report-off"
-                await message.reply_text(
-                    await self.bot.text(chat_id, key)
-                )
+                await message.reply_text(await self.bot.text(chat_id, key))
             else:
-                await message.reply(
-                    await self.bot.text(chat_id, "err-yes-no-args")
-                )
+                await message.reply(await self.bot.text(chat_id, "err-yes-no-args"))
         else:
             key = "report-setting" if private else "chat-report-setting"
             await message.reply_text(

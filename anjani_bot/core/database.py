@@ -21,8 +21,11 @@ from codecs import decode, encode
 from typing import Any, Dict, List, Optional, Union
 
 from motor.core import AgnosticCollection
-from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
-                                 AsyncIOMotorDatabase)
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorCollection,
+    AsyncIOMotorDatabase,
+)
 from pymongo.errors import OperationFailure
 from yaml import full_load
 
@@ -33,6 +36,7 @@ LOGGER = logging.getLogger(__name__)
 
 class DataBase(Base):
     """Client Database on MongoDB"""
+
     __client__: AsyncIOMotorClient
     __db__: AsyncIOMotorDatabase
     __lang__: AsyncIOMotorCollection
@@ -41,32 +45,31 @@ class DataBase(Base):
     __strings__: Dict[str, str]
 
     def __init__(self):
-        self.__language__ = sorted([
-            os.path.splitext(filename)[0]
-            for filename in os.listdir("./language")
-        ])
+        self.__language__ = sorted(
+            [os.path.splitext(filename)[0] for filename in os.listdir("./language")]
+        )
         self.__strings__ = {}
 
         super().__init__()
 
     @property
     def language(self) -> list:
-        """ Return list of bot suported languages """
+        """Return list of bot suported languages"""
         return self.__language__
 
     @property
     def lang_col(self) -> AgnosticCollection:
-        """ Return client language collection """
+        """Return client language collection"""
         return self.__lang__
 
     def _load_language(self):
         """Load bot language."""
         LOGGER.info("Loading language...")
         for i in self.__language__:
-            LOGGER.debug("Loading language: %s", i)
+            LOGGER.debug(f"Loading language: {i}")
             with open(f"./language/{i}.yml", "r") as text:
                 self.__strings__[i] = full_load(text)
-        LOGGER.info("Language %s loaded", self.__language__)
+        LOGGER.info(f"Language {self.__language__} loaded")
 
     async def connect_db(self, db_name: str) -> None:
         """Connect to MongoDB client
@@ -76,15 +79,14 @@ class DataBase(Base):
         """
         LOGGER.info("Connecting to MongoDB...")
         try:
-            self.__client__ = AsyncIOMotorClient(self.get_config.db_uri,
-                                                 connect=False)
+            self.__client__ = AsyncIOMotorClient(self.get_config.db_uri, connect=False)
             if db_name in await self.__client__.list_database_names():
                 LOGGER.info("Database found, Logged in to Database...")
             else:
                 LOGGER.info("Database not found! Creating New Database...")
         except OperationFailure as err:
             traceback.print_exc()
-            LOGGER.critical("DATABASE AUTHENTICATION FAILED\n%s", err)
+            LOGGER.critical(f"DATABASE AUTHENTICATION FAILED\n{err}")
             await self.loop.stop()
 
         self.__db__ = self.__client__[db_name]
@@ -104,42 +106,38 @@ class DataBase(Base):
             name (`str`): Collection name to fetch
         """
         if name in self.__list_collection__:
-            LOGGER.debug("Collection %s Found, fetching...", name)
+            LOGGER.debug(f"Collection {name} Found, fetching...")
         else:
-            LOGGER.debug("Collection %s Not Found, Creating New Collection...",
-                         name)
+            LOGGER.debug(f"Collection {name} Not Found, Creating New Collection...")
         return self.__db__[name]
 
     async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        data = await self.__lang__.find_one({'chat_id': chat_id})
-        return data["language"] if data else 'en'  # default english
+        data = await self.__lang__.find_one({"chat_id": chat_id})
+        return data["language"] if data else "en"  # default english
 
-    async def switch_lang(self, chat_id: Union[str, int],
-                          language: str) -> None:
-        """ Change chat language setting. """
+    async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
+        """Change chat language setting."""
         await self.__lang__.update_one(
-            {'chat_id': int(chat_id)},
-            {"$set": {
-                'language': language
-            }},
+            {"chat_id": int(chat_id)},
+            {"$set": {"language": language}},
             upsert=True,
         )
 
     async def migrate_chat(self, old_chat: int, new_chat: int):
-        """ Run all migrate handler on every migrateable plugin """
-        LOGGER.debug("Migrating chat from %s to %s", old_chat, new_chat)
+        """Run all migrate handler on every migrateable plugin"""
+        LOGGER.debug(f"Migrating chat from {old_chat} to {new_chat}")
         for plugin in list(self.plugins.values()):
             if hasattr(plugin, "__migrate__"):
                 await plugin.__migrate__(old_chat, new_chat)
 
     async def text(
-            self,
-            chat_id: int,
-            name: str,
-            *args: Optional[Any],
-            **kwargs: Optional[Any],
-        ) -> str:
+        self,
+        chat_id: int,
+        name: str,
+        *args: Optional[Any],
+        **kwargs: Optional[Any],
+    ) -> str:
         """Parse the string with user language setting.
 
         Parameters:
@@ -167,35 +165,34 @@ class DataBase(Base):
         noformat = bool(kwargs.get("noformat", False))
 
         if lang in self.__language__ and name in self.__strings__[lang]:
-            text = (decode(
+            text = decode(
                 encode(
                     self.__strings__[lang][name],
-                    'latin-1',
-                    'backslashreplace',
+                    "latin-1",
+                    "backslashreplace",
                 ),
-                'unicode-escape',
-            ))
+                "unicode-escape",
+            )
             return text if noformat else text.format(*args, **kwargs)
         err = "NO LANGUAGE STRING FOR {} in {}".format(name, lang)
         LOGGER.warning(err)
         # try to send the english string first if not found
         try:
-            text = (decode(
+            text = decode(
                 encode(
                     self.__strings__["en"][name],
-                    'latin-1',
-                    'backslashreplace',
+                    "latin-1",
+                    "backslashreplace",
                 ),
-                'unicode-escape',
-            ))
+                "unicode-escape",
+            )
             return text if noformat else text.format(*args, **kwargs)
         except KeyError:
             return err + "\nPlease forward this to @userbotindo."
 
     async def backup_plugin_data(
-            self,
-            chat_id: int,
-            data: Optional[Dict] = None) -> Union[Dict, None]:
+        self, chat_id: int, data: Optional[Dict] = None
+    ) -> Union[Dict, None]:
         """Backup chat data
 
         Parameters:
@@ -208,15 +205,14 @@ class DataBase(Base):
             dict of backup if no data passed, otherwise None.
         """
         if not isinstance(data, (type(None), dict)):
-            raise BackupError("Data must be a dict or Nonetype "
-                              f"not {data.__class__.__name__}")
+            raise BackupError("Data must be a dict or Nonetype " f"not {data.__class__.__name__}")
 
-        LOGGER.debug("%s chat data from %s", "Importing" if data else "Exporting", chat_id)
+        LOGGER.debug("{} chat data from {}", "Importing" if data else "Exporting", chat_id)
         result = {"chat_id": chat_id}
         for plugin in list(self.plugins.values()):
             if hasattr(plugin, "__backup__"):
                 if not data:
-                    LOGGER.debug("Backing up %s data", plugin.name)
+                    LOGGER.debug(f"Backing up {plugin.name} data")
                     plugin_data = await plugin.__backup__(chat_id)
                     if not isinstance(plugin_data, (type(None), dict)):
                         raise BackupError(
@@ -228,10 +224,10 @@ class DataBase(Base):
                         continue
                     result.update({plugin.name: plugin_data})
                 else:
-                    LOGGER.debug("restoring %s data", plugin.name)
+                    LOGGER.debug(f"restoring {plugin.name} data")
                     await plugin.__backup__(chat_id, data)
         return result if not data else None
 
 
 class BackupError(Exception):
-    """ Unexpected backup data type """
+    """Unexpected backup data type"""

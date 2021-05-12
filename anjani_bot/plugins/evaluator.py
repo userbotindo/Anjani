@@ -26,15 +26,15 @@ class Evaluator(plugin.Plugin):
     name: ClassVar[str] = "Evaluator"
 
     async def aexec(self, code, message):
-        """ execute command """
+        """execute command"""
         head = "async def __aexec(anjani, message):\n "
-        code = ''.join((f'\n {line}' for line in code.split('\n')))
+        code = "".join((f"\n {line}" for line in code.split("\n")))
         exec(head + code)  # pylint: disable=exec-used
-        return await locals()['__aexec'](self.bot, message)
+        return await locals()["__aexec"](self.bot, message)
 
     @listener.on("eval", staff_only=True)
     async def eval(self, message):
-        """ run a command """
+        """run a command"""
         status = await message.reply_text("Processing...")
         try:
             cmd = message.text.split(" ", maxsplit=1)[1]
@@ -72,9 +72,9 @@ class Evaluator(plugin.Plugin):
         if len(output) > 4096:
             with io.BytesIO(str.encode(output)) as out_file:
                 out_file.name = "eval.text"
-                await reply_to.reply_document(document=out_file,
-                                              caption=cmd,
-                                              disable_notification=True)
+                await reply_to.reply_document(
+                    document=out_file, caption=cmd, disable_notification=True
+                )
             await status.delete()
         else:
             await status.edit(output, parse_mode="md")

@@ -20,7 +20,7 @@ from pyrogram.types import Message, User
 
 
 class ParsedChatMember:
-    """ Chat member attribute parser
+    """Chat member attribute parser
 
     Attributes:
         first_name (`str`):
@@ -34,6 +34,7 @@ class ParsedChatMember:
         count (`int`, *Optional*):
             Number of members in the chat.
     """
+
     def __init__(self, user: User):
         self.first_name = user.first_name
         if user.last_name:
@@ -48,12 +49,12 @@ class ParsedChatMember:
         self.count = None
 
     async def get_members(self, client, chat_id):
-        """ Count chat member """
+        """Count chat member"""
         self.count = await client.get_chat_members_count(chat_id)
 
 
 def extract_user_and_text(message: Message) -> Tuple[Union[str, int], Optional[str]]:
-    """ extract user and text from message.
+    """extract user and text from message.
     Prioritize user from replied message.
     Returns:
         user (None | int | str) and text (None | str).
@@ -79,5 +80,5 @@ def extract_user_and_text(message: Message) -> Tuple[Union[str, int], Optional[s
 
 
 async def extract_user(client, user_ids: Union[str, int]) -> User:
-    """ Excract user from user id """
+    """Excract user from user id"""
     return await client.get_users(user_ids)

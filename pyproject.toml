@@ -1,0 +1,94 @@
+[tool.poetry]
+name = "anjani_bot"
+version = "1.3.0"
+description = "Telegram group management bot"
+license = "GPL-3.0-or-later"
+authors = ["UserbotIndo Team"]
+readme = "README.md"
+homepage = "https://github.com/userbotindo/anjani#readme"
+repository = "https://github.com/userbotindo/anjani"
+documentation = "https://github.com/userbotindo/Anjani/wiki"
+keywords = ["chatbot", "bot", "python", "telegram-bot", "pyrogram"]
+classifiers = [
+    "Environment :: Console",
+    "Framework :: AsyncIO",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Communications",
+    "Topic :: Communications :: Chat",
+]
+
+[tool.poetry.scripts]
+anjani = "anjani_bot:start"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+PyYAML = "^5.4.1"
+aiohttp = "^3.7.4"
+aiorun = "^2020.12.1"
+colorlog = "^5.0.1"
+covid = "^2.4.1"
+dnspython = "^2.1.0"
+motor = "^2.4.0"
+Pyrogram = "^1.2.9"
+python-dotenv = "^0.17.1"
+spamwatch = "^0.3.0"
+TgCrypto = "^1.2.2"
+toml = "^0.10.2"
+uvloop = {version ="^0.15.2", optional = true}
+
+[tool.poetry.dev-dependencies]
+black = "^21.5b1"
+pre-commit = "^2.12.1"
+pylint = "^2.8.2"
+
+[tool.poetry.extras]
+uvloop = ["uvloop"]
+
+
+#
+# Black config
+#
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+#
+# Isort Config
+#
+[tool.isort]
+profile = "black"
+known_third_party = ["aiohttp", "aiorun", "colorlog", "covid", "dotenv", "motor", "pymongo", "pyrogram", "spamwatch", "yaml"]
+
+#
+# Pylint Config
+#
+[tool.pylint]
+    [tool.pylint.messages_control]
+    disable = [
+        "attribute-defined-outside-init",
+        "too-few-public-methods",
+        "missing-class-docstring",
+        "logging-fstring-interpolation",
+    ]
+
+    [tool.pylint.reports]
+    output-format = "colorized"
+
+    [tool.pylint.logging]
+    logging-format-style = "new"
+
+    [tool.pylint.format]
+    max-line-length = 100
+
+    [tool.pylint.design]
+    max-args = 15
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
