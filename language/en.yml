@@ -89,6 +89,121 @@ invalid-backup-file: It seems that this file isn't a backup from me. I can't res
 no-backup-file: Reply to the backup file!
 restore-progress: Restoring data...
 #endregion
+#region federations
+federations-button: Federations
+federations-help: |
+  Group management. It's all fun and games, until you start getting spammers in, and you need to ban them. Then you need to start banning more, and more, and it gets painful.
+  But then you have multiple groups, and you don't want these spammers in any of your groups - how can you deal? Do you have to ban them manually, in all your groups?
+
+  No more! With federations, you can make a ban in one chat overlap to all your other chats.
+  You can even appoint federation admins, so that your trustworthiest admins can ban across all the chats that you want to protect.
+
+  **Commands available:**
+  × /newfed <name>: Create a new federation with the specified name.
+  × /delfed <fedID>: Deletes federation you own and any information related to it (This won't unban any banned user).
+  × /joinfed <fedID>: Join current chat to the specified federation. (**Only chat owner can do this**)
+  × /leavefed <fedID>: Leave current federation. (**Only chat owner can do this**)
+  × /fedinfo: Get information about federation.
+  × /fedstats | /fstats: Get an information about a user's ban in a federation.
+  × /myfeds: List all feds you're admin in.
+
+  **Federation Owner Commands:**
+  × /fedpromote | /fpromote: Promote a user to federation admin.
+  × /feddemote | /fdemote: Demote a federation admin from your fed.
+  × /fbackup: Get a backup of banned user on federation in CSV (PM Only).
+  × /fexport: export a federation backup file to restore banned users (PM Only).
+
+  **Federation Admin Commands:**
+  × /fban: Bans a user from the current chat's federation.
+  × /unfban: Unbans a user from the current chat's federation.
+  × /fadmins: Get a list of federation admins.
+federation-limit: You can only own 1 federation!
+new-federation: |
+  **New federation have been created**
+  **Name:** {fed_name}
+  **Fed ID:** {fed_id}\n
+  Use this command on group to join the federations
+  `/joinfed {fed_id}`
+need-fed-name: Please write the federation name too!
+user-no-feds: Looks like you don't own any federation yet!\nCreate one by using `/newfed <fed name>`
+del-fed-confirm: |
+  Are you sure you want to delete this federation?
+  This action cannot be undone!
+  You will loose your entire ban list and your federation will be permanently lost!
+  \nConfirm deletion of **{name}**
+fed-confirm-text: "⚠️ Confirm Deletion ⚠️"
+fed-abort-text: Abort
+fed-delete-canceled: Federation deletion canceled
+fed-delete-done: I have deleted your Federation!\nAll groups data that connect to **{}** are now removed.
+fed-cant-two-feds: You cannot join two federations in one chat!
+fed-invalid-id: Please enter a valid federation ID
+fed-already-connected: This group is already connected to that federation!
+fed-chat-joined-info: Chat joined to **{}** Federation!
+fed-not-connected: This chat isn't connected to that federation!
+fed-chat-leave-info: This chat has left the **{}** Federation!
+fed-no-promote-user: Who should I promote?\nGive me some user!
+fed-no-fed-chat: Chat not connected to any Federation!
+fed-owner-only-promote: Only federation owner can promote new admin!
+fed-already-owner: You are the owner of this Federation!
+fed-already-admin: User was already an admin in this feds!
+fed-promote-done: Succesfully Fpromoted!
+fed-no-demote-user: Who should I demote?\nGive me a user!
+fed-owner-only-demote: Only federation owner can demote new admin!
+fed-user-not-admin: User isn't an admin in this federation!
+fed-demote-done: Succesfully Fdemoted!
+fed-specified-id: Please specified a federation ID!
+fed-info-text: |
+  **Federation Information:**
+  **Fed ID: **` {}`
+  **Name: **`{}`
+  **Creator: **{}
+  **Total Admins: ** `{}`
+  **Total banned user: ** `{}`
+  **Total groups connected: ** `{}`
+fed-admin-only: Only federation admin can do this!
+fed-admin-text: |
+  **{} admins:**
+  👑 Owner: {}
+fed-no-admin: There are no admin in this federation!
+fed-no-ban-user: You don't seems to refering a user
+fed-ban-self: Please... I'm not that dumb!
+fed-ban-owner: How can a federation owner banned in his own federation!
+fed-ban-protected: I won't fban this user!
+fed-ban-info-update: |
+  **New Federation Ban**
+  **Federation: **{}
+  **Federation admin: **{}
+  **User: ** {}
+  **User ID: ** {}
+  **Old reason**: {}
+  **New reason**: {}
+fed-ban-info: |
+  **New Federation Ban**
+  **Federation: **{}
+  **Federation admin: **{}
+  **User: ** {}
+  **User ID: ** {user_id}
+  **Reason**: {}
+fed-user-not-banned: This user is not Fbanned!
+fed-unban-info: |
+  **Un-FedBan**
+  **Federation : **{}
+  **Federation admin: **{}
+  **User: **{}
+  **User ID: **`{}`
+fed-stat-banned: |
+  User is banned in that federation
+  **Reason: ** {}
+  **Banned on: ** {}
+fed-stat-not-banned: User is not banned in that federation!
+fed-stat-multi: This user has been banned in this federations
+fed-stat-multi-info: " -  **{}**(`{}`)\n    **Reason: **{}\n"
+fed-stat-multi-not-banned: This user is not banned in any federation!
+fed-restore-done: Done restoring backup
+fed-myfeds-owner: "You are the **owner** of this Federation:\n"
+fed-myfeds-admin: "\nYou are **admin** in this following Federation:\n"
+fed-myfeds-no-admin: Looks like you don't have a federation you're admin on
+#endregion
 #region language
 language-button: Language
 language-help: |
@@ -170,7 +285,7 @@ notes-help: |
   \nCheck /markdownhelp for more notes formatting info.
 notes-invalid-args : |
   Reply to a message with text or provide text after notes name.
-  E.g.: /save <notename> <msg/reply to msg> 
+  E.g.: /save <notename> <msg/reply to msg>
 note-saved: "Notes saved as `{}`."
 note-list: "**Note List in {}:**\n"
 no-notes: "`No notes saved in this chat!`"
@@ -278,6 +393,7 @@ view-welcome: |
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"
 error-chat-private: "**Error:** `Chat type private`\nThis command for groups only..."
+err-chat-groups: This command is specific to the group, not to the PM!
 error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!
@@ -286,4 +402,5 @@ error-reply-to-message: Reply to a message!
 err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: PEER_ID_INVALID\ncan't execute command, I haven't met this person before.
 err-api-down: Neko api down for now, try again later..
+err-group-creator-cmd: Only group creator can use this command!
 #endregion
