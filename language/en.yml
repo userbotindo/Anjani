@@ -182,12 +182,12 @@ fed-ban-info: |
   **Federation: **{}
   **Federation admin: **{}
   **User: ** {}
-  **User ID: ** {user_id}
+  **User ID: ** {}
   **Reason**: {}
 fed-user-not-banned: This user is not Fbanned!
 fed-unban-info: |
   **Un-FedBan**
-  **Federation : **{}
+  **Federation: **{}
   **Federation admin: **{}
   **User: **{}
   **User ID: **`{}`
@@ -203,6 +203,13 @@ fed-restore-done: Done restoring backup
 fed-myfeds-owner: "You are the **owner** of this Federation:\n"
 fed-myfeds-admin: "\nYou are **admin** in this following Federation:\n"
 fed-myfeds-no-admin: Looks like you don't have a federation you're admin on
+fed-set-log-args: "To set a federation log in a channel, please specify the FedID to connect.\neg: `/setfedlog fedID`"
+fed-not-found: Fed not found!
+fed-check-identity: Please ask the fed creator to confirm this action by pressing this button.
+fed-log-set-group: "This chat is set as **{name}** logs"
+fed-log-set-chnl: "This channel has been set as the fed log for **{}**\nall fed related actions will be logged here."
+fed-invalid-identity: The user who clicked confirmation button was not the fed creator.\nOnly the federation creator can set the fed log.
+fed-log-unset: Federation log of **{}** is unset.
 #endregion
 #region language
 language-button: Language
@@ -394,6 +401,7 @@ view-welcome: |
 error-its-myself: "I can't do anything for myself 😒"
 error-chat-private: "**Error:** `Chat type private`\nThis command for groups only..."
 err-chat-groups: This command is specific to the group, not to the PM!
+err-chat-private: This command is specific to PM's only!
 error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!

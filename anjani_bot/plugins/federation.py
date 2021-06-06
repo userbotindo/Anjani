@@ -59,6 +59,10 @@ class FedBase:
         """Get fed data from chat id"""
         return await cls.feds_db.find_one({"chats": chat_id})
 
+    async def get_fed_byowner(self, user_id):
+        """Get fed data from user id"""
+        return await self.feds_db.find_one({"owner": user_id})
+
     async def get_fed(self, fid):
         """Get fed data"""
         return await self.feds_db.find_one({"_id": fid})
@@ -115,7 +119,9 @@ class Federation(plugin.Plugin, FedBase):
                 return await message.reply_text(await self.bot.text(chat_id, "federeation-limit"))
 
             async with self.lock:
-                await self.feds_db.insert_one({"_id": fed_id, "name": fed_name, "owner": owner_id})
+                await self.feds_db.insert_one(
+                    {"_id": fed_id, "name": fed_name, "owner": owner_id, "log": owner_id}
+                )
             LOGGER.debug(f"Created new fed {fed_name}({fed_id}) by {message.from_user.username}")
             text = await self.bot.text(chat_id, "new-federation", fed_name=fed_name, fed_id=fed_id)
             await asyncio.gather(
@@ -186,10 +192,10 @@ class Federation(plugin.Plugin, FedBase):
             if await self.get_fed_bychat(chat_id):
                 return await message.reply_text(await self.bot.text(chat_id, "fed-cant-two-feds"))
             fid = message.command[0]
-            check = await self.get_fed(fid)
-            if not check:
+            fdata = await self.get_fed(fid)
+            if not fdata:
                 return await message.reply_text(await self.bot.text(chat_id, "fed-invalid-id"))
-            if chat_id in check.get("chats", []):
+            if chat_id in fdata.get("chats", []):
                 return await message.reply_text(
                     await self.bot.text(chat_id, "fed-already-connected")
                 )
@@ -197,8 +203,10 @@ class Federation(plugin.Plugin, FedBase):
             async with self.lock:
                 await self.feds_db.update_one({"_id": fid}, {"$push": {"chats": chat_id}})
             await message.reply_text(
-                await self.bot.text(chat_id, "fed-chat-joined-info", check["name"])
+                await self.bot.text(chat_id, "fed-chat-joined-info", fdata["name"])
             )
+            if flog := fdata.get("log", None):
+                await self.bot.client.send_message(flog, "")
 
     @listener.on("leavefed", admin_only=True)
     async def leave_fed(self, message):
@@ -234,8 +242,8 @@ class Federation(plugin.Plugin, FedBase):
         to_promote, _ = extract_user_and_text(message)
         if not to_promote:
             return await message.reply_text(await self.bot.text(chat_id, "fed-no-promote-user"))
-        if isinstance(to_promote, str):
-            to_promote = (await extract_user(self.bot.client, to_promote)).id
+        new_admin = await extract_user(self.bot.client, to_promote)
+        to_promote = new_admin.id
         fed_data = await self.get_fed_bychat(chat_id)
         if not fed_data:
             return await message.reply_text(await self.bot.text(chat_id, "fed-no-fed-chat"))
@@ -251,6 +259,14 @@ class Federation(plugin.Plugin, FedBase):
                 {"_id": fed_data["_id"]}, {"$push": {"admins": to_promote}}
             )
         await message.reply_text(await self.bot.text(chat_id, "fed-promote-done"))
+        if flog := fed_data.get("log", None):
+            await self.bot.client.send_message(
+                flog,
+                "**New Fed Promotion**\n"
+                f"**Fed: **{fed_data['name']}\n"
+                f"**Promoted FedAdmin: {new_admin.mention}**\n"
+                f"**User ID: **{to_promote}",
+            )
 
     @listener.on(["fdemote", "feddemote"])
     async def demote_fadmin(self, message):
@@ -263,8 +279,8 @@ class Federation(plugin.Plugin, FedBase):
         to_demote, _ = extract_user_and_text(message)
         if not to_demote:
             return await message.reply_text(await self.bot.text(chat_id, "fed-no-demote-user"))
-        if isinstance(to_demote, str):
-            to_demote = (await extract_user(self.bot.client, to_demote)).id
+        demote_user = await extract_user(self.bot.client, to_demote)
+        to_demote = demote_user.id
         fed_data = await self.get_fed_bychat(chat_id)
         if not fed_data:
             return await message.reply_text(await self.bot.text(chat_id, "fed-no-fed-chat"))
@@ -280,6 +296,14 @@ class Federation(plugin.Plugin, FedBase):
                 {"_id": fed_data["_id"]}, {"$pull": {"admins": to_demote}}
             )
         await message.reply_text(await self.bot.text(chat_id, "fed-demote-done"))
+        if flog := fed_data.get("log", None):
+            await self.bot.client.send_message(
+                flog,
+                "**New Fed Demotion**\n"
+                f"**Fed: **{fed_data['name']}\n"
+                f"**Promoted FedAdmin: {demote_user.mention}**\n"
+                f"**User ID: **{to_demote}",
+            )
 
     @listener.on("fedinfo")
     async def fed_info(self, message):
@@ -302,6 +326,7 @@ class Federation(plugin.Plugin, FedBase):
                 fdata["name"],
                 owner.mention,
                 len(fdata.get("admins", [])),
+                len(fdata.get("banned", [])),
                 len(fdata.get("chats", [])),
             )
         )
@@ -395,9 +420,13 @@ class Federation(plugin.Plugin, FedBase):
             )
 
         await message.reply_text(text, disable_web_page_preview=True)
-        LOGGER.debug(f"New fedban {user_id} on {fed_data['id']}")
+        LOGGER.debug(f"New fedban {user_id} on {fed_data['_id']}")
         for chats in fed_data["chats"]:
             await self.bot.client.kick_chat_member(chats, user_id)
+        # send message to federation log
+        flog = fed_data.get("log", None)
+        if flog:
+            await self.bot.client.send_message(flog, text, disable_web_page_preview=True)
 
     @listener.on("unfban")
     async def unfban_user(self, message):
@@ -428,9 +457,13 @@ class Federation(plugin.Plugin, FedBase):
             chat_id, "fed-unban-info", fed_data["name"], banner.mention, user.mention, user.id
         )
         await message.reply_text(text)
-        LOGGER.debug(f"Unfedban {user.id} on {fed_data['id']}")
+        LOGGER.debug(f"Unfedban {user.id} on {fed_data['_id']}")
         for chats in fed_data["chats"]:
             await self.bot.client.unban_chat_member(chats, user.id)
+        # send message to federation log
+        flog = fed_data.get("log", None)
+        if flog:
+            await self.bot.client.send_message(flog, text, disable_web_page_preview=True)
 
     @listener.on(["fedstats", "fstats"])
     async def fed_stats(self, message):
@@ -534,7 +567,69 @@ class Federation(plugin.Plugin, FedBase):
             text += await self.bot.text(chat_id, "fed-myfeds-admin")
             for fed in fed_list:
                 text += f"- `{fed['_id']}`: {fed['name']}\n"
-
         if not text:
             text = await self.bot.text(chat_id, "fed-myfeds-no-admin")
         await message.reply_text(text)
+
+    @listener.on("setfedlog")
+    async def setlog(self, message):
+        chat_id = message.chat.id
+        if message.chat.type == "channel":
+            if not message.command:
+                return await message.reply_text(await self.bot.text(chat_id, "fed-set-log-args"))
+            fed_data = await self.get_fed(message.command[0])
+            if not fed_data:
+                return await message.reply_text(await self.bot.text(chat_id, "Fed not found!"))
+            await message.reply_text(
+                await self.bot.text(chat_id, "fed-check-identity"),
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                text="Click to confirm identity",
+                                callback_data=f"logfed_{fed_data['owner']}_{fed_data['_id']}",
+                            )
+                        ],
+                    ]
+                ),
+            )
+
+        elif message.chat.type in ["group", "supergroup"]:
+            owned_fed = await self.get_fed_byowner(message.from_user.id)
+            if not owned_fed:
+                return await message.reply_text(await self.bot.text(chat_id, "user-no-feds"))
+            await self.feds_db.update_one({"_id": owned_fed["_id"]}, {"$set": {"log": chat_id}})
+            await message.reply_text(
+                await self.bot.text(chat_id, "fed-log-set-group", owned_fed["name"])
+            )
+        else:
+            await message.reply_text(await self.bot.text(chat_id, "err-chat-groups"))
+
+    @listener.on(filters=filters.regex(r"logfed_(.*?)"), update="callbackquery")
+    async def confirm_log_fed(self, query):
+        chat_id = query.message.chat.id
+        user_id = query.from_user.id
+        _, owner_id, fid = query.data.split("_")
+        if user_id != int(owner_id):
+            return await query.edit_message_text(
+                await self.bot.text(chat_id, "fed-invalid-identity")
+            )
+        fed_data = await self.feds_db.find_one_and_update({"_id": fid}, {"$set": {"log": chat_id}})
+        await query.edit_message_text(
+            await self.bot.text(chat_id, "fed-log-set-chnl", fed_data["name"])
+        )
+
+    @listener.on("unsetfedlog")
+    async def unsetlog(self, message):
+        chat_id = message.chat.id
+        if message.chat.type == "private":
+            user_id = message.from_user.id
+            fed_data = await self.get_fed_byowner(user_id)
+            if not fed_data:
+                await message.reply_text(await self.bot.text(chat_id, "user-no-feds"))
+            await self.feds_db.update_one({"_id": fed_data["_id"]}, {"$set": {"log": None}})
+            await message.reply_text(
+                await self.bot.text(chat_id, "fed-log-unset", fed_data["name"])
+            )
+        else:
+            await message.reply_text(await self.bot.text(chat_id, "err-chat-private"))
