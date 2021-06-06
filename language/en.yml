@@ -130,11 +130,11 @@ del-fed-confirm: |
   Are you sure you want to delete this federation?
   This action cannot be undone!
   You will loose your entire ban list and your federation will be permanently lost!
-  \nConfirm deletion of **{name}**
+  \nConfirm deletion of **{}**
 fed-confirm-text: "⚠️ Confirm Deletion ⚠️"
 fed-abort-text: Abort
 fed-delete-canceled: Federation deletion canceled
-fed-delete-done: I have deleted your Federation!\nAll groups data that connect to **{}** are now removed.
+fed-delete-done: I have deleted your Federation!\nAll groups that connect to **{}** are now federation-less.
 fed-cant-two-feds: You cannot join two federations in one chat!
 fed-invalid-id: Please enter a valid federation ID
 fed-already-connected: This group is already connected to that federation!

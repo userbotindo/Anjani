@@ -140,7 +140,7 @@ class Federation(plugin.Plugin, FedBase):
             return await message.reply_text(await self.bot.text(chat_id, "user-no-feds"))
 
         await message.reply_text(
-            await self.bot.text(chat_id, "del-fed-confirm", name=feds["name"]),
+            await self.bot.text(chat_id, "del-fed-confirm", feds["name"]),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -171,7 +171,7 @@ class Federation(plugin.Plugin, FedBase):
         LOGGER.debug(f"Deleting federation {fed_id}")
         async with self.lock:
             data = await self.feds_db.find_one_and_delete({"_id": fed_id})
-        await query.message.edit_text(await self.bot.text(chat_id, "fed-delete-one", data["name"]))
+        await query.message.edit_text(await self.bot.text(chat_id, "fed-delete-done", data["name"]))
 
     @listener.on("joinfed", admin_only=True)
     async def join_fed(self, message):
