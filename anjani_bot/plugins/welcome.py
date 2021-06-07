@@ -26,7 +26,7 @@ from anjani_bot import listener, plugin
 from anjani_bot.utils import MessageParser, ParsedChatMember
 
 
-class RawGreeting(MessageParser):
+class RawGreeting(plugin.Plugin, MessageParser):
     welcome_db: AsyncIOMotorCollection
     lock: asyncio.locks.Lock
 
@@ -77,8 +77,8 @@ class RawGreeting(MessageParser):
     async def welc_msg(self, chat_id) -> str:
         """Get chat welcome string"""
         data = await self.welcome_db.find_one({"chat_id": chat_id})
-        if message := data.get("custom_welcome"):
-            return message, data.get("button")
+        if data:
+            return data.get("custom_welcome"), data.get("button")
         return await self.default_welc(chat_id), None
 
     async def clean_service(self, chat_id) -> bool:
@@ -130,7 +130,7 @@ class RawGreeting(MessageParser):
         return False
 
 
-class Greeting(plugin.Plugin, RawGreeting):
+class Greeting(RawGreeting):
     name: ClassVar[str] = "Greetings"
     helpable: ClassVar[bool] = True
 
