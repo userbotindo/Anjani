@@ -15,12 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import os
 from typing import ClassVar
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 
 from anjani_bot import listener, plugin
+from anjani_bot.utils import extract_user, extract_user_and_text
 
 
 class Users(plugin.Plugin):
@@ -96,3 +98,50 @@ class Users(plugin.Plugin):
         old_chat = message.migrate_from_chat_id
         new_chat = message.chat.id
         await self.bot.migrate_chat(old_chat, new_chat)
+
+    @listener.on("info")
+    async def stats(self, message):
+        """Fetch user info"""
+        chat_id = message.chat.id
+        msg = await message.reply_text("Fetching user info...")
+        user_id, _ = extract_user_and_text(message)
+        if not user_id:
+            user = message.from_user
+        else:
+            user = await extract_user(self.bot.client, user_id)
+
+        text = f"**{'Bot' if user.is_bot else 'User'} Info**\n"
+        text += f"**ID:** `{user.id}`\n"
+        text += f"**DC ID: **`{user.dc_id if user.dc_id else 'N/A'}`\n"
+        text += f"**First Name: **{user.first_name}\n"
+        if user.last_name:
+            text += f"**Last Name: **{user.last_name}\n"
+        text += f"**Username: **@{user.username}\n"
+        text += f"**Permanent user link: **{user.mention}\n"
+        text += (
+            "**Number of profile pics: **"
+            f"`{await self.bot.client.get_profile_photos_count(user.id)}`\n"
+        )
+        if user.status:
+            text += f"**Last seen: ** `{user.status}`\n"
+        if user.id in self.bot.staff_id:
+            if user.id == self.bot.staff["owner"]:
+                text += "\nThis person is my **owner**!\nI would never do anything against him.\n"
+            elif user.id in self.bot.staff.get("dev", []):
+                text += "\nThis person is one of my **Devs**!\nNearly as powerfull as my owner.\n"
+            else:
+                text += "\nThis person is one of my **Sudo users**!\n"
+                text += "Mostly imune from my restriction and he have a special access to many commands.\n"
+        elif user.is_self:
+            text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
+        user_db = await self.users_db.find_one({"_id": user.id})
+        if user_db:
+            text += f"\nI've seen them on {len(user_db['chats'])} chats."
+
+        if user.photo:
+            file = await self.bot.client.download_media(user.photo.big_file_id)
+            await self.bot.client.send_photo(chat_id, file, text)
+            os.remove(file)
+        else:
+            await self.bot.client.send_message(chat_id, text)
+        await msg.delete()
