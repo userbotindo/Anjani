@@ -65,16 +65,12 @@ async def extract_time(time_text) -> Union[int, bool]:
     return False
 
 
-async def nekobin(client, data: str) -> str:
-    """return the nekobin pasted key"""
-    async with client.http.post(
-        "https://nekobin.com/api/documents",
-        json={"content": data},
-    ) as resp:
-        if resp.status != 200:
-            response = await resp.json()
-            key = response["result"]["key"]
-            return key
+async def dogbin(client: "~Anjani", data: str) -> str:
+    """return the dogbin pasted key"""
+    async with client.http.post("https://del.dog/documents", data=data.encode("utf-8")) as req:
+        if req.status == 200:
+            res = await req.json()
+            return res["key"]
     return None
 
 

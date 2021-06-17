@@ -63,7 +63,7 @@ miscs-help: |
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
   ×  /ping : Get bot latency.
-  ×  /paste : paste any text file to Nekobin.\n
+  ×  /paste : paste any text file to Dogbin.\n
   **Special commands:**
   ×  /covid <country> : Get Covid-19 data in your country.
 covid-text: |
@@ -78,9 +78,9 @@ covid-text: |
   **Kasus Kritis :** `{critical}`
   **Total Tes :** `{total_tests}`\n
   Data berasal dari [Worldometer]({link})
-wait-paste: "`Menyalin ke Nekobin...`"
+wait-paste: "`Menyalin ke Dogbin...`"
 paste-succes: "**Berhasil Ditempel..!**"
-fail-paste: "`Gagal untuk menyalin ke Nekobin!`"
+fail-paste: "`Gagal untuk menyalin ke Dogbin!`"
 #endregion
 #region purge
 purges-button: Pembersihan

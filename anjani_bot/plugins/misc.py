@@ -24,7 +24,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
 from anjani_bot.core.pool import run_in_thread
-from anjani_bot.utils import format_integer, nekobin
+from anjani_bot.utils import dogbin, format_integer
 
 
 class Misc(plugin.Plugin):
@@ -110,7 +110,7 @@ class Misc(plugin.Plugin):
 
     @listener.on("paste")
     async def paste(self, message):
-        """Paste a text to Nekobin"""
+        """Paste a text to Dogbin"""
         reply = message.reply_to_message
         if not reply:
             return
@@ -124,15 +124,13 @@ class Misc(plugin.Plugin):
             data = reply.text
         else:
             return
-        key = await nekobin(self.bot, data)
+        key = await dogbin(self.bot, data)
         if key:
             btn = InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton(text="Nekobin", url=f"https://nekobin.com/{key}"),
-                        InlineKeyboardButton(
-                            text="Nekobin Raw", url=f"https://nekobin.com/raw/{key}"
-                        ),
+                        InlineKeyboardButton(text="Dogbin", url=f"https://del.dog/{key}"),
+                        InlineKeyboardButton(text="Dogbin Raw", url=f"https://del.dog/raw/{key}"),
                     ]
                 ]
             )

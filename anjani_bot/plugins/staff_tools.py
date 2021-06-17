@@ -31,7 +31,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import nekobin
+from anjani_bot.utils import dogbin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,11 +71,11 @@ class Staff(plugin.Plugin):
 
         with codecs.open(log_file, "r", encoding="utf-8") as log_file:
             data = log_file.read()
-        key = await nekobin(self.bot, data)
+        key = await dogbin(self.bot, data)
         if key:
             url = [
                 [
-                    InlineKeyboardButton(text="View raw", url=f"https://nekobin.com/raw/{key}"),
+                    InlineKeyboardButton(text="View raw", url=f"https://del.dog/raw/{key}"),
                 ]
             ]
             await self.bot.client.send_document(
@@ -89,7 +89,7 @@ class Staff(plugin.Plugin):
             if message.chat.type != "private":
                 await message.reply_text("I've send the log on PM's :)")
         else:
-            await message.reply_text("Failed to reach Nekobin")
+            await message.reply_text("Failed to reach Dogbin")
 
     @listener.on("broadcast", staff_only="owner")
     async def broadcast(self, message):

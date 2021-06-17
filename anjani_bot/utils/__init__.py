@@ -19,10 +19,10 @@ from .config import BotConfig
 from .extractor import ParsedChatMember, extract_user, extract_user_and_text
 from .string_handler import MessageParser, SendFormating, Types
 from .tools import (
+    dogbin,
     extract_time,
     format_integer,
     get_readable_time,
-    nekobin,
     rand_array,
     rand_key,
 )

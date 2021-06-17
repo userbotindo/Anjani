@@ -236,7 +236,7 @@ miscs-help: |
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
   ×  /ping : Get bot latency.
-  ×  /paste : paste any text file to Nekobin.\n
+  ×  /paste : paste any text file to Dogbin.\n
   **Special commands:**
   ×  /covid <country> : Get Covid-19 data in your country.
 covid-text: |
@@ -251,9 +251,9 @@ covid-text: |
   **Critical Cases :** `{critical}`
   **Total Tests :** `{total_tests}`\n
   Data provided by [Worldometer]({link})
-wait-paste: "`Pasting to Nekobin...`"
+wait-paste: "`Pasting to Dogbin...`"
 paste-succes: "**Pasted successfully..!**"
-fail-paste: "`Failed to reach Nekobin`"
+fail-paste: "`Failed to reach Dogbin`"
 #endregion
 #region mute
 muting-button: Muting
