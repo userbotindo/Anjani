@@ -10,14 +10,14 @@ RUN apt -qq install -y --no-install-recommends \
     git \
     gnupg2 
 
-# copy the dependencies file to the working directory
-COPY requirements.txt .
-
-# install dependencies
-RUN pip install -r requirements.txt
-
-# copy the content of the local src directory to the working directory
+# Copy directory and install dependencies
 COPY . .
+RUN pip install --upgrade pip
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+ENV PATH="${PATH}:/root/.poetry/bin"
+
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-root --no-dev -E uvloop
 
 # command to run on container start
 CMD ["python3","-m","anjani_bot"]
