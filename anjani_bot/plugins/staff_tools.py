@@ -69,8 +69,8 @@ class Staff(plugin.Plugin):
                 await message.reply_text(text)
                 return
 
-        with codecs.open(log_file, "r", encoding="utf-8") as log_file:
-            data = log_file.read()
+        with codecs.open(log_file, "r", encoding="utf-8") as log_buffer:
+            data = log_buffer.read()
         key = await dogbin(self.bot, data)
         if key:
             url = [
