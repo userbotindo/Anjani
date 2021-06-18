@@ -159,6 +159,8 @@ class Greeting(RawGreeting):
                     )
                 else:
                     welcome_text, raw_button = await self.welc_msg(chat.id)
+                    if not welcome_text:
+                        return
                     user = await self.parse_user(new_member)
                     await user.get_members(self.bot.client, chat.id)
                     formatted_text = welcome_text.format(
