@@ -21,6 +21,9 @@ from os import environ
 import colorlog
 
 
+__all__ = ["setup_log"]
+
+
 def _level_check(level):
     _str_to_lvl = {
         "CRITICAL": logging.CRITICAL,

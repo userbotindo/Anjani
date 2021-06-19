@@ -21,8 +21,16 @@ from typing import List, Union
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 
+__all__ = [
+    "MessageParser",
+    "SendFormating",
+    "Types"
+]
+
+
 @unique
 class Types(IntEnum):
+    """A Class representing message type"""
     TEXT = 0
     BUTTON_TEXT = 1
     DOCUMENT = 2
@@ -56,6 +64,8 @@ class SendFormating:
 
 
 class MessageParser:
+    """A class to parse button string inputed from user"""
+
     @staticmethod
     def build_button(buttons: List) -> Union[InlineKeyboardMarkup, None]:
         """Build saved button format"""

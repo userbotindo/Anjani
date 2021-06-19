@@ -21,6 +21,9 @@ from typing import Union
 from dotenv import load_dotenv
 
 
+__all__ = ["BotConfig"]
+
+
 @dataclass
 class BotConfig:
     """

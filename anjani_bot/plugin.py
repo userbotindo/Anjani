@@ -51,7 +51,3 @@ class Plugin:
 
     def __repr__(self):
         return f"<{self.format_desc(self.comment)}>"
-
-
-class PluginError(Exception):
-    """Plugins Exception"""

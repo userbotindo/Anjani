@@ -30,6 +30,7 @@ from pymongo.errors import OperationFailure
 from yaml import full_load
 
 from .base import Base  # pylint: disable=R0401
+from .errors import BackupError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -227,7 +228,3 @@ class DataBase(Base):
                     LOGGER.debug(f"restoring {plugin.name} data")
                     await plugin.__backup__(chat_id, data)
         return result if not data else None
-
-
-class BackupError(Exception):
-    """Unexpected backup data type"""

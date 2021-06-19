@@ -21,6 +21,7 @@ from pyrogram.filters import Filter, create
 
 from . import anjani as __bot__
 from . import custom_filter
+from .core.errors import UnknownUpdateError
 
 
 def on(
@@ -128,6 +129,8 @@ def on(
             dec = __bot__.client.on_message(filters=_filters, group=group)
         elif update == "callbackquery":
             dec = __bot__.client.on_callback_query(filters=_filters, group=group)
+        else:
+            raise UnknownUpdateError(update)
 
         return dec(func)
 

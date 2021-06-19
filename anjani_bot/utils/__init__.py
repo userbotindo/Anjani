@@ -14,15 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .admin_check import adminlist, user_ban_protected
-from .config import BotConfig
-from .extractor import ParsedChatMember, extract_user, extract_user_and_text
-from .string_handler import MessageParser, SendFormating, Types
-from .tools import (
-    dogbin,
-    extract_time,
-    format_integer,
-    get_readable_time,
-    rand_array,
-    rand_key,
-)
+from .admin_check import *
+from .config import *
+from .extractor import *
+from .string_handler import *
+from .tools import *

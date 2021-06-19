@@ -124,7 +124,7 @@ class TelegramBot(Base):
                 return
 
             # idle until disconnected
-            LOG.info("Idling... Press Ctrl+V to stop")
+            LOG.info("Idling... Press Ctrl+C to stop")
             await pyrogram.idle()
         finally:
             await self.stop()

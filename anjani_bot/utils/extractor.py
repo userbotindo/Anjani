@@ -19,6 +19,13 @@ from typing import Optional, Tuple, Union
 from pyrogram.types import Message, User
 
 
+__all__ = [
+    "ParsedChatMember",
+    "extract_user_and_text",
+    "extract_user"
+]
+
+
 class ParsedChatMember:
     """Chat member attribute parser
 

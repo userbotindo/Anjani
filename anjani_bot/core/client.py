@@ -23,6 +23,8 @@ from pyrogram.filters import Filter
 from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 from pyrogram.types import CallbackQuery, Message
 
+from .errors import AnjaniException, CommandInvokeError
+
 if TYPE_CHECKING:
     from .anjani import Anjani
 
@@ -75,7 +77,12 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
         def decorator(func: Callable) -> callable:
             # Wrapper for decorator so func return `class` & `message`
             async def wrapper(_: Client, message: Message) -> None:
-                return await self.__update__(func, message)
+                try:
+                    return await self.__update__(func, message)
+                except AnjaniException:
+                    raise
+                except Exception as exc:
+                    raise CommandInvokeError(exc) from exc
 
             self.add_handler(MessageHandler(wrapper, filters=filters), group)
             return func
@@ -96,7 +103,12 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
 
         def decorator(func: Callable) -> callable:
             async def wrapper(_: Client, message: Message) -> None:
-                return await self.__update__(func, message)
+                try:
+                    return await self.__update__(func, message)
+                except AnjaniException:
+                    raise
+                except Exception as exc:
+                    raise CommandInvokeError(exc) from exc
 
             self.add_handler(MessageHandler(wrapper, filters=filters), group)
             return func
@@ -117,7 +129,12 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
 
         def decorator(func: Callable) -> callable:
             async def wrapper(_: Client, query: CallbackQuery) -> None:
-                return await self.__update__(func, query)
+                try:
+                    return await self.__update__(func, query)
+                except AnjaniException:
+                    raise
+                except Exception as exc:
+                    raise CommandInvokeError(exc) from exc
 
             self.add_handler(CallbackQueryHandler(wrapper, filters=filters), group)
             return func
