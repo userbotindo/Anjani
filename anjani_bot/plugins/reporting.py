@@ -68,17 +68,6 @@ class Reporting(plugin.Plugin):
             return True
         return data.get("setting", True)
 
-    async def _send_report(self, text, chat_id, forward_id) -> None:
-        admins = await adminlist(self.bot.client, chat_id)
-        for admin in admins:
-            if await self.get_setting(admin, True):
-                try:
-                    await self.bot.client.send_message(admin, text)
-                    if forward_id:
-                        await self.bot.client.forward_messages(admin, chat_id, forward_id)
-                except BadRequest:
-                    pass
-
     @listener.on("report", filters.group)
     @listener.on(filters=filters.regex(r"^(?i)@admin(s)?\b") & filters.group, update="message")
     async def report(self, message):
@@ -95,8 +84,6 @@ class Reporting(plugin.Plugin):
             return await message.reply_text(await self.bot.text(chat_id, "no-report-user"))
         reported_user = message.reply_to_message.from_user
 
-        chat_name = message.chat.title or message.chat.first_name or message.chat.last_name
-
         if message.reply_to_message.from_user.id == self.bot.identifier:
             return await message.reply_text(await self.bot.text(chat_id, "cant-report-me"))
         if message.reply_to_message.from_user.id == message.from_user.id:
@@ -106,24 +93,11 @@ class Reporting(plugin.Plugin):
 
         reported_mention = reported_user.mention
         reply_text = await self.bot.text(chat_id, "report-notif", reported_mention)
-        report_text = await self.bot.text(
-            chat_id,
-            "report-admin-format",
-            chat=chat_name,
-            by_user=message.from_user.mention,
-            by_user_id=message.from_user.id,
-            reported_mention=reported_mention,
-            reported_id=reported_user.id,
-        )
-        forward = False
-        if username := message.chat.username:
-            report_text += f"https://t.me/{username}/{message.reply_to_message.message_id}"
-        else:
-            forward = message.reply_to_message.message_id
-
-        await asyncio.gather(
-            self._send_report(report_text, chat_id, forward), message.reply(reply_text)
-        )
+        admins = await adminlist(self.bot.client, chat_id)
+        for admin in admins:
+            if await self.get_setting(admin, True):
+                reply_text += f"[\u200b](tg://user?id={admin})"
+        await message.reply_text(reply_text)
 
     @listener.on("reports")
     async def report_setting(self, message):
