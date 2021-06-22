@@ -69,7 +69,7 @@ class DataBase(Base):
             LOGGER.debug(f"Loading language: {i}")
             with open(f"./language/{i}.yml", "r") as text:
                 self.__strings__[i] = full_load(text)
-        LOGGER.info(f"Language {self.__language__} loaded")
+        LOGGER.debug(f"Language {self.__language__} loaded")
 
     async def connect_db(self, db_name: str) -> None:
         """Connect to MongoDB client
@@ -81,9 +81,9 @@ class DataBase(Base):
         try:
             self.__client__ = AsyncIOMotorClient(self.get_config.db_uri, connect=False)
             if db_name in await self.__client__.list_database_names():
-                LOGGER.info("Database found, Logged in to Database...")
+                LOGGER.debug("Database found, Logged in to Database...")
             else:
-                LOGGER.info("Database not found! Creating New Database...")
+                LOGGER.debug("Database not found! Creating New Database...")
         except OperationFailure as err:
             traceback.print_exc()
             LOGGER.critical(f"DATABASE AUTHENTICATION FAILED\n{err}")
