@@ -112,6 +112,8 @@ federations-help: |
   × /feddemote | /fdemote: Demote a federation admin from your fed.
   × /fbackup: Get a backup of banned user on federation in CSV (PM Only).
   × /fexport: export a federation backup file to restore banned users (PM Only).
+  × /setfedlog: Sets the current chat as the federation log. All federation events will be logged here.
+  × /unsetfedlog: Unset the federation log. Federation events will no longer be logged.
 
   **Federation Admin Commands:**
   × /fban: Bans a user from the current chat's federation.
@@ -235,6 +237,7 @@ miscs-help: |
   An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
+  ×  /info: Get information about a user.
   ×  /ping : Get bot latency.
   ×  /paste : paste any text file to Dogbin.\n
   **Special commands:**
@@ -330,6 +333,7 @@ report-setting: "This chat's current reports setting is: `{}`"
 chat-report-setting: "Your current report preference is: `{}`"
 no-report-user: Who should i report??
 cant-report-me: No, i will not report myself!!
+cant-report-admin: Why should i report a group admin?
 cant-self-report: Hold on... Why you're reporting yourself?
 report-notif: Reported {} to the admins!
 report-admin-format: |
