@@ -19,6 +19,8 @@ from random import choice
 from typing import Union
 from uuid import uuid4
 
+from aiohttp.client_exceptions import ClientConnectorError
+
 
 def get_readable_time(seconds: int) -> str:
     """get human readable time from seconds."""
@@ -65,13 +67,23 @@ async def extract_time(time_text) -> Union[int, bool]:
     return False
 
 
+class TestError(Exception):
+    pass
+
+
 async def dogbin(client: "~Anjani", data: str) -> str:
     """return the dogbin pasted key"""
-    async with client.http.post("https://del.dog/documents", data=data.encode("utf-8")) as req:
-        if req.status == 200:
-            res = await req.json()
-            return res["key"]
-    return None
+    try:
+        async with client.http.post(
+            "https://del.dog/documents",
+            data=data.encode("utf-8")
+        ) as req:
+            if req.status == 200:
+                res = await req.json()
+                return res["key"]
+            return None
+    except ClientConnectorError:
+        return None
 
 
 def format_integer(number: int, separator: str = ".") -> str:

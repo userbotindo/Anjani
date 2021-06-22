@@ -72,24 +72,29 @@ class Staff(plugin.Plugin):
         with codecs.open(log_file, "r", encoding="utf-8") as log_buffer:
             data = log_buffer.read()
         key = await dogbin(self.bot, data)
+        text = "**Bot Log**"
         if key:
-            url = [
+            button = InlineKeyboardMarkup(
                 [
-                    InlineKeyboardButton(text="View raw", url=f"https://del.dog/raw/{key}"),
+                    [
+                        InlineKeyboardButton(text="View raw", url=f"https://del.dog/raw/{key}"),
+                    ]
                 ]
-            ]
-            await self.bot.client.send_document(
-                message.from_user.id,
-                log_file,
-                caption="**Bot logging**",
-                file_name=f"{log_file.split('/')[-1]}",
-                force_document=True,
-                reply_markup=InlineKeyboardMarkup(url),
             )
-            if message.chat.type != "private":
-                await message.reply_text("I've send the log on PM's :)")
         else:
-            await message.reply_text("Failed to reach Dogbin")
+            button = None
+            text += "\n*Falied to reach Dogbin, only sending file"
+
+        if message.chat.type != "private":
+            await message.reply_text("I've send the log on PM's :)")
+        await self.bot.client.send_document(
+            message.from_user.id,
+            log_file,
+            caption=text,
+            file_name=f"{log_file.split('/')[-1]}",
+            force_document=True,
+            reply_markup=button,
+        )
 
     @listener.on("broadcast", staff_only="owner")
     async def broadcast(self, message):
