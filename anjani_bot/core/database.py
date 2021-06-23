@@ -44,12 +44,14 @@ class DataBase(Base):
     __language__: List[str]
     __list_collection__: List[str]
     __strings__: Dict[str, str]
+    __chat_lang__: Dict[int, str]
 
     def __init__(self):
         self.__language__ = sorted(
             [os.path.splitext(filename)[0] for filename in os.listdir("./language")]
         )
         self.__strings__ = {}
+        self.__chat_lang__ = {}
 
         super().__init__()
 
@@ -94,6 +96,8 @@ class DataBase(Base):
         self.__list_collection__ = await self.__db__.list_collection_names()
         LOGGER.info("Database connected")
         self.__lang__ = self.get_collection("LANGUAGE")
+        async for i in self.__lang__.find():
+            self.__chat_lang__[i["chat_id"]] = i["language"]
 
     async def disconnect_db(self) -> None:
         """Disconnect database client"""
@@ -114,8 +118,7 @@ class DataBase(Base):
 
     async def get_lang(self, chat_id) -> str:
         """Get user language setting."""
-        data = await self.__lang__.find_one({"chat_id": chat_id})
-        return data["language"] if data else "en"  # default english
+        return self.__chat_lang__.get(chat_id, "en")
 
     async def switch_lang(self, chat_id: Union[str, int], language: str) -> None:
         """Change chat language setting."""
@@ -124,6 +127,7 @@ class DataBase(Base):
             {"$set": {"language": language}},
             upsert=True,
         )
+        self.__chat_lang__[int(chat_id)] = language
 
     async def migrate_chat(self, old_chat: int, new_chat: int):
         """Run all migrate handler on every migrateable plugin"""
@@ -206,7 +210,7 @@ class DataBase(Base):
             dict of backup if no data passed, otherwise None.
         """
         if not isinstance(data, (type(None), dict)):
-            raise BackupError("Data must be a dict or Nonetype " f"not {data.__class__.__name__}")
+            raise BackupError(f"Data must be a dict or Nonetype not {data.__class__.__name__}")
 
         LOGGER.debug("{} chat data from {}", "Importing" if data else "Exporting", chat_id)
         result = {"chat_id": chat_id}
