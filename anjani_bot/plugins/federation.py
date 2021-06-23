@@ -23,6 +23,7 @@ from typing import Union
 
 from motor.motor_asyncio import AsyncIOMotorCursor
 from pyrogram import filters
+from pyrogram.errors import ChatAdminRequired
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
@@ -429,7 +430,10 @@ class Federation(plugin.Plugin, FedBase):
         await message.reply_text(text, disable_web_page_preview=True)
         LOGGER.debug(f"New fedban {user_id} on {fed_data['_id']}")
         for chats in fed_data["chats"]:
-            await self.bot.client.kick_chat_member(chats, user_id)
+            try:
+                await self.bot.client.kick_chat_member(chats, user_id)
+            except ChatAdminRequired:
+                pass
         # send message to federation log
         flog = fed_data.get("log", None)
         if flog:
