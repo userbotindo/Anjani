@@ -311,13 +311,20 @@ class Federation(plugin.Plugin, FedBase):
         chat_id = message.chat.id
         if message.command:
             fdata = await self.get_fed(message.command[0])
+            if not fdata:
+                return await message.reply_text(chat_id, "fed-invalid-id")
         elif message.chat.type != "private":
             fdata = await self.get_fed_bychat(chat_id)
+            if not fdata:
+                return await message.reply_text(
+                    await self.bot.text(chat_id, "fed-no-fed-chat")
+                    + "\n"
+                    + await self.bot.text(chat_id, "fed-specified-id")
+                )
         else:
             return await message.reply_text(await self.bot.text(chat_id, "fed-specified-id"))
 
         owner = await extract_user(self.bot.client, fdata["owner"])
-
         await message.reply_text(
             await self.bot.text(
                 chat_id,
