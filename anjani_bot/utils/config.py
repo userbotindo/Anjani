@@ -39,7 +39,7 @@ class BotConfig:
         self.db_uri = os.environ.get("DB_URI")
 
         # Optional
-        self.download_path = os.environ.get("DOWNLOAD_PATH", "./downloads")
+        self.download_path = os.environ.get("DOWNLOAD_PATH", "./downloads/")
         self.log_channel = int(os.environ.get("LOG_CHANNEL", 0))
         self.spamwatch_api = os.environ.get("SW_API", None)
 
