@@ -126,7 +126,8 @@ class MessageParser:
             msg_type = Types.BUTTON_TEXT if buttons else Types.TEXT
         elif msg.reply_to_message:
             text = msg.reply_to_message.text or msg.reply_to_message.caption
-            msg_text, buttons = self.parse_button(text.markdown)
+            if text:
+                msg_text, buttons = self.parse_button(text.markdown)
             if msg.reply_to_message.text:
                 msg_type = Types.BUTTON_TEXT if buttons else Types.TEXT
             elif msg.reply_to_message.sticker:
