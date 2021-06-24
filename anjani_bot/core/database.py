@@ -18,6 +18,7 @@ import logging
 import os
 import traceback
 from codecs import decode, encode
+from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 
 from motor.core import AgnosticCollection
@@ -116,7 +117,8 @@ class DataBase(Base):
             LOGGER.debug(f"Collection {name} Not Found, Creating New Collection...")
         return self.__db__[name]
 
-    async def get_lang(self, chat_id) -> str:
+    @lru_cache(maxsize=100)
+    def get_lang(self, chat_id) -> str:
         """Get user language setting."""
         return self.__chat_lang__.get(chat_id, "en")
 
@@ -128,6 +130,7 @@ class DataBase(Base):
             upsert=True,
         )
         self.__chat_lang__[int(chat_id)] = language
+        self.get_lang.cache_clear()
 
     async def migrate_chat(self, old_chat: int, new_chat: int):
         """Run all migrate handler on every migrateable plugin"""
@@ -166,7 +169,7 @@ class DataBase(Base):
                     Default to False.
 
         """
-        lang = await self.get_lang(chat_id)
+        lang = self.get_lang(chat_id)
         noformat = bool(kwargs.get("noformat", False))
 
         if lang in self.__language__ and name in self.__strings__[lang]:
