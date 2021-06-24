@@ -1,6 +1,4 @@
 """Admin check utils"""
-
-
 # Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,21 +15,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-__all__ = [
-    "adminlist",
-    "user_ban_protected"
-]
+from typing import AsyncGenerator, Dict
+
+__all__ = ["adminlist", "user_ban_protected"]
 
 
-async def adminlist(client, chat_id, full=False):
-    """This Function to get admin list."""
-    admins = []
+async def adminlist(client, chat_id, full=False) -> AsyncGenerator[Dict, int]:
+    """Function to get admin list of a chat.
+
+    Parameters:
+        client (`~Anjani`):
+            Anjani client instance.
+        chat_id (`str`, `int`):
+            chat id of the requested adminlist.
+        full (`bool`):
+            Determine the return value
+            True -> returns admin name and id's.
+            False -> return admin id's only.
+    """
     async for i in client.iter_chat_members(chat_id, filter="administrators"):
         if full:
-            admins.append({"name": i.user.first_name or i.user.last_name, "id": i.user.id})
+            yield {"name": i.user.first_name or i.user.last_name, "id": i.user.id}
         else:
-            admins.append(i.user.id)
-    return admins
+            yield i.user.id
 
 
 async def user_ban_protected(bot, chat_id, user_id) -> bool:

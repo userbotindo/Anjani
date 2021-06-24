@@ -66,7 +66,8 @@ async def _admin_filters(_, client, message: Message) -> bool:
         chat_id = message.chat.id
         user_id = message.from_user.id
         return bool(
-            user_id in await adminlist(client, chat_id) or user_id in client.__bot__.staff_id
+            user_id in [i async for i in adminlist(client, chat_id)]
+            or user_id in client.__bot__.staff_id
         )
     return False
 

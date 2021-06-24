@@ -93,8 +93,7 @@ class Reporting(plugin.Plugin):
 
         reported_mention = reported_user.mention
         reply_text = await self.bot.text(chat_id, "report-notif", reported_mention)
-        admins = await adminlist(self.bot.client, chat_id)
-        for admin in admins:
+        async for admin in adminlist(self.bot.client, chat_id):
             if await self.get_setting(admin, True):
                 reply_text += f"[\u200b](tg://user?id={admin})"
         await message.reply_text(reply_text)

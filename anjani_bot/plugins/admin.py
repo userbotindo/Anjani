@@ -78,9 +78,8 @@ class Admin(plugin.Plugin):
             return await message.reply_text(
                 await self.bot.text(message.chat.id, "error-chat-private")
             )
-        adm_list = await adminlist(self.bot.client, message.chat.id, full=True)
         admins = ""
-        for i in adm_list:
+        async for i in adminlist(self.bot.client, message.chat.id, full=True):
             admins += f"- [{i['name']}](tg://user?id={i['id']})\n"
         await message.reply_text(admins)
 
