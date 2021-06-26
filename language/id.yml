@@ -152,7 +152,6 @@ view-welcome: |
   Dan pesan sambutan dari obrolan ini adalah:
 #endregion
 #region common-error
-error-chat-private: "**Error:** `Tipe Obrolan Pribadi`\nPerintah ini hanya untuk grup..."
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota obrolan!"
 err-invalid-option: Opsi tidak valid!

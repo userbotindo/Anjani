@@ -108,7 +108,7 @@ class Federation(plugin.Plugin, FedBase):
         """Create a new federations"""
         chat_id = message.chat.id
         if message.chat.type != "private":
-            return await message.reply_text(await self.bot.text(chat_id, "error-chat-not-private"))
+            return await message.reply_text(await self.bot.text(chat_id, "err-chat-private"))
 
         if message.command:
             fed_name = (" ".join(message.command)).strip()
@@ -139,7 +139,7 @@ class Federation(plugin.Plugin, FedBase):
         """Delete federations"""
         chat_id = message.chat.id
         if message.chat.type != "private":
-            return await message.reply_text(await self.bot.text(chat_id, "error-chat-not-private"))
+            return await message.reply_text(await self.bot.text(chat_id, "err-chat-private"))
 
         user_id = message.from_user.id
         feds = await self.feds_db.find_one({"owner": user_id})

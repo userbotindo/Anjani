@@ -105,7 +105,7 @@ async def check_perm(flt, client, message: Message) -> bool:
     chat_id = message.chat.id
     # Check Chat type first
     if message.chat.type == "private":
-        await message.reply_text(await client.__bot__.text(chat_id, "error-chat-private"))
+        await message.reply_text(await client.__bot__.text(chat_id, "err-chat-groups"))
         return False
     try:
         bot = await client.get_chat_member(chat_id, "me")

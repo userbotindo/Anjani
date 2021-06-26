@@ -75,9 +75,7 @@ class Admin(plugin.Plugin):
     async def admin_list(self, message):
         """Get list of chat admins"""
         if message.chat.type == "private":
-            return await message.reply_text(
-                await self.bot.text(message.chat.id, "error-chat-private")
-            )
+            return await message.reply_text(await self.bot.text(message.chat.id, "err-chat-groups"))
         admins = ""
         async for i in adminlist(self.bot.client, message.chat.id, full=True):
             admins += f"- [{i['name']}](tg://user?id={i['id']})\n"
