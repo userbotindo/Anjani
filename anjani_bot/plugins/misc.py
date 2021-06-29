@@ -24,7 +24,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
 from anjani_bot.core.pool import run_in_thread
-from anjani_bot.utils import dogbin, format_integer
+from anjani_bot.utils import PasteBin, format_integer
 
 
 class Misc(plugin.Plugin):
@@ -114,7 +114,17 @@ class Misc(plugin.Plugin):
         reply = message.reply_to_message
         if not reply:
             return
-        sent = await message.reply_text(await self.bot.text(message.chat.id, "wait-paste"))
+        service = "dogbin"
+        if message.command:
+            flag = message.command[0]
+            if flag in ("-d", "-dogbin"):
+                service = "dogbin"
+            if flag in ("-n", "-neko", "-nekobin"):
+                service = "nekobin"
+            if flag in ("-h", "-haste", "-hastebin"):
+                service = "hastebin"
+
+        sent = await message.reply_text(await self.bot.text(message.chat.id, "wait-paste", service))
         if reply and reply.document:
             file = await reply.download(self.bot.get_config.download_path)
             with open(file, "r") as text:
@@ -124,21 +134,15 @@ class Misc(plugin.Plugin):
             data = reply.text
         else:
             return
-        key = await dogbin(self.bot, data)
-        if key:
-            btn = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(text="Dogbin", url=f"https://del.dog/{key}"),
-                        InlineKeyboardButton(text="Dogbin Raw", url=f"https://del.dog/raw/{key}"),
-                    ]
-                ]
-            )
+        paste = PasteBin(self.bot.http, data)
+        await paste(service)
+        if paste:
+            btn = InlineKeyboardMarkup([[InlineKeyboardButton(text="View", url=paste.link)]])
             await sent.edit_text(
-                await self.bot.text(message.chat.id, "paste-succes"), reply_markup=btn
+                await self.bot.text(message.chat.id, "paste-succes", service), reply_markup=btn
             )
         else:
-            await sent.edit_text(await self.bot.text(message.chat.id, "fail-paste"))
+            await sent.edit_text(await self.bot.text(message.chat.id, "fail-paste", service))
 
     @listener.on("source", filters.private)
     async def src(self, message):

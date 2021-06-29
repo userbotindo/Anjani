@@ -58,14 +58,6 @@ language-invalid: Kode bahasa tidak cocok.\nKode bahasa yang tersedia {}
 #endregion
 #region misc
 miscs-button: Lainnya
-miscs-help: |
-  An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
-  **Commands:**
-  ×  /id : Get user id, message id, chat id and many more.
-  ×  /ping : Get bot latency.
-  ×  /paste : paste any text file to Dogbin.\n
-  **Special commands:**
-  ×  /covid <country> : Get Covid-19 data in your country.
 covid-text: |
   **Statistik Virus Corona di {country}**
   **pada {date}**\n
@@ -78,9 +70,9 @@ covid-text: |
   **Kasus Kritis :** `{critical}`
   **Total Tes :** `{total_tests}`\n
   Data berasal dari [Worldometer]({link})
-wait-paste: "`Menyalin ke Dogbin...`"
-paste-succes: "**Berhasil Ditempel..!**"
-fail-paste: "`Gagal untuk menyalin ke Dogbin!`"
+wait-paste: "`Menyalin ke {}...`"
+paste-succes: "**Berhasil Ditempel ke {}..!**"
+fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
 #endregion
 #region purge
 purges-button: Pembersihan

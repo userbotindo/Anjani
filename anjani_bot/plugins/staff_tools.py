@@ -31,7 +31,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani_bot import listener, plugin
-from anjani_bot.utils import dogbin
+from anjani_bot.utils import paste
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,19 +71,19 @@ class Staff(plugin.Plugin):
 
         with codecs.open(log_file, "r", encoding="utf-8") as log_buffer:
             data = log_buffer.read()
-        key = await dogbin(self.bot, data)
+        pst = await paste(self.bot.http, data)
         text = "**Bot Log**"
-        if key:
+        if pst:
             button = InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton(text="View raw", url=f"https://del.dog/raw/{key}"),
+                        InlineKeyboardButton(text="View", url=pst.link),
                     ]
                 ]
             )
         else:
             button = None
-            text += "\n*Falied to reach Dogbin, only sending file"
+            text += "\n*Falied to reach Pastebin Service, only sending file"
 
         if message.chat.type != "private":
             await message.reply_text("I've send the log on PM's :)")
