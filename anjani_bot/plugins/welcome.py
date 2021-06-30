@@ -26,7 +26,7 @@ from anjani_bot import listener, plugin
 from anjani_bot.utils import MessageParser, ParsedChatMember
 
 
-class RawGreeting(plugin.Plugin, MessageParser):
+class RawGreeting(MessageParser):
     welcome_db: AsyncIOMotorCollection
     lock: asyncio.locks.Lock
 
@@ -130,7 +130,7 @@ class RawGreeting(plugin.Plugin, MessageParser):
         return False
 
 
-class Greeting(RawGreeting):
+class Greeting(plugin.Plugin, RawGreeting):
     name: ClassVar[str] = "Greetings"
     helpable: ClassVar[bool] = True
 
