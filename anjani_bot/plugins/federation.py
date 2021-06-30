@@ -38,10 +38,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class FedBase:
-    # declaring collection as a class member cause used by other.
-    feds_db = listener.__bot__.get_collection("FEDERATIONS")
-
     async def __on_load__(self):
+        self.feds_db = self.bot.get_collection("FEDERATIONS")
         self.lock = asyncio.Lock()
 
     async def __migrate__(self, old_chat_id, new_chat_id):
@@ -55,10 +53,9 @@ class FedBase:
         """Check federation admin"""
         return user_id == fed_data["owner"] or user_id in fed_data.get("admins", [])
 
-    @classmethod
-    async def get_fed_bychat(cls, chat_id):
+    async def get_fed_bychat(self, chat_id):
         """Get fed data from chat id"""
-        return await cls.feds_db.find_one({"chats": chat_id})
+        return await self.feds_db.find_one({"chats": chat_id})
 
     async def get_fed_byowner(self, user_id):
         """Get fed data from user id"""
@@ -502,6 +499,20 @@ class Federation(plugin.Plugin, FedBase):
             else:
                 return await message.reply_text(await self.bot.text(chat_id, "fed-stat-not-banned"))
 
+        elif len(message.command) == 1:
+            data = await self.get_fed(message.command[0])
+            if not data:
+                return await message.reply_text(await self.bot.text(chat_id, "fed-invalid-id"))
+            if str(message.from_user.id) in data.get("banned", {}):
+                res = data["banned"][str(message.from_user.id)]
+                await message.reply_text(
+                    await self.bot.text(
+                        chat_id, "fed-stat-banned", res["reason"], self.parse_date(res["time"])
+                    )
+                )
+            else:
+                return await message.reply_text(await self.bot.text(chat_id, "fed-stat-not-banned"))
+
         # <user_Id>
         else:
             data = await self.check_fban(user_id)
@@ -513,7 +524,7 @@ class Federation(plugin.Plugin, FedBase):
                         "fed-stat-multi-info",
                         bans["name"],
                         bans["_id"],
-                        bans["nammed"][str(user_id)]["reason"],
+                        bans["banned"][str(user_id)]["reason"],
                     )
             else:
                 text = await self.bot.text(chat_id, "fed-stat-multi-not-banned")
