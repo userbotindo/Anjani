@@ -90,15 +90,64 @@ class FedBase:
             else False
         )
 
+    async def is_fbanned(self, chat_id, user_id) -> Union[dict, bool]:
+        fed_data = await self.get_fed_bychat(chat_id)
+        if not fed_data:
+            return
+        if str(user_id) in fed_data.get("banned", {}):
+            res = fed_data["banned"][str(user_id)]
+            res["fed_name"] = fed_data["name"]
+            return res
+        return False
+
     @staticmethod
     def parse_date(timestamp: float) -> str:
         """get a date format from a timestamp"""
         return datetime.fromtimestamp(timestamp).strftime("%Y %b %d %H:%M UTC")
 
+    async def fban_handler(self, message, data, user):
+        chat_id = message.chat.id
+        try:
+            await asyncio.gather(
+                message.reply_text(
+                    await self.bot.text(
+                        chat_id,
+                        "fed-autoban",
+                        user.mention,
+                        data["fed_name"],
+                        data["reason"],
+                        self.parse_date(data["time"]),
+                    )
+                ),
+                self.bot.client.kick_chat_member(chat_id, user.id),
+            )
+        except ChatAdminRequired:
+            LOGGER.debug(f"Can't ban user {user.username} on {message.chat.first_name}")
+
 
 class Federation(plugin.Plugin, FedBase):
     name = "Federations"
     helpable = True
+
+    @listener.on(filters=filters.new_chat_members, group=3, update="message")
+    async def new_user_handler(self, message):
+        chat_id = message.chat.id
+        fed_data = await self.get_fed_bychat(chat_id)
+        if fed_data:
+            for new_member in message.new_chat_members:
+                banned = await self.is_fbanned(chat_id, new_member.id)
+                if banned:
+                    await self.fban_handler(message, banned, new_member)
+
+    @listener.on(filters=filters.group & filters.all, group=3, update="message")
+    async def new_message_handler(self, message):
+        chat_id = message.chat.id
+        user = message.from_user
+        if not user:  # sanity check for service message
+            return
+        banned = await self.is_fbanned(chat_id, user.id)
+        if banned:
+            await self.fban_handler(message, banned, user)
 
     @listener.on("newfed")
     async def new_fed(self, message):
