@@ -63,7 +63,7 @@ class Misc(plugin.Plugin):
 
         total_tests = "N/A"
         if data["total_tests"] != 0:
-            total_tests = data["total_tests"]
+            total_tests = format_integer(data["total_tests"])
 
         date = datetime.now().strftime("%d %b %Y")
 
@@ -79,7 +79,7 @@ class Misc(plugin.Plugin):
             new_cases=format_integer(data["new_cases"]),
             new_deaths=format_integer(data["new_deaths"]),
             critical=format_integer(data["critical"]),
-            total_tests=format_integer(total_tests),
+            total_tests=total_tests,
             link=link,
         )
 
