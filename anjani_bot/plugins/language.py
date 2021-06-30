@@ -88,11 +88,11 @@ class Language(plugin.Plugin):
                 )
             else:
                 await message.reply_text(
-                    await self.bot.text(chat_id, "language-invalid", self.language)
+                    await self.bot.text(chat_id, "language-invalid", self.bot.language)
                 )
         else:
             chat_name = message.chat.first_name or message.chat.title
-            lang = self.parse_lang(await self.bot.get_lang(chat_id))
+            lang = self.parse_lang(self.bot.get_lang(chat_id))
             keyboard = []
             temp = []
 
