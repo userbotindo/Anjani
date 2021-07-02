@@ -20,6 +20,7 @@ from typing import ClassVar
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
+from pyrogram.errors import PeerIdInvalid
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import extract_user, extract_user_and_text
@@ -108,7 +109,10 @@ class Users(plugin.Plugin):
         if not user_id:
             user = message.from_user
         else:
-            user = await extract_user(self.bot.client, user_id)
+            try:
+                user = await extract_user(self.bot.client, user_id)
+            except PeerIdInvalid:
+                return await msg.edit(await self.bot.text(chat_id, "err-peer-invalid"))
 
         text = f"**{'Bot' if user.is_bot else 'User'} Info**\n"
         text += f"**ID:** `{user.id}`\n"
