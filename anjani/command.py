@@ -136,6 +136,7 @@ class Context:
         self,
         text: str,
         *,
+        mode: str = "edit",
         redact: bool = True,
         msg: Optional[pyrogram.types.Message] = None,
         **kwargs: Any,
@@ -144,6 +145,7 @@ class Context:
         self.response = await self.bot.respond(
             msg or self.msg,
             text,
+            mode=mode,
             redact=redact,
             response=self.response,
             **kwargs,

@@ -201,6 +201,7 @@ class TelegramBot(MixinBase):
         msg: Message,
         text: str,
         *,
+        mode: str = "edit",
         redact: bool = True,
         response: Optional[Message] = None,
         **kwargs: Any,
@@ -212,9 +213,12 @@ class TelegramBot(MixinBase):
         # Truncate messages longer than Telegram's 4096-character length limit
         text = util.tg.truncate(text)
 
-        if response is not None:
-            # Already replied, so just edit the existing reply to reduce spam
+        # force reply and as default behaviour if response is None
+        if mode == "reply" or response is None:
+            return await msg.reply(text, **kwargs)
+
+        # Only accept edit if we already respond the original msg
+        if response is not None and mode == "edit":
             return await response.edit(text=text, **kwargs)
 
-        # Reply since we haven't done so yet
-        return await msg.reply(text, **kwargs)
+        raise ValueError(f"Unknown response mode '{mode}'")
