@@ -17,17 +17,19 @@
 import asyncio
 import json
 import logging
+import time
 from typing import ClassVar, Dict, Union
 
 import spamwatch
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import StopPropagation, filters
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
+from pyrogram.types import User
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin
 from anjani_bot.core import pool
-from anjani_bot.utils import user_ban_protected
+from anjani_bot.utils import ParsedChatMember, user_ban_protected
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +43,7 @@ class SpamShield(plugin.Plugin):
 
     async def __on_load__(self) -> None:
         self.gban_setting = self.bot.get_collection("GBAN_SETTINGS")
+        self.fed_db = self.bot.get_collection("FEDERATIONS")
         self.lock = asyncio.Lock()
         self.spmwtc = self.bot.get_config.spamwatch_api
 
@@ -76,6 +79,22 @@ class SpamShield(plugin.Plugin):
         if data["ok"]:
             return "https://cas.chat/query?u={}".format(user_id)
         return False
+
+    async def cas_fban(self, user: User) -> None:
+        """fban CAS-banned user on client official feds"""
+        await self.fed_db.update_one(
+            {"_id": "AnjaniSpamShield"},
+            {
+                "$set": {
+                    f"banned.{int(user.id)}": {
+                        "name": ParsedChatMember(user).fullname,
+                        "reason": "Automated-fban due to CAS-Banned",
+                        "time": time.time(),
+                    }
+                }
+            },
+            upsert=False,
+        )
 
     async def chat_gban(self, chat_id) -> bool:
         """Return Spam_Shield setting"""
@@ -122,6 +141,7 @@ class SpamShield(plugin.Plugin):
             reason = f"[link]({_cas})" if _cas else _sw.reason
             if _cas:
                 banner = "[Combot Anti Spam](t.me/combot)"
+                await self.cas_fban(user)
             else:
                 banner = "[Spam Watch](t.me/SpamWatch)"
             text = await self.bot.text(chat_id, "banned-text", userlink, user_id, reason, banner)
