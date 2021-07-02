@@ -359,7 +359,7 @@ class Federation(plugin.Plugin, FedBase):
         if message.command:
             fdata = await self.get_fed(message.command[0])
             if not fdata:
-                return await message.reply_text(chat_id, "fed-invalid-id")
+                return await message.reply_text(await self.bot.text(chat_id, "fed-invalid-id"))
         elif message.chat.type != "private":
             fdata = await self.get_fed_bychat(chat_id)
             if not fdata:
@@ -533,7 +533,7 @@ class Federation(plugin.Plugin, FedBase):
             user_id = message.from_user.id
 
         # <user_Id> <fed_id>
-        if len(message.command) == 2 and message.command[0].isdigit():
+        if len(message.command) == 2:
             fid = message.command[1]
             data = await self.get_fed(fid)
             if not data:

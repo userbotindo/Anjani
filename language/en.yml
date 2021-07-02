@@ -198,7 +198,7 @@ fed-stat-banned: |
   **Reason: ** {}
   **Banned on: ** {}
 fed-stat-not-banned: User is not banned in that federation!
-fed-stat-multi: This user has been banned in this federations
+fed-stat-multi: This user has been banned in this federations\n
 fed-stat-multi-info: " -  **{}**(`{}`)\n    **Reason: **{}\n"
 fed-stat-multi-not-banned: This user is not banned in any federation!
 fed-restore-done: Done restoring backup
