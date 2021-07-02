@@ -214,7 +214,7 @@ class TelegramBot(MixinBase):
         text = util.tg.truncate(text)
 
         # force reply and as default behaviour if response is None
-        if mode == "reply" or response is None:
+        if mode == "reply" or response is None and mode == "edit":
             return await msg.reply(text, **kwargs)
 
         # Only accept edit if we already respond the original msg
