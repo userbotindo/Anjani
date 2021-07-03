@@ -17,7 +17,6 @@
 import asyncio
 
 from pyrogram import filters
-from pyrogram.errors import BadRequest
 
 from anjani_bot import listener, plugin
 from anjani_bot.utils import adminlist, user_ban_protected
@@ -95,8 +94,8 @@ class Reporting(plugin.Plugin):
         reply_text = await self.bot.text(chat_id, "report-notif", reported_mention)
         async for admin in adminlist(self.bot.client, chat_id):
             if await self.get_setting(admin, True):
-                reply_text += f"[\u200b](tg://user?id={admin})"
-        await message.reply_text(reply_text)
+                reply_text += f"<a href='tg://user?id={admin}'>\u200B</a>"
+        await message.reply_text(reply_text, parse_mode="html")
 
     @listener.on("reports")
     async def report_setting(self, message):
