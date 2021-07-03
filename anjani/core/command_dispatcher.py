@@ -79,7 +79,10 @@ class CommandDispatcher(MixinBase):
 
     def command_predicate(self: "Anjani") -> Filter:
 
-        async def func(flt, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
+        async def func(flt: Filter, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
+            if message.via_bot:
+                return False
+
             if message.text is not None and message.text.startswith("/"):
                 parts = message.text.split()
                 parts[0] = parts[0][1 :]
@@ -112,9 +115,6 @@ class CommandDispatcher(MixinBase):
                          client: Client,  # skipcq: PYL-W0613
                          message: Message) -> None:
         cmd = None
-
-        if message.via_bot:
-            return
 
         try:
             cmd = self.commands[message.command[0]]
