@@ -1,6 +1,6 @@
 import asyncio
 import bisect
-from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Tuple
+from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence
 
 from pyrogram.filters import Filter
 from pyrogram.types import (
@@ -13,9 +13,9 @@ from pyrogram.types import (
     User
 )
 
-from ..listener import Listener, ListenerFunc
 from .anjani_mixin_base import MixinBase
 from anjani import plugin, util
+from anjani.listener import Listener, ListenerFunc
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani

@@ -1,6 +1,7 @@
 from pyrogram.filters import Filter, create
 from pyrogram.types import Message
 
+
 def chat_action() -> Filter:
 
     async def func(_, __, chat: Message) -> bool:

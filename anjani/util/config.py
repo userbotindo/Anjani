@@ -26,7 +26,7 @@ class TelegramConfig:
         for key, value in config.items():
             if load_from_file and value == "":
                 value = None
-            
+
             if value is not None and key == "api_id":
                 value = int(value)
 

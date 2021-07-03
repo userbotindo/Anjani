@@ -12,7 +12,11 @@ from .plugin_extenter import PluginExtender
 from .telegram_bot import TelegramBot
 
 
-class Anjani(TelegramBot, DataBase, PluginExtender, CommandDispatcher, EventDispatcher):
+class Anjani(TelegramBot,
+             DataBase,
+             PluginExtender,
+             CommandDispatcher,
+             EventDispatcher):
     # Initialized during instantiation
     log: logging.Logger
     http: aiohttp.ClientSession

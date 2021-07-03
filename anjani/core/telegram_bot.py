@@ -24,8 +24,8 @@ from pyrogram.types import (
     User
 )
 
-from anjani import custom_filter, util
 from .anjani_mixin_base import MixinBase
+from anjani import custom_filter, util
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -91,7 +91,6 @@ class TelegramBot(MixinBase):
         await self.dispatch_event("load")
         self.loaded = True
 
-
         # Start Telegram client
         try:
             await self.client.start()
@@ -156,8 +155,7 @@ class TelegramBot(MixinBase):
                             event_type: Type[TgEventHandler],
                             *,
                             filters: Optional[Filter] = None,
-                            group: int = 0
-    ) -> None:
+                            group: int = 0) -> None:
         if name in self.listeners:
             # Add if there ARE listeners and it's NOT already registered
             if name not in self._plugin_event_handlers:

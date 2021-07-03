@@ -50,18 +50,18 @@ class CommandDispatcher(MixinBase):
             except KeyError:
                 continue
 
-    def register_commands(self: "Anjani", _plugin: plugin.Plugin) -> None:
-        for name, func in util.misc.find_prefixed_funcs(_plugin, "cmd_"):
+    def register_commands(self: "Anjani", plug: plugin.Plugin) -> None:
+        for name, func in util.misc.find_prefixed_funcs(plug, "cmd_"):
             done = False
 
             try:
-                self.register_command(_plugin, name, func)
+                self.register_command(plug, name, func)
                 done = True
             finally:
                 if not done:
-                    self.unregister_commands(_plugin)
+                    self.unregister_commands(plug)
 
-    def unregister_commands(self: "Anjani", _plugin: plugin.Plugin) -> None:
+    def unregister_commands(self: "Anjani", plug: plugin.Plugin) -> None:
         # Can't unregister while iterating, so collect commands to unregister afterwards
         to_unreg = []
 
@@ -70,7 +70,7 @@ class CommandDispatcher(MixinBase):
             if name != cmd.name:
                 continue
 
-            if cmd.plugin == _plugin:
+            if cmd.plugin == plug:
                 to_unreg.append(cmd)
 
         # Actually unregister the commands
@@ -96,7 +96,7 @@ class CommandDispatcher(MixinBase):
                     cmd = self.commands[parts[0]]
                 except KeyError:
                     return False
-                
+
                 if cmd.filters:
                     permitted: bool = await cmd.filters(client, message)
                     if not permitted:
