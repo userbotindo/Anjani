@@ -38,10 +38,11 @@ TgEventHandler = Union[CallbackQueryHandler,
 
 class TelegramBot(MixinBase):
     # Initialized during instantiation
-    config: util.config.TelegramConfig
+    config: util.config.TelegramConfig[str, str]
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
     _disconnect: bool
     loaded: bool
+    staff: MutableMapping[str, int]
 
     # Initialized during startup
     client: Client
@@ -55,22 +56,16 @@ class TelegramBot(MixinBase):
         self._plugin_event_handlers = {}
         self._disconnect = False
         self.loaded = False
+        self.staff = {}
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
 
     async def init_client(self: "Anjani") -> None:
-        api_id = self.config["api_id"]
-        if not isinstance(api_id, int):
-            raise TypeError("API ID must be an integer")
-
+        api_id = int(self.config["api_id"])
         api_hash = self.config["api_hash"]
-        if not isinstance(api_hash, str):
-            raise TypeError("API hash must be a string")
-
         bot_token = self.config["bot_token"]
-        if not isinstance(bot_token, str):
-            raise TypeError("Bot Token must be a string")
+        self.staff["owner"] = int(self.config["owner_id"])
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -183,8 +178,8 @@ class TelegramBot(MixinBase):
         return len(self._plugin_event_handlers)
 
     def redact_message(self, text: str) -> str:
-        api_id: str = str(self.config["api_id"])
-        api_hash: str = self.config["api_hash"]
+        api_id = self.config["api_id"]
+        api_hash = self.config["api_hash"]
 
         if api_id in text:
             text = text.replace(api_id, "[REDACTED]")

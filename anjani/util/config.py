@@ -1,15 +1,17 @@
 import os
-from typing import Any
+from typing import Any, ClassVar, Iterator, MutableMapping, TypeVar
 
 from dotenv import load_dotenv
 
+_KT = TypeVar("_KT", str, str)
+_VT = TypeVar("_VT", str, str)
 
-class TelegramConfig:
+
+class TelegramConfig(MutableMapping[_KT, _VT]):
+    _length: ClassVar[int] = 0
 
     def __init__(self) -> None:
-        load_from_file = False
         if os.path.isfile("config.env"):
-            load_from_file = True
             load_dotenv("config.env")
 
         config = {
@@ -24,16 +26,29 @@ class TelegramConfig:
         }
 
         for key, value in config.items():
-            if load_from_file and value == "":
-                value = None
+            if not value:
+                continue
 
-            if value is not None and key == "api_id":
-                value = int(value)
+            super().__setattr__(key, value)
+            TelegramConfig._length += 1
 
-            setattr(self, key, value)
-
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: _KT) -> _VT:
         return self.__getattribute__(name)
 
-    def __getitem__(self, item: str) -> Any:
-        return self.__getattr__(item)
+    def __getitem__(self, k: _KT) -> _VT:
+        return self.__getattr__(k)
+
+    def __setitem__(self, k: _KT, v: _VT) -> None:  # skipcq: PYL-W0613
+        raise RuntimeError("Configuration must be done before running the bot.")
+
+    def __setattr__(self, name: str, value: Any) -> None:  # skipcq: PYL-W0613
+        raise RuntimeError("Configuration must be done before running the bot.")
+
+    def __delitem__(self, v: _KT) -> None:  # skipcq: PYL-W0613
+        raise RuntimeError("Can't delete configuration while running the bot.")
+
+    def __iter__(self) -> Iterator[_KT]:
+        return super().__iter__()
+
+    def __len__(self) -> int:
+        return self._length
