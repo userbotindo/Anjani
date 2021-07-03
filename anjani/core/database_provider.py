@@ -24,8 +24,5 @@ class DataBase(MixinBase):
     def _init_db(self: "Anjani") -> None:
         self._db = AsyncIOMotorClient(self.config["db_uri"], connect=False)
 
-    def get_collection(self: "Anjani", name: str) -> AgnosticCollection:
-        return self.db.get_collection(name)
-
     async def close_db(self: "Anjani") -> None:
         await util.run_sync(self._db.close)

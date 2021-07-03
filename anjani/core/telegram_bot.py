@@ -5,6 +5,7 @@ from typing import (
     Any,
     MutableMapping,
     Optional,
+    Set,
     Tuple,
     Type,
     Union,
@@ -42,7 +43,7 @@ class TelegramBot(MixinBase):
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
     _disconnect: bool
     loaded: bool
-    staff: MutableMapping[str, int]
+    staff: Set[Tuple[int, str]]
 
     # Initialized during startup
     client: Client
@@ -56,7 +57,7 @@ class TelegramBot(MixinBase):
         self._plugin_event_handlers = {}
         self._disconnect = False
         self.loaded = False
-        self.staff = {}
+        self.staff = set()
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -65,7 +66,7 @@ class TelegramBot(MixinBase):
         api_id = int(self.config["api_id"])
         api_hash = self.config["api_hash"]
         bot_token = self.config["bot_token"]
-        self.staff["owner"] = int(self.config["owner_id"])
+        self.staff.add((int(self.config["owner_id"]), "owner"))
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -102,6 +103,12 @@ class TelegramBot(MixinBase):
         self.user = user
         # noinspection PyTypeChecker
         self.uid = user.id
+
+        # Update staff from db
+        db = self.db.get_collection("STAFF")
+        async for doc in db.find():
+            rank = doc["rank"]
+            self.staff.add((doc["_id"], rank))
 
         # Record start time and dispatch start event
         self.start_time_us = util.time.usec()
