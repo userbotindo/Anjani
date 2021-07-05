@@ -35,12 +35,20 @@ class Main(plugin.Plugin):
         chat_id = message.chat.id
 
         if message.chat.type == "private":  # only send in PM's
-            if message.command and message.command[0] == "help":
-                keyboard = await self.bot.help_builder(chat_id)
-                return await message.reply_text(
-                    await self.bot.text(chat_id, "help-pm", self.bot.name),
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                )
+            if message.command:
+                if message.command[0] == "help":
+                    keyboard = await self.bot.help_builder(chat_id)
+                    return await message.reply_text(
+                        await self.bot.text(chat_id, "help-pm", self.bot.name),
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                    )
+                if re.match(r"rules_(.*?)", message.command[0]):
+                    rules_id = message.command[0].split("_")[1]
+                    db = self.bot.get_collection("RULES")
+                    content = await db.find_one({"chat_id": int(rules_id)})
+                    chat = await self.bot.client.get_chat(int(rules_id))
+                    text = await self.bot.text(chat_id, "rules-view-pm", chat.title)
+                    return await message.reply_text(text + content["rules"])
             buttons = [
                 [
                     InlineKeyboardButton(
@@ -97,7 +105,7 @@ class Main(plugin.Plugin):
             extension = plugin_match.group(1)
             text = "Here is the help for the **{}** plugin:\n\n{}".format(
                 extension.capitalize(),
-                await self.bot.text(chat_id, f"{extension}-help"),
+                await self.bot.text(chat_id, f"{extension}-help", username=self.bot.username),
             )
             try:
                 await query.edit_message_text(

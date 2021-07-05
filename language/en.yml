@@ -365,6 +365,24 @@ ban-done: "Banned **{}**!"
 unban-no-user: give me a user to unban
 unban-done: "**{}** Unbanned!"
 #endregion
+#region rules
+rules-button: Rules
+rules-help: |
+  Every chat have a different rules, this module will help make those rules clearer!\n
+  × /rules: get the rules of a chat.\n
+  **Admin only:**
+  × /setrules <chat rules>: Sets rules for the chat.
+  × /clearrules: Clears saved rules of a chat.\n
+  **Notes**
+  To create a custom rule view link all you need is a chat id and paste it to these link:
+  `t.me/{username}?start=rules_<chat_id>`
+rules-blank-err: Rules can't be blank!
+rules-set: "Chat rules have been set!\nLink to view rules: `{}`"
+rules-clear: Successfully cleared chat rules!
+rules-none: This group have no rules set yet!
+rules-view-caption: Click this button to view the chat rules!
+rules-view-pm: "The rules for **{}** are:\n\n"
+#endregion
 #region spam shield
 banned-text: |
   #SPAM_SHIELD\n
