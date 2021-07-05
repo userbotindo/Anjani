@@ -11,6 +11,7 @@ from typing import (
     Union,
 )
 
+import pyrogram.filters as flt
 from pyrogram import Client
 from pyrogram.filters import Filter
 from pyrogram.handlers import (
@@ -51,6 +52,7 @@ class TelegramBot(MixinBase):
     user: User
     uid: int
     start_time_us: int
+    owner: int
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         self.config = util.config.TelegramConfig()
@@ -66,7 +68,6 @@ class TelegramBot(MixinBase):
         api_id = int(self.config["api_id"])
         api_hash = self.config["api_hash"]
         bot_token = self.config["bot_token"]
-        self.staff.add(int(self.config["owner_id"]))
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -103,6 +104,8 @@ class TelegramBot(MixinBase):
         self.user = user
         # noinspection PyTypeChecker
         self.uid = user.id
+        self.owner = int(self.config["owner_id"])
+        self.staff.add(self.owner)
 
         # Update staff from db
         db = self.db.get_collection("STAFF")
@@ -176,6 +179,8 @@ class TelegramBot(MixinBase):
         self.update_plugin_event("callback_query", CallbackQueryHandler)
         self.update_plugin_event("chat_action", MessageHandler,
                                  filters=custom_filter.chat_action())
+        self.update_plugin_event("chat_migrate", MessageHandler,
+                                 filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
         self.update_plugin_event("message", MessageHandler)
 
