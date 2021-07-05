@@ -94,14 +94,15 @@ class CommandDispatcher(MixinBase):
                 if username in parts[0]:
                     parts[0] = parts[0].replace(f"@{username}", "")
 
-                # Check command filters
+                # Filter if command is not in commands
                 try:
                     cmd = self.commands[parts[0]]
                 except KeyError:
                     return False
 
+                # Check additional build-in filters
                 if cmd.filters:
-                    permitted: bool = await cmd.filters(client, message)
+                    permitted = await cmd.filters(client, message)
                     if not permitted:
                         return False
 
@@ -149,7 +150,7 @@ class CommandDispatcher(MixinBase):
 
             # Invoke command function
             try:
-                ret = await cmd.run(ctx)
+                ret = await cmd.func(ctx)
 
                 # Response shortcut
                 if ret is not None:

@@ -53,11 +53,11 @@ def alias(*aliases: str) -> Decorator:
     return alias_decorator
 
 
-def filters(_filters: Filter) -> Decorator:
+def filters(filters: Filter) -> Decorator:
     """Sets filters on a command function."""
 
     def filter_decorator(func: CommandFunc) -> CommandFunc:
-        setattr(func, "_cmd_filters", _filters)
+        setattr(func, "_cmd_filters", filters)
         return func
 
     return filter_decorator
@@ -72,7 +72,7 @@ class Command:
     aliases: Sequence[str]
     filters: Optional[Filter]
     plugin: Any
-    run: CommandFunc
+    func: CommandFunc
 
     def __init__(self, name: str, plugin: Any, func: CommandFunc) -> None:
         self.name = name
@@ -83,7 +83,7 @@ class Command:
         self.aliases = getattr(func, "_cmd_aliases", [])
         self.filters = getattr(func, "_cmd_filters", None)
         self.plugin = plugin
-        self.run = func
+        self.func = func
 
 
 # Command invocation context
