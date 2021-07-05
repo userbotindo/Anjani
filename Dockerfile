@@ -20,4 +20,4 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-dev -E uvloop
 
 # command to run on container start
-CMD ["python3","-m","anjani_bot"]
+CMD ["python3","-m","anjani"]
