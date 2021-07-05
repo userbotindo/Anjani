@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [tool.poetry.scripts]
-anjani = "anjani_bot:start"
+anjani = "anjani:start"
 
 [tool.poetry.dependencies]
 python = "^3.8"
