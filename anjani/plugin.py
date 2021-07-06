@@ -3,6 +3,8 @@ import logging
 import os.path
 from typing import TYPE_CHECKING, ClassVar, Optional, Type
 
+from anjani import error
+
 if TYPE_CHECKING:
     from .core import Anjani
     from .command import Command
@@ -32,7 +34,7 @@ class Plugin:
         return "<" + self.format_desc(self.comment) + ">"
 
 
-class PluginLoadError(Exception):
+class PluginLoadError(error.AnjaniException):
     pass
 
 
