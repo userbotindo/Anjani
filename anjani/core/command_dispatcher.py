@@ -1,12 +1,12 @@
+import traceback
 from typing import TYPE_CHECKING, Any, MutableMapping
 
-from pyrogram import Client
-from pyrogram import errors
+from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
 from pyrogram.types import Message
 
 from .anjani_mixin_base import MixinBase
-from anjani import command, plugin, util
+from anjani import command, error, plugin, util
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -109,6 +109,7 @@ class CommandDispatcher(MixinBase):
                 return True
 
             return False
+
         return create(func, "CustomCommandFilter")
 
     async def on_command(self: "Anjani",
@@ -159,17 +160,13 @@ class CommandDispatcher(MixinBase):
                     f"Command '{cmd.name}' triggered a message edit with no changes; make sure there is only a single bot instance running"
                 )
             except Exception as e:
-                cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=e)
-                await ctx.respond(
-                    f"⚠️ Error executing command:\n```{util.error.format_exception(e)}```"
-                )
+                constructor = error.CommandInvokeError(f"raised from {type(e).__name__}: {str(e)}"
+                                                       ).with_traceback(e.__traceback__)
+                cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=constructor)
 
             await self.dispatch_event("command", cmd, message)
         except Exception as e:
+            constructor = error.CommandHandlerError(f"raised from {type(e).__name__}: {str(e)}"
+                                                    ).with_traceback(e.__traceback__)
             if cmd is not None:
-                cmd.plugin.log.error("Error in command handler", exc_info=e)
-
-            await self.respond(
-                message,
-                f"⚠️ Error in command handler:\n```{util.error.format_exception(e)}```",
-            )
+                cmd.plugin.log.error("Error in command handler", exc_info=constructor)
