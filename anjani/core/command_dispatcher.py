@@ -91,6 +91,7 @@ class CommandDispatcher(MixinBase):
                 # eg: /ping@dAnjani_bot will return True
                 # If current bot instance is dAnjani_bot else False
                 if self.user.username in parts[0]:
+                    # Remove username from command
                     parts[0] = parts[0].replace(f"@{self.user.username}", "")
 
                 # Filter if command is not in commands

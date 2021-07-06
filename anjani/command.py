@@ -92,7 +92,7 @@ class Context:
     msg: pyrogram.types.Message
     cmd_len: int
 
-    response: Optional[pyrogram.types.Message]
+    response: pyrogram.types.Message
     input: str
     args: Sequence[str]
 
@@ -111,8 +111,12 @@ class Context:
 
         # Response message to be filled later
         self.response = None
-        # Single argument string (unparsed, i.e. complete with Markdown formatting symbols)
-        self.input = self.msg.text[self.cmd_len :]
+        # Single argument string
+        username = self.bot.user.username
+        if username in self.msg.text:
+            self.input = self.msg.text[self.cmd_len + len(username) :]
+        else:
+            self.input = self.msg.text[self.cmd_len :]
 
         self.segments = self.msg.command
         self.invoker = self.segments[0]
