@@ -1,0 +1,22 @@
+﻿version: '3.7'
+
+services:
+  anjani:
+    build:
+      context: .
+    depends_on:
+      - mongo
+    restart: on-failure
+    environment:
+      DB_URI: 'mongodb://anjani:mypasswd@mongo'
+
+  mongo:
+    image: 'mongo:latest'
+    volumes:
+      - 'mongo_anjani:/data/db'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: anjani
+      MONGO_INITDB_ROOT_PASSWORD: mypasswd
+
+volumes:
+  mongo_anjani:
