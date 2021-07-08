@@ -30,12 +30,16 @@ async def adminlist(client, chat_id, full=False) -> AsyncGenerator[Dict, int]:
             chat id of the requested adminlist.
         full (`bool`):
             Determine the return value
-            True -> returns admin name and id's.
-            False -> return admin id's only.
+            True -> Returns a generator yielding ChatMember with additional parameters 'name'.
+            False -> Returns a generator yielding user_id.
     """
     async for i in client.iter_chat_members(chat_id, filter="administrators"):
         if full:
-            yield {"name": i.user.first_name or i.user.last_name, "id": i.user.id}
+            if i.user.last_name:
+                i.user["name"] = i.user.first_name + i.user.last_name
+            else:
+                i.user["name"] = i.user.first_name
+            yield i
         else:
             yield i.user.id
 

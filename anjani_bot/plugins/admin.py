@@ -78,7 +78,7 @@ class Admin(plugin.Plugin):
             return await message.reply_text(await self.bot.text(message.chat.id, "err-chat-groups"))
         admins = ""
         async for i in adminlist(self.bot.client, message.chat.id, full=True):
-            admins += f"- [{i['name']}](tg://user?id={i['id']})\n"
+            admins += f"- [{i.user['name']}](tg://user?id={i.user['id']})\n"
         await message.reply_text(admins)
 
     @listener.on("zombies", can_restrict=True)
