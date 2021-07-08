@@ -5,8 +5,10 @@ from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
 from pyrogram.types import Message
 
+from anjani import command, plugin, util
+from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
+
 from .anjani_mixin_base import MixinBase
-from anjani import command, error, plugin, util
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -30,14 +32,14 @@ class CommandDispatcher(MixinBase):
 
         if name in self.commands:
             orig = self.commands[name]
-            raise plugin.ExistingCommandError(orig, cmd)
+            raise ExistingCommandError(orig, cmd)
 
         self.commands[name] = cmd
 
         for alias in cmd.aliases:
             if alias in self.commands:
                 orig = self.commands[alias]
-                raise plugin.ExistingCommandError(orig, cmd, alias=True)
+                raise ExistingCommandError(orig, cmd, alias=True)
 
             self.commands[alias] = cmd
 
@@ -78,14 +80,13 @@ class CommandDispatcher(MixinBase):
             self.unregister_command(cmd)
 
     def command_predicate(self: "Anjani") -> Filter:
-
         async def func(flt: Filter, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
             if message.via_bot:
                 return False
 
             if message.text is not None and message.text.startswith("/"):
                 parts = message.text.split()
-                parts[0] = parts[0][1 :]
+                parts[0] = parts[0][1:]
 
                 # Check if bot command contains a valid username
                 # eg: /ping@dAnjani_bot will return True
@@ -113,9 +114,9 @@ class CommandDispatcher(MixinBase):
 
         return create(func, "CustomCommandFilter")
 
-    async def on_command(self: "Anjani",
-                         client: Client,  # skipcq: PYL-W0613
-                         message: Message) -> None:
+    async def on_command(
+        self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
+    ) -> None:
         cmd = None
 
         try:
@@ -161,13 +162,15 @@ class CommandDispatcher(MixinBase):
                     f"Command '{cmd.name}' triggered a message edit with no changes; make sure there is only a single bot instance running"
                 )
             except Exception as e:
-                constructor = error.CommandInvokeError(f"raised from {type(e).__name__}: {str(e)}"
-                                                       ).with_traceback(e.__traceback__)
+                constructor = CommandInvokeError(
+                    f"raised from {type(e).__name__}: {str(e)}"
+                ).with_traceback(e.__traceback__)
                 cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=constructor)
 
             await self.dispatch_event("command", cmd, message)
         except Exception as e:
-            constructor = error.CommandHandlerError(f"raised from {type(e).__name__}: {str(e)}"
-                                                    ).with_traceback(e.__traceback__)
+            constructor = CommandHandlerError(
+                f"raised from {type(e).__name__}: {str(e)}"
+            ).with_traceback(e.__traceback__)
             if cmd is not None:
                 cmd.plugin.log.error("Error in command handler", exc_info=constructor)

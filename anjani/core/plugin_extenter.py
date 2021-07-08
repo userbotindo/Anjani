@@ -3,8 +3,10 @@ import inspect
 from types import ModuleType as PluginType
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type
 
-from .anjani_mixin_base import MixinBase
 from anjani import plugin, plugins, util
+from anjani.error import ExistingPluginError
+
+from .anjani_mixin_base import MixinBase
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -28,7 +30,7 @@ class PluginExtender(MixinBase):
 
         if cls.name in self.plugins:
             old = type(self.plugins[cls.name])
-            raise plugin.ExistingPluginError(old, cls)
+            raise ExistingPluginError(old, cls)
 
         plug = cls(self)
         plug.comment = comment
@@ -50,11 +52,7 @@ class PluginExtender(MixinBase):
         for plug in subplugins:
             for sym in dir(plug):
                 cls = getattr(plug, sym)
-                if (
-                    inspect.isclass(cls)
-                    and issubclass(cls, plugin.Plugin)
-                    and not cls.disabled
-                ):
+                if inspect.isclass(cls) and issubclass(cls, plugin.Plugin) and not cls.disabled:
                     self.load_plugin(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
