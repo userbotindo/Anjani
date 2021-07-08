@@ -46,7 +46,7 @@ class Rules(plugin.Plugin):
         if not message.command:
             return await message.reply_text(await self.bot.text(chat_id, "rules-blank-err"))
 
-        content = message.text.split(None, 1)
+        content = message.text.markdown.split(None, 1)
         await self.rules_db.update_one(
             {"chat_id": chat_id}, {"$set": {"rules": content[1]}}, upsert=True
         )
