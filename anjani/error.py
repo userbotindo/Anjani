@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import TYPE_CHECKING, Type
 
-from .command import Command
-from .plugin import Plugin
+if TYPE_CHECKING:
+    from .command import Command
+    from .plugin import Plugin
 
 __all__ = [
     "AnjaniException",
@@ -58,7 +60,7 @@ class ExistingCommandError(PluginLoadError):
         alias (:obj:`bool`): Wether the command is an alias or not.
     """
 
-    def __init__(self, old_cmd: Command, new_cmd: Command, alias: bool = False) -> None:
+    def __init__(self, old_cmd: "Command", new_cmd: "Command", alias: bool = False) -> None:
         al_str = "alias of " if alias else ""
         old_name = type(old_cmd.plugin).__name__
         new_name = type(new_cmd.plugin).__name__
@@ -79,7 +81,7 @@ class ExistingPluginError(PluginLoadError):
         alias (:obj:`bool`): Wether the command is an alias or not.
     """
 
-    def __init__(self, old_plugin: Plugin, new_plugin: Plugin) -> None:
+    def __init__(self, old_plugin: Type["Plugin"], new_plugin: Type["Plugin"]) -> None:
         self.old_plugin = old_plugin
         self.new_plugin = new_plugin
         super().__init__(f"Plugin '{old_plugin.name}' ({old_plugin.__name__}) already exists")
