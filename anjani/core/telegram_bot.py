@@ -25,9 +25,11 @@ from pyrogram.types import (
     Message,
     User
 )
+from yaml import full_load
 
 from .anjani_mixin_base import MixinBase
 from anjani import custom_filter, util
+from language import getLangFile
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -45,6 +47,8 @@ class TelegramBot(MixinBase):
     _disconnect: bool
     loaded: bool
     staff: Set[int]
+    languages: MutableMapping[int, str]
+    languages_data: MutableMapping[str, MutableMapping[str, str]]
 
     # Initialized during startup
     client: Client
@@ -60,6 +64,8 @@ class TelegramBot(MixinBase):
         self._disconnect = False
         self.loaded = False
         self.staff = set()
+        self.languages = {}
+        self.languages_data = {}
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -111,6 +117,15 @@ class TelegramBot(MixinBase):
         db = self.db.get_collection("STAFF")
         async for doc in db.find():
             self.staff.add(doc["_id"])
+
+        db = self.db.get_collection("LANGUAGE")
+        # Update Language setting chat from db
+        async for data in db.find():
+            self.languages[data["chat_id"]] = data["language"]
+        # Load text from language file
+        async for language_file in getLangFile():
+            self.languages_data[language_file.stem] = full_load(
+                await language_file.read_text())
 
         # Record start time and dispatch start event
         self.start_time_us = util.time.usec()

@@ -1,10 +1,9 @@
 import asyncio
 import logging
-from typing import Optional, Set
+from typing import Optional
 
 import aiohttp
 import pyrogram
-from aiopath import AsyncPath
 
 from .database_provider import DataBase
 from .command_dispatcher import CommandDispatcher
@@ -12,7 +11,6 @@ from .event_dispatcher import EventDispatcher
 from .plugin_extenter import PluginExtender
 from .telegram_bot import TelegramBot
 
-from language import languages
 
 class Anjani(TelegramBot,
              DataBase,
@@ -25,7 +23,6 @@ class Anjani(TelegramBot,
     client: pyrogram.Client
     loop: asyncio.AbstractEventLoop
     stopping: bool
-    languages: Set[AsyncPath]
 
     def __init__(self):
         self.log = logging.getLogger("bot")
@@ -37,8 +34,6 @@ class Anjani(TelegramBot,
 
         # Initialize aiohttp session last in case another mixin fails
         self.http = aiohttp.ClientSession()
-        # Load languages file
-        self.languages = set(languages)
 
     @classmethod
     async def init_and_run(
