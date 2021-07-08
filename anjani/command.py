@@ -19,40 +19,6 @@ CommandFunc = Union[Callable[..., Coroutine[Any, Any, None]],
 Decorator = Callable[[CommandFunc], CommandFunc]
 
 
-def desc(_desc: str) -> Decorator:
-    """Sets description on a command function."""
-
-    def desc_decorator(func: CommandFunc) -> CommandFunc:
-        setattr(func, "_cmd_description", _desc)
-        return func
-
-    return desc_decorator
-
-
-def usage(_usage: str,
-          optional: bool = False,
-          reply: bool = False) -> Decorator:
-    """Sets argument usage help on a command function."""
-
-    def usage_decorator(func: CommandFunc) -> CommandFunc:
-        setattr(func, "_cmd_usage", _usage)
-        setattr(func, "_cmd_usage_optional", optional)
-        setattr(func, "_cmd_usage_reply", reply)
-        return func
-
-    return usage_decorator
-
-
-def alias(*aliases: str) -> Decorator:
-    """Sets aliases on a command function."""
-
-    def alias_decorator(func: CommandFunc) -> CommandFunc:
-        setattr(func, "_cmd_aliases", aliases)
-        return func
-
-    return alias_decorator
-
-
 def filters(filters: Filter) -> Decorator:
     """Sets filters on a command function."""
 
@@ -65,22 +31,12 @@ def filters(filters: Filter) -> Decorator:
 
 class Command:
     name: str
-    desc: Optional[str]
-    usage: Optional[str]
-    usage_optional: bool
-    usage_reply: bool
-    aliases: Sequence[str]
     filters: Optional[Filter]
     plugin: Any
     func: CommandFunc
 
     def __init__(self, name: str, plugin: Any, func: CommandFunc) -> None:
         self.name = name
-        self.desc = getattr(func, "_cmd_description", None)
-        self.usage = getattr(func, "_cmd_usage", None)
-        self.usage_optional = getattr(func, "_cmd_usage_optional", False)
-        self.usage_reply = getattr(func, "_cmd_usage_reply", False)
-        self.aliases = getattr(func, "_cmd_aliases", [])
         self.filters = getattr(func, "_cmd_filters", None)
         self.plugin = plugin
         self.func = func
