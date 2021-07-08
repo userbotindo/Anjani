@@ -40,6 +40,7 @@ spamwatch = "^0.3.0"
 TgCrypto = "^1.2.2"
 toml = "^0.10.2"
 uvloop = {version ="^0.15.2", optional = true}
+aiopath = "<0.6"
 
 [tool.poetry.dev-dependencies]
 black = "^21.5b1"
@@ -62,7 +63,7 @@ target-version = ["py38"]
 #
 [tool.isort]
 profile = "black"
-known_third_party = ["aiohttp", "aiorun", "colorlog", "covid", "dotenv", "motor", "pymongo", "pyrogram", "spamwatch", "yaml"]
+known_third_party = ["aiohttp", "aiopath", "aiorun", "colorlog", "covid", "dotenv", "motor", "pymongo", "pyrogram", "spamwatch", "yaml"]
 
 #
 # Pylint Config
