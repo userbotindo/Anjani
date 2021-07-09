@@ -8,16 +8,16 @@ if TYPE_CHECKING:
     from .core import Anjani
 
 
-FilterFunc = Callable[[Filter, pyrogram.Client, Message],
-                      Coroutine[Any, Any, bool]]
-
-
 class CustomFilter(Filter):
     anjani: "Anjani"
     include_bot: bool
 
+CustomFilter: Filter
+FilterFunc = Callable[[CustomFilter, pyrogram.Client, Message],
+                      Coroutine[Any, Any, bool]]
 
-def create(func: Callable, name: str = None, **kwargs) -> CustomFilter:
+
+def create(func: FilterFunc, name: str = None, **kwargs) -> CustomFilter:
     return type(
         name or func.__name__ or "CustomAnjaniFilter",
         (CustomFilter,),
