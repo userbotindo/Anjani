@@ -19,9 +19,6 @@ import sys
 import traceback
 from typing import Any, ClassVar, Optional
 
-from pyrogram import filters
-from pyrogram.filters import Filter
-
 from anjani import command, custom_filter, plugin
 
 
@@ -39,6 +36,8 @@ class Evaluator(plugin.Plugin):
     async def cmd_eval(self, ctx: command.Context) -> Optional[str]:
         """run a command"""
         cmd = ctx.input
+        if not cmd:
+            return "Input empty..."
 
         old_stderr = sys.stderr
         old_stdout = sys.stdout
