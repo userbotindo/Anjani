@@ -11,12 +11,27 @@ from typing import (
 import pyrogram
 from pyrogram.filters import Filter, AndFilter, OrFilter, InvertFilter
 
+from anjani.custom_filter import CustomFilter
+
 if TYPE_CHECKING:
     from .core import Anjani
 
 CommandFunc = Union[Callable[..., Coroutine[Any, Any, None]],
                     Callable[..., Coroutine[Any, Any, Optional[str]]]]
 Decorator = Callable[[CommandFunc], CommandFunc]
+
+
+def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
+    """ Recursively check filters to apply anjani object into CustomFilter instance"""
+    if isinstance(filters, (AndFilter, OrFilter, InvertFilter)):
+        check_filters(filters.base, anjani)
+    if isinstance(filters, (AndFilter, OrFilter)):
+        check_filters(filters.other, anjani)
+
+    include_bot = getattr(filters, "include_bot", False)
+    # Because only (currently) :obj:`~CustomFilter` are needed the :obj:`~Anjani`
+    if include_bot and isinstance(filters, CustomFilter):
+        filters.anjani = anjani
 
 
 def filters(filters: Filter) -> Decorator:
@@ -31,7 +46,7 @@ def filters(filters: Filter) -> Decorator:
 
 class Command:
     name: str
-    filters: Optional[Filter]
+    filters: Optional[Union[Filter, CustomFilter]]
     plugin: Any
     func: CommandFunc
 
@@ -40,19 +55,9 @@ class Command:
         self.filters = getattr(func, "_cmd_filters", None)
         self.plugin = plugin
         self.func = func
-        
-        if self.filters and isinstance(self.filters, Filter) and hasattr(self.filters, "anjani"):
-            self.filters.bot = self.plugin.bot
-        elif self.filters and isinstance(self.filters, InvertFilter) and hasattr(self.filters, "anjani"):
-            self.filters.bot = self.plugin.bot
-        elif self.filters and isinstance(self.filters, AndFilter) and hasattr(self.filters.base, "anjani"):
-            self.filters.base.bot = self.plugin.bot
-        elif self.filters and isinstance(self.filters, AndFilter) and hasattr(self.filters.other, "anjani"):
-            self.filters.other.bot = self.plugin.bot
-        elif self.filters and isinstance(self.filters, OrFilter) and hasattr(self.filters.base, "anjani"):
-            self.filters.base.bot = self.plugin.bot
-        elif self.filters and isinstance(self.filters, OrFilter) and hasattr(self.filters.other, "anjani"):
-            self.filters.other.bot = self.plugin.bot
+
+        if self.filters:
+            check_filters(self.filters, self.plugin.bot)
 
 
 # Command invocation context
@@ -79,7 +84,7 @@ class Context:
         self.cmd_len = cmd_len
 
         # Response message to be filled later
-        self.response = None
+        self.response = None  # type: ignore
         # Single argument string
         username = self.bot.user.username
         if username in self.msg.text:

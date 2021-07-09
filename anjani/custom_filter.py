@@ -1,32 +1,36 @@
-from typing import Any, Callable, Coroutine
+from typing import TYPE_CHECKING, Any, Callable, Coroutine
 
 import pyrogram
-from pyrogram.filters import Filter, create
+from pyrogram.filters import Filter
 from pyrogram.types import Message
+
+if TYPE_CHECKING:
+    from .core import Anjani
 
 
 FilterFunc = Callable[[Filter, pyrogram.Client, Message],
                       Coroutine[Any, Any, bool]]
 
 
-def chat_action() -> Filter:
-
-    async def func(_: Filter, __: pyrogram.Client, chat: Message) -> bool:
-        return bool(chat.new_chat_members or
-                    chat.left_chat_member)
-
-    return create(func, "CustomChatActionFilter")
+class CustomFilter(Filter):
+    anjani: "Anjani"
+    include_bot: bool
 
 
-def _staff_only(anjani: bool = True) -> Filter:
+def create(func: Callable, name: str = None, **kwargs) -> CustomFilter:
+    return type(
+        name or func.__name__ or "CustomAnjaniFilter",
+        (CustomFilter,),
+        {"__call__": func, **kwargs}
+    )()
 
-    async def func(flt: Filter, __: pyrogram.Client, message: Message) -> bool:
+
+def _staff_only(include_bot: bool = False) -> CustomFilter:
+
+    async def func(flt: CustomFilter, _: pyrogram.Client, message: Message) -> bool:
         user = message.from_user
-        return bool(user.id in flt.bot.staff)
+        return bool(user.id in flt.anjani.staff)
 
-    if anjani:
-        return create(func, "CustomStaffFilter", anjani=True)
-    
-    return create(func, "CustomStaffFilter")
+    return create(func, "CustomStaffFilter", include_bot=include_bot)
 
-staff_only = _staff_only()
+staff_only = _staff_only(include_bot=True)
