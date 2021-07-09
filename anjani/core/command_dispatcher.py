@@ -1,4 +1,3 @@
-import traceback
 from typing import TYPE_CHECKING, Any, MutableMapping
 
 from pyrogram import Client, errors

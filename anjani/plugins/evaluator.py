@@ -25,17 +25,8 @@ from pyrogram.filters import Filter
 from anjani import command, custom_filter, plugin
 
 
-class Staff:
-    filter: ClassVar[Filter] = ~filters.all  # Override later
-
-
 class Evaluator(plugin.Plugin):
     name: ClassVar[str] = "Evaluator"
-
-    async def on_load(self) -> None:
-        """Initialize staff for eval filters"""
-        Staff.filter = filters.create(custom_filter.staff_only(self.bot),
-                                      "CustomStaffFilter")
 
     async def aexec(self, code: str, ctx: command.Context) -> Any:
         """execute command"""
@@ -44,9 +35,7 @@ class Evaluator(plugin.Plugin):
         exec(head + code)  # pylint: disable=exec-used
         return await locals()["__aexec"](self.bot, ctx)
 
-
-    @command.filters(Staff.filter)
-    @command.usage("[code]", reply=True)
+    @command.filters(custom_filter.staff_only)
     async def cmd_eval(self, ctx: command.Context) -> Optional[str]:
         """run a command"""
         cmd = ctx.input

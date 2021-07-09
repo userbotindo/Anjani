@@ -9,7 +9,7 @@ from typing import (
 )
 
 import pyrogram
-from pyrogram.filters import Filter
+from pyrogram.filters import Filter, AndFilter, OrFilter, InvertFilter
 
 if TYPE_CHECKING:
     from .core import Anjani
@@ -40,6 +40,19 @@ class Command:
         self.filters = getattr(func, "_cmd_filters", None)
         self.plugin = plugin
         self.func = func
+        
+        if self.filters and isinstance(self.filters, Filter) and hasattr(self.filters, "anjani"):
+            self.filters.bot = self.plugin.bot
+        elif self.filters and isinstance(self.filters, InvertFilter) and hasattr(self.filters, "anjani"):
+            self.filters.bot = self.plugin.bot
+        elif self.filters and isinstance(self.filters, AndFilter) and hasattr(self.filters.base, "anjani"):
+            self.filters.base.bot = self.plugin.bot
+        elif self.filters and isinstance(self.filters, AndFilter) and hasattr(self.filters.other, "anjani"):
+            self.filters.other.bot = self.plugin.bot
+        elif self.filters and isinstance(self.filters, OrFilter) and hasattr(self.filters.base, "anjani"):
+            self.filters.base.bot = self.plugin.bot
+        elif self.filters and isinstance(self.filters, OrFilter) and hasattr(self.filters.other, "anjani"):
+            self.filters.other.bot = self.plugin.bot
 
 
 # Command invocation context

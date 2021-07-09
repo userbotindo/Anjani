@@ -1,11 +1,9 @@
-from typing import TYPE_CHECKING, Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine
 
 import pyrogram
 from pyrogram.filters import Filter, create
 from pyrogram.types import Message
 
-if TYPE_CHECKING:
-    from .core import Anjani
 
 FilterFunc = Callable[[Filter, pyrogram.Client, Message],
                       Coroutine[Any, Any, bool]]
@@ -20,10 +18,15 @@ def chat_action() -> Filter:
     return create(func, "CustomChatActionFilter")
 
 
-def staff_only(anjani: "Anjani") -> FilterFunc:
+def _staff_only(anjani: bool = True) -> Filter:
 
-    async def func(_: Filter, __: pyrogram.Client, message: Message) -> bool:
+    async def func(flt: Filter, __: pyrogram.Client, message: Message) -> bool:
         user = message.from_user
-        return bool(user.id in anjani.staff)
+        return bool(user.id in flt.bot.staff)
 
-    return func
+    if anjani:
+        return create(func, "CustomStaffFilter", anjani=True)
+    
+    return create(func, "CustomStaffFilter")
+
+staff_only = _staff_only()
