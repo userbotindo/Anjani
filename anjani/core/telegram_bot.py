@@ -28,7 +28,7 @@ from pyrogram.types import (
 from yaml import full_load
 
 from .anjani_mixin_base import MixinBase
-from anjani import custom_filter, util
+from anjani import util
 from language import getLangFile
 
 if TYPE_CHECKING:
@@ -195,7 +195,7 @@ class TelegramBot(MixinBase):
     def update_plugin_events(self: "Anjani") -> None:
         self.update_plugin_event("callback_query", CallbackQueryHandler)
         self.update_plugin_event("chat_action", MessageHandler,
-                                 filters=custom_filter.chat_action())
+                                 filters=flt.new_chat_members | flt.left_chat_member)
         self.update_plugin_event("chat_migrate", MessageHandler,
                                  filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
