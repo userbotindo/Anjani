@@ -79,7 +79,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             async def wrapper(_: Client, message: Message) -> None:
                 try:
                     return await self.__update__(func, message)
-                except AnjaniException:
+                except (AnjaniException, StopPropagation, ContinuePropagation):
                     raise
                 except Exception as exc:
                     raise CommandInvokeError(exc) from exc
@@ -105,7 +105,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             async def wrapper(_: Client, message: Message) -> None:
                 try:
                     return await self.__update__(func, message)
-                except AnjaniException:
+                except (AnjaniException, StopPropagation, ContinuePropagation):
                     raise
                 except Exception as exc:
                     raise CommandInvokeError(exc) from exc
@@ -131,7 +131,7 @@ class Client(pyrogram.Client):  # pylint: disable=too-many-ancestors
             async def wrapper(_: Client, query: CallbackQuery) -> None:
                 try:
                     return await self.__update__(func, query)
-                except AnjaniException:
+                except (AnjaniException, StopPropagation, ContinuePropagation):
                     raise
                 except Exception as exc:
                     raise CommandInvokeError(exc) from exc
