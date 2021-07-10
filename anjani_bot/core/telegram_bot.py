@@ -122,6 +122,10 @@ class TelegramBot(Base):
             except KeyboardInterrupt:
                 LOG.warning("Received interrupt while connecting")
                 return
+            except Exception as err:  # pylint: disable=broad-except
+                traceback.print_exc()
+                LOG.critical(err)
+                return
 
             # idle until disconnected
             LOG.info("Idling... Press Ctrl+C to stop")
