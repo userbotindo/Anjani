@@ -1,5 +1,6 @@
 import asyncio
 import signal
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -144,14 +145,16 @@ class TelegramBot(MixinBase):
         }
         disconnect = False
 
-        def signal_handler(signum, _):
+        def signal_handler(signum):
             nonlocal disconnect
 
+            print(flush=True)  # Separate signal and next log
             self.log.info(f"Stop signal received ('{signals[signum]}').")
             disconnect = True
 
-        for name in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-            signal.signal(name, signal_handler)
+        for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+            self.loop.add_signal_handler(signame,
+                                         partial(signal_handler, signame))
 
         while not disconnect:
             await asyncio.sleep(1)
@@ -169,8 +172,10 @@ class TelegramBot(MixinBase):
             await self.idle()
         finally:
             # Make sure we stop when done
-            await self.stop()
-            self.loop.stop()
+            try:
+                await self.stop()
+            finally:  # in case stop raising an exception
+                self.loop.stop()
 
     def update_plugin_event(self: "Anjani",
                             name: str,
