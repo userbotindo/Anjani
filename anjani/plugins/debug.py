@@ -1,10 +1,7 @@
 from datetime import datetime
 from typing import ClassVar
 
-from pyrogram import filters
-import pyrogram
-
-from anjani import command, listener, plugin
+from anjani import command, plugin
 
 
 class Debug(plugin.Plugin):
