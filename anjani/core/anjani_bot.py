@@ -65,6 +65,7 @@ class Anjani(TelegramBot,
             if self.client.is_connected:
                 await self.client.stop()
         await self.http.close()
+        await self.close_db()
 
         self.log.info("Running post-stop hooks")
         if self.loaded:
