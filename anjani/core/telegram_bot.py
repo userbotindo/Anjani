@@ -170,6 +170,7 @@ class TelegramBot(MixinBase):
         finally:
             # Make sure we stop when done
             await self.stop()
+            self.loop.stop()
 
     def update_plugin_event(self: "Anjani",
                             name: str,

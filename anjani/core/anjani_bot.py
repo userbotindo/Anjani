@@ -51,10 +51,6 @@ class Anjani(TelegramBot,
         finally:
             if anjani is None or (anjani is not None and not anjani.stopping):
                 asyncio.get_event_loop().stop()
-            elif loop:
-                loop.stop()
-            else:
-                anjani.loop.stop()
 
     async def stop(self) -> None:
         self.stopping = True
