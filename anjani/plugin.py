@@ -12,6 +12,7 @@ class Plugin:
     # Class variables
     name: ClassVar[str] = "Unnamed"
     disabled: ClassVar[bool] = False
+    helpable: ClassVar[bool] = True
 
     # Instance variables
     bot: "Anjani"
