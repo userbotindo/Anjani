@@ -25,6 +25,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import StopPropagation, filters
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import User
+from requests import exceptions
 from spamwatch.types import Ban
 
 from anjani_bot import listener, plugin
@@ -70,7 +71,10 @@ class SpamShield(plugin.Plugin):
         if not self.spmwtc:
             LOGGER.warning("No SpamWatch API!")
             return None
-        return spamwatch.Client(self.spmwtc).get_ban(user_id)
+        try:
+            return spamwatch.Client(self.spmwtc).get_ban(user_id)
+        except exceptions.ConnectionError:
+            return None
 
     async def cas_check(self, user_id: int) -> Union[str, bool]:
         """Check on CAS"""
