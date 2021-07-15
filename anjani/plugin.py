@@ -2,10 +2,22 @@ import codecs
 import inspect
 import logging
 import os.path
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from functools import wraps
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional
+
+from anjani import util
 
 if TYPE_CHECKING:
     from .core import Anjani
+
+
+def loop_safe(func: Callable[..., Any]) -> Callable[..., Any]:
+
+    @wraps(func)
+    async def wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        return await util.run_sync(func, self, *args, **kwargs)
+
+    return wrapper
 
 
 class Plugin:
@@ -28,6 +40,7 @@ class Plugin:
         db = self.bot.db.get_collection("LANGUAGE")
         await db.update_one({"chat_id": chat_id}, {"$set": {"language": lang}}, upsert=True)
 
+    @loop_safe
     def text(self, chat_id: int, text_name: str, *args: Any, **kwargs: Any) -> str:
         language = self.bot.languages.get(chat_id, "en")
         noformat = bool(kwargs.get("noformat", False))
