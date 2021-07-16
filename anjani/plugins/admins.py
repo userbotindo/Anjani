@@ -29,8 +29,8 @@ from anjani import command, plugin
 from anjani.custom_filter import can_change_info, can_pin, can_promote, can_restrict, fetch_permissions
 
 
-class Admin(plugin.Plugin):
-    name: ClassVar[str] = "Admin"
+class Admins(plugin.Plugin):
+    name: ClassVar[str] = "Admins"
     helpable: ClassVar[bool] = True
 
     @command.filters(can_pin)
