@@ -49,6 +49,9 @@ class Main(plugin.Plugin):
 
         pairs = [plugins[i * 3 : (i + 1) * 3]
                  for i in range((len(plugins) + 3 - 1) // 3)]
+        pairs.append([InlineKeyboardButton("✗ Close",
+                                           callback_data="help_close")])
+
         return pairs
 
     @listener.filters(filters.regex(r"help_(.*?)"))
@@ -59,6 +62,7 @@ class Main(plugin.Plugin):
 
         plugin_match = re.match(r"help_plugin\((.+?)\)", query.data)
         back_match = re.match(r"help_back", query.data)
+        close_match = re.match(r"help_close", query.data)
         chat = query.message.chat
 
         if plugin_match:
@@ -96,6 +100,8 @@ class Main(plugin.Plugin):
                 )
             except MessageNotModified:
                 pass
+        elif close_match:
+            await query.message.delete()
 
     async def cmd_start(self, ctx: command.Context) -> Optional[str]:
         """Bot start command"""
