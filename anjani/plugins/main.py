@@ -43,7 +43,7 @@ class Main(plugin.Plugin):
                 plugins.append(
                     InlineKeyboardButton(
                         await self.text(chat_id, f"{plug.name.lower()}-button"),
-                        callback_data="help_plugin({})".format(plug.name.lower()),
+                        callback_data=f"help_plugin({plug.name.lower()})",
                     )
                 )
 
@@ -63,9 +63,11 @@ class Main(plugin.Plugin):
 
         if plugin_match:
             extension = plugin_match.group(1)
-            text = "Here is the help for the **{}** plugin:\n\n{}".format(
-                extension.capitalize(),
-                await self.text(chat.id, f"{extension}-help", username=self.bot.user.username),
+            text_lang = await self.text(chat.id,
+                                        f"{extension}-help",
+                                        username=self.bot.user.username)
+            text = (f"Here is the help for the **{extension.capitalize()}**"
+                    f"plugin:\n\n{text_lang}"
             )
             try:
                 await query.edit_message_text(
