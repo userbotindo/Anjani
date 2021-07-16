@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def loop_safe(func: Callable[..., Any]) -> Callable[..., Any]:
 
     @wraps(func)
-    async def wrapper(self, *args: Any, **kwargs: Any) -> Any:
+    async def wrapper(self: "Plugin", *args: Any, **kwargs: Any) -> Any:
         return await util.run_sync(func, self, *args, **kwargs)
 
     return wrapper
@@ -35,10 +35,6 @@ class Plugin:
         self.bot = bot
         self.log = logging.getLogger(type(self).name.lower().replace(" ", "_"))
         self.comment = None
-
-    async def change_language(self, chat_id: int, lang: str) -> None:
-        db = self.bot.db.get_collection("LANGUAGE")
-        await db.update_one({"chat_id": chat_id}, {"$set": {"language": lang}}, upsert=True)
 
     @loop_safe
     def text(self, chat_id: int, text_name: str, *args: Any, **kwargs: Any) -> str:
