@@ -42,32 +42,32 @@ class Plugin:
 
     @loop_safe
     def text(self, chat_id: int, text_name: str, *args: Any, **kwargs: Any) -> str:
-        language = self.bot.languages.get(chat_id, "en")
+        data = self.bot.chats_languages.get(chat_id, "en")
         noformat = bool(kwargs.get("noformat", False))
 
         try:
             text = codecs.decode(
                 codecs.encode(
-                    self.bot.languages_data[language][text_name], "latin-1", "backslashreplace"
+                    self.bot.languages[data][text_name], "latin-1", "backslashreplace"
                 ),
                 "unicode-escape",
             )
             return text if noformat else text.format(*args, **kwargs)
         except KeyError:
-            self.bot.log.warning(f"NO LANGUAGE STRING FOR {text_name} in {language}")
+            self.bot.log.warning(f"NO LANGUAGE STRING FOR {text_name} in {data}")
 
         # Try to send language text in en
         try:
             text = codecs.decode(
                 codecs.encode(
-                    self.bot.languages_data["en"][text_name], "latin-1", "backslashreplace"
+                    self.bot.languages["en"][text_name], "latin-1", "backslashreplace"
                 ),
                 "unicode-escape",
             )
             return text if noformat else text.format(*args, **kwargs)
         except KeyError:
             return (
-                f"**NO LANGUAGE STRING FOR {text_name} in {language}**\n"
+                f"**NO LANGUAGE STRING FOR {text_name} in {data}**\n"
                 "__Please forward this to @userbotindo__"
             )
 

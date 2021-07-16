@@ -48,8 +48,8 @@ class TelegramBot(MixinBase):
     _disconnect: bool
     loaded: bool
     staff: Set[int]
-    languages: MutableMapping[int, str]
-    languages_data: MutableMapping[str, MutableMapping[str, str]]
+    chats_languages: MutableMapping[int, str]
+    languages: MutableMapping[str, MutableMapping[str, str]]
 
     # Initialized during startup
     client: Client
@@ -65,8 +65,8 @@ class TelegramBot(MixinBase):
         self._disconnect = False
         self.loaded = False
         self.staff = set()
+        self.chats_languages = {}
         self.languages = {}
-        self.languages_data = {}
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -122,10 +122,10 @@ class TelegramBot(MixinBase):
         db = self.db.get_collection("LANGUAGE")
         # Update Language setting chat from db
         async for data in db.find():
-            self.languages[data["chat_id"]] = data["language"]
+            self.chats_languages[data["chat_id"]] = data["language"]
         # Load text from language file
         async for language_file in getLangFile():
-            self.languages_data[language_file.stem] = full_load(
+            self.languages[language_file.stem] = full_load(
                 await language_file.read_text())
 
         # Record start time and dispatch start event
