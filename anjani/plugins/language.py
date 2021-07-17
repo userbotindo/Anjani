@@ -18,6 +18,7 @@ import asyncio
 import re
 from typing import Any, ClassVar, MutableMapping, Optional
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import emoji, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -34,7 +35,7 @@ class Language(plugin.Plugin):
     name: ClassVar[str] = "Language"
     helpable: ClassVar[bool] = True
 
-    db: Any
+    db: AsyncIOMotorCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("LANGUAGE")
