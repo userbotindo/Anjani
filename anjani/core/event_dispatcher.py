@@ -1,6 +1,6 @@
 import asyncio
 import bisect
-from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence
+from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Set
 
 from pyrogram.filters import Filter
 from pyrogram.types import (
@@ -88,8 +88,13 @@ class EventDispatcher(MixinBase):
                     self.unregister_listener(listener)
 
     async def dispatch_event(
-        self: "Anjani", event: str, *args: Any, wait: bool = True, **kwargs: Any
-    ) -> None:
+        self: "Anjani",
+        event: str,
+        *args: Any,
+        wait: bool = True,
+        return_tasks: bool = False,
+        **kwargs: Any
+    ) -> Optional[Set[asyncio.Task]]:
         tasks = set()
 
         try:
@@ -121,3 +126,5 @@ class EventDispatcher(MixinBase):
         self.log.debug("Dispatching event '%s' with data %s", event, args)
         if wait:
             await asyncio.wait(tasks)
+            if return_tasks:
+                return tasks
