@@ -108,3 +108,17 @@ can_pin = pyrogram.filters.create(_can_pin, "can_pin")
 can_promote = pyrogram.filters.create(_can_promote, "can_promote")
 can_restrict = pyrogram.filters.create(_can_restrict, "can_restrict")
 # }
+
+
+# { admin_only
+async def _admin_only(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+    if message.chat.type == "private":
+        return False
+
+    bot, member = await fetch_permissions(client, message.chat.id,
+                                          message.from_user.id)  # type: ignore
+    return bool(bot.status == "administrator" and member.status == "administrator")
+
+
+admin_only = pyrogram.filters.create(_admin_only, "admin_only")
+# }
