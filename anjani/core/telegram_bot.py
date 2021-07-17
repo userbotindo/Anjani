@@ -233,19 +233,22 @@ class TelegramBot(MixinBase):
         response: Optional[Message] = None,
         **kwargs: Any,
     ) -> Message:
-        # Redact sensitive information if enabled and known
-        if redact:
-            text = self.redact_message(text)
+        if text:
+            # Redact sensitive information if enabled and known
+            if redact:
+                text = self.redact_message(text)
 
-        # Truncate messages longer than Telegram's 4096-character length limit
-        text = util.tg.truncate(text)
+            # Truncate messages longer than Telegram's 4096-character length limit
+            text = util.tg.truncate(text)
 
-        # force reply and as default behaviour if response is None
-        if mode == "reply" or response is None and mode == "edit":
-            return await msg.reply(text, **kwargs)
+            # force reply and as default behaviour if response is None
+            if mode == "reply" or response is None and mode == "edit":
+                return await msg.reply(text, **kwargs)
 
-        # Only accept edit if we already respond the original msg
-        if response is not None and mode == "edit":
-            return await response.edit(text=text, **kwargs)
+            # Only accept edit if we already respond the original msg
+            if response is not None and mode == "edit":
+                return await response.edit(text=text, **kwargs)
 
-        raise ValueError(f"Unknown response mode '{mode}'")
+            raise ValueError(f"Unknown response mode '{mode}'")
+
+        raise TypeError("Missing text to respond")
