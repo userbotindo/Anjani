@@ -82,4 +82,4 @@ class Debug(plugin.Plugin):
                     document=out_file, caption=cmd, disable_notification=True
                 )
         else:
-           return output
+            return output

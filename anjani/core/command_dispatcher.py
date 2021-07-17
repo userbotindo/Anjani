@@ -1,3 +1,4 @@
+import inspect
 from typing import TYPE_CHECKING, Any, MutableMapping
 
 from pyrogram import Client, errors
@@ -6,6 +7,7 @@ from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
+from anjani.util.argument_parser import parse_arguments
 
 from .anjani_mixin_base import MixinBase
 
@@ -115,9 +117,15 @@ class CommandDispatcher(MixinBase):
                 1 + len(message.command[0]) + 1,
             )
 
+            # Parse and convert handler required parameters
+            signature = inspect.signature(cmd.func)
+            args = tuple()
+            if len(signature.parameters) > 1:
+                args = await parse_arguments(signature, ctx)
+
             # Invoke command function
             try:
-                ret = await cmd.func(ctx)
+                ret = await cmd.func(ctx, *args)
 
                 # Response shortcut
                 if ret is not None:
