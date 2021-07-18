@@ -1,23 +1,17 @@
-from typing import (
-    Optional,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Sequence,
-    Union,
-)
+import asyncio
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional, Sequence, Union
 
 import pyrogram
-from pyrogram.filters import Filter, AndFilter, OrFilter, InvertFilter
+from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
 
 from anjani.custom_filter import CustomFilter
 
 if TYPE_CHECKING:
     from .core import Anjani
 
-CommandFunc = Union[Callable[..., Coroutine[Any, Any, None]],
-                    Callable[..., Coroutine[Any, Any, Optional[str]]]]
+CommandFunc = Union[
+    Callable[..., Coroutine[Any, Any, None]], Callable[..., Coroutine[Any, Any, Optional[str]]]
+]
 Decorator = Callable[[CommandFunc], CommandFunc]
 
 
@@ -62,8 +56,11 @@ class Command:
 
 # Command invocation context
 class Context:
+    author: pyrogram.types.User
     bot: "Anjani"
+    chat: pyrogram.types.Chat
     msg: pyrogram.types.Message
+    message: pyrogram.types.Message
     cmd_len: int
 
     response: pyrogram.types.Message
@@ -80,8 +77,10 @@ class Context:
         cmd_len: int,
     ) -> None:
         self.bot = bot
-        self.msg = msg
         self.cmd_len = cmd_len
+        self.msg = self.message = msg
+        self.author = msg.from_user
+        self.chat = msg.chat
 
         # Response message to be filled later
         self.response = None  # type: ignore
@@ -100,20 +99,46 @@ class Context:
         if name == "args":
             return self._get_args()
 
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
-        )
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
     # Argument segments
     def _get_args(self) -> Sequence[str]:
         self.args = self.segments[1:]
         return self.args
 
+    async def delete(
+        self, delay: Optional[float] = None, message: Optional[pyrogram.types.Message] = None
+    ) -> None:
+        """Bound method of *delete* of :obj:`~pyrogram.types.Message`.
+        If the deletion fails then it is silently ignored.
+
+        delay (`float`, *optional*):
+            If provided, the number of seconds to wait in the background
+            before deleting the message.
+        message (`~pyrogram.types.Message`, *optional*):
+            If provided, the message passed will be deleted else will delete
+            the client latest response.
+        """
+        content = message or self.response
+        if not content:
+            return
+
+        if delay:
+
+            async def delete(delay: float):
+                await asyncio.sleep(delay)
+                await content.delete(True)
+
+            asyncio.create_task(delete(delay))
+        else:
+            await content.delete(True)
+
     # Wrapper for Bot.respond()
     async def respond(
         self,
         text: str,
         *,
+        delete_after: Optional[float] = None,
         mode: str = "edit",
         redact: bool = True,
         msg: Optional[pyrogram.types.Message] = None,
@@ -128,4 +153,7 @@ class Context:
             response=self.response,
             **kwargs,
         )
+        if delete_after:
+            await self.delete(delete_after)
+            self.response = None
         return self.response
