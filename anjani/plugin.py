@@ -12,24 +12,31 @@ if TYPE_CHECKING:
 
 
 class Func(Protocol):
-    def __call__(_self,
-                 self: "Plugin",
-                 chat_id: int,
-                 text_name: str,
-                 *args: Any,
-                 **kwargs: Any) -> str: ...
+    def __call__(
+        _self,
+        self: "Plugin",
+        chat_id: int,
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any
+    ) -> str:
+        ...
 
 
 def loop_safe(func: Func):  # Let default typing choose the return type
     """ Decorator for text methods """
 
     @wraps(func)
-    async def wrapper(self: "Plugin",
-                      chat_id: int,
-                      text_name: str,
-                      *args: Any,
-                      **kwargs: Any) -> str:
-        return await util.run_sync(func, self, chat_id, text_name, *args, **kwargs)
+    async def wrapper(
+        self: "Plugin",
+        chat_id: int,
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any
+    ) -> str:
+        return await util.run_sync(func, self, chat_id, text_name, *args, noformat, **kwargs)
 
     return wrapper
 
@@ -52,7 +59,7 @@ class Plugin:
 
     @loop_safe
     def text(
-        self, chat_id: int, text_name: str, noformat: bool = False, *args: Any, **kwargs: Any
+        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
     ) -> str:
         """Parse the string with user language setting.
         Parameters:
@@ -60,12 +67,12 @@ class Plugin:
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
             text_name (`str`):
                 String name to parse. The string is parsed from YAML documents.
-            noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
-                Default to False.
             *args (`any`, *Optional*):
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
+            noformat (`bool`, *Optional*):
+                If exist and True, the text returned will not be formated.
+                Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
