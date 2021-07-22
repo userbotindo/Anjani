@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional, Sequence, 
 import pyrogram
 from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
 
-from anjani.core.anjani_action import BotAction
+from anjani.action import BotAction
 from anjani.custom_filter import CustomFilter
 
 if TYPE_CHECKING:
@@ -156,10 +156,10 @@ class Context:
         )
         if delete_after:
             await self.delete(delete_after)
-            self.response = None
+            self.response = None  # type: ignore
         return self.response
 
-    async def trigger_action(self, action: str = "typing") -> None:
+    async def trigger_action(self, action: str = "typing") -> bool:
         """Triggers a ChatAction on the invoked chat.
         A Shortcut for *bot.client.send_chat_action()*
 

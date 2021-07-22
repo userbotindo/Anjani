@@ -1,12 +1,20 @@
 import asyncio
+from typing import TYPE_CHECKING
 
-from anjani import command
+if TYPE_CHECKING:
+    from anjani.command import Context
 
 
 class BotAction:
-    def __init__(self, ctx: "command.Context", action: str = "typing"):
+    context: "Context"
+    action: str
+    loop: asyncio.AbstractEventLoop
+
+    def __init__(self, ctx: "Context", action: str = "typing"):
         self.context = ctx
         self.action = action
+
+        self.loop = ctx.bot.loop
 
     async def do_action(self):
         chat = self.context.chat
@@ -22,12 +30,12 @@ class BotAction:
         await send(chat.id, "cancel")
 
     def __enter__(self):
-        self.task = asyncio.create_task(self.do_action())
+        self.task = self.loop.create_task(self.do_action())
         return self
 
     def __exit__(self, exc_type, exc, tb):
         self.task.cancel()
-        asyncio.create_task(self.cancel())
+        self.loop.create_task(self.cancel())
 
     async def __aenter__(self):
         return self.__enter__()
