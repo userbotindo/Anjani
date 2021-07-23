@@ -79,6 +79,8 @@ class Language(plugin.Plugin):
             if not lang:
                 await query.edit_message_text(await self.text(chat.id,
                                                               "language-code-error"))
+                return
+
             await self.switch_lang(chat.id, lang_match[0])
             await query.edit_message_text(
                 text=await self.text(chat.id, "language-set-succes", lang),
