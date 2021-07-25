@@ -23,7 +23,7 @@ from pyrogram.errors import (
     UserAdminInvalid,
     UserIdInvalid,
 )
-from pyrogram.types import ChatMember, ChatPreview, User
+from pyrogram.types import ChatMember, User
 
 from anjani import command, plugin
 from anjani.custom_filter import can_change_info, can_pin, can_promote, can_restrict, fetch_permissions
@@ -51,9 +51,7 @@ class Admins(plugin.Plugin):
     @command.filters(can_pin)
     async def cmd_unpin(self, ctx: command.Context) -> None:
         """Unpin message on chats"""
-        chat = await self.bot.client.get_chat(ctx.msg.chat.id)
-        if isinstance(chat, ChatPreview):
-            return
+        chat = ctx.msg.chat
 
         if ctx.input and ctx.input == "all":
             await self.bot.client.unpin_all_chat_messages(chat.id)
