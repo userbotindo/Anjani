@@ -1,7 +1,7 @@
 import inspect
 from functools import partial
 from types import FunctionType
-from typing import Any, Dict, Protocol, Tuple, Type, TypeVar, Union, runtime_checkable
+from typing import Any, MutableMapping, Tuple, Type, Union
 
 from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
@@ -17,18 +17,15 @@ __all__ = [
     "parse_arguments",
 ]
 
-T_co = TypeVar("T_co", covariant=True)
 
+class Converter:
+    """Base class of custom converters that require the `~Context` to be passed.
 
-@runtime_checkable
-class Converter(Protocol[T_co]):
-    """Case class of custom converters that require the `~Context` to be passed.
-
-    Class that derived this base converter need to have the `convert()`
+    Class that derived this base converter need to have the `__call__`
     to do the conversion. This method should also be a `coroutine`.
     """
 
-    async def convert(self, ctx: Context) -> T_co:
+    async def __call__(self, ctx: Context) -> None:  # skipcq: PYL-W0613
         """The base method that should be overided and will be called on conversion.
 
         Parameters:
@@ -38,10 +35,10 @@ class Converter(Protocol[T_co]):
         Raises:
             ConversionError: The converter failed to convert an argument.
         """
-        raise NotImplementedError("Derived classes need to implement convert method!")
+        raise NotImplementedError("Derived classes need to implement __call__ method!")
 
 
-class UserConverter(Converter[types.User]):
+class UserConverter(Converter):
     """Converts to a `~pyrogram.types.User`.
 
     Conversion priority:
@@ -51,14 +48,18 @@ class UserConverter(Converter[types.User]):
     4. Using the author that invoke the `~Context`.
     """
 
-    async def extract_user(self, client: Client, user_ids: Union[str, int]) -> types.User:
+    async def extract_user(self, client: Client, user_id: Union[str, int]) -> types.User:
         """Excract user from user id"""
         try:
-            return await client.get_users(user_ids)
+            user = await client.get_users(user_id)
+            if not isinstance(user, types.User):
+                raise ConversionError(self, "Invalid conversion types result")
+
+            return user
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
-    async def convert(self, ctx: Context) -> types.User:
+    async def __call__(self, ctx: Context) -> types.User:
         message = ctx.msg
         if message.reply_to_message:
             return message.reply_to_message.from_user
@@ -71,7 +72,7 @@ class UserConverter(Converter[types.User]):
         return ctx.author
 
 
-class ChatConverter(Converter[types.Chat]):
+class ChatConverter(Converter):
     """Converts to a `~pyrogram.types.ChatMember`.
 
     Conversion priority:
@@ -82,11 +83,15 @@ class ChatConverter(Converter[types.Chat]):
 
     async def get_chat(self, client: Client, chat_ids: Union[int, str]) -> types.Chat:
         try:
-            return await client.get_chat(chat_ids)
+            chat = await client.get_chat(chat_ids)
+            if not isinstance(chat, types.Chat):
+                raise ConversionError(self, "Invalid conversion types result")
+
+            return chat
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
-    async def convert(self, ctx: Context) -> types.Chat:
+    async def __call__(self, ctx: Context) -> types.Chat:
         if ctx.args:
             chat = ctx.args[0]
             if (chat.startswith("-") and chat[1:].isdigit()) or chat.isdigit():
@@ -96,7 +101,7 @@ class ChatConverter(Converter[types.Chat]):
         return ctx.chat
 
 
-class ChatMemberConverter(Converter[types.ChatMember]):
+class ChatMemberConverter(Converter):
     """Converts to a `~pyrogram.types.ChatMember`.
 
     Conversion priority:
@@ -113,7 +118,7 @@ class ChatMemberConverter(Converter[types.ChatMember]):
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
-    async def convert(self, ctx: Context) -> types.ChatMember:
+    async def __call__(self, ctx: Context) -> types.ChatMember:
         chat = ctx.chat
         message = ctx.msg
         client = ctx.bot.client
@@ -126,10 +131,11 @@ class ChatMemberConverter(Converter[types.ChatMember]):
                 return await self.get_member(client, chat.id, int(usr))
             if usr.startswith("@"):  # username
                 return await self.get_member(client, chat.id, usr)
-        return None
+        
+        raise ConversionError(self, "No user found to convert!")
 
 
-CONVERTER_MAP: Dict[Type[Any], Any] = {
+CONVERTER_MAP: MutableMapping[Type[Any], Any] = {
     types.User: UserConverter,
     types.Chat: ChatConverter,
     types.ChatMember: ChatMemberConverter,
@@ -145,7 +151,7 @@ def _bool_converter(arg: str) -> Union[bool, BadBoolArgument]:
     raise BadBoolArgument(arg)
 
 
-def _get_default(param: inspect.Parameter, default=None) -> Union[Any, None]:
+def _get_default(param: inspect.Parameter, default: Any = None) -> Union[Any, None]:
     return param.default if param.default is not param.empty else default
 
 
@@ -176,7 +182,7 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> Tuple[Any, ..
                     res = converter(message.command[idx])
             elif inspect.isclass(converter) and issubclass(converter, Converter):
                 try:
-                    res = await converter().convert(ctx) or _get_default(param)
+                    res = await converter()(ctx) or _get_default(param)
                 except ConversionError as err:
                     res = _get_default(param, err)
             else:
