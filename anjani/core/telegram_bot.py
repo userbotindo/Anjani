@@ -125,8 +125,8 @@ class TelegramBot(MixinBase):
             self.chats_languages[data["chat_id"]] = data["language"]
         # Load text from language file
         async for language_file in getLangFile():
-            self.languages[language_file.stem] = full_load(
-                await language_file.read_text())
+            self.languages[language_file.stem] = await util.run_sync(
+                full_load, await language_file.read_text())
 
         # Record start time and dispatch start event
         self.start_time_us = util.time.usec()
