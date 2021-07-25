@@ -23,8 +23,10 @@ if TYPE_CHECKING:
 __all__ = [
     "AnjaniException",
     "BackupError",
+    "BadBoolArgument",
     "CommandHandlerError",
     "CommandInvokeError",
+    "ConversionError",
     "ExistingCommandError",
     "ExistingPluginError",
     "PluginLoadError",
@@ -49,6 +51,34 @@ class CommandInvokeError(AnjaniException):
 
 class PluginLoadError(AnjaniException):
     """Base exception class for every Plugin errors"""
+
+
+class ConversionError(AnjaniException):
+    """Base exception class for any argument conversion errors
+
+    Attributes:
+        origin (`Exception`): the original exception that was raised.
+    """
+
+    def __init__(self, converter=None, err=None, *args):
+        if converter and err:
+            self.converter = type(converter).__name__
+            self.origin = err
+            super().__init__(f"Failed to convert on '{self.converter}', {err}")
+        else:
+            super().__init__(*args)
+
+
+class BadBoolArgument(ConversionError):
+    """Exception that raised when a bool argument can't be converted
+
+    Attributes:
+        argument (`str`): The argument recieved that can't be converted.
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument = argument
+        super().__init__(f"Unrecognized argument of boolean {argument}")
 
 
 class ExistingCommandError(PluginLoadError):

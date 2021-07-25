@@ -49,10 +49,7 @@ class Users(plugin.Plugin):
                 {"chats": old_chat},
                 {"$pull": {"chats": old_chat}},
             ),
-            self.chats_db.update_one(
-                {"chat_id": old_chat},
-                {"$set": {"chat_id": new_chat}}
-            )
+            self.chats_db.update_one({"chat_id": old_chat}, {"$set": {"chat_id": new_chat}}),
         )
 
     async def on_chat_action(self, message: Message) -> None:
@@ -63,21 +60,17 @@ class Users(plugin.Plugin):
         chat = message.chat
         user = message.left_chat_member
         if user.id == self.bot.uid:
-            await asyncio.gather(self.chats_db.delete_one({"chat_id": chat.id}),
-                                 self.users_db.update_many(
-                                     {"chats": chat.id},
-                                     {"$pull": {"chats": chat.id}},
-                                 )
+            await asyncio.gather(
+                self.chats_db.delete_one({"chat_id": chat.id}),
+                self.users_db.update_many(
+                    {"chats": chat.id},
+                    {"$pull": {"chats": chat.id}},
+                ),
             )
         else:
-            await asyncio.gather(self.users_db.update_one(
-                                     {"_id": user.id},
-                                     {"$pull": {"chats": chat.id}}
-                                 ),
-                                 self.chats_db.update_one(
-                                     {"chat_id": chat.id},
-                                     {"$pull": {"member": user.id}}
-                                 )
+            await asyncio.gather(
+                self.users_db.update_one({"_id": user.id}, {"$pull": {"chats": chat.id}}),
+                self.chats_db.update_one({"chat_id": chat.id}, {"$pull": {"member": user.id}}),
             )
 
     async def on_message(self, message: Message) -> None:
@@ -88,40 +81,22 @@ class Users(plugin.Plugin):
         if not user or not chat:  # sanity check for service
             return
 
-        await asyncio.gather(self.users_db.update_one(
-                                 {"_id": user.id},
-                                 {"$set": {
-                                     "username": user.username
-                                     },
-                                     "$addToSet": {"chats": chat.id}
-                                 },
-                                 upsert=True,
-                             ),
-                             self.chats_db.update_one(
-                                 {"chat_id": chat.id},
-                                 {"$set": {
-                                     "chat_name": chat.title
-                                     },
-                                     "$addToSet": {"member": user.id}
-                                 },
-                                 upsert=True,
-                             )
+        await asyncio.gather(
+            self.users_db.update_one(
+                {"_id": user.id},
+                {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}},
+                upsert=True,
+            ),
+            self.chats_db.update_one(
+                {"chat_id": chat.id},
+                {"$set": {"chat_name": chat.title}, "$addToSet": {"member": user.id}},
+                upsert=True,
+            ),
         )
 
-    async def cmd_info(self, ctx: command.Context) -> Optional[str]:
+    async def cmd_info(self, ctx: command.Context, user: User) -> Optional[str]:
         """Fetch user info"""
         chat = ctx.msg.chat
-
-        user = None
-        if not ctx.input and not ctx.msg.reply_to_message:
-            user = ctx.msg.from_user
-        elif ctx.msg.reply_to_message:
-            user = ctx.msg.reply_to_message.from_user
-        elif ctx.input:
-            try:
-                user = await self.bot.client.get_users(ctx.input)
-            except PeerIdInvalid:
-                return await self.text(chat.id, "err-peer-invalid")
 
         if not isinstance(user, User):
             return await self.text(chat.id, "err-peer-invalid")

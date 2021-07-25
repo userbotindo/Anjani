@@ -7,7 +7,7 @@ from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
-from anjani.util.argument_parser import parse_arguments
+from anjani.util.converter import parse_arguments
 
 from .anjani_mixin_base import MixinBase
 
