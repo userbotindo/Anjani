@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Any, Type
 
 if TYPE_CHECKING:
     from .command import Command
     from .plugin import Plugin
+    from .util.converter import Converter
 
 __all__ = [
     "AnjaniException",
@@ -57,10 +58,11 @@ class ConversionError(AnjaniException):
     """Base exception class for any argument conversion errors
 
     Attributes:
-        origin (`Exception`): the original exception that was raised.
+        converter (`Converter`): The converter instance that failed.
+        origin (`Exception`): The original exception that was raised.
     """
 
-    def __init__(self, converter=None, err=None, *args):
+    def __init__(self, converter: "Converter" = None, err: Exception = None, *args: Any) -> None:
         if converter and err:
             self.converter = type(converter).__name__
             self.origin = err
@@ -70,15 +72,17 @@ class ConversionError(AnjaniException):
 
 
 class BadBoolArgument(ConversionError):
-    """Exception that raised when a bool argument can't be converted
+    """Exception that raised when a bool argument can't be converted"""
 
-    Attributes:
-        argument (`str`): The argument recieved that can't be converted.
-    """
+    def __init__(self, *args: Any) -> None:
+        super().__init__(*args)
 
-    def __init__(self, argument: str) -> None:
-        self.argument = argument
-        super().__init__(f"Unrecognized argument of boolean {argument}")
+
+class BadResult(ConversionError):
+    """Exception that raised when an argument results is not a valid types"""
+
+    def __init__(self, *args: Any) -> None:
+        super().__init__(*args)
 
 
 class ExistingCommandError(PluginLoadError):

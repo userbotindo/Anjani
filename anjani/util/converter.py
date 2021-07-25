@@ -7,7 +7,7 @@ from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
 
 from anjani.command import Context
-from anjani.error import BadBoolArgument, ConversionError
+from anjani.error import BadResult, BadBoolArgument, ConversionError
 
 __all__ = [
     "Converter",
@@ -52,10 +52,10 @@ class UserConverter(Converter):
         """Excract user from user id"""
         try:
             user = await client.get_users(user_id)
-            if not isinstance(user, types.User):
-                raise ConversionError(self, "Invalid conversion types result")
+            if isinstance(user, types.User):
+                return user
 
-            return user
+            raise BadResult(f"Invalid conversion types '{type(user)}' result")
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
@@ -84,10 +84,10 @@ class ChatConverter(Converter):
     async def get_chat(self, client: Client, chat_ids: Union[int, str]) -> types.Chat:
         try:
             chat = await client.get_chat(chat_ids)
-            if not isinstance(chat, types.Chat):
-                raise ConversionError(self, "Invalid conversion types result")
+            if isinstance(chat, types.Chat):
+                return chat
 
-            return chat
+            raise BadResult(f"Invalid conversion types '{type(chat)}' result")
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
@@ -131,8 +131,8 @@ class ChatMemberConverter(Converter):
                 return await self.get_member(client, chat.id, int(usr))
             if usr.startswith("@"):  # username
                 return await self.get_member(client, chat.id, usr)
-        
-        raise ConversionError(self, "No user found to convert!")
+
+        raise BadResult("Empty user found")
 
 
 CONVERTER_MAP: MutableMapping[Type[Any], Any] = {
@@ -148,7 +148,7 @@ def _bool_converter(arg: str) -> Union[bool, BadBoolArgument]:
         return True
     if arg in ("no", "false", "disable", "off", "0"):
         return False
-    raise BadBoolArgument(arg)
+    raise BadBoolArgument(f"Unrecognized argument of boolean '{arg}'")
 
 
 def _get_default(param: inspect.Parameter, default: Any = None) -> Union[Any, None]:
