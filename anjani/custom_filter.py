@@ -39,6 +39,19 @@ staff_only = _staff_only()
 # }
 
 
+# { owner_only
+def _owner_only(include_bot: bool = True) -> CustomFilter:
+
+    async def func(flt: CustomFilter, _: pyrogram.Client, message: Message) -> bool:
+        user = message.from_user
+        return user.id == flt.anjani.owner
+
+    return create(func, "owner_only", include_bot=include_bot)
+
+owner_only = _owner_only()
+# }
+
+
 # { permission
 @alru_cache(maxsize=128)
 async def fetch_permissions(client: pyrogram.Client,
