@@ -110,18 +110,17 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "cleaning-zombie", zombie)
 
     @command.filters(can_promote)
-    async def cmd_promote(self, ctx: command.Context) -> str:
+    async def cmd_promote(self, ctx: command.Context, user: User) -> str:
         """Bot promote member, required Both permission of can_promote"""
         chat = ctx.msg.chat
-        if not ctx.input and not ctx.msg.reply_to_message:
+
+        if not isinstance(user, User):
+            return await self.text(chat.id, "err-peer-invalid")
+        if user.id == ctx.author.id and ctx.args:
+            return await self.text(chat.id, "promote-error-self")
+        if user.id == ctx.author.id:
             return await self.text(chat.id, "no-promote-user")
 
-        user: User
-        if ctx.msg.reply_to_message:
-            user = ctx.msg.reply_to_message.from_user
-        else:
-            user = await self.bot.client.get_users(ctx.input)  # type: ignore
-        
         if user.id == self.bot.uid:
             return await self.text(chat.id, "error-its-myself")
 
@@ -147,18 +146,17 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "promote-success")
 
     @command.filters(can_promote)
-    async def cmd_demote(self, ctx: command.Context) -> str:
+    async def cmd_demote(self, ctx: command.Context, user: User) -> str:
         """Demoter Just owner and promoter can demote admin."""
         chat = ctx.msg.chat
-        if not ctx.input and not ctx.msg.reply_to_message:
+
+        if not isinstance(user, User):
+            return await self.text(chat.id, "err-peer-invalid")
+        if user.id == ctx.author.id and ctx.args:
+            return await self.text(chat.id, "demote-error-self")
+        if user.id == ctx.author.id:
             return await self.text(chat.id, "no-demote-user")
 
-        user: User
-        if ctx.msg.reply_to_message:
-            user = ctx.msg.reply_to_message.from_user
-        else:
-            user = await self.bot.client.get_users(ctx.input)  # type: ignore
-        
         if user.id == self.bot.uid:
             return await self.text(chat.id, "error-its-myself")
 
