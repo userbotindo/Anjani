@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Typ
 
 import pyrogram.filters as flt
 from pyrogram import Client
+from pyrogram.errors import MessageEmpty
 from pyrogram.filters import Filter
 from pyrogram.handlers import CallbackQueryHandler, InlineQueryHandler, MessageHandler
 from pyrogram.types import CallbackQuery, InlineQuery, Message, User
@@ -215,8 +216,19 @@ class TelegramBot(MixinBase):
         response: Optional[Message] = None,
         **kwargs: Any,
     ) -> Message:
-        if not mode in ("edit", "reply"):
-            raise ValueError(f"Unknown response mode {mode}")
+
+        async def reply(reference: Message, *, text: str = "", **kwargs: Any) -> Message:
+            if animation := kwargs.pop("animation", None):
+                return await reference.reply_animation(animation, caption=text, **kwargs)
+            if audio := kwargs.pop("audio", None):
+                return await reference.reply_audio(audio, caption=text, **kwargs)
+            if document := kwargs.pop("document", None):
+                return await reference.reply_document(document, caption=text, **kwargs)
+            if photo := kwargs.pop("photo", None):
+                return await reference.reply_photo(photo, caption=text, **kwargs)
+            if video := kwargs.pop("video", None):
+                return await reference.reply_video(video, caption=text, **kwargs)
+            return await reference.reply(text, **kwargs)
 
         if text:
             # Redact sensitive information if enabled and known
@@ -232,43 +244,15 @@ class TelegramBot(MixinBase):
 
         # force reply and as default behaviour if response is None
         if mode == "reply" or response is None and mode == "edit":
-            return await self._reply(msg, text=text, **kwargs)
+            return await reply(msg, text=text, **kwargs)
 
         # Only accept edit if we already respond the original msg
         if response is not None and mode == "edit":
-            return await self._edit(response, msg=msg, reference=response, text=text, **kwargs)
+            if any(key in kwargs for key in ("animation", "audio", "document", "photo", "video")):
+                # Make client re-send the message with the new media instead editing a text
+                await response.delete()
+                return await reply(msg, text=text or response.text, **kwargs)
 
-        # if we're here, the client can't find a respond reference
-        raise TypeError("Missing Message reference to respond")
+            return await response.edit(text, **kwargs)
 
-    async def _reply(self, reference: Message, *, text: str = "", **kwargs: Any):
-        if animation := kwargs.pop("animation", None):
-            return await reference.reply_animation(animation, caption=text, **kwargs)
-        if audio := kwargs.pop("audio", None):
-            return await reference.reply_audio(audio, caption=text, **kwargs)
-        if document := kwargs.pop("document", None):
-            return await reference.reply_document(document, caption=text, **kwargs)
-        if photo := kwargs.pop("photo", None):
-            return await reference.reply_photo(photo, caption=text, **kwargs)
-        if video := kwargs.pop("video", None):
-            return await reference.reply_video(video, caption=text, **kwargs)
-        return await reference.reply(text, **kwargs)
-
-    async def _edit(
-        self,
-        response: Message,
-        *,
-        msg: Message,
-        reference: Message,
-        text: str = "",
-        **kwargs: Any,
-    ):
-        if any(key in kwargs for key in ("animation", "audio", "document", "photo", "video")):
-            if not text:
-                text = reference.text
-            # Make client re-send the message with the new media instead editing a text
-            res = await self._reply(msg, text=text, **kwargs)
-            await reference.delete()
-            return res
-
-        return await response.edit(text=text, **kwargs)
+        raise ValueError(f"Unknown response mode {mode}")

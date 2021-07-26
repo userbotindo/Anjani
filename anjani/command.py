@@ -136,9 +136,9 @@ class Context:
 
         if delay:
 
-            async def delete(delay: float):
+            async def delete(delay: float) -> None:
                 await asyncio.sleep(delay)
-                await content.delete(True)  # type: ignore
+                await content.delete(True)
 
             asyncio.create_task(delete(delay))
         else:
@@ -153,8 +153,8 @@ class Context:
         document: Optional[Union[str, BinaryIO]] = None,
         photo: Optional[Union[str, BinaryIO]] = None,
         video: Optional[Union[str, BinaryIO]] = None,
-        delete_after: Optional[float] = None,
-        mode: Optional[str] = "edit",
+        delete_after: Optional[Union[int, float]] = None,
+        mode: str = "edit",
         redact: bool = True,
         reference: Optional[pyrogram.types.Message] = None,
         **kwargs: Any,
@@ -164,6 +164,8 @@ class Context:
         Parameters:
             text (`str`, *Optional*):
                 Text of the message to be sent.
+                *Optional* only if either :obj:`animation`, :obj:`audio`, :obj:`document`,
+                :obj:`photo`, :obj:`video` or :obj:`delete_after` is provided.
 
             audio (`str` | `BinaryIO`, *Optional*):
                 Audio file to send. Pass a file_id as string to send an audio file that
