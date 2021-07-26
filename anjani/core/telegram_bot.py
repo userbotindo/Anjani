@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Typ
 
 import pyrogram.filters as flt
 from pyrogram import Client
-from pyrogram.errors import MessageEmpty
 from pyrogram.filters import Filter
 from pyrogram.handlers import CallbackQueryHandler, InlineQueryHandler, MessageHandler
 from pyrogram.types import CallbackQuery, InlineQuery, Message, User
