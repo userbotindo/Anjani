@@ -1,44 +1,25 @@
 import asyncio
 import signal
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    MutableMapping,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt
 from pyrogram import Client
 from pyrogram.filters import Filter
-from pyrogram.handlers import (
-    CallbackQueryHandler,
-    InlineQueryHandler,
-    MessageHandler
-)
-from pyrogram.types import (
-    CallbackQuery,
-    InlineQuery,
-    Message,
-    User
-)
+from pyrogram.handlers import CallbackQueryHandler, InlineQueryHandler, MessageHandler
+from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
-from .anjani_mixin_base import MixinBase
 from anjani import util
 from language import getLangFile
+
+from .anjani_mixin_base import MixinBase
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
 
 EventType = Union[CallbackQuery, InlineQuery, Message]
-TgEventHandler = Union[CallbackQueryHandler,
-                       InlineQueryHandler,
-                       MessageHandler]
+TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
 
 
 class TelegramBot(MixinBase):
@@ -78,8 +59,7 @@ class TelegramBot(MixinBase):
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
-            session_name=":memory:", api_id=api_id, api_hash=api_hash,
-            bot_token=bot_token
+            session_name=":memory:", api_id=api_id, api_hash=api_hash, bot_token=bot_token
         )
 
     async def start(self: "Anjani") -> None:
@@ -87,8 +67,7 @@ class TelegramBot(MixinBase):
         await self.init_client()
 
         # Register core command handler
-        self.client.add_handler(MessageHandler(self.on_command,
-                                               self.command_predicate()), -1)
+        self.client.add_handler(MessageHandler(self.on_command, self.command_predicate()), -1)
 
         # Load plugin
         self.load_all_plugins()
@@ -126,7 +105,8 @@ class TelegramBot(MixinBase):
         # Load text from language file
         async for language_file in getLangFile():
             self.languages[language_file.stem] = await util.run_sync(
-                full_load, await language_file.read_text())
+                full_load, await language_file.read_text()
+            )
 
         # Record start time and dispatch start event
         self.start_time_us = util.time.usec()
@@ -153,8 +133,7 @@ class TelegramBot(MixinBase):
             disconnect = True
 
         for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-            self.loop.add_signal_handler(signame,
-                                         partial(signal_handler, signame))
+            self.loop.add_signal_handler(signame, partial(signal_handler, signame))
 
         while not disconnect:
             await asyncio.sleep(1)
@@ -177,17 +156,21 @@ class TelegramBot(MixinBase):
             finally:  # in case stop raising an exception
                 self.loop.stop()
 
-    def update_plugin_event(self: "Anjani",
-                            name: str,
-                            event_type: Type[TgEventHandler],
-                            *,
-                            filters: Optional[Filter] = None,
-                            group: int = 0) -> None:
+    def update_plugin_event(
+        self: "Anjani",
+        name: str,
+        event_type: Type[TgEventHandler],
+        *,
+        filters: Optional[Filter] = None,
+        group: int = 0,
+    ) -> None:
         if name in self.listeners:
             # Add if there ARE listeners and it's NOT already registered
             if name not in self._plugin_event_handlers:
 
-                async def event_handler(client: Client, event: EventType) -> None:  # skipcq: PYL-W0613
+                async def event_handler(
+                    client: Client, event: EventType
+                ) -> None:  # skipcq: PYL-W0613
                     await self.dispatch_event(name, event)
 
                 handler_info = (event_type(event_handler, filters), group)
@@ -200,10 +183,10 @@ class TelegramBot(MixinBase):
 
     def update_plugin_events(self: "Anjani") -> None:
         self.update_plugin_event("callback_query", CallbackQueryHandler)
-        self.update_plugin_event("chat_action", MessageHandler,
-                                 filters=flt.new_chat_members | flt.left_chat_member)
-        self.update_plugin_event("chat_migrate", MessageHandler,
-                                 filters=flt.migrate_from_chat_id)
+        self.update_plugin_event(
+            "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
+        )
+        self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
         self.update_plugin_event("message", MessageHandler)
 
@@ -222,33 +205,70 @@ class TelegramBot(MixinBase):
 
         return text
 
-    # Flexible response function with filtering, truncation, redaction, etc.
     async def respond(
         self: "Anjani",
         msg: Message,
-        text: str,
+        text: str = "",
         *,
-        mode: str = "edit",
+        mode: Optional[str] = "edit",
         redact: bool = True,
         response: Optional[Message] = None,
         **kwargs: Any,
     ) -> Message:
+        if not mode in ("edit", "reply"):
+            raise ValueError(f"Unknown response mode {mode}")
+
         if text:
             # Redact sensitive information if enabled and known
             if redact:
                 text = self.redact_message(text)
-
             # Truncate messages longer than Telegram's 4096-character length limit
             text = util.tg.truncate(text)
 
-            # force reply and as default behaviour if response is None
-            if mode == "reply" or response is None and mode == "edit":
-                return await msg.reply(text, **kwargs)
+        # get rid of emtpy value keys
+        for key, value in dict(kwargs).items():
+            if value is None:
+                del kwargs[key]
 
-            # Only accept edit if we already respond the original msg
-            if response is not None and mode == "edit":
-                return await response.edit(text=text, **kwargs)
+        # force reply and as default behaviour if response is None
+        if mode == "reply" or response is None and mode == "edit":
+            return await self._reply(msg, text=text, **kwargs)
 
-            raise ValueError(f"Unknown response mode '{mode}'")
+        # Only accept edit if we already respond the original msg
+        if response is not None and mode == "edit":
+            return await self._edit(response, msg=msg, reference=response, text=text, **kwargs)
 
-        raise TypeError("Missing text to respond")
+        # if we're here, the client can't find a respond reference
+        raise TypeError("Missing Message reference to respond")
+
+    async def _reply(self, reference: Message, *, text: str = "", **kwargs: Any):
+        if animation := kwargs.pop("animation", None):
+            return await reference.reply_animation(animation, caption=text, **kwargs)
+        if audio := kwargs.pop("audio", None):
+            return await reference.reply_audio(audio, caption=text, **kwargs)
+        if document := kwargs.pop("document", None):
+            return await reference.reply_document(document, caption=text, **kwargs)
+        if photo := kwargs.pop("photo", None):
+            return await reference.reply_photo(photo, caption=text, **kwargs)
+        if video := kwargs.pop("video", None):
+            return await reference.reply_video(video, caption=text, **kwargs)
+        return await reference.reply(text, **kwargs)
+
+    async def _edit(
+        self,
+        response: Message,
+        *,
+        msg: Message,
+        reference: Message,
+        text: str = "",
+        **kwargs: Any,
+    ):
+        if any(key in kwargs for key in ("animation", "audio", "document", "photo", "video")):
+            if not text:
+                text = reference.text
+            # Make client re-send the message with the new media instead editing a text
+            res = await self._reply(msg, text=text, **kwargs)
+            await reference.delete()
+            return res
+
+        return await response.edit(text=text, **kwargs)

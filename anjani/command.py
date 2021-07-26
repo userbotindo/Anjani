@@ -1,5 +1,14 @@
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional, Sequence, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Callable,
+    Coroutine,
+    Optional,
+    Sequence,
+    Union,
+)
 
 import pyrogram
 from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
@@ -116,6 +125,7 @@ class Context:
         delay (`float`, *optional*):
             If provided, the number of seconds to wait in the background
             before deleting the message.
+
         message (`~pyrogram.types.Message`, *optional*):
             If provided, the message passed will be deleted else will delete
             the client latest response.
@@ -128,30 +138,85 @@ class Context:
 
             async def delete(delay: float):
                 await asyncio.sleep(delay)
-                await content.delete(True)
+                await content.delete(True)  # type: ignore
 
             asyncio.create_task(delete(delay))
         else:
             await content.delete(True)
 
-    # Wrapper for Bot.respond()
     async def respond(
         self,
-        text: str,
+        text: str = "",
         *,
+        animation: Optional[Union[str, BinaryIO]] = None,
+        audio: Optional[Union[str, BinaryIO]] = None,
+        document: Optional[Union[str, BinaryIO]] = None,
+        photo: Optional[Union[str, BinaryIO]] = None,
+        video: Optional[Union[str, BinaryIO]] = None,
         delete_after: Optional[float] = None,
-        mode: str = "edit",
+        mode: Optional[str] = "edit",
         redact: bool = True,
-        msg: Optional[pyrogram.types.Message] = None,
+        reference: Optional[pyrogram.types.Message] = None,
         **kwargs: Any,
     ) -> Optional[pyrogram.types.Message]:
+        """Respond to the destination with the content given.
 
+        Parameters:
+            text (`str`, *Optional*):
+                Text of the message to be sent.
+
+            audio (`str` | `BinaryIO`, *Optional*):
+                Audio file to send. Pass a file_id as string to send an audio file that
+                exists on the Telegram servers, pass an HTTP URL as a string for Telegram
+                to get an audio file from the Internet, pass a file path as string to upload
+                a new audio file that exists on your local machine, or pass a binary
+                file-like object with its attribute “.name” set for in-memory uploads.
+
+            document (`str` | `BinaryIO`, *Optional*):
+                File to send. Pass a file_id as string to send a file that exists on the
+                Telegram servers, pass an HTTP URL as a string for Telegram to get a file
+                from the Internet, pass a file path as string to upload a new file that
+                exists on your local machine, or pass a binary file-like object with its
+                attribute “.name” set for in-memory uploads.
+
+            photo (`str` | `BinaryIO`, *Optional*):
+                Photo to send. Pass a file_id as string to send a photo that exists on the
+                Telegram servers, pass an HTTP URL as a string for Telegram to get a photo
+                from the Internet, pass a file path as string to upload a new photo that
+                exists on your local machine, or pass a binary file-like object with its
+                attribute “.name” set for in-memory uploads.
+
+            video (`str` | `BinaryIO`, *Optional*):
+                Video to send. Pass a file_id as string to send a video that exists on the
+                Telegram servers, pass an HTTP URL as a string for Telegram to get a video
+                from the Internet, or pass a file path as string to upload a new video that
+                exists on your local machine.
+
+            delete_after (`float`, *Optional*):
+                If provided, the number of seconds to wait in the background before deleting
+                the message we just sent. If the deletion fails, then it is silently ignored.
+
+            mode (`str`, *Optional*):
+                The mode that the client will respond. "edit" and "reply". defaults to "edit".
+
+            redact (`bool`, *Optional*):
+                Tells wether the text will be redacted from sensitive environment key.
+                Defaults to `True`.
+
+            reference (`pyrogram.types.Message`, *Optional*):
+                Tells client which message to respond (message to edit or to reply based on mode).
+        """
         self.response = await self.bot.respond(
-            msg or self.msg,
+            reference or self.msg,
             text,
             mode=mode,
             redact=redact,
             response=self.response,
+            animation=animation,
+            audio=audio,
+            document=document,
+            photo=photo,
+            video=video,
             **kwargs,
         )
         if delete_after:
