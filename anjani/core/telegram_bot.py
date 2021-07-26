@@ -198,11 +198,17 @@ class TelegramBot(MixinBase):
     def redact_message(self, text: str) -> str:
         api_id = self.config["api_id"]
         api_hash = self.config["api_hash"]
+        bot_token = self.config["bot_token"]
+        db_uri = self.config["db_uri"]
 
         if api_id in text:
             text = text.replace(api_id, "[REDACTED]")
         if api_hash in text:
             text = text.replace(api_hash, "[REDACTED]")
+        if bot_token in text:
+            text = text.replace(bot_token, "[REDACTED]")
+        if db_uri in text:
+            text = text.replace(db_uri, "[REDACTED]")
 
         return text
 
