@@ -140,7 +140,7 @@ class Context:
                 await asyncio.sleep(delay)
                 await content.delete(True)
 
-            asyncio.create_task(delete(delay))
+            self.bot.loop.create_task(delete(delay))
         else:
             await content.delete(True)
 
