@@ -1,13 +1,13 @@
 import inspect
 from functools import partial
 from types import FunctionType
-from typing import Any, MutableMapping, Tuple, Type, Union
+from typing import Any, MutableMapping, Optional, Tuple, Type, Union
 
 from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
 
 from anjani.command import Context
-from anjani.error import BadResult, BadBoolArgument, ConversionError
+from anjani.error import BadBoolArgument, BadResult, ConversionError
 
 __all__ = [
     "Converter",
@@ -38,14 +38,27 @@ class Converter:
         raise NotImplementedError("Derived classes need to implement __call__ method!")
 
 
-class UserConverter(Converter):
+class EntityConverter(Converter):
+    @staticmethod
+    async def parse_entities(msg: types.Message) -> Union[types.User, str]:
+        for i in msg.entities:
+            if i.type == "mention":
+                return msg.text[i.offset : i.offset + i.length]
+            if i.type == "text_mention":
+                return i.user
+        return None  # type: ignore
+
+
+class UserConverter(EntityConverter):
     """Converts to a `~pyrogram.types.User`.
 
     Conversion priority:
     1. Using replied user.
-    2. Using first argument user id.
-    3. Using first argument mentioned user.
-    4. Using the author that invoke the `~Context`.
+    2. Using mention.
+    3. Using text mention.
+    4. Using first argument user id.
+    5. Using first argument mentioned user.
+    6. Using the author that invoke the `~Context`.
     """
 
     async def extract_user(self, client: Client, user_id: Union[str, int]) -> types.User:
@@ -63,7 +76,15 @@ class UserConverter(Converter):
         message = ctx.msg
         if message.reply_to_message:
             return message.reply_to_message.from_user
-        if ctx.args:
+
+        if message.entities:  # lookup mentioned user in message entities
+            res = await self.parse_entities(message)
+            if isinstance(res, types.User):
+                return res
+            if res is not None:
+                return await self.extract_user(ctx.bot.client, res)
+
+        if ctx.args:  # lookup basic text
             usr = ctx.args[0]
             if usr.isdigit():  # user_id
                 return await self.extract_user(ctx.bot.client, int(usr))
@@ -101,13 +122,16 @@ class ChatConverter(Converter):
         return ctx.chat
 
 
-class ChatMemberConverter(Converter):
+class ChatMemberConverter(EntityConverter):
     """Converts to a `~pyrogram.types.ChatMember`.
 
     Conversion priority:
     1. Using replied user.
-    2. Using first argument user id.
-    3. Using first argument username.
+    2. using mention.
+    3. Using text mention.
+    4. Using first argument user id.
+    5. Using first argument mentioned user.
+    6. Using the author that invoke the `~Context`.
     """
 
     async def get_member(
@@ -125,14 +149,22 @@ class ChatMemberConverter(Converter):
         if message.reply_to_message:
             user = message.reply_to_message.from_user
             return await self.get_member(client, chat.id, user.id)
-        if ctx.args:
+
+        if message.entities:  # lookup mentioned user in message entities
+            res = await self.parse_entities(message)
+            if isinstance(res, types.User):
+                return await self.get_member(client, chat.id, res.id)
+            if res is not None:
+                return await self.get_member(client, chat.id, res)
+
+        if ctx.args:  # lookup basic text
             usr = ctx.args[0]
             if usr.isdigit():  # user_id
                 return await self.get_member(client, chat.id, int(usr))
             if usr.startswith("@"):  # username
                 return await self.get_member(client, chat.id, usr)
 
-        raise BadResult("Empty user found")
+        return await self.get_member(client, chat.id, ctx.author.id)
 
 
 CONVERTER_MAP: MutableMapping[Type[Any], Any] = {
