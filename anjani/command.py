@@ -97,7 +97,7 @@ class Context:
         # Single argument string
         username = self.bot.user.username
         if username in self.msg.text:
-            self.input = self.msg.text[self.cmd_len + len(username) :]
+            self.input = self.msg.text[self.cmd_len + 1 + len(username) :]
         else:
             self.input = self.msg.text[self.cmd_len :]
 
