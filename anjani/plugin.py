@@ -33,10 +33,10 @@ def loop_safe(func: Func):  # Let default typing choose the return type
         chat_id: int,
         text_name: str,
         *args: Any,
-        noformat: bool = False,
+        format: bool = True,
         **kwargs: Any
     ) -> str:
-        return await util.run_sync(func, self, chat_id, text_name, *args, noformat, **kwargs)
+        return await util.run_sync(func, self, chat_id, text_name, *args, format, **kwargs)
 
     return wrapper
 
@@ -59,7 +59,7 @@ class Plugin:
 
     @loop_safe
     def text(
-        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
+        self, chat_id: int, text_name: str, *args: Any, format: bool = True, **kwargs: Any
     ) -> str:
         """Parse the string with user language setting.
         Parameters:
@@ -70,9 +70,9 @@ class Plugin:
             *args (`any`, *Optional*):
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
-            noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
-                Default to False.
+            format (`bool`, *Optional*):
+                If exist and False, the text returned will not be formated.
+                Default to True.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
@@ -104,7 +104,7 @@ class Plugin:
                     raise
 
         data = self.bot.chats_languages.get(chat_id, "en")
-        return get_text(data, noformat)
+        return get_text(data, format)
 
     @classmethod
     def format_desc(cls, comment: Optional[str] = None):
