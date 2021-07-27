@@ -40,13 +40,13 @@ class Converter:
 
 class EntityConverter(Converter):
     @staticmethod
-    async def parse_entities(msg: types.Message) -> Union[types.User, str]:
+    async def parse_entities(msg: types.Message) -> Optional[Union[types.User, str]]:
         for i in msg.entities:
             if i.type == "mention":
                 return msg.text[i.offset : i.offset + i.length]
             if i.type == "text_mention":
                 return i.user
-        return None  # type: ignore
+        return None
 
 
 class UserConverter(EntityConverter):
