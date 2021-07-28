@@ -313,6 +313,7 @@ purges-help: |
   × /del: Delete message replied to.
   × /purge | /prune : Deletes all messages until the replied to message.
 purge-done: "`Purged {} messages in {} second(s)...`"
+purge-error: "__Can't purge messages more than 2 days__"
 #endregion
 #region reporting
 reporting-button: Reporting

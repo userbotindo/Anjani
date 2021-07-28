@@ -15,18 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import ClassVar, Optional
+from datetime import datetime
+from typing import ClassVar, Optional, Set
 
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
+    MessageDeleteForbidden,
     UserAdminInvalid,
     UserIdInvalid,
 )
 from pyrogram.types import ChatMember, User
 
 from anjani import command, plugin
-from anjani.custom_filter import can_change_info, can_pin, can_promote, can_restrict, fetch_permissions
+from anjani.custom_filter import (
+    can_change_info,
+    can_delete,
+    can_pin,
+    can_promote,
+    can_restrict,
+    fetch_permissions
+)
 
 
 class Admins(plugin.Plugin):
@@ -176,3 +185,37 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "demote-error-perm")
 
         return await self.text(chat.id, "demote-success")
+
+    @command.filters(can_delete)
+    async def cmd_del(self, ctx: command.Context) -> Optional[str]:
+        """Delete replied message"""
+        if not ctx.msg.reply_to_message:
+            return await self.text(ctx.chat.id, "error-reply-to-message")
+
+        await asyncio.gather(ctx.msg.reply_to_message.delete(),
+                             ctx.msg.delete())
+
+    @command.filters(can_delete)
+    async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
+        """purge message from message replied"""
+        if not ctx.msg.reply_to_message:
+            return await self.text(ctx.msg.chat.id, "error-reply-to-message")
+
+        time_start = datetime.now()
+        start, end = ctx.msg.reply_to_message.message_id, ctx.msg.message_id
+        messages = [*range(start, end)]
+
+        try:
+            await self.bot.client.delete_messages(chat_id=ctx.chat.id,
+                                                  message_ids=messages)
+        except MessageDeleteForbidden:
+            await ctx.respond(await self.text(ctx.chat.id, "purge-error", delete_after=5))
+            return
+        else:
+            await ctx.msg.delete()
+
+        time_end = datetime.now()
+        run_time = (time_end - time_start).seconds
+
+        await ctx.respond(await self.text(ctx.chat.id, "purge-done", len(messages), run_time), 
+                          delete_after=5)

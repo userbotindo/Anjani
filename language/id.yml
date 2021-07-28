@@ -90,6 +90,7 @@ purges-help: |
   × /del: Hapus pesan yang dibalas.
   × /purge | /prune: Menghapus semua pesan hingga pesan dibalas.
 purge-done: "`{} pesan dibershikan dalam {} detik...`"
+purge-error: "__Tidak bisa membersihkan pesan lebih dari 2 hari__"
 #endregion
 #region restrictions
 restriction-button: Pembatasan
