@@ -183,12 +183,14 @@ class TelegramBot(MixinBase):
 
     def update_plugin_events(self: "Anjani") -> None:
         self.update_plugin_event("callback_query", CallbackQueryHandler)
-        self.update_plugin_event(
-            "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
-        )
-        self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
+        self.update_plugin_event("chat_action", MessageHandler,
+                                 filters=flt.new_chat_members | flt.left_chat_member)
+        self.update_plugin_event("chat_migrate", MessageHandler,
+                                 filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
-        self.update_plugin_event("message", MessageHandler)
+        self.update_plugin_event("message", MessageHandler,
+                                 filters=~flt.new_chat_members & ~flt.left_chat_member &
+                                 ~flt.migrate_from_chat_id & ~flt.migrate_to_chat_id)
 
     @property
     def events_activated(self: "Anjani") -> int:
