@@ -218,7 +218,7 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
                 except ConversionError as err:
                     res = _get_default(param, err)
             else:
-                if converter is bool:
+                if converter is bool or converter is Optional[bool]:
                     try:
                         res = _bool_converter(message.command[idx])
                     except BadBoolArgument as err:
