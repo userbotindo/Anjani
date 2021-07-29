@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import json
 import re
 from typing import ClassVar, List, Optional
 
@@ -58,7 +59,8 @@ class Main(plugin.Plugin):
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Bot helper button"""
         if isinstance(query.data, bytes):
-            query.data = query.data.decode("utf-8")
+            encoding = json.detect_encoding(query.data)
+            query.data = query.data.decode(encoding=encoding)
 
         plugin_match = re.match(r"help_plugin\((.+?)\)", query.data)
         back_match = re.match(r"help_back", query.data)
