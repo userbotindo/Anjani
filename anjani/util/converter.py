@@ -1,7 +1,7 @@
 import inspect
 from functools import partial
 from types import FunctionType
-from typing import Any, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, List, MutableMapping, Optional, Type, Union
 
 from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
@@ -187,7 +187,7 @@ def _get_default(param: inspect.Parameter, default: Any = None) -> Union[Any, No
     return param.default if param.default is not param.empty else default
 
 
-async def parse_arguments(sig: inspect.Signature, ctx: Context) -> Tuple[Any, ...]:
+async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
     message = ctx.msg
     args = []
     idx = 1
@@ -227,6 +227,8 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> Tuple[Any, ..
                     res = converter(message.command[idx])
         except IndexError:
             res = _get_default(param)
+
         idx += 1
         args.append(res)
-    return tuple(args)
+
+    return args

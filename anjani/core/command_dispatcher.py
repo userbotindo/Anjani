@@ -1,5 +1,5 @@
 import inspect
-from typing import TYPE_CHECKING, Any, MutableMapping
+from typing import TYPE_CHECKING, Any, List, MutableMapping
 
 from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
@@ -119,7 +119,7 @@ class CommandDispatcher(MixinBase):
 
             # Parse and convert handler required parameters
             signature = inspect.signature(cmd.func)
-            args = tuple()
+            args = []  # type: List[Any]
             if len(signature.parameters) > 1:
                 args = await parse_arguments(signature, ctx)
 
