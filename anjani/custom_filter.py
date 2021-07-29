@@ -31,7 +31,7 @@ def _staff_only(include_bot: bool = True) -> CustomFilter:
 
     async def func(flt: CustomFilter, _: pyrogram.Client, message: Message) -> bool:
         user = message.from_user
-        return bool(user.id in flt.anjani.staff)
+        return user.id in flt.anjani.staff
 
     return create(func, "staff_only", include_bot=include_bot)
 
@@ -66,7 +66,7 @@ async def _can_delete(_: Filter, client: pyrogram.Client, message: Message) -> b
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_delete_messages and member.can_delete_messages)
+    return bot.can_delete_messages and member.can_delete_messages
 
 
 async def _can_change_info(_: Filter, client: pyrogram.Client, message: Message) -> bool:
@@ -75,7 +75,7 @@ async def _can_change_info(_: Filter, client: pyrogram.Client, message: Message)
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_change_info and member.can_change_info)
+    return bot.can_change_info and member.can_change_info
 
 
 async def _can_invite(_: Filter, client: pyrogram.Client, message: Message) -> bool:
@@ -84,7 +84,7 @@ async def _can_invite(_: Filter, client: pyrogram.Client, message: Message) -> b
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_invite_users and member.can_invite_users)
+    return bot.can_invite_users and member.can_invite_users
 
 
 async def _can_pin(_: Filter, client: pyrogram.Client, message: Message) -> bool:
@@ -93,7 +93,7 @@ async def _can_pin(_: Filter, client: pyrogram.Client, message: Message) -> bool
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_pin_messages and member.can_pin_messages)
+    return bot.can_pin_messages and member.can_pin_messages
 
 
 async def _can_promote(_: Filter, client: pyrogram.Client, message: Message) -> bool:
@@ -102,7 +102,7 @@ async def _can_promote(_: Filter, client: pyrogram.Client, message: Message) -> 
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_promote_members and member.can_promote_members)
+    return bot.can_promote_members and member.can_promote_members
 
 
 async def _can_restrict(_: Filter, client: pyrogram.Client, message: Message) -> bool:
@@ -111,7 +111,7 @@ async def _can_restrict(_: Filter, client: pyrogram.Client, message: Message) ->
 
     bot, member = await fetch_permissions(client, message.chat.id,
                                           message.from_user.id)  # type: ignore
-    return bool(bot.can_restrict_members and member.can_restrict_members)
+    return bot.can_restrict_members and member.can_restrict_members
 
 
 can_delete = pyrogram.filters.create(_can_delete, "can_delete")
@@ -124,14 +124,23 @@ can_restrict = pyrogram.filters.create(_can_restrict, "can_restrict")
 
 
 # { admin_only
-async def _admin_only(_: Filter, client: pyrogram.Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
+def _admin_only(include_bot: bool = True) -> CustomFilter:
 
-    bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
-    return bool(bot.status == "administrator" and member.status == "administrator")
+    async def func(flt: CustomFilter, client: pyrogram.Client, message: Message) -> bool:
+        if message.chat.type == "private":
+            return False
 
+        user = message.from_user
+        bot, member = await fetch_permissions(client, message.chat.id, user.id)  # type: ignore
+        return (
+            bot.status == "administrator" and
+            (
+                member.status in {"administrator", "creator"} or
+                user.id in flt.anjani.staff
+            )
+        )
 
-admin_only = pyrogram.filters.create(_admin_only, "admin_only")
+    return create(func, "admin_only", include_bot=include_bot)
+
+admin_only = _admin_only()
 # }
