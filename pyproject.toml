@@ -36,7 +36,6 @@ dnspython = "^2.1.0"
 motor = "^2.4.0"
 Pyrogram = "^1.2.9"
 python-dotenv = "^0.17.1"
-spamwatch = "^0.3.0"
 TgCrypto = "^1.2.2"
 toml = "^0.10.2"
 uvloop = {version ="^0.15.2", optional = true}

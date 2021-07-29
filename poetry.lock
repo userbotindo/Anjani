@@ -528,17 +528,6 @@ version = "2.2.1"
 
 [[package]]
 category = "main"
-description = "SpamWatch API Wrapper"
-name = "spamwatch"
-optional = false
-python-versions = ">=3.6"
-version = "0.3.0"
-
-[package.dependencies]
-requests = ">=2.20"
-
-[[package]]
-category = "main"
 description = "Fast Telegram Crypto Library for Python"
 name = "tgcrypto"
 optional = false
@@ -1074,10 +1063,6 @@ sniffio = [
 soupsieve = [
     {file = "soupsieve-2.2.1-py3-none-any.whl", hash = "sha256:c2c1c2d44f158cdbddab7824a9af8c4f83c76b1e23e049479aa432feb6c4c23b"},
     {file = "soupsieve-2.2.1.tar.gz", hash = "sha256:052774848f448cf19c7e959adf5566904d525f33a3f8b6ba6f6f8f26ec7de0cc"},
-]
-spamwatch = [
-    {file = "spamwatch-0.3.0-py3-none-any.whl", hash = "sha256:863c2e9dde0fcefd74a77fc112da1ea0a484f1a650bd0dabfd8f77a12f4d4b3f"},
-    {file = "spamwatch-0.3.0.tar.gz", hash = "sha256:d981e9adc64e49edb7f1d918f0943bc6ec97aa0952f3781f63089bd26365ee7e"},
 ]
 tgcrypto = [
     {file = "TgCrypto-1.2.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:2073aa6bbc809a56ae3d54e0f496cacaee6e5cb7c08682153c992eae72b4fbb8"},
