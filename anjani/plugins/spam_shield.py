@@ -201,18 +201,13 @@ class SpamShield(plugin.Plugin):
         )
 
     @command.filters(admin_only)
-    async def cmd_spamshield(self, ctx: command.Context) -> str:
-        """Set spamshield setting"""
+    async def cmd_spamshield(self, ctx: command.Context, enable: bool) -> str:
+        """Set SpamShield setting"""
         chat = ctx.chat
         if not ctx.input:
             return await self.text(chat.id, "spamshield-view", await self.is_active(chat.id))
 
-        cmd = ctx.args[0].lower()
-        if cmd in {"on", "true", "enable"}:
-            enable = True
-        elif cmd in {"off", "false", "disable"}:
-            enable = False
-        else:
+        if not isinstance(enable, bool):
             return await self.text(chat.id, "err-invalid-option")
 
         ret, _ = await asyncio.gather(self.text(chat.id,
