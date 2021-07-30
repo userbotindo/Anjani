@@ -94,7 +94,7 @@ class Users(plugin.Plugin):
             ),
         )
 
-    async def cmd_info(self, ctx: command.Context, user: User) -> Optional[str]:
+    async def cmd_info(self, ctx: command.Context, user: Optional[User]) -> Optional[str]:
         """Fetch user info"""
         chat = ctx.msg.chat
 

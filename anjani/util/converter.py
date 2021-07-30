@@ -196,6 +196,12 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
     for _, param in items:
         converter = param.annotation
 
+        # Check if the annotation was an `Optional` or `Union` type.
+        # This type hinting make a parsing ambiguities.
+        # Hence we just simply use the first arg as the converter.
+        if getattr(converter, "__origin__", None) is Union:
+            converter = converter.__args__[0]
+
         try:
             module = converter.__module__
         except AttributeError:
@@ -218,7 +224,7 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
                 except ConversionError as err:
                     res = _get_default(param, err)
             else:
-                if converter is bool or converter is Optional[bool]:
+                if converter is bool:
                     try:
                         res = _bool_converter(message.command[idx])
                     except BadBoolArgument as err:
