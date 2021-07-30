@@ -198,9 +198,13 @@ async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
 
         # Check if the annotation was an `Optional` or `Union` type.
         # This type hinting make a parsing ambiguities.
-        # Hence we just simply use the first arg as the converter.
+        # Hence we just simply use the first arg as the converter if is not None type.
+        # Else use the second arg.
         if getattr(converter, "__origin__", None) is Union:
-            converter = converter.__args__[0]
+            if converter.__args__[0] is None:
+                converter = converter.__args__[1]
+            else:
+                converter = converter.__args__[0]
 
         try:
             module = converter.__module__
