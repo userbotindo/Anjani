@@ -15,14 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import json
 import re
 from typing import Any, ClassVar, MutableMapping, Optional
 
-from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import emoji, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from anjani import command, listener, plugin
+from anjani import command, listener, plugin, util
 
 LANG_FLAG = {
     "en": f"{emoji.FLAG_UNITED_STATES} English",
@@ -35,7 +35,7 @@ class Language(plugin.Plugin):
     name: ClassVar[str] = "Language"
     helpable: ClassVar[bool] = True
 
-    db: AsyncIOMotorCollection
+    db: util.db.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("LANGUAGE")
@@ -62,7 +62,8 @@ class Language(plugin.Plugin):
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Set language query."""
         if isinstance(query.data, bytes):
-            query.data = query.data.decode("utf-8")
+            encoding = json.detect_encoding(query.data)
+            query.data = query.data.decode(encoding=encoding)
 
         lang_match = re.findall(r"en|id", query.data)
         chat = query.message.chat

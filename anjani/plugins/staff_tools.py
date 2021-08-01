@@ -18,21 +18,20 @@ import asyncio
 from io import BytesIO
 from typing import ClassVar, Optional, Set
 
-from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChannelInvalid,
     PeerIdInvalid,
     UserNotParticipant,
 )
 
-from anjani import command, plugin
+from anjani import command, plugin, util
 from anjani.custom_filter import owner_only, staff_only
 
 
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
 
-    db: AsyncIOMotorCollection
+    db: util.db.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")

@@ -17,11 +17,10 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
-from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 from pyrogram.types import Message
 
-from anjani import command, listener, plugin
+from anjani import command, listener, plugin, util
 from anjani.custom_filter import admin_only
 from anjani.util.tg import Types, build_button, get_message_info, revert_button
 
@@ -30,7 +29,7 @@ class Notes(plugin.Plugin):
     name: ClassVar[str] = "Notes"
     helpable: ClassVar[bool] = True
 
-    db: AsyncIOMotorCollection
+    db: util.db.AsyncCollection
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self):
@@ -81,13 +80,11 @@ class Notes(plugin.Plugin):
         chat = message.chat
         reply_to = message.message_id
 
-        data: MutableMapping[
-            str,
-            MutableMapping[str, Any]
-        ] = await self.db.find_one({"chat_id": chat.id})
+        data = await self.db.find_one({"chat_id": chat.id})
         if not data or not data.get("notes"):
             return
 
+        note: MutableMapping[str, Any]
         try:
             note = data["notes"][name]
         except KeyError:
@@ -96,7 +93,9 @@ class Notes(plugin.Plugin):
         button = note.get("button", None)
         if noformat:
             parse_mode = None
-            btn_text = "\n\n" + revert_button(button)
+            btn_text = "\n\n"
+            if button:
+                btn_text += revert_button(button)
             keyb = None
         else:
             parse_mode = "markdown"
@@ -173,10 +172,7 @@ class Notes(plugin.Plugin):
         """View chat notes."""
         chat = ctx.chat
 
-        data: MutableMapping[
-            str,
-            MutableMapping[str, Any]
-        ] = await self.db.find_one({"chat_id": chat.id})
+        data = await self.db.find_one({"chat_id": chat.id})
         if not data or not data.get("notes"):
             return await self.text(chat.id, "no-notes")
 
@@ -194,14 +190,11 @@ class Notes(plugin.Plugin):
 
         name = ctx.input
 
-        data: MutableMapping[
-            str,
-            MutableMapping[str, Any]
-        ] = await self.db.find_one({"chat_id": chat.id})
+        data = await self.db.find_one({"chat_id": chat.id})
         if not data or not data.get("notes"):
             return await self.text(chat.id, "no-notes")
 
-        notes = data["notes"]
+        notes: MutableMapping[str, Any] = data["notes"]
         try:
             notes[name]
         except KeyError:

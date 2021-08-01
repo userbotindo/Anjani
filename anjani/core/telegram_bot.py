@@ -98,8 +98,8 @@ class TelegramBot(MixinBase):
         async for doc in db.find():
             self.staff.add(doc["_id"])
 
-        db = self.db.get_collection("LANGUAGE")
         # Update Language setting chat from db
+        db = self.db.get_collection("LANGUAGE")
         async for data in db.find():
             self.chats_languages[data["chat_id"]] = data["language"]
         # Load text from language file

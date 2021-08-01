@@ -19,19 +19,18 @@ from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientResponseError
-from motor.motor_asyncio import AsyncIOMotorCollection
 from pyrogram import filters
 from pyrogram.errors import ChannelPrivate
 from pyrogram.types import Message, User
 
-from anjani import command, listener, plugin
+from anjani import command, listener, plugin, util
 from anjani.custom_filter import admin_only
 
 
 class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
 
-    db: AsyncIOMotorCollection
+    db: util.db.AsyncCollection
     token: str
 
     async def on_load(self) -> None:
@@ -148,12 +147,7 @@ class SpamShield(plugin.Plugin):
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
-        data: Optional[
-            MutableMapping[
-                str,
-                bool
-            ]
-        ] = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
+        data = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
         return data["setting"] if data else False
 
     async def setting(self, chat_id: int, setting: bool) -> None:

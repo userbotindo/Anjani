@@ -1,8 +1,5 @@
 from typing import TYPE_CHECKING, Any
 
-from motor.core import AgnosticCollection
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-
 from .anjani_mixin_base import MixinBase
 from anjani import util
 
@@ -10,19 +7,12 @@ if TYPE_CHECKING:
     from .anjani_bot import Anjani
 
 
-class DataBase(MixinBase):
-    db: AsyncIOMotorDatabase
-    _db: AsyncIOMotorClient
+class DatabaseProvider(MixinBase):
+    db: util.db.AsyncDB
 
     def __init__(self: "Anjani", **kwargs: Any):
-        self._init_db()
+        client = util.db.AsyncClient(self.config["db_uri"])
+        self.db = client.get_database("AnjaniBot")
 
-        self.db = self._db.get_database("AnjaniBot")
-
+        # Propagate initialization to other mixins
         super().__init__(**kwargs)
-
-    def _init_db(self: "Anjani") -> None:
-        self._db = AsyncIOMotorClient(self.config["db_uri"], connect=False)
-
-    async def close_db(self: "Anjani") -> None:
-        await util.run_sync(self._db.close)

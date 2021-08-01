@@ -7,7 +7,7 @@ import pyrogram
 
 from anjani import custom_filter
 
-from .database_provider import DataBase
+from .database_provider import DatabaseProvider
 from .command_dispatcher import CommandDispatcher
 from .event_dispatcher import EventDispatcher
 from .plugin_extenter import PluginExtender
@@ -15,7 +15,7 @@ from .telegram_bot import TelegramBot
 
 
 class Anjani(TelegramBot,
-             DataBase,
+             DatabaseProvider,
              PluginExtender,
              CommandDispatcher,
              EventDispatcher):
@@ -63,7 +63,7 @@ class Anjani(TelegramBot,
             if self.client.is_connected:
                 await self.client.stop()
         await self.http.close()
-        await self.close_db()
+        await self.db.close()
         custom_filter.fetch_permissions.close()
 
         self.log.info("Running post-stop hooks")

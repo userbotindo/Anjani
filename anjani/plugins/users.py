@@ -18,18 +18,16 @@ import asyncio
 from typing import ClassVar, Optional
 
 from aiopath import AsyncPath
-from motor.motor_asyncio import AsyncIOMotorCollection
-from pyrogram.errors import PeerIdInvalid
 from pyrogram.types import Message, User
 
-from anjani import command, plugin
+from anjani import command, plugin, util
 
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
-    chats_db: AsyncIOMotorCollection
-    users_db: AsyncIOMotorCollection
+    chats_db: util.db.AsyncCollection
+    users_db: util.db.AsyncCollection
     lock: asyncio.locks.Lock
 
     async def on_load(self) -> None:
@@ -94,11 +92,11 @@ class Users(plugin.Plugin):
             ),
         )
 
-    async def cmd_info(self, ctx: command.Context, user: Optional[User]) -> Optional[str]:
+    async def cmd_info(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Fetch user info"""
         chat = ctx.msg.chat
 
-        if not isinstance(user, User):
+        if not user:
             return await self.text(chat.id, "err-peer-invalid")
 
         text = f"**{'Bot' if user.is_bot else 'User'} Info**\n"

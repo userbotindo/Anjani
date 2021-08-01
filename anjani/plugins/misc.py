@@ -25,7 +25,6 @@ class Misc(plugin.Plugin):
     name: ClassVar[str] = "Miscs"
     helpable: ClassVar[bool] = True
 
-
     async def cmd_id(self, ctx: command.Context) -> str:
         """Display ID's"""
         msg = ctx.msg.reply_to_message or ctx.msg
