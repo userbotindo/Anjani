@@ -1195,14 +1195,11 @@ class AgnosticAsyncCursor:
     def _get_more(self) -> Coroutine[Any, Any, int]:
         if not self.alive:
             raise InvalidOperation(
-                "Can't call get_more() on a MotorCursor that has been"
+                "Can't call get_more() on a AsyncCursor that has been"
                 " exhausted or killed.")
 
         self.started = True
-        return self._refresh()
-
-    async def _refresh(self) -> int:
-        return await util.run_sync(self._cursor._refresh)
+        return util.run_sync(self._cursor._refresh)
 
     async def next(self) -> MutableMapping[str, Any]:
         return await self.__anext__()
@@ -1233,8 +1230,9 @@ class AgnosticAsyncCursor:
 
 class AsyncCommandCursor(AgnosticAsyncCursor):
     # TODO:
-    # - _data method
-    # - _killed method
+    # Implement this class into:
+    #     - list_collections
+    #     - aggregate (both in AsyncDB and AsyncCollection)
 
     _cursor: CommandCursor
 
