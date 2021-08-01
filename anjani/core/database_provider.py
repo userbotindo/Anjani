@@ -11,7 +11,7 @@ class DatabaseProvider(MixinBase):
     db: util.db.AsyncDB
 
     def __init__(self: "Anjani", **kwargs: Any):
-        client = util.db.AsyncClient(self.config["db_uri"])
+        client = util.db.AsyncClient(self.config["db_uri"], connect=False)
         self.db = client.get_database("AnjaniBot")
 
         # Propagate initialization to other mixins
