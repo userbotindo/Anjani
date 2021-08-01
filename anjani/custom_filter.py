@@ -1,6 +1,6 @@
 import asyncio
 from functools import wraps
-from typing import Generator, TYPE_CHECKING, Any, Callable, Coroutine, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Tuple
 
 import pyrogram
 from async_lru import alru_cache
@@ -10,13 +10,13 @@ from pyrogram.types import ChatMember, Message
 if TYPE_CHECKING:
     from .core import Anjani
 
+FilterFunc = Callable[["CustomFilter", pyrogram.Client, Message],
+                      Coroutine[Any, Any, bool]]
+
 
 class CustomFilter(Filter):
     anjani: "Anjani"
     include_bot: bool
-
-FilterFunc = Callable[[CustomFilter, pyrogram.Client, Message],
-                      Coroutine[Any, Any, bool]]
 
 
 def create(func: FilterFunc, name: str = None, **kwargs) -> CustomFilter:
