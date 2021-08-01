@@ -16,7 +16,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import ClassVar, Optional, Set
+from typing import ClassVar, Optional
 
 from pyrogram.errors import (
     ChatAdminRequired,
@@ -134,7 +134,7 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "error-its-myself")
 
         # use cached permissions from filters
-        bot, _ = await fetch_permissions(self.bot.client, chat.id, user.id)  # type: ignore
+        bot, _ = await fetch_permissions(self.bot.client, chat.id, user.id)
         try:
             await chat.promote_member(
                 user_id=user.id,

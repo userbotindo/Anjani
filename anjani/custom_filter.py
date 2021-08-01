@@ -1,5 +1,6 @@
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Tuple
+from functools import wraps
+from typing import Generator, TYPE_CHECKING, Any, Callable, Coroutine, Tuple
 
 import pyrogram
 from async_lru import alru_cache
@@ -53,6 +54,16 @@ owner_only = _owner_only()
 
 
 # { permission
+def override_typing(func: Any):  # Use default typing for return type
+    """ Decorator for :meth:`~fetch_permissions` to fix typing error """
+
+    @wraps(func)
+    async def wrapper(client: pyrogram.Client, chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
+        return await func(client, chat, user)
+
+    return wrapper
+
+@override_typing
 @alru_cache(maxsize=128)
 async def fetch_permissions(client: pyrogram.Client,
                             chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
@@ -65,7 +76,7 @@ async def _can_delete(_: Filter, client: pyrogram.Client, message: Message) -> b
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_delete_messages and member.can_delete_messages
 
 
@@ -74,7 +85,7 @@ async def _can_change_info(_: Filter, client: pyrogram.Client, message: Message)
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_change_info and member.can_change_info
 
 
@@ -83,7 +94,7 @@ async def _can_invite(_: Filter, client: pyrogram.Client, message: Message) -> b
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_invite_users and member.can_invite_users
 
 
@@ -92,7 +103,7 @@ async def _can_pin(_: Filter, client: pyrogram.Client, message: Message) -> bool
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_pin_messages and member.can_pin_messages
 
 
@@ -101,7 +112,7 @@ async def _can_promote(_: Filter, client: pyrogram.Client, message: Message) -> 
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_promote_members and member.can_promote_members
 
 
@@ -110,7 +121,7 @@ async def _can_restrict(_: Filter, client: pyrogram.Client, message: Message) ->
         return False
 
     bot, member = await fetch_permissions(client, message.chat.id,
-                                          message.from_user.id)  # type: ignore
+                                          message.from_user.id)
     return bot.can_restrict_members and member.can_restrict_members
 
 
@@ -131,7 +142,7 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             return False
 
         user = message.from_user
-        bot, member = await fetch_permissions(client, message.chat.id, user.id)  # type: ignore
+        bot, member = await fetch_permissions(client, message.chat.id, user.id)
         return (
             bot.status == "administrator" and
             (
