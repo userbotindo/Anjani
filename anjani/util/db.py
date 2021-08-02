@@ -298,6 +298,12 @@ class AsyncClient:
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self._client = MongoClient(*args, **kwargs)
 
+    def __getitem__(self, name: str) -> "AsyncDB":
+        return AsyncDB(self, self._client[name])
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self._client})"
+
     async def close(self) -> None:
         await util.run_sync(self._client.close)
 
@@ -523,7 +529,7 @@ class AsyncDB:
         return AsyncCollection(Collection(self._db, name))
 
     def __repr__(self):
-        return f"AsyncDatabase({self.client}, {self.name})"
+        return f"{type(self).__name__}({self._db})"
 
     async def watch(self) -> None:  # TODO
         raise NotImplementedError
@@ -755,7 +761,7 @@ class AsyncCollection:
         )
 
     def __repr__(self):
-        return f"AsyncCollection({self.database}, {self.name})"
+        return f"{type(self).__name__}({self._col})"
 
     def aggregate(
         self,
