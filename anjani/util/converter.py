@@ -40,7 +40,7 @@ class Converter:
 
 class EntityConverter(Converter):
     @staticmethod
-    async def parse_entities(msg: types.Message) -> Optional[Union[types.User, str]]:
+    def parse_entities(msg: types.Message) -> Optional[Union[types.User, str]]:
         for i in msg.entities:
             if i.type == "mention":
                 return msg.text[i.offset : i.offset + i.length]
@@ -78,7 +78,7 @@ class UserConverter(EntityConverter):
             return message.reply_to_message.from_user
 
         if message.entities:  # lookup mentioned user in message entities
-            res = await self.parse_entities(message)
+            res = self.parse_entities(message)
             if isinstance(res, types.User):
                 return res
             if res is not None:
@@ -151,7 +151,7 @@ class ChatMemberConverter(EntityConverter):
             return await self.get_member(client, chat.id, user.id)
 
         if message.entities:  # lookup mentioned user in message entities
-            res = await self.parse_entities(message)
+            res = self.parse_entities(message)
             if isinstance(res, types.User):
                 return await self.get_member(client, chat.id, res.id)
             if res is not None:
