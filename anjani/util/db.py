@@ -191,8 +191,6 @@ class AsyncClientSession:
         else:
             if self.in_transaction:
                 await self.commit_transaction()
-        finally:
-            await self.end_session()
 
     async def with_transaction(
         self,
