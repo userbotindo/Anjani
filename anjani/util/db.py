@@ -1381,10 +1381,10 @@ class AsyncCursorBase(AsyncBase):
     """Base class for Cursor AsyncIOMongoDB instances
 
        *DEPRECATED* methods are removed in this class.
-    """
 
-    # each method is removed because we can iterate directly this class
-    # And also we have to_list() method, so yeah kinda useless
+       :meth:`~each()` is removed because we can iterate directly this class, 
+       And we now have :meth:`~to_list()` so yeah kinda useless
+    """
 
     collection: AsyncCollection
     dispatch: Union["_LatentCursor", CommandCursor, Cursor, RawBatchCursor]
