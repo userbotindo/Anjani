@@ -50,8 +50,11 @@ class Language(plugin.Plugin):
         )
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
-        return {self.name: await self.db.find_one({"chat_id": chat_id},
-                                                  {"_id": False})}
+        language = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
+        if not language:
+            return {}
+
+        return {self.name: language}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id},

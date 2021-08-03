@@ -41,8 +41,13 @@ class Backups(plugin.Plugin):
         events = await self.bot.dispatch_event("plugin_backup", chat.id, return_tasks=True)
         if not events:
             return await self.text(chat.id, "backup-null")
+
         for event in events:
-            data.update(event.result())
+            result: MutableMapping[str, Any] = event.result()
+            if not result:
+                continue
+
+            data.update(result)
 
         if len(data.keys()) <= 1:
             return await self.text(chat.id, "backup-null")
