@@ -22,12 +22,14 @@ from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
     MessageDeleteForbidden,
+    PeerIdInvalid,
     UserAdminInvalid,
     UserIdInvalid,
+    UserNotParticipant
 )
 from pyrogram.types import ChatMember, User
 
-from anjani import command, plugin
+from anjani import command, plugin, util
 from anjani.custom_filter import (
     can_change_info,
     can_delete,
@@ -219,3 +221,59 @@ class Admins(plugin.Plugin):
 
         await ctx.respond(await self.text(ctx.chat.id, "purge-done", len(messages), run_time), 
                           delete_after=5)
+
+    @command.filters(can_restrict)
+    async def cmd_kick(self, ctx: command.Context, user: Optional[User] = None) -> str:
+        """Kick chat member"""
+        chat = ctx.chat
+
+        if not user:
+            return await self.text(chat.id, "no-kick-user")
+
+        try:
+            target = await chat.get_member(user.id)
+            if util.tg.is_staff_or_admin(target, self.bot.staff):
+                return await self.text(chat.id, "admin-kick")
+        except UserNotParticipant:
+            return await self.text(chat.id, "err-not-participant")
+
+        await chat.kick_member(user.id)
+        ret, _ = await asyncio.gather(self.text(chat.id, "kick-done", user.first_name),
+                                      chat.unban_member(user.id))
+
+        return ret
+
+    @command.filters(can_restrict)
+    async def ban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
+        """Ban chat member"""
+        chat = ctx.chat
+
+        if not user:
+            return await self.text(chat.id, "no-ban-user")
+
+        try:
+            target = await chat.get_member(user.id)
+            if util.tg.is_staff_or_admin(target, self.bot.staff):
+                return await self.text(chat.id, "admin-ban")
+        except UserNotParticipant:
+            return await self.text(chat.id, "err-not-participant")
+
+        ret, _ = await asyncio.gather(self.text(chat.id, "ban-done", user.first_name),
+                                      chat.kick_member(user.id))
+
+        return ret
+
+    @command.filters(can_restrict)
+    async def unban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
+        """Unban chat member"""
+        chat = ctx.chat
+
+        if not user:
+            return await self.text(chat.id, "unban-no-user")
+
+        try:
+            await chat.unban_member(user.id)
+        except PeerIdInvalid:
+            return await self.text(chat.id, "err-peer-invalid")
+
+        return await self.bot.text(chat.id, "unban-done", user.first_name)
