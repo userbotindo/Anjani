@@ -1,9 +1,14 @@
+import asyncio
+from collections import deque
 from contextlib import asynccontextmanager
+from functools import partial
 from typing import (
     Any,
     AsyncGenerator,
+    AsyncIterable,
     AsyncIterator,
     Callable,
+    ClassVar,
     Coroutine,
     Deque,
     FrozenSet,
@@ -19,6 +24,7 @@ from typing import (
 from bson import CodecOptions, DBRef
 from bson.code import Code
 from bson.codec_options import DEFAULT_CODEC_OPTIONS
+from bson.timestamp import Timestamp
 from bson.son import SON
 from pymongo import (
     DeleteOne,
@@ -27,12 +33,14 @@ from pymongo import (
     MongoClient,
     ReplaceOne
 )
+from pymongo.change_stream import ChangeStream
 from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.collation import Collation
 from pymongo.collection import Collection
-from pymongo.command_cursor import CommandCursor as _CommandCursor
-from pymongo.cursor import Cursor as _Cursor
+from pymongo.command_cursor import CommandCursor as _CommandCursor, RawBatchCommandCursor
+from pymongo.cursor import Cursor as _Cursor, RawBatchCursor, _QUERY_OPTIONS
 from pymongo.database import Database
+from pymongo.driver_info import DriverInfo
 from pymongo.errors import InvalidOperation, OperationFailure, PyMongoError
 from pymongo.monotonic import time as monotonic_time
 from pymongo.read_concern import ReadConcern
@@ -58,11 +66,16 @@ from pymongo.write_concern import DEFAULT_WRITE_CONCERN, WriteConcern
 from anjani import util
 
 PREFERENCE = Union[Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest]
+JavaScriptCode = TypeVar("JavaScriptCode", bound=str)
 Requests = Union[DeleteOne, InsertOne, ReplaceOne]
 Results = TypeVar("Results")
 
 
 class Cursor(_Cursor):
+
+    _Cursor__data: Deque[Any]
+    _Cursor__killed: bool
+    _Cursor__query_flags: int
 
     def __init__(self, collection: Collection, *args: Any, **kwargs: Any) -> None:
         super().__init__(collection, *args, **kwargs)
@@ -106,14 +119,21 @@ class Cursor(_Cursor):
     def _AsyncCursor__spec(self) -> MutableMapping[str, Any]:
         return self.__spec
 
+    @property
+    def collection(self) -> "AsyncCollection":
+        return self.__collection
+
 
 class CommandCursor(_CommandCursor):
+
+    _CommandCursor__data: Deque[Any]
+    _CommandCursor__killed: bool
 
     def __init__(
         self,
         collection: "AsyncCollection",
         cursor_info: MutableMapping[str, Any],
-        address: Union[Tuple[str, int], None],
+        address: Optional[Tuple[str, int]] = None,
         *,
         batch_size: int = 0,
         max_await_time_ms: Optional[int] = None,
@@ -126,46 +146,128 @@ class CommandCursor(_CommandCursor):
             address,
             batch_size=batch_size,
             max_await_time_ms=max_await_time_ms,
-            session=session,
+            session=session.dispatch if session else session,
             explicit_session=explicit_session,
         )
 
-    @property
-    def _AsyncCommandCursor__data(self) -> Deque[Any]:
-        return self.__data
 
     async def _AsyncCommandCursor__die(self, synchronous: bool = False) -> None:
         await util.run_sync(self.__die, synchronous=synchronous)
 
     @property
+    def _AsyncCommandCursor__data(self) -> Deque[Any]:
+        return self.__data
+
+    @property
     def _AsyncCommandCursor__killed(self) -> bool:
         return self.__killed
 
+    @property
+    def collection(self) -> "AsyncCollection":
+        return self.__collection
 
-class AsyncClientSession:
-    # All DEPRECATED methods are removed in this class.
+
+class AsyncBase:
+    """Base Class for AsyncIOMongoDB Instances"""
+
+    dispatch: Union[
+        "_LatentCursor",
+        ClientSession,
+        Collection,
+        CommandCursor,
+        Cursor,
+        Database,
+        MongoClient,
+        RawBatchCursor,
+        RawBatchCommandCursor
+    ]
+
+    def __init__(
+        self,
+        dispatch: Union[
+            "_LatentCursor",
+            ClientSession,
+            Collection,
+            CommandCursor,
+            Cursor,
+            Database,
+            MongoClient,
+            RawBatchCursor,
+            RawBatchCommandCursor
+        ]
+    ) -> None:
+        self.dispatch = dispatch
+
+    def __eq__(self, other: Any) -> bool:
+        if (isinstance(other, self.__class__) and
+                hasattr(self, "dispatch") and
+                hasattr(self, "dispatch")):
+            return self.dispatch == other.dispatch
+
+        return NotImplemented
+
+    def __repr__(self) -> str:
+        return type(self).__name__ + f"({self.dispatch!r})"
+
+
+class AsyncBaseProperty(AsyncBase):
+    """Base class property for AsyncIOMongoDB instances"""
+
+    dispatch: Union[Collection, Database, MongoClient]
+
+    @property
+    def codec_options(self) -> CodecOptions:
+        return self.dispatch.codec_options
+
+    @property
+    def read_preference(self) -> _ServerMode:
+        return self.dispatch.read_preference
+
+    @property
+    def read_concern(self) -> ReadConcern:
+        return self.dispatch.read_concern
+
+    @property
+    def write_concern(self) -> WriteConcern:
+        return self.dispatch.write_concern
+
+
+class AsyncClientSession(AsyncBase):
+    """AsyncIO :obj:`~ClientSession`
+
+       *DEPRECATED* methods are removed in this class.
+    """
 
     _client: "AsyncClient"
-    _session: ClientSession
 
-    def __init__(self, client: "AsyncClient", session: ClientSession) -> None:
+    dispatch: ClientSession
+
+    def __init__(self, client: "AsyncClient", dispatch: ClientSession) -> None:
         self._client = client
-        self._session = session
+
+        # Propagate initialization to base
+        super().__init__(dispatch)
 
     async def __aenter__(self) -> "AsyncClientSession":
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        await util.run_sync(self._session.__exit__, exc_type, exc_val, exc_tb)
+        await util.run_sync(self.dispatch.__exit__, exc_type, exc_val, exc_tb)
+
+    def __enter__(self) -> None:
+        raise RuntimeError("Use 'async with' not just 'with'")
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        pass
 
     async def abort_transaction(self) -> None:
-        return await util.run_sync(self._session.abort_transaction)
+        return await util.run_sync(self.dispatch.abort_transaction)
 
     async def commit_transaction(self) -> None:
-        return await util.run_sync(self._session.commit_transaction)
+        return await util.run_sync(self.dispatch.commit_transaction)
 
     async def end_session(self) -> None:
-        return await util.run_sync(self._session.end_session)
+        return await util.run_sync(self.dispatch.end_session)
 
     @asynccontextmanager
     async def start_transaction(
@@ -177,7 +279,7 @@ class AsyncClientSession:
         max_commit_time_ms: Optional[int] = None
     ) -> AsyncGenerator["AsyncClientSession", None]:
         await util.run_sync(
-            self._session.start_transaction,
+            self.dispatch.start_transaction,
             read_concern=read_concern,
             write_concern=write_concern,
             read_preference=read_preference,
@@ -253,10 +355,10 @@ class AsyncClientSession:
                 return ret
 
     def advance_cluster_time(self, cluster_time: int) -> None:
-        self._session.advance_cluster_time(cluster_time=cluster_time)
+        self.dispatch.advance_cluster_time(cluster_time=cluster_time)
 
     def advance_operation_time(self, operation_time: int) -> None:
-        self._session.advance_operation_time(operation_time=operation_time)
+        self.dispatch.advance_operation_time(operation_time=operation_time)
 
     @property
     def client(self) -> "AsyncClient":
@@ -264,48 +366,54 @@ class AsyncClientSession:
 
     @property
     def cluster_time(self) -> Optional[int]:
-        return self._session.cluster_time
+        return self.dispatch.cluster_time
 
     @property
     def has_ended(self) -> bool:
-        return self._session.has_ended
+        return self.dispatch.has_ended
 
     @property
     def in_transaction(self) -> bool:
-        return self._session.in_transaction
+        return self.dispatch.in_transaction
 
     @property
     def operation_time(self) -> Optional[int]:
-        return self._session.operation_time
+        return self.dispatch.operation_time
 
     @property
     def options(self) -> SessionOptions:
-        return self._session.options
+        return self.dispatch.options
 
     @property
     def session_id(self) -> MutableMapping[str, Any]:
-        return self._session.session_id
+        return self.dispatch.session_id
 
 
-class AsyncClient:
-    # TODO:
-    # - Add watch method
+class AsyncClient(AsyncBaseProperty):
+    """AsyncIO :obj:`~MongoClient`
 
-    # All DEPRECATED methods are removed in this class.
+       *DEPRECATED* methods are removed in this class.
+    """
 
-    _client: MongoClient
+    dispatch: MongoClient
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self._client = MongoClient(*args, **kwargs)
+        kwargs.update({"driver":
+                       DriverInfo(
+                           name="AsyncIOMongoDB",
+                           version="staging",
+                           platform="AsyncIO"
+                        )})
+        dispatch = MongoClient(*args, **kwargs)
+
+        # Propagate initialization to base
+        super().__init__(dispatch)
 
     def __getitem__(self, name: str) -> "AsyncDB":
-        return AsyncDB(self, self._client[name])
-
-    def __repr__(self):
-        return f"{type(self).__name__}({self._client})"
+        return AsyncDB(self, self.dispatch[name])
 
     async def close(self) -> None:
-        await util.run_sync(self._client.close)
+        await util.run_sync(self.dispatch.close)
 
     async def drop_database(
         self,
@@ -316,9 +424,9 @@ class AsyncClient:
             name_or_database = name_or_database.name
 
         return await util.run_sync(
-            self._client.drop_database,
+            self.dispatch.drop_database,
             name_or_database,
-            session=session
+            session=session.dispatch if session else session
         )
 
     def get_database(
@@ -332,7 +440,7 @@ class AsyncClient:
     ) -> "AsyncDB":
         return AsyncDB(
             self,
-            self._client.get_database(
+            self.dispatch.get_database(
                 name,
                 codec_options=codec_options,
                 read_preference=read_preference,
@@ -352,7 +460,7 @@ class AsyncClient:
     ) -> "AsyncDB":
         return AsyncDB(
             self,
-            self._client.get_default_database(
+            self.dispatch.get_default_database(
                 default,
                 codec_options=codec_options,
                 read_preference=read_preference,
@@ -363,8 +471,8 @@ class AsyncClient:
 
     async def list_database_names(
         self, session: Optional[AsyncClientSession] = None) -> List[str]:
-        return await util.run_sync(self._client.list_database_names,
-                                   session=session)
+        return await util.run_sync(self.dispatch.list_database_names,
+                                   session=session.dispatch if session else session)
 
     async def list_databases(
         self, session: Optional[AsyncClientSession] = None, **kwargs: Any
@@ -375,9 +483,11 @@ class AsyncClient:
                                      codec_options=DEFAULT_CODEC_OPTIONS,
                                      read_preference=ReadPreference.PRIMARY,
                                      write_concern=DEFAULT_WRITE_CONCERN)
-        res: MutableMapping[str, Any]
-        res = await util.run_sync(
-            database._db._retryable_read_command, cmd, session=session)
+        res: MutableMapping[str, Any] = await util.run_sync(
+            database.dispatch._retryable_read_command,
+            cmd,
+            session=session.dispatch if session else session
+        )
         cursor: MutableMapping[str, Any] = {
             "id": 0,
             "firstBatch": res["databases"],
@@ -388,7 +498,10 @@ class AsyncClient:
     async def server_info(
         self, session: Optional[AsyncClientSession] = None
     ) -> MutableMapping[str, Any]:
-        return await util.run_sync(self._client.server_info, session=session)
+        return await util.run_sync(
+            self.dispatch.server_info,
+            session=session.dispatch if session else session
+        )
 
     # Don't need await when entering the context manager,
     # because it's slightly different than motor libs.
@@ -400,7 +513,8 @@ class AsyncClient:
         default_transaction_options: Any = None,
         snapshot: bool = False,
     ) -> AsyncGenerator[AsyncClientSession, None]:
-        session = self._client.start_session(
+        session = await util.run_sync(
+            self.dispatch.start_session,
             causal_consistency=causal_consistency,
             default_transaction_options=default_transaction_options,
             snapshot=snapshot
@@ -409,144 +523,149 @@ class AsyncClient:
         async with AsyncClientSession(self, session) as session:
             yield session
 
-    async def watch(self):  # TODO
-        raise NotImplementedError
+    def watch(
+        self,
+        pipeline: Optional[List[MutableMapping[str, Any]]] = None,
+        *,
+        full_document: Optional[str] = None,
+        resume_after: Optional[Any] = None,
+        max_await_time_ms: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        collation: Optional[Collation] = None,
+        start_at_operation_time: Optional[Timestamp] = None,
+        session: Optional[AsyncClientSession] = None,
+        start_after: Optional[Any] = None
+    ) -> "AsyncChangeStream":
+        return AsyncChangeStream(
+            self,
+            pipeline,
+            full_document,
+            resume_after,
+            max_await_time_ms,
+            batch_size,
+            collation,
+            start_at_operation_time,
+            session,
+            start_after
+        )
 
     @property
     def HOST(self) -> str:
-        return self._client.HOST
+        return self.dispatch.HOST
 
     @property
     def PORT(self) -> int:
-        return self._client.PORT
+        return self.dispatch.PORT
 
     @property
     def address(self) -> Optional[Tuple[str, int]]:
-        return self._client.address
+        return self.dispatch.address
 
     @property
     def arbiters(self) -> Set[Tuple[str, int]]:
-        return self._client.arbiters
-
-    @property
-    def codec_options(self) -> CodecOptions:
-        return self._client.codec_options
+        return self.dispatch.arbiters
 
     @property
     def event_listeners(self) -> Any:
-        return self._client.event_listeners
+        return self.dispatch.event_listeners
 
     @property
     def is_mongos(self) -> bool:
-        return self._client.is_mongos
+        return self.dispatch.is_mongos
 
     @property
     def is_primary(self) -> bool:
-        return self._client.is_primary
+        return self.dispatch.is_primary
 
     @property
     def local_threshold_ms(self) -> int:
-        return self._client.local_threshold_ms
+        return self.dispatch.local_threshold_ms
 
     @property
     def max_bson_size(self) -> int:
-        return self._client.max_bson_size
+        return self.dispatch.max_bson_size
 
     @property
     def max_idle_time_ms(self) -> Optional[int]:
-        return self._client.max_idle_time_ms
+        return self.dispatch.max_idle_time_ms
 
     @property
     def max_message_size(self) -> int:
-        return self._client.max_message_size
+        return self.dispatch.max_message_size
 
     @property
     def max_pool_size(self) -> int:
-        return self._client.max_pool_size
+        return self.dispatch.max_pool_size
 
     @property
     def max_write_batch_size(self) -> int:
-        return self._client.max_write_batch_size
+        return self.dispatch.max_write_batch_size
 
     @property
     def min_pool_size(self) -> int:
-        return self._client.min_pool_size
+        return self.dispatch.min_pool_size
 
     @property
     def nodes(self) -> FrozenSet[Set[Tuple[str, int]]]:
-        return self._client.nodes
+        return self.dispatch.nodes
 
     @property
     def primary(self) -> Optional[Tuple[str, int]]:
-        return self._client.primary
-
-    @property
-    def read_concern(self) -> ReadConcern:
-        return self._client.read_concern
-
-    @property
-    def read_preference(self) -> _ServerMode:
-        return self._client.read_preference
+        return self.dispatch.primary
 
     @property
     def retry_reads(self) -> bool:
-        return self._client.retry_reads
+        return self.dispatch.retry_reads
 
     @property
     def retry_writes(self) -> bool:
-        return self._client.retry_writes
+        return self.dispatch.retry_writes
 
     @property
     def secondaries(self) -> Set[Tuple[str, int]]:
-        return self._client.secondaries
+        return self.dispatch.secondaries
 
     @property
     def server_selection_timeout(self) -> int:
-        return self._client.server_selection_timeout
+        return self.dispatch.server_selection_timeout
 
     @property
     def topology_description(self) -> TopologyDescription:
-        return self._client.topology_description
+        return self.dispatch.topology_description
 
-    @property
-    def write_concern(self) -> WriteConcern:
-        return self._client.write_concern
 
-class AsyncDB:
-    # TODO:
-    # - Add watch method
+class AsyncDB(AsyncBaseProperty):
+    """AsyncIO :obj:`~Database`
 
-    # All DEPRECATED methods are removed in this class.
+       *DEPRECATED* methods are removed in this class.
+    """
 
     _client: AsyncClient
-    _db: Database
+
+    dispatch: Database
 
     def __init__(self, client: AsyncClient, database: Database) -> None:
         self._client = client
-        self._db = database
+
+        # Propagate initialization to base
+        super().__init__(database)
 
     def __getitem__(self, name) -> "AsyncCollection":
-        return AsyncCollection(Collection(self._db, name))
-
-    def __repr__(self):
-        return f"{type(self).__name__}({self._db})"
-
-    async def watch(self) -> None:  # TODO
-        raise NotImplementedError
+        return AsyncCollection(Collection(self.dispatch, name))
 
     def aggregate(
         self,
-        pipeline: Tuple[Any, ...],
+        pipeline: List[MutableMapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
-    ) -> "AsyncCommandCursor":
-        return AsyncCommandCursor(
-            self._db.aggregate(
-                pipeline,
-                session=session,
-                **kwargs
-            )
+    ) -> "AsyncLatentCommandCursor":
+        return AsyncLatentCommandCursor(
+            self["$cmd.aggregate"],
+            self.dispatch.aggregate,
+            pipeline,
+            session=session.dispatch if session else session,
+            **kwargs
         )
 
     async def command(
@@ -561,14 +680,14 @@ class AsyncDB:
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
-        return await self._db.command(
+        return await self.dispatch.command(
             command,
             value=value,
             check=check,
             allowable_errors=allowable_errors,
             read_preference=read_preference,
             codec_options=codec_options,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
@@ -588,13 +707,13 @@ class AsyncDB:
     ) -> "AsyncCollection":
         return AsyncCollection(
             await util.run_sync(
-                self._db.create_collection,
+                self.dispatch.create_collection,
                 name,
                 codec_options=codec_options,
                 read_preference=read_preference,
                 write_concern=write_concern,
                 read_concern=read_concern,
-                session=session,
+                session=session.dispatch if session else session,
                 **kwargs
             )
         )
@@ -602,7 +721,12 @@ class AsyncDB:
     async def dereference(
         self, dbref: DBRef, *, session: Optional[AsyncClientSession] = None, **kwargs: Any
     ) -> Optional[MutableMapping[str, Any]]:
-        return await util.run_sync(self._db.dereference, dbref, session=session, **kwargs)
+        return await util.run_sync(
+            self.dispatch.dereference,
+            dbref,
+            session=session.dispatch if session else session,
+            **kwargs
+        )
 
     async def drop_collection(
         self,
@@ -613,9 +737,9 @@ class AsyncDB:
             name_or_collection = name_or_collection.name
 
         return await util.run_sync(
-            self._db.drop_collection,
+            self.dispatch.drop_collection,
             name_or_collection,
-            session=session
+            session=session.dispatch if session else session
         )
 
     def get_collection(
@@ -628,7 +752,7 @@ class AsyncDB:
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncCollection":
         return AsyncCollection(
-            self._db.get_collection(
+            self.dispatch.get_collection(
                 name,
                 codec_options=codec_options,
                 read_preference=read_preference,
@@ -645,13 +769,12 @@ class AsyncDB:
         **kwargs: Any
     ) -> List[str]:
         return await util.run_sync(
-            self._db.list_collection_names,
-            session=session,
+            self.dispatch.list_collection_names,
+            session=session.dispatch if session else session,
             filter=filter,
             **kwargs
         )
 
-    # Lazy method
     async def list_collections(
         self,
         *,
@@ -659,14 +782,15 @@ class AsyncDB:
         filter: Optional[MutableMapping[str, Any]] = None,
         **kwargs: Any
     ) -> "AsyncCommandCursor":
-        return AsyncCommandCursor(
-            await util.run_sync(
-                self._db.list_collections,
-                session=session,
-                filter=filter,
-                **kwargs
-            )
+        cmd = SON([("listCollections", 1)])
+        cmd.update(filter, **kwargs)
+
+        res: MutableMapping[str, Any] = await util.run_sync(
+            self.dispatch._retryable_read_command,
+            cmd,
+            session=session.dispatch if session else session
         )
+        return AsyncCommandCursor(CommandCursor(self["$cmd"], res["cursor"], None))
 
     async def validate_collection(
         self,
@@ -681,12 +805,38 @@ class AsyncDB:
             name_or_collection = name_or_collection.name
 
         return await util.run_sync(
-            self._db.validate_collection,
+            self.dispatch.validate_collection,
             name_or_collection,
             scandata=scandata,
             full=full,
-            session=session,
+            session=session.dispatch if session else session,
             background=background
+        )
+
+    def watch(
+        self,
+        pipeline: Optional[List[MutableMapping[str, Any]]] = None,
+        *,
+        full_document: Optional[str] = None,
+        resume_after: Optional[Any] = None,
+        max_await_time_ms: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        collation: Optional[Collation] = None,
+        start_at_operation_time: Optional[Timestamp] = None,
+        session: Optional[AsyncClientSession] = None,
+        start_after: Optional[Any] = None
+    ) -> "AsyncChangeStream":
+        return AsyncChangeStream(
+            self,
+            pipeline,
+            full_document,
+            resume_after,
+            max_await_time_ms,
+            batch_size,
+            collation,
+            start_at_operation_time,
+            session,
+            start_after
         )
 
     def with_options(
@@ -697,7 +847,7 @@ class AsyncDB:
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncDB":
-        self._db = self._db.with_options(
+        self.dispatch = self.dispatch.with_options(
             codec_options=codec_options,
             read_preference=read_preference,
             write_concern=write_concern,
@@ -711,43 +861,23 @@ class AsyncDB:
         return self._client
 
     @property
-    def codec_options(self) -> CodecOptions:
-        return self._db.codec_options
-
-    @property
     def name(self) -> str:
-        return self._db.name
-
-    @property
-    def read_concern(self) -> ReadConcern:
-        return self._db.read_concern
-
-    @property
-    def read_preference(self) -> _ServerMode:
-        return self._db.read_preference
-
-    @property
-    def write_concern(self) -> WriteConcern:
-        return self._db.write_concern
+        return self.dispatch.name
 
 
-class AsyncCollection:
-    # TODO:
-    # - Add aggregate_raw_batches method
-    # - Add find_raw_batches method
-    # - Add inline_map_reduce method
-    # - Add list_indexes method
-    # - Add map_reduce method
-    # - Add watch method
+class AsyncCollection(AsyncBaseProperty):
+    """AsyncIO :obj:`~Collection`
 
-    # All DEPRECATED methods are removed in this class.
+       *DEPRECATED* methods are removed in this class.
+    """
 
-    _col: Collection
+    dispatch: Collection
 
-    def __init__(self, collection: Collection) -> None:
-        self._col = collection
+    def __init__(self, dispatch: Collection) -> None:
+        # Propagate initialization to base
+        super().__init__(dispatch)
 
-    def __getitem__(self, name) -> "AsyncCollection":
+    def __getitem__(self, name: str) -> "AsyncCollection":
         return AsyncCollection(
             Collection(
                 self.database,
@@ -760,22 +890,34 @@ class AsyncCollection:
             )
         )
 
-    def __repr__(self):
-        return f"{type(self).__name__}({self._col})"
-
     def aggregate(
         self,
-        pipeline: Tuple[Any, ...],
+        pipeline: List[MutableMapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
-    ) -> "AsyncCommandCursor":
-        return AsyncCommandCursor(
-            self._col.aggregate(
-                pipeline,
-                session=session,
-                **kwargs
-            )
+    ) -> "AsyncLatentCommandCursor":
+        return AsyncLatentCommandCursor(
+            self,
+            self.dispatch.aggregate,
+            pipeline,
+            session=session.dispatch if session else session,
+            **kwargs
+        )
+
+    def aggregate_raw_batches(
+        self,
+        pipeline: List[MutableMapping[str, Any]],
+        *,
+        session: Optional[AsyncClientSession] = None,
+        **kwargs: Any
+    ) -> "AsyncLatentCommandCursor":
+        return AsyncLatentCommandCursor(
+            self,
+            self.dispatch.aggregate_raw_batches,
+            pipeline,
+            session=session.dispatch if session else session,
+            **kwargs
         )
 
     async def bulk_write(
@@ -787,11 +929,11 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> BulkWriteResult:
         return await util.run_sync(
-            self._col.bulk_write,
+            self.dispatch.bulk_write,
             request,
             ordered=ordered,
             bypass_document_validation=bypass_document_validation,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def count_documents(
@@ -802,9 +944,9 @@ class AsyncCollection:
         **kwargs: Any
     ) -> int:
         return await util.run_sync(
-            self._col.count_documents,
+            self.dispatch.count_documents,
             filter,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
@@ -812,7 +954,7 @@ class AsyncCollection:
         self, keys: Union[str, List[Tuple[str, Any]]], **kwargs: Any
     ) -> str:
         return await util.run_sync(
-            self._col.create_index,
+            self.dispatch.create_index,
             keys,
             **kwargs
         )
@@ -825,9 +967,9 @@ class AsyncCollection:
         **kwargs: Any
     ) -> List[str]:
         return await util.run_sync(
-            self._col.create_indexes,
+            self.dispatch.create_indexes,
             indexes,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         ) 
 
@@ -840,11 +982,11 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> DeleteResult:
         return await util.run_sync(
-            self._col.delete_many,
+            self.dispatch.delete_many,
             filter,
             collation=collation,
             hint=hint,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def delete_one(
@@ -856,11 +998,11 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> DeleteResult:
         return await util.run_sync(
-            self._col.delete_one,
+            self.dispatch.delete_one,
             filter,
             collation=collation,
             hint=hint,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def distinct(
@@ -872,15 +1014,18 @@ class AsyncCollection:
         **kwargs: Any
     ) -> List[Any]:
         return await util.run_sync(
-            self._col.distinct,
+            self.dispatch.distinct,
             key,
             filter=filter,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
     async def drop(self, session: Optional[AsyncClientSession] = None) -> None:
-        await util.run_sync(self._col.drop, session=session)
+        await util.run_sync(
+            self.dispatch.drop,
+            session=session.dispatch if session else session
+        )
 
     async def drop_index(
         self,
@@ -889,19 +1034,23 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
     ) -> None:
-        await util.run_sync(self._col.drop_index,
+        await util.run_sync(self.dispatch.drop_index,
                             index_or_name,
-                            session=session,
+                            session=session.dispatch if session else session,
                             **kwargs)
 
     async def drop_indexes(self, session: Optional[AsyncClientSession] = None, **kwargs) -> None:
-        await util.run_sync(self._col.drop_indexes, session=session, **kwargs)
+        await util.run_sync(
+            self.dispatch.drop_indexes,
+            session=session.dispatch if session else session,
+            **kwargs
+        )
 
     async def estimated_document_count(self, **kwargs: Any) -> int:
-        return await util.run_sync(self._col.estimated_document_count, **kwargs)
+        return await util.run_sync(self.dispatch.estimated_document_count, **kwargs)
 
     def find(self, *args: Any, **kwargs: Any) -> AsyncIterator[MutableMapping[str, Any]]:
-        return AsyncCursor(Cursor(self._col, *args, **kwargs))
+        return AsyncCursor(Cursor(self.dispatch, *args, **kwargs), self)
 
     async def find_one(
         self,
@@ -910,7 +1059,7 @@ class AsyncCollection:
         **kwargs: Any
     ) -> Optional[MutableMapping[str, Any]]:
         return await util.run_sync(
-            self._col.find_one, filter, *args, **kwargs)
+            self.dispatch.find_one, filter, *args, **kwargs)
 
     async def find_one_and_delete(
         self,
@@ -923,12 +1072,12 @@ class AsyncCollection:
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self._col.find_one_and_delete,
+            self.dispatch.find_one_and_delete,
             filter,
             projection=projection,
             sort=sort,
             hint=hint,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
@@ -946,7 +1095,7 @@ class AsyncCollection:
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self._col.find_one_and_replace,
+            self.dispatch.find_one_and_replace,
             filter,
             replacement,
             projection=projection,
@@ -954,7 +1103,7 @@ class AsyncCollection:
             upsert=upsert,
             return_document=return_document,
             hint=hint,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
@@ -973,7 +1122,7 @@ class AsyncCollection:
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self._col.find_one_and_update,
+            self.dispatch.find_one_and_update,
             filter,
             update,
             projection=projection,
@@ -982,14 +1131,44 @@ class AsyncCollection:
             return_document=return_document,
             array_filters=array_filters,
             hint=hint,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
+
+    def find_raw_batches(self, *args: Any, **kwargs: Any) -> AsyncIterable["AsyncCommandCursor"]:
+        if "session" in kwargs:
+            session = kwargs["session"]
+            kwargs["session"] = session.dispatch if session else session
+
+        cursor = self.dispatch.find_raw_batches(*args, **kwargs)
+
+        return AsyncRawBatchCursor(cursor, self)
 
     async def index_information(
         self, session: Optional[AsyncClientSession] = None
     ) -> MutableMapping[str, Any]:
-        return await util.run_sync(self._col.index_information, session=session)
+        return await util.run_sync(
+            self.dispatch.index_information,
+            session=session.dispatch if session else session
+        )
+
+    async def inline_map_reduce(
+        self,
+        map: JavaScriptCode,
+        reduce: JavaScriptCode,
+        *,
+        full_response: bool = False,
+        session: Optional[AsyncClientSession] = None,
+        **kwargs: Any
+    ) -> MutableMapping[str, Any]:
+        return await util.run_sync(
+            self.dispatch.inline_map_reduce,
+            map,
+            reduce,
+            full_response=full_response,
+            session=session.dispatch if session else session,
+            **kwargs
+        )
 
     async def insert_many(
         self,
@@ -1000,11 +1179,11 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> InsertManyResult:
         return await util.run_sync(
-            self._col.insert_many,
+            self.dispatch.insert_many,
             documents,
             ordered=ordered,
             bypass_document_validation=bypass_document_validation,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def insert_one(
@@ -1015,16 +1194,48 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> InsertOneResult:
         return await util.run_sync(
-            self._col.insert_one,
+            self.dispatch.insert_one,
             document,
             bypass_document_validation=bypass_document_validation,
-            session=session
+            session=session.dispatch if session else session
+        )
+
+    def list_indexes(
+        self, session: Optional[AsyncClientSession] = None
+    ) -> AsyncIterable[IndexModel]:
+        return AsyncLatentCommandCursor(
+            self,
+            self.dispatch.list_indexes,
+            session=session.dispatch if session else session
+        )
+
+    async def map_reduce(
+        self,
+        map: JavaScriptCode,
+        reduce: JavaScriptCode,
+        out: Union[str, MutableMapping[str, Any], SON],
+        *,
+        full_response: bool = False,
+        session: Optional[AsyncClientSession] = None,
+        **kwargs: Any
+    ) -> MutableMapping[str, Any]:
+        return await util.run_sync(
+            self.dispatch.map_reduce,
+            map,
+            reduce,
+            out,
+            full_response=full_response,
+            session=session.dispatch if session else session,
+            **kwargs
         )
 
     async def options(
         self, session: Optional[AsyncClientSession] = None
     ) -> MutableMapping[str, Any]:
-        return await util.run_sync(self._col.options, session=session)
+        return await util.run_sync(
+            self.dispatch.options,
+            session=session.dispatch if session else session
+        )
 
     async def rename(
         self,
@@ -1034,9 +1245,9 @@ class AsyncCollection:
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self._col.rename,
+            self.dispatch.rename,
             new_name,
-            session=session,
+            session=session.dispatch if session else session,
             **kwargs
         )
 
@@ -1052,14 +1263,14 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> UpdateResult:
         return await util.run_sync(
-            self._col.replace_one,
+            self.dispatch.replace_one,
             filter,
             replacement,
             upsert=upsert,
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def update_many(
@@ -1075,7 +1286,7 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> UpdateResult:
         return await util.run_sync(
-            self._col.update_many,
+            self.dispatch.update_many,
             filter,
             update,
             upsert=upsert,
@@ -1083,7 +1294,7 @@ class AsyncCollection:
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session
+            session=session.dispatch if session else session
         )
 
     async def update_one(
@@ -1099,7 +1310,7 @@ class AsyncCollection:
         session: Optional[AsyncClientSession] = None
     ) -> UpdateResult:
         return await util.run_sync(
-            self._col.update_one,
+            self.dispatch.update_one,
             filter,
             update,
             upsert=upsert,
@@ -1107,7 +1318,33 @@ class AsyncCollection:
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session
+            session=session.dispatch if session else session
+        )
+
+    def watch(
+        self,
+        pipeline: Optional[List[MutableMapping[str, Any]]] = None,
+        *,
+        full_document: Optional[str] = None,
+        resume_after: Optional[Any] = None,
+        max_await_time_ms: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        collation: Optional[Collation] = None,
+        start_at_operation_time: Optional[Timestamp] = None,
+        session: Optional[AsyncClientSession] = None,
+        start_after: Optional[Any] = None
+    ) -> "AsyncChangeStream":
+        return AsyncChangeStream(
+            self,
+            pipeline,
+            full_document,
+            resume_after,
+            max_await_time_ms,
+            batch_size,
+            collation,
+            start_at_operation_time,
+            session,
+            start_after
         )
 
     def with_options(
@@ -1118,7 +1355,7 @@ class AsyncCollection:
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncCollection":
-        self._col = self._col.with_options(
+        self.dispatch = self.dispatch.with_options(
             codec_options=codec_options,
             read_preference=read_preference,
             write_concern=write_concern,
@@ -1126,68 +1363,61 @@ class AsyncCollection:
         )
 
         return self
-        
-    @property
-    def codec_options(self) -> CodecOptions:
-        return self._col.codec_options
 
     @property
     def database(self) -> Database:
-        return self._col.database
+        return self.dispatch.database
 
     @property
     def full_name(self) -> str:
-        return self._col.full_name
+        return self.dispatch.full_name
 
     @property
     def name(self) -> str:
-        return self._col.name
-
-    @property
-    def read_concern(self) -> ReadConcern:
-        return self._col.read_concern
-
-    @property
-    def read_preference(self) -> _ServerMode:
-        return self._col.read_preference
-
-    @property
-    def write_concern(self) -> WriteConcern:
-        return self._col.write_concern
+        return self.dispatch.name
 
 
-class AgnosticAsyncCursor:
-    # All DEPRECATED methods are removed in this class.
+class AsyncCursorBase(AsyncBase):
+    """Base class for Cursor AsyncIOMongoDB instances
 
-    # Non Deprecated removed methods are:
-    # - each
-    # - batch_size
-    # - to_list
+       *DEPRECATED* methods are removed in this class.
+    """
 
-    _cursor: Union[CommandCursor, Cursor]
+    # each method is removed because we can iterate directly this class
+    # And also we have to_list() method, so yeah kinda useless
 
-    def __init__(self, cursor: Union[CommandCursor, Cursor]) -> None:
-        self._cursor = cursor
+    collection: AsyncCollection
+    dispatch: Union["_LatentCursor", CommandCursor, Cursor, RawBatchCursor]
+    loop: asyncio.AbstractEventLoop
 
+    def __init__(
+        self,
+        cursor: Union["_LatentCursor", CommandCursor, Cursor, RawBatchCursor],
+        collection: AsyncCollection = None
+    ) -> None:
+        super().__init__(cursor)
+
+        if collection:
+            self.collection = collection
+        else:
+            self.collection = cursor.collection
         self.started = False
         self.closed = False
 
-    def __aiter__(self) -> "AgnosticAsyncCursor":
+        self.loop = asyncio.get_event_loop()
+
+    def __aiter__(self) -> "AsyncCursorBase":
         return self
 
     async def __anext__(self) -> Any:
-        try:
-            if self.alive and (self._buffer_size() or await self._get_more()):
-                return await util.run_sync(next, self._cursor)
-        except AttributeError:  # Lazy hack to implement in aggregate and list_collections
-            if self.alive and await self._get_more():
-                return await util.run_sync(next, self._cursor)
+        if self.alive and (self._buffer_size() or await self._get_more()):
+            return await util.run_sync(next, self.dispatch)
         raise StopAsyncIteration
 
     def _buffer_size(self) -> int:
         return len(self._data())
 
-    def _query_flags(self) -> None:
+    def _query_flags(self) -> int:
         raise NotImplementedError
 
     def _data(self) -> Deque[Any]:
@@ -1203,131 +1433,440 @@ class AgnosticAsyncCursor:
                 " exhausted or killed.")
 
         self.started = True
-        return util.run_sync(self._cursor._refresh)
+        return self._refresh()
 
-    async def next(self) -> MutableMapping[str, Any]:
-        return await self.__anext__()
+    def _to_list(
+        self,
+        length: int,
+        the_list: List[MutableMapping[str, Any]],
+        future: asyncio.Future,
+        get_more_future: asyncio.Future
+    ) -> None:
+        # get_more_future is the result of self._get_more().
+        # future will be the result of the user's to_list() call.
+        try:
+            result = get_more_future.result()
+            # Return early if the task was cancelled.
+            if future.done():
+                return
+            collection = self.collection
+            fix_outgoing = collection.database._fix_outgoing
+
+            if length is None:
+                n = result
+            else:
+                n = min(length, result)
+
+            for _ in range(n):
+                the_list.append(fix_outgoing(self._data().popleft(),
+                                             collection))
+
+            reached_length = (length is not None and len(the_list) >= length)
+            if reached_length or not self.alive:
+                future.set_result(the_list)
+            else:
+                new_future = self.loop.create_task(self._get_more())
+                new_future.add_done_callback(
+                    partial(
+                        self.loop.call_soon_threadsafe,
+                        self._to_list,
+                        length,
+                        the_list,
+                        future
+                    )
+                )
+        except Exception as exc:
+            if not future.done():
+                future.set_exception(exc)
+
+    async def _refresh(self) -> int:
+        return await util.run_sync(self.dispatch._refresh)
+
+    def batch_size(self, batch_size) -> "AsyncCursorBase":
+        self.dispatch.batch_size(batch_size)
+        return self
 
     async def close(self) -> None:
         if not self.closed:
             self.closed = True
-            await util.run_sync(self._cursor.close)
+            await util.run_sync(self.dispatch.close)
+
+    async def next(self) -> MutableMapping[str, Any]:
+        return await self.__anext__()
+
+    def to_list(self, length: int) -> asyncio.Future[List[MutableMapping[str, Any]]]:
+        if length is not None and  length < 0:
+                raise ValueError("length must be non-negative")
+
+        if self._query_flags() & _QUERY_OPTIONS["tailable_cursor"]:
+            raise InvalidOperation("Can't call to_list on tailable cursor")
+
+        future = self.loop.create_future()
+        the_list = []
+
+        if not self.alive:
+            future.set_result(the_list)
+            return future
+
+        get_more_future = self.loop.create_task(self._get_more())
+        get_more_future.add_done_callback(
+            partial(
+                self.loop.call_soon_threadsafe,
+                self._to_list,
+                length,
+                the_list,
+                future
+            )
+        )
+
+        return future
 
     @property
-    def address(self) -> Optional[str]:
-        return self._cursor.address
+    def address(self) -> Optional[Tuple[str, int]]:
+        return self.dispatch.address
 
     @property
     def alive(self) -> bool:
-        if not self._cursor:
+        if not self.dispatch:
             return True
-        return self._cursor.alive
+        return self.dispatch.alive
 
     @property
     def cursor_id(self) -> Optional[int]:
-        return self._cursor.cursor_id
+        return self.dispatch.cursor_id
 
     @property
     def session(self) -> Optional[AsyncClientSession]:
-        return self._cursor.session
+        return self.dispatch.session
 
 
-class AsyncCommandCursor(AgnosticAsyncCursor):
-    # TODO:
-    # Implement this class into:
-    #     - list_collections
-    #     - aggregate (both in AsyncDB and AsyncCollection)
+class AsyncCommandCursor(AsyncCursorBase):
+    """AsyncIO :obj:`~CommandCursor`
 
-    _cursor: CommandCursor
+       *DEPRECATED* methods are removed in this class.
+    """
+
+    dispatch: CommandCursor
 
     def _query_flags(self):
         return 0
 
     def _data(self) -> Deque[Any]:
-        return self._cursor.__data
+        return self.dispatch._CommandCursor__data
 
     def _killed(self) -> bool:
-        return self._cursor.__killed
+        return self.dispatch._CommandCursor__killed
 
 
-class AsyncCursor(AgnosticAsyncCursor):
-    # All DEPRECATED methods are removed in this class.
+class _LatentCursor:
+    """Base class for LatentCursor AsyncIOMongoDB instance"""
+    # ClassVar
+    alive: ClassVar[bool] = True
+    _AsyncCommandCursor__data: ClassVar[Deque[Any]] = deque()
+    _AsyncCommandCursor__id: ClassVar[Optional[Any]] = None
+    _AsyncCommandCursor__killed: ClassVar[bool] = False
+    _AsyncCommandCursor__sock_mgr: ClassVar[Optional[Any]] = None
+    _AsyncCommandCursor__session: ClassVar[Optional[AsyncClientSession]] = None
+    _AsyncCommandCursor__explicit_session: ClassVar[Optional[bool]] = None
+    address: ClassVar[Optional[Tuple[str, int]]] = None
+    cursor_id: ClassVar[Optional[Any]] = None
+    session: ClassVar[Optional[AsyncClientSession]] = None
 
-    _cursor: Cursor
+    _AsyncCommandCursor__collection: AsyncCollection
+
+    def __init__(self, collection: AsyncCollection) -> None:
+        self._AsyncCommandCursor__collection = collection
+
+    def _AsyncCommandCursor__end_session(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def _AsyncCommandCursor__die(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def _refresh(self) -> int:
+        return 0
+
+    def batch_size(self, _: int) -> None:
+        pass
+
+    def close(self) -> None:
+        pass
+
+    def clone(self) -> "_LatentCursor":
+        return _LatentCursor(self._AsyncCommandCursor__collection)
+
+    def rewind(self):
+        pass
+
+    @property
+    def collection(self):
+        return self._AsyncCommandCursor__collection
+
+
+class AsyncLatentCommandCursor(AsyncCommandCursor):
+    """Temporary Cursor for initializing in aggregate,
+       and will be overwrite by :obj:`~asyncio.Future`"""
+
+    dispatch: CommandCursor
+
+    def __init__(
+        self,
+        collection: AsyncCollection,
+        start: Callable[..., Coroutine[Any, Any, int]],
+        *args: Any,
+        **kwargs: Any
+    ) -> None:
+        self.start = start
+        self.args = args
+        self.kwargs = kwargs
+
+        super().__init__(_LatentCursor(collection), collection)
+
+    def batch_size(self, batch_size: int) -> "AsyncLatentCommandCursor":
+        self.kwargs["batchSize"] = batch_size
+        return self
+
+    def _get_more(self) -> Union[asyncio.Future, Coroutine[Any, Any, int]]:
+        if not self.started:
+            self.started = True
+            original_future = self.loop.create_future()
+            future = self.loop.create_task(
+                util.run_sync(self.start, *self.args, **self.kwargs))
+            future.add_done_callback(
+                partial(
+                    self.loop.call_soon_threadsafe, self._on_started, original_future))
+
+            return original_future
+
+        return super()._get_more()
+
+    def _on_started(
+        self, original_future: asyncio.Future, future: asyncio.Future
+    ) -> None:
+        try:
+            self.dispatch = future.result()
+        except Exception as exc:
+            if not original_future.done():
+                original_future.set_exception(exc)
+        else:
+            # Return early if the task was cancelled.
+            if original_future.done():
+                return
+
+            if self.dispatch._CommandCursor__data or not self.dispatch.alive:
+                # _get_more is complete.
+                original_future.set_result(len(self.dispatch._CommandCursor__data))
+            else:
+                # Send a getMore.
+                fut = self._get_more()
+                if isinstance(fut, asyncio.Future):
+
+                    def copy(f: asyncio.Future) -> None:
+                        if original_future.done():
+                            return
+
+                        exc = f.exception()
+                        if exc is not None:
+                            original_future.set_exception(exc)
+                        else:
+                            original_future.set_result(f.result())
+
+                    fut.add_done_callback(copy)
+
+
+class AsyncCursor(AsyncCursorBase):
+    """AsyncIO :obj:`~Cursor`
+
+       *DEPRECATED* methods are removed in this class.
+    """
+
+    dispatch: Cursor
 
     def add_option(self, mask: int) -> "AsyncCursor":
-        self._cursor = self._cursor.add_option(mask)
+        self.dispatch = self.dispatch.add_option(mask)
         return self
 
     def allow_disk_use(self, allow_disk_use: bool) -> "AsyncCursor":
-        self._cursor = self._cursor.allow_disk_use(allow_disk_use)
+        self.dispatch = self.dispatch.allow_disk_use(allow_disk_use)
         return self
 
     def collation(self, collation: Collation) -> "AsyncCursor":
-        self._cursor = self._cursor.collation(collation)
+        self.dispatch = self.dispatch.collation(collation)
         return self
 
     def comment(self, comment: str) -> "AsyncCursor":
-        self._cursor = self._cursor.comment(comment)
+        self.dispatch = self.dispatch.comment(comment)
         return self
 
     async def distinct(self, key: str) -> List[Any]:
-        return await util.run_sync(self._cursor.distinct, key)
+        return await util.run_sync(self.dispatch.distinct, key)
 
     async def explain(self) -> str:
-        return await util.run_sync(self._cursor.explain)
+        return await util.run_sync(self.dispatch.explain)
 
     def hint(self, index: Union[str, List[Tuple[str, Any]]]) -> "AsyncCursor":
-        self._cursor = self._cursor.hint(index)
+        self.dispatch = self.dispatch.hint(index)
         return self
 
     def limit(self, limit: int) -> "AsyncCursor":
-        self._cursor = self._cursor.limit(limit)
+        self.dispatch = self.dispatch.limit(limit)
         return self
 
     def max(self, spec: List[Any]) -> "AsyncCursor":
-        self._cursor = self._cursor.max(spec)
+        self.dispatch = self.dispatch.max(spec)
         return self
 
     def max_await_time_ms(self, max_await_time_ms: int) -> "AsyncCursor":
-        self._cursor = self._cursor.max_await_time_ms(max_await_time_ms)
+        self.dispatch = self.dispatch.max_await_time_ms(max_await_time_ms)
         return self
 
     def max_time_ms(self, max_time_ms: int) -> "AsyncCursor":
-        self._cursor = self._cursor.max_time_ms(max_time_ms)
+        self.dispatch = self.dispatch.max_time_ms(max_time_ms)
         return self
 
     def min(self, spec: List[Any]) -> "AsyncCursor":
-        self._cursor = self._cursor.min(spec)
+        self.dispatch = self.dispatch.min(spec)
         return self
 
     def remove_option(self, mask: int) -> "AsyncCursor":
-        self._cursor = self._cursor.remove_option(mask)
+        self.dispatch = self.dispatch.remove_option(mask)
         return self
 
     def rewind(self) -> "AsyncCursor":
-        self._cursor = self._cursor.rewind()
+        self.dispatch = self.dispatch.rewind()
         return self
 
     def skip(self, skip: int) -> "AsyncCursor":
-        self._cursor = self._cursor.skip(skip)
+        self.dispatch = self.dispatch.skip(skip)
         return self
 
     def sort(
         self, key: Union[str, List[Tuple[str, Any]]], *, direction: Any = None
     ) -> "AsyncCursor":
-        self._cursor = self._cursor.sort(key, direction=direction)
+        self.dispatch = self.dispatch.sort(key, direction=direction)
         return self
 
     def where(self, code: Code) -> "AsyncCursor":
-        self._cursor = self._cursor.where(code)
+        self.dispatch = self.dispatch.where(code)
         return self
 
     def _query_flags(self):
-        return self._cursor.__query_flags
+        return self.dispatch._Cursor__query_flags
 
     def _data(self):
-        return self._cursor.__data
+        return self.dispatch._Cursor__data
 
     def _killed(self):
-        return self._cursor.__killed
+        return self.dispatch._Cursor__killed
+
+
+class AsyncRawBatchCommandCursor(AsyncCursor):
+    pass
+
+
+class AsyncRawBatchCursor(AsyncCursor):
+    pass
+
+
+class AsyncChangeStream(AsyncBase):
+    """AsyncIO :obj:`~ChangeStream`
+
+       *DEPRECATED* methods are removed in this class.
+    """
+
+    _target: Union[AsyncClient, AsyncDB, AsyncCollection]
+
+    dispatch: Optional[ChangeStream]
+
+    def __init__(
+        self,
+        target: Union[AsyncClient, AsyncDB, AsyncCollection],
+        pipeline: Optional[List[MutableMapping[str, Any]]],
+        full_document: Optional[str],
+        resume_after: Optional[Any],
+        max_await_time_ms: Optional[int],
+        batch_size: Optional[int],
+        collation: Optional[Collation],
+        start_at_operation_time: Optional[Timestamp],
+        session: Optional[AsyncClientSession],
+        start_after: Optional[Any]
+    ) -> None:
+        self._target = target
+        self._options: MutableMapping[str, Any] = {
+            "pipeline": pipeline,
+            "full_document": full_document,
+            "resume_after": resume_after,
+            "max_await_time_ms": max_await_time_ms,
+            "batch_size": batch_size,
+            "collation": collation,
+            "start_at_operation_time": start_at_operation_time,
+            "session": session.dispatch if session else session,
+            "start_after": start_after
+        }
+
+        super().__init__(None)  # type: ignore
+
+    def __aiter__(self) -> "AsyncChangeStream":
+        return self
+
+    def __iter__(self) -> None:
+        raise RuntimeError("Use 'async for' instead of 'for'")
+
+    async def __anext__(self) -> MutableMapping[str, Any]:
+        return await self.next()
+
+    async def __aenter__(self) -> "AsyncChangeStream":
+        if not self.dispatch:
+            await self._init()
+
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        if self.dispatch:
+            await self.close()
+
+    def __enter__(self) -> None:
+        raise RuntimeError("Use 'async with' not just 'with'")
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        pass
+
+    async def _init(self) -> ChangeStream:
+        if not self.dispatch:
+            self.dispatch = await util.run_sync(
+                self._target.dispatch.watch, **self._options)
+
+        return self.dispatch
+
+    async def _try_next(self) -> Optional[MutableMapping[str, Any]]:
+        self.dispatch = await self._init()
+        return await util.run_sync(self.dispatch.try_next)
+
+    async def close(self):
+        if self.dispatch:
+            await util.run_sync(self.dispatch.close)
+
+    async def next(self) -> MutableMapping[str, Any]:
+        while self.alive:
+            document = await self.try_next()
+            if document:
+                return document
+
+        raise StopAsyncIteration
+
+    async def try_next(self) -> Optional[MutableMapping[str, Any]]:
+        return await self._try_next()
+
+    @property
+    def alive(self) -> bool:
+        if not self.dispatch:
+            return True
+
+        return self.dispatch.alive
+
+    @property
+    def resume_token(self) -> Any:
+        if self.dispatch:
+            return self.dispatch.resume_token
+
+        return None
