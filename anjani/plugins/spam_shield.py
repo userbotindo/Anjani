@@ -100,8 +100,7 @@ class SpamShield(plugin.Plugin):
                     return
 
                 target = await chat.get_member(user.id)
-                if (target.status in {"creator", "administrator"} or
-                        target.user.id in self.bot.staff):
+                if util.tg.is_staff_or_admin(target, self.bot.staff):
                     return
 
                 return await self.check(target.user, chat.id)

@@ -1,8 +1,9 @@
 import re
 from enum import IntEnum, unique
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Set, Tuple
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.types.user_and_chats.chat_member import ChatMember
 
 MESSAGE_CHAR_LIMIT = 4096
 TRUNCATION_SUFFIX = "... (truncated)"
@@ -126,3 +127,10 @@ def truncate(text: str) -> str:
         return text[: MESSAGE_CHAR_LIMIT - len(TRUNCATION_SUFFIX)] + TRUNCATION_SUFFIX
 
     return text
+
+
+def is_staff_or_admin(target: ChatMember, staff: Set[int]) -> bool:
+    return (
+        target.status in {"administrator", "creator"} or
+        target.user.id in staff
+    )
