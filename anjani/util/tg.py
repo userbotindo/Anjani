@@ -1,8 +1,13 @@
 import re
 from enum import IntEnum, unique
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple, Union
 
 from pyrogram.types import ChatMember, InlineKeyboardButton, InlineKeyboardMarkup, Message
+
+Button = Union[
+    Tuple[Tuple[str, str, bool]],
+    List[Tuple[str, str, bool]]
+]
 
 MESSAGE_CHAR_LIMIT = 4096
 TRUNCATION_SUFFIX = "... (truncated)"
@@ -23,7 +28,7 @@ class Types(IntEnum):
     ANIMATION = 9
 
 
-def build_button(buttons: List[Tuple[str, str, bool]]) -> InlineKeyboardMarkup:
+def build_button(buttons: Button) -> InlineKeyboardMarkup:
     """Build saved button format"""
     keyb = []  # type: List[List[InlineKeyboardButton]]
     for btn in buttons:
@@ -34,7 +39,7 @@ def build_button(buttons: List[Tuple[str, str, bool]]) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyb)
 
 
-def revert_button(button: List[Tuple[str, str, bool]]) -> str:
+def revert_button(button: Button) -> str:
     """Revert button format"""
     res = ""
     for btn in button:
@@ -45,7 +50,7 @@ def revert_button(button: List[Tuple[str, str, bool]]) -> str:
     return res
 
 
-def parse_button(text: str) -> Tuple[str, List[Tuple[str, str, bool]]]:
+def parse_button(text: str) -> Tuple[str, Button]:
     """Parse button to save"""
     regex = re.compile(r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
 
@@ -76,8 +81,7 @@ def parse_button(text: str) -> Tuple[str, List[Tuple[str, str, bool]]]:
     return parser_data.rstrip(), buttons
 
 
-def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str],
-                                            List[Tuple[str, str, bool]]]:
+def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
     """Parse recieved message and return all its content"""
     types = None
     content = None
