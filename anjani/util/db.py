@@ -1552,35 +1552,35 @@ class AsyncCommandCursor(AsyncCursorBase):
         return 0
 
     def _data(self) -> Deque[Any]:
-        return self.dispatch._AsyncCommandCursor__data
+        return self.dispatch._CommandCursor__data
 
     def _killed(self) -> bool:
-        return self.dispatch._AsyncCommandCursor__killed
+        return self.dispatch._CommandCursor__killed
 
 
 class _LatentCursor:
     """Base class for LatentCursor AsyncIOMongoDB instance"""
     # ClassVar
     alive: ClassVar[bool] = True
-    _AsyncCommandCursor__data: ClassVar[Deque[Any]] = deque()
-    _AsyncCommandCursor__id: ClassVar[Optional[Any]] = None
-    _AsyncCommandCursor__killed: ClassVar[bool] = False
-    _AsyncCommandCursor__sock_mgr: ClassVar[Optional[Any]] = None
-    _AsyncCommandCursor__session: ClassVar[Optional[AsyncClientSession]] = None
-    _AsyncCommandCursor__explicit_session: ClassVar[Optional[bool]] = None
+    _CommandCursor__data: ClassVar[Deque[Any]] = deque()
+    _CommandCursor__id: ClassVar[Optional[Any]] = None
+    _CommandCursor__killed: ClassVar[bool] = False
+    _CommandCursor__sock_mgr: ClassVar[Optional[Any]] = None
+    _CommandCursor__session: ClassVar[Optional[AsyncClientSession]] = None
+    _CommandCursor__explicit_session: ClassVar[Optional[bool]] = None
     address: ClassVar[Optional[Tuple[str, int]]] = None
     cursor_id: ClassVar[Optional[Any]] = None
     session: ClassVar[Optional[AsyncClientSession]] = None
 
-    _AsyncCommandCursor__collection: AsyncCollection
+    _CommandCursor__collection: AsyncCollection
 
     def __init__(self, collection: AsyncCollection) -> None:
-        self._AsyncCommandCursor__collection = collection
+        self._CommandCursor__collection = collection
 
-    def _AsyncCommandCursor__end_session(self, *args: Any, **kwargs: Any) -> None:
+    def _CommandCursor__end_session(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def _AsyncCommandCursor__die(self, *args: Any, **kwargs: Any) -> None:
+    def _CommandCursor__die(self, *args: Any, **kwargs: Any) -> None:
         pass
 
     def _refresh(self) -> int:
@@ -1593,14 +1593,14 @@ class _LatentCursor:
         pass
 
     def clone(self) -> "_LatentCursor":
-        return _LatentCursor(self._AsyncCommandCursor__collection)
+        return _LatentCursor(self._CommandCursor__collection)
 
     def rewind(self):
         pass
 
     @property
     def collection(self):
-        return self._AsyncCommandCursor__collection
+        return self._CommandCursor__collection
 
 
 class AsyncLatentCommandCursor(AsyncCommandCursor):
