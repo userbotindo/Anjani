@@ -1,4 +1,4 @@
-"""Main bot commands"""
+"""Plugin manager Backup and Restore"""
 # Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ from anjani import command, plugin
 from anjani.custom_filter import admin_only
 
 
-class Backups(plugin.Plugin):
-    name: ClassVar[str] = "Backups"
+class Manager(plugin.Plugin):
+    name: ClassVar[str] = "Manager"
     helpable: ClassVar[bool] = True
 
     @command.filters(admin_only)
