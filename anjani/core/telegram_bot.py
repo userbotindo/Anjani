@@ -244,9 +244,10 @@ class TelegramBot(MixinBase):
             # Truncate messages longer than Telegram's 4096-character length limit
             text = util.tg.truncate(text)
 
-        # get rid of emtpy value keys
+        # get rid of emtpy value "animation", "audio", "document", "photo", "video"
         for key, value in dict(kwargs).items():
-            if value is None:
+            if (key in {"animation", "audio", "document", "photo", "video"} and
+                    value is None):
                 del kwargs[key]
 
         # force reply and as default behaviour if response is None
