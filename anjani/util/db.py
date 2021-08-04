@@ -1548,14 +1548,14 @@ class AsyncCommandCursor(AsyncCursorBase):
 
     dispatch: CommandCursor
 
-    def _query_flags(self):
+    def _query_flags(self) -> int:
         return 0
 
     def _data(self) -> Deque[Any]:
-        return self.dispatch._CommandCursor__data
+        return self.dispatch._AsyncCommandCursor__data
 
     def _killed(self) -> bool:
-        return self.dispatch._CommandCursor__killed
+        return self.dispatch._AsyncCommandCursor__killed
 
 
 class _LatentCursor:
@@ -1633,8 +1633,10 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
             future = self.loop.create_task(
                 util.run_sync(self.start, *self.args, **self.kwargs))
             future.add_done_callback(
-                partial(
-                    self.loop.call_soon_threadsafe, self._on_started, original_future))
+                partial(self.loop.call_soon_threadsafe,
+                        self._on_started,
+                        original_future)
+            )
 
             return original_future
 
@@ -1658,7 +1660,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
                 original_future.set_result(len(self.dispatch._CommandCursor__data))
             else:
                 # Send a getMore.
-                fut = self._get_more()
+                fut = super()._get_more()
                 if isinstance(fut, asyncio.Future):
 
                     def copy(f: asyncio.Future) -> None:
@@ -1751,13 +1753,13 @@ class AsyncCursor(AsyncCursorBase):
         return self
 
     def _query_flags(self):
-        return self.dispatch._Cursor__query_flags
+        return self.dispatch._AsyncCursor__query_flags
 
     def _data(self):
-        return self.dispatch._Cursor__data
+        return self.dispatch._AsyncCursor__data
 
     def _killed(self):
-        return self.dispatch._Cursor__killed
+        return self.dispatch._AsyncCursor__killed
 
 
 class AsyncRawBatchCommandCursor(AsyncCursor):
