@@ -1,9 +1,8 @@
 import re
 from enum import IntEnum, unique
-from typing import Any, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from pyrogram.types.user_and_chats.chat_member import ChatMember
+from pyrogram.types import ChatMember, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 MESSAGE_CHAR_LIMIT = 4096
 TRUNCATION_SUFFIX = "... (truncated)"
