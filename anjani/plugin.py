@@ -33,10 +33,18 @@ def loop_safe(func: Func):  # Let default typing choose the return type
         chat_id: int,
         text_name: str,
         *args: Any,
-        format: bool = True,
+        noformat: bool = False,
         **kwargs: Any
     ) -> str:
-        return await util.run_sync(func, self, chat_id, text_name, *args, format, **kwargs)
+        return await util.run_sync(
+            func,
+            self,
+            chat_id,
+            text_name,
+            *args,
+            noformat=noformat,
+            **kwargs
+        )
 
     return wrapper
 
@@ -59,7 +67,12 @@ class Plugin:
 
     @loop_safe
     def text(
-        self, chat_id: int, text_name: str, *args: Any, format: bool = True, **kwargs: Any
+        self,
+        chat_id: int,
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any
     ) -> str:
         """Parse the string with user language setting.
         Parameters:
@@ -70,14 +83,14 @@ class Plugin:
             *args (`any`, *Optional*):
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
-            format (`bool`, *Optional*):
-                If exist and False, the text returned will not be formated.
-                Default to True.
+            noformat (`bool`, *Optional*):
+                If exist and True, the text returned will not be formated.
+                Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        def get_text(lang_code: str, format: bool) -> str:
+        def get_text(lang_code: str) -> str:
             try:
                 text = codecs.decode(
                     codecs.encode(
@@ -95,16 +108,16 @@ class Plugin:
                     )
 
                 self.bot.log.warning(f"NO LANGUAGE STRING FOR '{text_name}' in '{lang_code}'")
-                return get_text("en", format=format)
+                return get_text("en")
             else:
                 try:
-                    return text.format(*args, **kwargs) if format else text
+                    return text if noformat else text.format(*args, **kwargs)
                 except (IndexError, KeyError):
                     self.bot.log.error(f"Failed to format '{text_name}'' string on '{lang_code}'")
                     raise
 
         data = self.bot.chats_languages.get(chat_id, "en")
-        return get_text(data, format)
+        return get_text(data)
 
     @classmethod
     def format_desc(cls, comment: Optional[str] = None):
