@@ -247,7 +247,7 @@ class TelegramBot(MixinBase):
         # get rid of emtpy value "animation", "audio", "document", "photo", "video"
         for key, value in dict(kwargs).items():
             if (key in {"animation", "audio", "document", "photo", "video"} and
-                    value is None):
+                    not value):
                 del kwargs[key]
 
         # force reply and as default behaviour if response is None
