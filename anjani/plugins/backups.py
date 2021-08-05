@@ -1,4 +1,4 @@
-"""Plugin manager Backup and Restore"""
+"""Plugin Backup and Restore"""
 # Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ from anjani import command, plugin
 from anjani.custom_filter import admin_only
 
 
-class Manager(plugin.Plugin):
-    name: ClassVar[str] = "Manager"
+class Backups(plugin.Plugin):
+    name: ClassVar[str] = "Backups"
     helpable: ClassVar[bool] = True
 
     @command.filters(admin_only)
@@ -68,7 +68,7 @@ class Manager(plugin.Plugin):
                 caption=await self.text(chat.id, "backup-doc", chat.title, chat.id, date, saved),
             ),
             ctx.response.delete(),
-            file.unlink()
+            file.unlink(),
         )
 
     @command.filters(admin_only)
@@ -94,7 +94,4 @@ class Manager(plugin.Plugin):
             return await self.text(chat.id, "backup-data-null")
 
         await self.bot.dispatch_event("plugin_restore", chat.id, data)
-        await asyncio.gather(
-            ctx.respond(await self.text(chat.id, "backup-done")),
-            file.unlink()
-        )
+        await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
