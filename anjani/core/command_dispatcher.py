@@ -1,5 +1,5 @@
 import inspect
-from typing import TYPE_CHECKING, Any, List, MutableMapping
+from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping
 
 from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
@@ -120,12 +120,13 @@ class CommandDispatcher(MixinBase):
             # Parse and convert handler required parameters
             signature = inspect.signature(cmd.func)
             args = []  # type: List[Any]
+            kwargs = {}  # type: Dict[Any, Any]
             if len(signature.parameters) > 1:
-                args = await parse_arguments(signature, ctx)
+                args, kwargs = await parse_arguments(signature, ctx, cmd.func)
 
             # Invoke command function
             try:
-                ret = await cmd.func(ctx, *args)
+                ret = await cmd.func(ctx, *args, **kwargs)
 
                 # Response shortcut
                 if ret is not None:

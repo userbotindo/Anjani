@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 __all__ = [
     "AnjaniException",
     "BackupError",
+    "BadArgument",
     "BadBoolArgument",
     "CommandHandlerError",
     "CommandInvokeError",
@@ -54,7 +55,11 @@ class PluginLoadError(AnjaniException):
     """Base exception class for every Plugin errors"""
 
 
-class ConversionError(AnjaniException):
+class BadArgument(AnjaniException):
+    """Exception that raised when parsing or converting argument encountered a failure."""
+
+
+class ConversionError(BadArgument):
     """Base exception class for any argument conversion errors
 
     Attributes:

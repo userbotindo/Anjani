@@ -1,13 +1,23 @@
 import inspect
 from functools import partial
 from types import FunctionType
-from typing import Any, List, MutableMapping, Optional, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
 
 from anjani.command import Context
-from anjani.error import BadBoolArgument, BadResult, ConversionError
+from anjani.error import BadArgument, BadBoolArgument, BadResult, ConversionError
 
 __all__ = [
     "Converter",
@@ -54,10 +64,10 @@ class UserConverter(EntityConverter):
 
     Conversion priority:
     1. Using replied user.
-    2. Using mention.
-    3. Using text mention.
-    4. Using first argument user id.
-    5. Using first argument mentioned user.
+    2. Using first argument user id.
+    3. Using first argument mentioned user.
+    4. Using any mention available on the message.
+    5. Using any text mention available on the message.
     6. Using the author that invoke the `~Context`.
     """
 
@@ -77,6 +87,13 @@ class UserConverter(EntityConverter):
         if message.reply_to_message:
             return message.reply_to_message.from_user
 
+        if ctx.args:  # lookup basic text
+            usr = ctx.args[0]
+            if usr.isdigit():  # user_id
+                return await self.extract_user(ctx.bot.client, int(usr))
+            if usr.startswith("@"):  # username
+                return await self.extract_user(ctx.bot.client, usr)
+
         if message.entities:  # lookup mentioned user in message entities
             res = self.parse_entities(message)
             if isinstance(res, types.User):
@@ -84,12 +101,6 @@ class UserConverter(EntityConverter):
             if res is not None:
                 return await self.extract_user(ctx.bot.client, res)
 
-        if ctx.args:  # lookup basic text
-            usr = ctx.args[0]
-            if usr.isdigit():  # user_id
-                return await self.extract_user(ctx.bot.client, int(usr))
-            if usr.startswith("@"):  # username
-                return await self.extract_user(ctx.bot.client, usr)
         return ctx.author
 
 
@@ -127,10 +138,10 @@ class ChatMemberConverter(EntityConverter):
 
     Conversion priority:
     1. Using replied user.
-    2. using mention.
-    3. Using text mention.
-    4. Using first argument user id.
-    5. Using first argument mentioned user.
+    2. Using first argument user id.
+    3. Using first argument mentioned user.
+    4. using mention.
+    5. Using text mention.
     6. Using the author that invoke the `~Context`.
     """
 
@@ -150,19 +161,19 @@ class ChatMemberConverter(EntityConverter):
             user = message.reply_to_message.from_user
             return await self.get_member(client, chat.id, user.id)
 
-        if message.entities:  # lookup mentioned user in message entities
-            res = self.parse_entities(message)
-            if isinstance(res, types.User):
-                return await self.get_member(client, chat.id, res.id)
-            if res is not None:
-                return await self.get_member(client, chat.id, res)
-
         if ctx.args:  # lookup basic text
             usr = ctx.args[0]
             if usr.isdigit():  # user_id
                 return await self.get_member(client, chat.id, int(usr))
             if usr.startswith("@"):  # username
                 return await self.get_member(client, chat.id, usr)
+
+        if message.entities:  # lookup mentioned user in message entities
+            res = self.parse_entities(message)
+            if isinstance(res, types.User):
+                return await self.get_member(client, chat.id, res.id)
+            if res is not None:
+                return await self.get_member(client, chat.id, res)
 
         return await self.get_member(client, chat.id, ctx.author.id)
 
@@ -187,58 +198,74 @@ def _get_default(param: inspect.Parameter, default: Any = None) -> Union[Any, No
     return param.default if param.default is not param.empty else default
 
 
-async def parse_arguments(sig: inspect.Signature, ctx: Context) -> List[Any]:
+async def transform(ctx: Context, param: inspect.Parameter, idx: int) -> Any:
+    message = ctx.message
+    converter = param.annotation
+
+    if converter is param.empty:
+        return message.command[idx]
+
+    # Check if the annotation was an `Optional` or `Union` type.
+    # This type hinting make a parsing ambiguities.
+    # Hence we just simply use the first arg as the converter if is not None type.
+    # Else use the second arg.
+    if getattr(converter, "__origin__", None) is Union:
+        if converter.__args__[0] is None:
+            converter = converter.__args__[1]
+        else:
+            converter = converter.__args__[0]
+
+    if isinstance(converter, (FunctionType, partial)):
+        if inspect.iscoroutinefunction(converter):
+            return await converter(message.command[idx])
+        else:
+            return converter(message.command[idx])
+
+    try:
+        module = converter.__module__
+    except AttributeError:
+        pass
+    else:
+        if module is not None and module.startswith("pyrogram."):
+            converter = CONVERTER_MAP.get(converter, converter)
+    if inspect.isclass(converter) and issubclass(converter, Converter):
+        try:
+            return await converter()(ctx) or _get_default(param)
+        except ConversionError as err:
+            return _get_default(param, err)
+
+    if converter is bool:
+        try:
+            return _bool_converter(message.command[idx])
+        except BadBoolArgument as err:
+            return _get_default(param, err)
+
+    return converter(message.command[idx])
+
+
+async def parse_arguments(
+    sig: inspect.Signature, ctx: Context, func: Callable[[Any], Any]
+) -> Tuple[List[Any], Dict[Any, Any]]:
     message = ctx.msg
-    args = []
+    args = []  # type: List[Any]
+    kwargs = {}  # type: Dict[Any, Any]
     idx = 1
     items = iter(sig.parameters.items())
     next(items)  # skip Context argument
-    for _, param in items:
-        converter = param.annotation
-
-        # Check if the annotation was an `Optional` or `Union` type.
-        # This type hinting make a parsing ambiguities.
-        # Hence we just simply use the first arg as the converter if is not None type.
-        # Else use the second arg.
-        if getattr(converter, "__origin__", None) is Union:
-            if converter.__args__[0] is None:
-                converter = converter.__args__[1]
-            else:
-                converter = converter.__args__[0]
-
-        try:
-            module = converter.__module__
-        except AttributeError:
-            pass
-        else:
-            if module is not None and module.startswith("pyrogram."):
-                converter = CONVERTER_MAP.get(converter, converter)
-
-        try:
-            if converter is param.empty:
-                res = message.command[idx]
-            elif isinstance(converter, (FunctionType, partial)):
-                if inspect.iscoroutinefunction(converter):
-                    res = await converter(message.command[idx])
-                else:
-                    res = converter(message.command[idx])
-            elif inspect.isclass(converter) and issubclass(converter, Converter):
-                try:
-                    res = await converter()(ctx) or _get_default(param)
-                except ConversionError as err:
-                    res = _get_default(param, err)
-            else:
-                if converter is bool:
-                    try:
-                        res = _bool_converter(message.command[idx])
-                    except BadBoolArgument as err:
-                        res = _get_default(param, err)
-                else:
-                    res = converter(message.command[idx])
-        except IndexError:
-            res = _get_default(param)
-
-        idx += 1
-        args.append(res)
-
-    return args
+    for name, param in items:
+        if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
+            try:
+                result = await transform(ctx, param, idx)
+            except IndexError:
+                result = _get_default(param)
+            args.append(result)
+            idx += 1
+        elif param.kind == param.KEYWORD_ONLY:
+            kwargs[name] = " ".join(message.command[idx:])
+            break
+        elif param.kind == param.VAR_POSITIONAL:
+            raise BadArgument(
+                "Unsuported Variable Positional Argument conversion "
+                f"Found '*{name}' on '{func.__name__ }'"
+            )
+    return args, kwargs
