@@ -33,7 +33,14 @@ class Converter:
 
     Class that derived this base converter need to have the `__call__`
     to do the conversion. This method should also be a `coroutine`.
+
+    Attribute:
+        skip (`bool`):
+            if the value is True. The converter will not consume any argument from the message text.
+            Hence the argument can be used for the next converter.
     """
+
+    skip: bool = False
 
     async def __call__(self, ctx: Context) -> None:  # skipcq: PYL-W0613
         """The base method that should be overided and will be called on conversion.
@@ -85,6 +92,7 @@ class UserConverter(EntityConverter):
     async def __call__(self, ctx: Context) -> types.User:
         message = ctx.msg
         if message.reply_to_message:
+            self.skip = True
             return message.reply_to_message.from_user
 
         if ctx.args:  # lookup basic text
@@ -101,6 +109,7 @@ class UserConverter(EntityConverter):
             if res is not None:
                 return await self.extract_user(ctx.bot.client, res)
 
+        self.skip = True
         return ctx.author
 
 
@@ -158,6 +167,7 @@ class ChatMemberConverter(EntityConverter):
         message = ctx.msg
         client = ctx.bot.client
         if message.reply_to_message:
+            self.skip = True
             user = message.reply_to_message.from_user
             return await self.get_member(client, chat.id, user.id)
 
@@ -175,6 +185,7 @@ class ChatMemberConverter(EntityConverter):
             if res is not None:
                 return await self.get_member(client, chat.id, res)
 
+        self.skip = True
         return await self.get_member(client, chat.id, ctx.author.id)
 
 
@@ -198,12 +209,12 @@ def _get_default(param: inspect.Parameter, default: Any = None) -> Union[Any, No
     return param.default if param.default is not param.empty else default
 
 
-async def transform(ctx: Context, param: inspect.Parameter, idx: int) -> Any:
+async def transform(ctx: Context, param: inspect.Parameter, idx: int) -> Tuple[Any, bool]:
     message = ctx.message
     converter = param.annotation
 
     if converter is param.empty:
-        return message.command[idx]
+        return message.command[idx], False
 
     # Check if the annotation was an `Optional` or `Union` type.
     # This type hinting make a parsing ambiguities.
@@ -217,9 +228,9 @@ async def transform(ctx: Context, param: inspect.Parameter, idx: int) -> Any:
 
     if isinstance(converter, (FunctionType, partial)):
         if inspect.iscoroutinefunction(converter):
-            return await converter(message.command[idx])
+            return await converter(message.command[idx]), False
         else:
-            return converter(message.command[idx])
+            return converter(message.command[idx]), False
 
     try:
         module = converter.__module__
@@ -230,17 +241,21 @@ async def transform(ctx: Context, param: inspect.Parameter, idx: int) -> Any:
             converter = CONVERTER_MAP.get(converter, converter)
     if inspect.isclass(converter) and issubclass(converter, Converter):
         try:
-            return await converter()(ctx) or _get_default(param)
+            conv = converter()
+            result = await conv(ctx)
+            if result:
+                return result, conv.skip
+            return _get_default(param), False
         except ConversionError as err:
-            return _get_default(param, err)
+            return _get_default(param, err), False
 
     if converter is bool:
         try:
-            return _bool_converter(message.command[idx])
+            return _bool_converter(message.command[idx]), False
         except BadBoolArgument as err:
-            return _get_default(param, err)
+            return _get_default(param, err), False
 
-    return converter(message.command[idx])
+    return converter(message.command[idx]), False
 
 
 async def parse_arguments(
@@ -255,13 +270,16 @@ async def parse_arguments(
     for name, param in items:
         if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
             try:
-                result = await transform(ctx, param, idx)
+                result, reply = await transform(ctx, param, idx)
             except IndexError:
+                reply = False
                 result = _get_default(param)
             args.append(result)
-            idx += 1
+            if not reply:
+                idx += 1
         elif param.kind == param.KEYWORD_ONLY:
-            kwargs[name] = " ".join(message.command[idx:])
+            # Consume remaining text to the kwargs
+            kwargs[name] = " ".join(message.command[idx:]).strip()
             break
         elif param.kind == param.VAR_POSITIONAL:
             raise BadArgument(
