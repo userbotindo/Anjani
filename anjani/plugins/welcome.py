@@ -46,7 +46,7 @@ class Greeting(plugin.Plugin):
             except MessageDeleteForbidden:
                 pass
             reply_to = None
-    
+
         if message.left_chat_member or not await self.is_active(chat.id):
             return
 
@@ -110,17 +110,16 @@ class Greeting(plugin.Plugin):
         return {self.name: welcome}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     async def is_active(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
         active = await self.db.find_one({"chat_id": chat_id})
         return active["should_welcome"] if active else False
 
-    async def message(self, chat_id: int) -> Tuple[Optional[str],
-                                                   Optional[Tuple[Tuple[str, str, bool]]]]:
+    async def message(
+        self, chat_id: int
+    ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]]]:
         """Get chat welcome string"""
         message = await self.db.find_one({"chat_id": chat_id})
         if message:
@@ -147,23 +146,23 @@ class Greeting(plugin.Plugin):
 
     async def del_custom_welcome(self, chat_id: int) -> None:
         """Delete custom welcome msg"""
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$unset": {"custom_welcome": "",
-                                 "button": ""}})
+        await self.db.update_one(
+            {"chat_id": chat_id}, {"$unset": {"custom_welcome": "", "button": ""}}
+        )
 
     async def cleanservice_update(self, chat_id: int, value: bool) -> None:
         """Clean service db"""
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": {"clean_service": value}},
-                                 upsert=True)
+        await self.db.update_one(
+            {"chat_id": chat_id}, {"$set": {"clean_service": value}}, upsert=True
+        )
 
     async def setting(self, chat_id: int, value: bool) -> None:
         """Turn on/off welcome in chats"""
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": {"should_welcome": value}},
-                                 upsert=True)
+        await self.db.update_one(
+            {"chat_id": chat_id}, {"$set": {"should_welcome": value}}, upsert=True
+        )
 
-    async def previous_welcome(self, chat_id, msg_id: int) -> Union[int, bool]:
+    async def previous_welcome(self, chat_id: int, msg_id: int) -> Union[int, bool]:
         """Save latest welcome msg_id and return previous msg_id"""
         data = await self.db.find_one_and_update(
             {"chat_id": chat_id}, {"$set": {"prev_welc": msg_id}}, upsert=True
@@ -182,8 +181,9 @@ class Greeting(plugin.Plugin):
             return await self.text(chat.id, "error-reply-to-message")
 
         reply_msg = ctx.msg.reply_to_message
-        ret, _= await asyncio.gather(self.text(chat.id, "cust-welcome-set"),
-                                     self.set_custom_welcome(chat.id, reply_msg.text))
+        ret, _ = await asyncio.gather(
+            self.text(chat.id, "cust-welcome-set"), self.set_custom_welcome(chat.id, reply_msg.text)
+        )
         return ret
 
     @command.filters(admin_only)
@@ -191,8 +191,9 @@ class Greeting(plugin.Plugin):
         """Reset saved welcome message"""
         chat = ctx.chat
 
-        ret, _ = await asyncio.gather(self.text(chat.id, "reset-welcome"),
-                                      self.del_custom_welcome(chat.id))
+        ret, _ = await asyncio.gather(
+            self.text(chat.id, "reset-welcome"), self.del_custom_welcome(chat.id)
+        )
         return ret
 
     @command.filters(admin_only)
@@ -213,14 +214,12 @@ class Greeting(plugin.Plugin):
         if enabled is not None:
             ret, _ = await asyncio.gather(
                 self.text(chat.id, "welcome-set", "on" if enabled else "off"),
-                self.setting(chat.id, enabled)
+                self.setting(chat.id, enabled),
             )
             return ret
 
         setting, (text, button), clean_service = await asyncio.gather(
-            self.is_active(chat.id),
-            self.message(chat.id),
-            self.clean_service(chat.id)
+            self.is_active(chat.id), self.message(chat.id), self.clean_service(chat.id)
         )
 
         if text is None:
@@ -240,13 +239,12 @@ class Greeting(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "view-welcome", setting, clean_service))
         await ctx.respond(
-            text if text else (
+            text
+            if text
+            else (
                 "Empty, custom welcome message haven't set yet."
-                if not setting else "Default:\n\n" + await self.text(
-                    chat.id,
-                    "default-welcome",
-                    noformat=True
-                )
+                if not setting
+                else "Default:\n\n" + await self.text(chat.id, "default-welcome", noformat=True)
             ),
             mode="reply",
             reply_markup=button,
@@ -255,22 +253,15 @@ class Greeting(plugin.Plugin):
         )
 
     @command.filters(admin_only)
-    async def cmd_cleanservice(self, ctx: command.Context) -> str:
+    async def cmd_cleanservice(self, ctx: command.Context, active: Optional[bool] = None) -> str:
         """Clean service message on new members"""
         chat = ctx.chat
-        param = ctx.input
 
-        if param in {"yes", "on", "1"}:
-            active = True
-        elif param in {"no", "off", "0"}:
-            active = False
-        elif param:
+        if active is None:
             return await self.text(chat.id, "err-invalid-option")
-        else:
-            return "Usage is on/yes or off/no"
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "clean-serv-set", "on" if active else "off"),
-            self.cleanservice_update(chat.id, active)
+            self.cleanservice_update(chat.id, active),
         )
         return ret
