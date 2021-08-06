@@ -29,21 +29,14 @@ from pyrogram.errors import (
 )
 from pyrogram.types import ChatMember, User
 
-from anjani import command, plugin, util
-from anjani.custom_filter import (
-    can_change_info,
-    can_delete,
-    can_pin,
-    can_promote,
-    can_restrict
-)
+from anjani import command, filters, plugin, util
 
 
 class Admins(plugin.Plugin):
     name: ClassVar[str] = "Admins"
     helpable: ClassVar[bool] = True
 
-    @command.filters(can_pin)
+    @command.filters(filters.can_pin)
     async def cmd_pin(self, ctx: command.Context) -> Optional[str]:
         """Pin message on chats"""
         if not ctx.msg.reply_to_message:
@@ -58,7 +51,7 @@ class Admins(plugin.Plugin):
             is_silent = False
         await ctx.msg.reply_to_message.pin(disable_notification=is_silent)
 
-    @command.filters(can_pin)
+    @command.filters(filters.can_pin)
     async def cmd_unpin(self, ctx: command.Context) -> None:
         """Unpin message on chats"""
         chat = ctx.msg.chat
@@ -71,7 +64,7 @@ class Admins(plugin.Plugin):
         else:
             await ctx.msg.reply_to_message.unpin()
 
-    @command.filters(can_change_info)
+    @command.filters(filters.can_change_info)
     async def cmd_setgpic(self, ctx: command.Context) -> Optional[str]:
         """Set group picture"""
         msg = ctx.msg.reply_to_message or ctx.msg
@@ -97,7 +90,7 @@ class Admins(plugin.Plugin):
 
         return admins
 
-    @command.filters(can_restrict)
+    @command.filters(filters.can_restrict)
     async def cmd_zombies(self, ctx: command.Context) -> str:
         """Kick all deleted acc in group."""
         chat = ctx.msg.chat
@@ -119,7 +112,7 @@ class Admins(plugin.Plugin):
 
         return await self.text(chat.id, "cleaning-zombie", zombie)
 
-    @command.filters(can_promote)
+    @command.filters(filters.can_promote)
     async def cmd_promote(self, ctx: command.Context, user: User) -> str:
         """Bot promote member, required Both permission of can_promote"""
         chat = ctx.msg.chat
@@ -155,7 +148,7 @@ class Admins(plugin.Plugin):
 
         return await self.text(chat.id, "promote-success")
 
-    @command.filters(can_promote)
+    @command.filters(filters.can_promote)
     async def cmd_demote(self, ctx: command.Context, user: User) -> str:
         """Demoter Just owner and promoter can demote admin."""
         chat = ctx.msg.chat
@@ -187,7 +180,7 @@ class Admins(plugin.Plugin):
 
         return await self.text(chat.id, "demote-success")
 
-    @command.filters(can_delete)
+    @command.filters(filters.can_delete)
     async def cmd_del(self, ctx: command.Context) -> Optional[str]:
         """Delete replied message"""
         if not ctx.msg.reply_to_message:
@@ -196,7 +189,7 @@ class Admins(plugin.Plugin):
         await asyncio.gather(ctx.msg.reply_to_message.delete(),
                              ctx.msg.delete())
 
-    @command.filters(can_delete)
+    @command.filters(filters.can_delete)
     async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
         """purge message from message replied"""
         if not ctx.msg.reply_to_message:
@@ -221,7 +214,7 @@ class Admins(plugin.Plugin):
         await ctx.respond(await self.text(ctx.chat.id, "purge-done", len(messages), run_time), 
                           delete_after=5)
 
-    @command.filters(can_restrict)
+    @command.filters(filters.can_restrict)
     async def cmd_kick(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Kick chat member"""
         chat = ctx.chat
@@ -242,7 +235,7 @@ class Admins(plugin.Plugin):
 
         return ret
 
-    @command.filters(can_restrict)
+    @command.filters(filters.can_restrict)
     async def ban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Ban chat member"""
         chat = ctx.chat
@@ -262,7 +255,7 @@ class Admins(plugin.Plugin):
 
         return ret
 
-    @command.filters(can_restrict)
+    @command.filters(filters.can_restrict)
     async def unban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban chat member"""
         chat = ctx.chat

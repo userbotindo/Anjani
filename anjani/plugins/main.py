@@ -32,7 +32,7 @@ class Main(plugin.Plugin):
 
     bot_name: str
 
-    async def on_start(self, _) -> None:
+    async def on_start(self, _: int) -> None:
         self.bot_name = (self.bot.user.first_name + self.bot.user.last_name if
                          self.bot.user.last_name else self.bot.user.first_name)
 

@@ -21,7 +21,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from anjani import command, listener, plugin, util
-from anjani.custom_filter import admin_only
+from anjani.filters import admin_only
 from anjani.util.tg import Types, build_button, get_message_info, revert_button
 
 

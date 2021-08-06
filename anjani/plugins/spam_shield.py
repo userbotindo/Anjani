@@ -24,7 +24,7 @@ from pyrogram.errors import ChannelPrivate
 from pyrogram.types import Message, User
 
 from anjani import command, listener, plugin, util
-from anjani.custom_filter import admin_only
+from anjani.filters import admin_only
 
 
 class SpamShield(plugin.Plugin):

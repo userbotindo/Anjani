@@ -21,8 +21,7 @@ from typing import Any, ClassVar, MutableMapping, Optional, Tuple, Union
 from pyrogram.errors import MessageDeleteForbidden
 from pyrogram.types.messages_and_media.message import Message, Str
 
-from anjani import command, plugin, util
-from anjani.custom_filter import admin_only
+from anjani import command, filters, plugin, util
 
 
 class Greeting(plugin.Plugin):
@@ -172,7 +171,7 @@ class Greeting(plugin.Plugin):
 
         return False
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_setwelcome(self, ctx: command.Context) -> str:
         """Set chat welcome message"""
         chat = ctx.chat
@@ -186,7 +185,7 @@ class Greeting(plugin.Plugin):
         )
         return ret
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_resetwelcome(self, ctx: command.Context) -> str:
         """Reset saved welcome message"""
         chat = ctx.chat
@@ -196,7 +195,7 @@ class Greeting(plugin.Plugin):
         )
         return ret
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_welcome(self, ctx: command.Context) -> Optional[str]:
         """View current welcome message"""
         chat = ctx.chat
@@ -252,7 +251,7 @@ class Greeting(plugin.Plugin):
             disable_web_page_preview=True,
         )
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_cleanservice(self, ctx: command.Context, active: Optional[bool] = None) -> str:
         """Clean service message on new members"""
         chat = ctx.chat

@@ -19,8 +19,7 @@ from typing import Any, MutableMapping, Optional
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from anjani import command, plugin, util
-from anjani.custom_filter import admin_only
+from anjani import command, filters, plugin, util
 
 
 class Rules(plugin.Plugin):
@@ -53,7 +52,7 @@ class Rules(plugin.Plugin):
                                  {"$set": data[self.name]},
                                  upsert=True)
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_setrules(self, ctx: command.Context) -> str:
         chat = ctx.chat
         if not ctx.input:
@@ -68,7 +67,7 @@ class Rules(plugin.Plugin):
         )
         return ret
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_clearrules(self, ctx: command.Context) -> str:
         chat = ctx.chat
         ret, _ = await asyncio.gather(

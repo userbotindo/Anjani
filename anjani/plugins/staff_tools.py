@@ -24,8 +24,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (
     UserNotParticipant,
 )
 
-from anjani import command, plugin, util
-from anjani.custom_filter import owner_only, staff_only
+from anjani import command, filters, plugin, util
 
 
 class Staff(plugin.Plugin):
@@ -36,7 +35,7 @@ class Staff(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")
 
-    @command.filters(owner_only)
+    @command.filters(filters.owner_only)
     async def cmd_broadcast(self, ctx: command.Context) -> Optional[str]:
         """Broadcast a message to all chats"""
         if not ctx.input:
@@ -71,7 +70,7 @@ class Staff(plugin.Plugin):
             f"{sent} groups succeed, {failed} groups failed to receive the message"
         )
 
-    @command.filters(staff_only)
+    @command.filters(filters.staff_only)
     async def cmd_leavechat(self, ctx: command.Context) -> str:
         """leave the given chat_id"""
         if not ctx.args or ctx.input:
@@ -84,7 +83,7 @@ class Staff(plugin.Plugin):
         else:
             return "I left the group"
 
-    @command.filters(staff_only)
+    @command.filters(filters.staff_only)
     async def cmd_chatlist(self, ctx: command.Context) -> None:
         """Send file of chat's I'm in"""
         chatfile = "List of chats.\n"

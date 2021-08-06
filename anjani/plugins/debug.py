@@ -20,7 +20,7 @@ import traceback
 from datetime import datetime
 from typing import Any, ClassVar, Optional
 
-from anjani import command, custom_filter, plugin
+from anjani import command, filters, plugin
 
 
 class Debug(plugin.Plugin):
@@ -41,7 +41,7 @@ class Debug(plugin.Plugin):
         exec(head + code)  # pylint: disable=exec-used
         return await locals()["__aexec"](self.bot, ctx)
 
-    @command.filters(custom_filter.staff_only)
+    @command.filters(filters.staff_only)
     async def cmd_eval(self, ctx: command.Context) -> Optional[str]:
         """run a command"""
         cmd = ctx.input

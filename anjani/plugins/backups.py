@@ -21,15 +21,14 @@ from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiopath import AsyncPath
 
-from anjani import command, plugin
-from anjani.custom_filter import admin_only
+from anjani import command, filters, plugin
 
 
 class Backups(plugin.Plugin):
     name: ClassVar[str] = "Backups"
     helpable: ClassVar[bool] = True
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
         """Backup chat data from file"""
         chat = ctx.msg.chat
@@ -71,7 +70,7 @@ class Backups(plugin.Plugin):
             file.unlink(),
         )
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_restore(self, ctx: command.Context) -> Optional[str]:
         """Restore data to a file"""
         chat = ctx.msg.chat
