@@ -14,10 +14,10 @@ import pyrogram
 from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
 
 from anjani.action import BotAction
-from anjani.custom_filter import CustomFilter
+from anjani.util.types import CustomFilter
 
 if TYPE_CHECKING:
-    from .core import Anjani
+    from anjani.core import Anjani
 
 CommandFunc = Union[
     Callable[..., Coroutine[Any, Any, None]], Callable[..., Coroutine[Any, Any, Optional[str]]]
@@ -26,15 +26,14 @@ Decorator = Callable[[CommandFunc], CommandFunc]
 
 
 def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
-    """ Recursively check filters to apply anjani object into CustomFilter instance"""
+    """ Recursively check filters to set :obj:`~Anjani` into :obj:`~CustomFilter` if needed """
     if isinstance(filters, (AndFilter, OrFilter, InvertFilter)):
         check_filters(filters.base, anjani)
     if isinstance(filters, (AndFilter, OrFilter)):
         check_filters(filters.other, anjani)
 
-    include_bot = getattr(filters, "include_bot", False)
-    # Because only (currently) :obj:`~CustomFilter` are needed the :obj:`~Anjani`
-    if include_bot and isinstance(filters, CustomFilter):
+    # Only accepts CustomFilter instance
+    if getattr(filters, "include_bot", False) and isinstance(filters, CustomFilter):
         filters.anjani = anjani
 
 
