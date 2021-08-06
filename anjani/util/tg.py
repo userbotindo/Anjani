@@ -159,26 +159,21 @@ def override_typing(func: Any):  # Use default typing for return type
     @wraps(func)
     async def wrapper(
         client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
-        """
-            :obj:`~ChatMember` getter.
+        """:obj:`~ChatMember` getter.
 
             Parameters:
-
                 client(:obj:`~pyrogram.Client`):
                     The initialized client of the bot.
-
                 chat(`int`):
                     Unique identifier of the target chat.
-
                 user(`int`):
                     Unique identifier of the target user.
-
             Returns:
                 `tuple` consist of :obj:`~Bot` and :obj:`~Member`.
-
-            :obj:`~Bot` is alias for :obj:`~ChatMember` of the bot.
-
-            :obj:`~Member` is alias for :obj:`~ChatMember` of the target user.
+            :obj:`~Bot`:
+                is alias for :obj:`~ChatMember` of the bot.
+            :obj:`~Member`:
+                is alias for :obj:`~ChatMember` of the target user.
         """
         return await func(client, chat, user)
 
@@ -186,7 +181,7 @@ def override_typing(func: Any):  # Use default typing for return type
 
 
 @override_typing
-@alru_cache(maxsize=128)
+@alru_cache(maxsize=512)
 async def fetch_permissions(
     client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(client.get_chat_member(chat, "me"),
