@@ -21,6 +21,7 @@ from pyrogram import filters
 from pyrogram.types import ChatMember, Message
 
 from anjani import command, listener, plugin, util
+from anjani.filters import admin_only
 
 
 class Reporting(plugin.Plugin):
@@ -116,6 +117,7 @@ class Reporting(plugin.Plugin):
     async def cmd_report(self, ctx: command.Context) -> None:
         return await self.on_message(ctx.message)
 
+    @command.filters(admin_only)
     async def cmd_reports(
         self,
         ctx: command.Context,
