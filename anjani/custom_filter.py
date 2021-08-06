@@ -1,15 +1,13 @@
-import asyncio
-from functools import wraps
-from typing import Any, Callable, Coroutine, Tuple
+from typing import Any, Callable, Coroutine
 
-import pyrogram
-from async_lru import alru_cache
+from pyrogram import Client, filters
 from pyrogram.filters import Filter
-from pyrogram.types import ChatMember, Message
+from pyrogram.types import Message
 
+from anjani.util.tg import fetch_permissions, is_staff_or_admin
 from anjani.util.types import CustomFilter
 
-FilterFunc = Callable[[CustomFilter, pyrogram.Client, Message],
+FilterFunc = Callable[[CustomFilter, Client, Message],
                       Coroutine[Any, Any, bool]]
 
 
@@ -24,7 +22,7 @@ def create(func: FilterFunc, name: str = None, **kwargs) -> CustomFilter:
 # { staff_only
 def _staff_only(include_bot: bool = True) -> CustomFilter:
 
-    async def func(flt: CustomFilter, _: pyrogram.Client, message: Message) -> bool:
+    async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
         user = message.from_user
         return user.id in flt.anjani.staff
 
@@ -37,7 +35,7 @@ staff_only = _staff_only()
 # { owner_only
 def _owner_only(include_bot: bool = True) -> CustomFilter:
 
-    async def func(flt: CustomFilter, _: pyrogram.Client, message: Message) -> bool:
+    async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
         user = message.from_user
         return user.id == flt.anjani.owner
 
@@ -48,24 +46,7 @@ owner_only = _owner_only()
 
 
 # { permission
-def override_typing(func: Any):  # Use default typing for return type
-    """ Decorator for :meth:`~fetch_permissions` to fix typing error """
-
-    @wraps(func)
-    async def wrapper(client: pyrogram.Client, chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
-        return await func(client, chat, user)
-
-    return wrapper
-
-@override_typing
-@alru_cache(maxsize=128)
-async def fetch_permissions(client: pyrogram.Client,
-                            chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
-    bot, member = await asyncio.gather(client.get_chat_member(chat, "me"),
-                                       client.get_chat_member(chat, user))
-    return bot, member
-
-async def _can_delete(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_delete(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -74,7 +55,7 @@ async def _can_delete(_: Filter, client: pyrogram.Client, message: Message) -> b
     return bot.can_delete_messages and member.can_delete_messages
 
 
-async def _can_change_info(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_change_info(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -83,7 +64,7 @@ async def _can_change_info(_: Filter, client: pyrogram.Client, message: Message)
     return bot.can_change_info and member.can_change_info
 
 
-async def _can_invite(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_invite(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -92,7 +73,7 @@ async def _can_invite(_: Filter, client: pyrogram.Client, message: Message) -> b
     return bot.can_invite_users and member.can_invite_users
 
 
-async def _can_pin(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_pin(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -101,7 +82,7 @@ async def _can_pin(_: Filter, client: pyrogram.Client, message: Message) -> bool
     return bot.can_pin_messages and member.can_pin_messages
 
 
-async def _can_promote(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_promote(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -110,7 +91,7 @@ async def _can_promote(_: Filter, client: pyrogram.Client, message: Message) -> 
     return bot.can_promote_members and member.can_promote_members
 
 
-async def _can_restrict(_: Filter, client: pyrogram.Client, message: Message) -> bool:
+async def _can_restrict(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
@@ -119,19 +100,19 @@ async def _can_restrict(_: Filter, client: pyrogram.Client, message: Message) ->
     return bot.can_restrict_members and member.can_restrict_members
 
 
-can_delete = pyrogram.filters.create(_can_delete, "can_delete")
-can_change_info = pyrogram.filters.create(_can_change_info, "can_change_info")
-can_invite = pyrogram.filters.create(_can_invite, "can_invite")
-can_pin = pyrogram.filters.create(_can_pin, "can_pin")
-can_promote = pyrogram.filters.create(_can_promote, "can_promote")
-can_restrict = pyrogram.filters.create(_can_restrict, "can_restrict")
+can_delete = filters.create(_can_delete, "can_delete")
+can_change_info = filters.create(_can_change_info, "can_change_info")
+can_invite = filters.create(_can_invite, "can_invite")
+can_pin = filters.create(_can_pin, "can_pin")
+can_promote = filters.create(_can_promote, "can_promote")
+can_restrict = filters.create(_can_restrict, "can_restrict")
 # }
 
 
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
 
-    async def func(flt: CustomFilter, client: pyrogram.Client, message: Message) -> bool:
+    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         if message.chat.type == "private":
             return False
 
@@ -139,10 +120,7 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
         bot, member = await fetch_permissions(client, message.chat.id, user.id)
         return (
             bot.status == "administrator" and
-            (
-                member.status in {"administrator", "creator"} or
-                user.id in flt.anjani.staff
-            )
+            is_staff_or_admin(member, flt.anjani.staff)
         )
 
     return create(func, "admin_only", include_bot=include_bot)

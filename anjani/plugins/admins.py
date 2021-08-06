@@ -35,8 +35,7 @@ from anjani.custom_filter import (
     can_delete,
     can_pin,
     can_promote,
-    can_restrict,
-    fetch_permissions
+    can_restrict
 )
 
 
@@ -136,7 +135,7 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "error-its-myself")
 
         # use cached permissions from filters
-        bot, _ = await fetch_permissions(self.bot.client, chat.id, user.id)
+        bot, _ = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
         try:
             await chat.promote_member(
                 user_id=user.id,

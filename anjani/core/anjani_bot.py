@@ -5,7 +5,7 @@ from typing import Optional
 import aiohttp
 import pyrogram
 
-from anjani import custom_filter
+from anjani import util
 
 from .database_provider import DatabaseProvider
 from .command_dispatcher import CommandDispatcher
@@ -64,7 +64,7 @@ class Anjani(TelegramBot,
                 await self.client.stop()
         await self.http.close()
         await self.db.close()
-        custom_filter.fetch_permissions.close()
+        util.tg.fetch_permissions.close()
 
         self.log.info("Running post-stop hooks")
         if self.loaded:
