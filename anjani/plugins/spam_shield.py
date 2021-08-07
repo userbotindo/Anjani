@@ -31,6 +31,7 @@ class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
 
     db: util.db.AsyncCollection
+    federation_db: util.db.AsyncCollection
     token: str
 
     async def on_load(self) -> None:
@@ -41,6 +42,7 @@ class SpamShield(plugin.Plugin):
             return self.bot.unload_plugin(self)
 
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")
+        self.federation_db = self.bot.db.get_collection("FEDERATIONS")
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -141,11 +143,31 @@ class SpamShield(plugin.Plugin):
             else:
                 raise ClientResponseError(resp.request_info, resp.history)
 
-    async def cas_check(self, user_id: int) -> Optional[str]:
+    async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""
-        async with self.bot.http.get(f"https://api.cas.chat/check?user_id={user_id}") as res:
+        async with self.bot.http.get(f"https://api.cas.chat/check?user_id={user.id}") as res:
             data = await res.json()
-            return "https://cas.chat/query?u={}".format(user_id) if data["ok"] else None
+            if data["ok"]:
+                fullname = (
+                    user.first_name + user.last_name
+                    if user.last_name else user.first_name
+                )
+                reason = f"https://cas.chat/query?u={user.id}"
+                await self.federation_db.update_one(
+                    {"_id": "AnjaniSpamShield"},
+                    {
+                        "$set": {
+                            f"banned.{user.id}": {
+                                "name": fullname,
+                                "reason": reason,
+                                "time": datetime.now()
+                            }
+                        }
+                    }
+                )
+                return reason
+
+            return None
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
@@ -166,7 +188,7 @@ class SpamShield(plugin.Plugin):
 
     async def check(self, user: User, chat_id: int) -> None:
         """Shield checker action."""
-        cas, sw = await asyncio.gather(self.cas_check(user.id),
+        cas, sw = await asyncio.gather(self.cas_check(user),
                                        self.get_ban(user.id))
         if not cas or not sw:
             return
