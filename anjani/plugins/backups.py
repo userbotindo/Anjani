@@ -37,12 +37,18 @@ class Backups(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "backup-progress"))
 
-        events = await self.bot.dispatch_event("plugin_backup", chat.id, return_tasks=True)
-        if not events:
+        tasks = await self.bot.dispatch_event("plugin_backup", chat.id, get_results=True)
+        if not tasks:
             return await self.text(chat.id, "backup-null")
 
-        for event in events:
-            result: MutableMapping[str, Any] = event.result()
+        task: asyncio.Task[MutableMapping[str, Any]]
+        for task in tasks:
+            # Make sure all plugin backup are done
+            if not task.done():
+                await task
+
+            # skip adding to data if result is empty map
+            result = task.result()
             if not result:
                 continue
 
