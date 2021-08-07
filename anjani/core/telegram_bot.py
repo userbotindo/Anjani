@@ -24,7 +24,6 @@ TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
 
 class TelegramBot(MixinBase):
     # Initialized during instantiation
-    config: util.config.TelegramConfig[str, Any]
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
     _disconnect: bool
     loaded: bool
@@ -41,7 +40,6 @@ class TelegramBot(MixinBase):
     owner: int
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
-        self.config = util.config.TelegramConfig()
         self._plugin_event_handlers = {}
         self._disconnect = False
         self.loaded = False
@@ -56,6 +54,8 @@ class TelegramBot(MixinBase):
         api_id = int(self.config["api_id"])
         api_hash = self.config["api_hash"]
         bot_token = self.config["bot_token"]
+
+        self.owner = int(self.config["owner_id"])
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -90,7 +90,6 @@ class TelegramBot(MixinBase):
         self.user = user
         # noinspection PyTypeChecker
         self.uid = user.id
-        self.owner = int(self.config["owner_id"])
         self.staff.add(self.owner)
 
         # Update staff from db
@@ -151,10 +150,7 @@ class TelegramBot(MixinBase):
             await self.idle()
         finally:
             # Make sure we stop when done
-            try:
-                await self.stop()
-            finally:  # in case stop raising an exception
-                self.loop.stop()
+            await self.stop()
 
     def update_plugin_event(
         self: "Anjani",

@@ -1,11 +1,12 @@
 import asyncio
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import aiohttp
 import pyrogram
 
-from anjani import util
+from anjani.util.config import TelegramConfig
+from anjani.util.tg import fetch_permissions
 
 from .database_provider import DatabaseProvider
 from .command_dispatcher import CommandDispatcher
@@ -23,10 +24,12 @@ class Anjani(TelegramBot,
     log: logging.Logger
     http: aiohttp.ClientSession
     client: pyrogram.Client
+    config: TelegramConfig[str, Any]
     loop: asyncio.AbstractEventLoop
     stopping: bool
 
-    def __init__(self):
+    def __init__(self, config: TelegramConfig[str, Any]):
+        self.config = config
         self.log = logging.getLogger("bot")
         self.loop = asyncio.get_event_loop()
         self.stopping = False
@@ -39,7 +42,10 @@ class Anjani(TelegramBot,
 
     @classmethod
     async def init_and_run(
-        cls, *, loop: Optional[asyncio.AbstractEventLoop] = None
+        cls,
+        config: TelegramConfig[str, Any],
+        *,
+        loop: Optional[asyncio.AbstractEventLoop] = None
     ) -> "Anjani":
         anjani = None
 
@@ -47,12 +53,11 @@ class Anjani(TelegramBot,
             asyncio.set_event_loop(loop)
 
         try:
-            anjani = cls()
+            anjani = cls(config)
             await anjani.run()
             return anjani
         finally:
-            if anjani is None or (anjani is not None and not anjani.stopping):
-                asyncio.get_event_loop().stop()
+            asyncio.get_event_loop().stop()
 
     async def stop(self) -> None:
         self.stopping = True
@@ -64,7 +69,7 @@ class Anjani(TelegramBot,
                 await self.client.stop()
         await self.http.close()
         await self.db.close()
-        util.tg.fetch_permissions.close()
+        fetch_permissions.close()
 
         self.log.info("Running post-stop hooks")
         if self.loaded:

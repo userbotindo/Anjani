@@ -8,6 +8,7 @@ import colorlog
 from pyrogram.session import Session
 
 from .core import Anjani
+from .util.config import TelegramConfig
 
 Session.notice_displayed = True
 aiorun.logger.disabled = True
@@ -41,7 +42,7 @@ def setup_log() -> None:
     logging.getLogger("pyrogram").setLevel(logging.ERROR)
 
 
-def start():
+def start() -> None:
     """Main entry point for the bot."""
     setup_log()
     log.info("Loading code")
@@ -60,4 +61,13 @@ def start():
 
     log.info("Initializing bot")
     loop = asyncio.new_event_loop()
-    aiorun.run(Anjani.init_and_run(loop=loop), loop=loop)
+
+    # Check mandatory configuration
+    config = TelegramConfig()
+    if any(
+        key not in config
+        for key in {"api_id", "api_hash", "bot_token", "db_uri", "owner_id"}
+    ):
+        return log.error("Configuration must be done correctly before running the bot.")
+
+    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop)
