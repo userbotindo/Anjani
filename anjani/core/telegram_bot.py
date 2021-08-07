@@ -24,7 +24,7 @@ TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
 
 class TelegramBot(MixinBase):
     # Initialized during instantiation
-    config: util.config.TelegramConfig[str, str]
+    config: util.config.TelegramConfig[str, Any]
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
     _disconnect: bool
     loaded: bool
