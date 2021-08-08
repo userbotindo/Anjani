@@ -36,7 +36,7 @@ class SpamShield(plugin.Plugin):
 
     async def on_load(self) -> None:
         try:
-            self.token = self.bot.config["sw_api"]
+            self.token = self.bot.config["sw_token"]
         except KeyError:
             self.bot.log.warning("SpamWatch API token not exist")
             return self.bot.unload_plugin(self)
