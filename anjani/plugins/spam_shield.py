@@ -242,7 +242,6 @@ class SpamShield(plugin.Plugin):
                 return
 
             response = await res.json()
-            self.log.info(response)
             probability = response["spam_probability"]
             if probability <= 0.6:
                 return

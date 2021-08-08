@@ -24,7 +24,7 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
             "owner_id": os.environ.get("OWNER_ID"),
             "sp_token": os.environ.get("SP_TOKEN"),
             "sp_url": os.environ.get("SP_URL"),
-            "sw_token": os.environ.get("SW_API"),
+            "sw_token": os.environ.get("SW_TOKEN"),
             "log_channel": os.environ.get("LOG_CHANNEL")
         }
 
