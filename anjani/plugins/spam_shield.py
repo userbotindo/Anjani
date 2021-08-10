@@ -38,6 +38,7 @@ class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
 
     db: util.db.AsyncCollection
+    db_dump: util.db.AsyncCollection
     federation_db: util.db.AsyncCollection
     token: str
     sp_token: Optional[str]
@@ -151,16 +152,18 @@ class SpamShield(plugin.Plugin):
             ]
         )
 
-        await self.db_dump.update_one(
-            {"_id": content_hash[0]},
-            {
-                "$set": {
-                    "spam": total_correct,
-                    "ham": total_incorrect
+        await asyncio.gather(
+            self.db_dump.update_one(
+                {"_id": content_hash[0]},
+                {
+                    "$set": {
+                        "spam": total_correct,
+                        "ham": total_incorrect
+                    }
                 }
-            }
+            ),
+            query.edit_message_reply_markup(reply_markup=button)
         )
-        await query.edit_message_reply_markup(reply_markup=button)
 
     async def on_chat_action(self, message: Message) -> None:
         """Checker service for new member"""
@@ -172,12 +175,12 @@ class SpamShield(plugin.Plugin):
             return
 
         try:
-            me = await message.chat.get_member("me")
-            if me.can_restrict_members:
-                for member in message.new_chat_members:
-                    await self.check(member, chat.id)
-            else:
+            me = await chat.get_member("me")
+            if not me.can_restrict_members:
                 return
+
+            for member in message.new_chat_members:
+                await self.check(member, chat.id)
         except ChannelPrivate:
             return
 
@@ -199,33 +202,34 @@ class SpamShield(plugin.Plugin):
         if not text:
             return
 
-        # Always check the probability but run it in the background
-        if self.sp_token:
-            self.bot.loop.create_task(
-                self.check_probability(
-                    chat.id,
-                    message.from_user.id,
-                    text
-                )
+        # Always check the spam probability but run it in the background
+        self.bot.loop.create_task(self.check_probability(
+            chat.id,
+            message.from_user.id,
+            text
             )
+        )
 
         if not await self.is_active(chat.id):
             return
 
         try:
-            me = await message.chat.get_member("me")
-            if me.can_restrict_members:
-                user = message.from_user
-                if not user:
-                    return
-
-                target = await chat.get_member(user.id)
-                if util.tg.is_staff_or_admin(target, self.bot.staff):
-                    return
-
-                return await self.check(target.user, chat.id)
-            else:
+            user = message.from_user
+            if not user:
                 return
+
+            me, target = await util.tg.fetch_permissions(
+                self.bot.client,
+                chat.id,
+                user.id
+            )
+            if util.tg.is_staff_or_admin(target, self.bot.staff):
+                return
+
+            if not me.can_restrict_members:
+                return
+
+            await self.check(target.user, chat.id)
         except ChannelPrivate:
             return
 
@@ -388,12 +392,18 @@ class SpamShield(plugin.Plugin):
                 banner += " & [Spam Watch](t.me/SpamWatch)"
                 reason += " & " + sw["reason"]
 
-        text = await self.text(chat_id, "banned-text", userlink, user.id, reason, banner)
         await asyncio.gather(
             self.bot.client.kick_chat_member(chat_id, user.id),
             self.bot.client.send_message(
                 chat_id,
-                text=text,
+                text=await self.text(
+                    chat_id,
+                    "banned-text",
+                    userlink,
+                    user.id,
+                    reason,
+                    banner
+                ),
                 parse_mode="markdown",
                 disable_web_page_preview=True,
             )
