@@ -1,6 +1,6 @@
 from typing import Any, Callable, Coroutine
 
-from pyrogram import Client, filters
+from pyrogram import Client
 from pyrogram.filters import Filter
 from pyrogram.types import Message
 
@@ -11,7 +11,7 @@ FilterFunc = Callable[[CustomFilter, Client, Message],
                       Coroutine[Any, Any, bool]]
 
 
-def create(func: FilterFunc, name: str = None, **kwargs) -> CustomFilter:
+def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
     return type(
         name or func.__name__ or "CustomAnjaniFilter",
         (CustomFilter,),
@@ -100,12 +100,12 @@ async def _can_restrict(_: Filter, client: Client, message: Message) -> bool:
     return bot.can_restrict_members and member.can_restrict_members
 
 
-can_delete = filters.create(_can_delete, "can_delete")
-can_change_info = filters.create(_can_change_info, "can_change_info")
-can_invite = filters.create(_can_invite, "can_invite")
-can_pin = filters.create(_can_pin, "can_pin")
-can_promote = filters.create(_can_promote, "can_promote")
-can_restrict = filters.create(_can_restrict, "can_restrict")
+can_delete = create(_can_delete, "can_delete")
+can_change_info = create(_can_change_info, "can_change_info")
+can_invite = create(_can_invite, "can_invite")
+can_pin = create(_can_pin, "can_pin")
+can_promote = create(_can_promote, "can_promote")
+can_restrict = create(_can_restrict, "can_restrict")
 # }
 
 
