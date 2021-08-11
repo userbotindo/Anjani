@@ -46,10 +46,9 @@ class SpamShield(plugin.Plugin):
 
     async def on_load(self) -> None:
         try:
-            self.token = self.bot.config["sw_token"]
+            self.token = self.bot.config["sw_api"]
         except KeyError:
             self.bot.log.warning("SpamWatch API token not exist")
-            return self.bot.unload_plugin(self)
 
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
@@ -297,6 +296,8 @@ class SpamShield(plugin.Plugin):
         )
 
     async def get_ban(self, user_id: int) -> MutableMapping[str, Any]:
+        if not self.token:
+            return {}
         path = f"https://api.spamwat.ch/banlist/{user_id}"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with self.bot.http.get(path, headers=headers) as resp:
