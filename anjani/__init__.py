@@ -5,6 +5,7 @@ import sys
 
 import aiorun
 import colorlog
+from dotenv import load_dotenv
 from pyrogram.session import Session
 
 from .core import Anjani
@@ -16,9 +17,22 @@ aiorun.logger.disabled = True
 log = logging.getLogger("launch")
 
 
+def _level_check(level: str) -> int:
+    _str_to_lvl = {
+        "CRITICAL": logging.CRITICAL,
+        "ERROR": logging.ERROR,
+        "WARNING": logging.WARNING,
+        "INFO": logging.INFO,
+        "DEBUG": logging.DEBUG,
+    }
+    if level not in _str_to_lvl:
+        return logging.INFO
+    return _str_to_lvl[level]
+
+
 def setup_log() -> None:
     """Configures logging"""
-    level = logging.INFO
+    level = _level_check(os.environ.get("LOG_LEVEL", "info").upper())
     logging.root.setLevel(level)
 
     # Color log config
@@ -44,6 +58,9 @@ def setup_log() -> None:
 
 def start() -> None:
     """Main entry point for the bot."""
+    if os.path.isfile("config.env"):
+        load_dotenv("config.env")
+
     setup_log()
     log.info("Loading code")
 
@@ -64,10 +81,7 @@ def start() -> None:
 
     # Check mandatory configuration
     config = TelegramConfig()
-    if any(
-        key not in config
-        for key in {"api_id", "api_hash", "bot_token", "db_uri", "owner_id"}
-    ):
+    if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
         return log.error("Configuration must be done correctly before running the bot.")
 
     aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop)

@@ -55,7 +55,11 @@ class TelegramBot(MixinBase):
         api_hash = self.config["api_hash"]
         bot_token = self.config["bot_token"]
 
-        self.owner = int(self.config["owner_id"])
+        try:
+            self.owner = int(self.config["owner_id"])
+        except KeyError:
+            self.log.warning("Owner id is not set! you won't be able to run staff command!")
+            self.owner = 0
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -179,14 +183,19 @@ class TelegramBot(MixinBase):
 
     def update_plugin_events(self: "Anjani") -> None:
         self.update_plugin_event("callback_query", CallbackQueryHandler)
-        self.update_plugin_event("chat_action", MessageHandler,
-                                 filters=flt.new_chat_members | flt.left_chat_member)
-        self.update_plugin_event("chat_migrate", MessageHandler,
-                                 filters=flt.migrate_from_chat_id)
+        self.update_plugin_event(
+            "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
+        )
+        self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
-        self.update_plugin_event("message", MessageHandler,
-                                 filters=~flt.new_chat_members & ~flt.left_chat_member &
-                                 ~flt.migrate_from_chat_id & ~flt.migrate_to_chat_id)
+        self.update_plugin_event(
+            "message",
+            MessageHandler,
+            filters=~flt.new_chat_members
+            & ~flt.left_chat_member
+            & ~flt.migrate_from_chat_id
+            & ~flt.migrate_to_chat_id,
+        )
 
     @property
     def events_activated(self: "Anjani") -> int:
@@ -219,7 +228,6 @@ class TelegramBot(MixinBase):
         response: Optional[Message] = None,
         **kwargs: Any,
     ) -> Message:
-
         async def reply(reference: Message, *, text: str = "", **kwargs: Any) -> Message:
             if animation := kwargs.pop("animation", None):
                 return await reference.reply_animation(animation, caption=text, **kwargs)
@@ -242,8 +250,7 @@ class TelegramBot(MixinBase):
 
         # get rid of emtpy value "animation", "audio", "document", "photo", "video"
         for key, value in dict(kwargs).items():
-            if (key in {"animation", "audio", "document", "photo", "video"} and
-                    not value):
+            if key in {"animation", "audio", "document", "photo", "video"} and not value:
                 del kwargs[key]
 
         # force reply and as default behaviour if response is None

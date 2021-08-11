@@ -1,8 +1,6 @@
 import os
 from typing import Any, ClassVar, Iterator, MutableMapping, TypeVar
 
-from dotenv import load_dotenv
-
 _KT = TypeVar("_KT", bound=str, contravariant=True)
 _VT = TypeVar("_VT", covariant=True)
 
@@ -12,8 +10,6 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
     __data: ClassVar[MutableMapping[_KT, _VT]] = {}
 
     def __init__(self) -> None:
-        if os.path.isfile("config.env"):
-            load_dotenv("config.env")
 
         config: MutableMapping[Any, Any] = {
             "api_id": os.environ.get("API_ID"),
@@ -25,7 +21,7 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
             "sp_token": os.environ.get("SP_TOKEN"),
             "sp_url": os.environ.get("SP_URL"),
             "sw_api": os.environ.get("SW_API"),
-            "log_channel": os.environ.get("LOG_CHANNEL")
+            "log_channel": os.environ.get("LOG_CHANNEL"),
         }
 
         for key, value in config.items():
