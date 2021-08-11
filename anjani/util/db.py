@@ -5,8 +5,6 @@ from functools import partial
 from typing import (
     Any,
     AsyncGenerator,
-    AsyncIterable,
-    AsyncIterator,
     Callable,
     ClassVar,
     Coroutine,
@@ -21,7 +19,7 @@ from typing import (
     Union
 )
 
-from bson import CodecOptions, DBRef
+from bson import DBRef, CodecOptions 
 from bson.code import Code
 from bson.codec_options import DEFAULT_CODEC_OPTIONS
 from bson.timestamp import Timestamp
@@ -38,7 +36,7 @@ from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.collation import Collation
 from pymongo.collection import Collection
 from pymongo.command_cursor import CommandCursor as _CommandCursor, RawBatchCommandCursor
-from pymongo.cursor import Cursor as _Cursor, RawBatchCursor, _QUERY_OPTIONS
+from pymongo.cursor import _QUERY_OPTIONS, Cursor as _Cursor, RawBatchCursor
 from pymongo.database import Database
 from pymongo.driver_info import DriverInfo
 from pymongo.errors import InvalidOperation, OperationFailure, PyMongoError
@@ -66,6 +64,7 @@ from pymongo.write_concern import DEFAULT_WRITE_CONCERN, WriteConcern
 from anjani import util
 
 PREFERENCE = Union[Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest]
+
 JavaScriptCode = TypeVar("JavaScriptCode", bound=str)
 Requests = Union[DeleteOne, InsertOne, ReplaceOne]
 Results = TypeVar("Results")
@@ -1049,7 +1048,7 @@ class AsyncCollection(AsyncBaseProperty):
     async def estimated_document_count(self, **kwargs: Any) -> int:
         return await util.run_sync(self.dispatch.estimated_document_count, **kwargs)
 
-    def find(self, *args: Any, **kwargs: Any) -> AsyncIterator[MutableMapping[str, Any]]:
+    def find(self, *args: Any, **kwargs: Any) -> "AsyncCursor":
         return AsyncCursor(Cursor(self.dispatch, *args, **kwargs), self)
 
     async def find_one(
@@ -1135,7 +1134,7 @@ class AsyncCollection(AsyncBaseProperty):
             **kwargs
         )
 
-    def find_raw_batches(self, *args: Any, **kwargs: Any) -> AsyncIterable["AsyncCommandCursor"]:
+    def find_raw_batches(self, *args: Any, **kwargs: Any) -> "AsyncRawBatchCursor":
         if "session" in kwargs:
             session = kwargs["session"]
             kwargs["session"] = session.dispatch if session else session
@@ -1202,7 +1201,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     def list_indexes(
         self, session: Optional[AsyncClientSession] = None
-    ) -> AsyncIterable[IndexModel]:
+    ) -> "AsyncLatentCommandCursor":
         return AsyncLatentCommandCursor(
             self,
             self.dispatch.list_indexes,
@@ -1409,10 +1408,8 @@ class AsyncCursorBase(AsyncBase):
     def __aiter__(self) -> "AsyncCursorBase":
         return self
 
-    async def __anext__(self) -> Any:
-        if self.alive and (self._buffer_size() or await self._get_more()):
-            return await util.run_sync(next, self.dispatch)
-        raise StopAsyncIteration
+    async def __anext__(self) -> MutableMapping[str, Any]:
+        return await self.next()
 
     def _buffer_size(self) -> int:
         return len(self._data())
@@ -1491,8 +1488,10 @@ class AsyncCursorBase(AsyncBase):
             self.closed = True
             await util.run_sync(self.dispatch.close)
 
-    async def next(self) -> MutableMapping[str, Any]:
-        return await self.__anext__()
+    async def next(self) -> Any:
+        if self.alive and (self._buffer_size() or await self._get_more()):
+            return await util.run_sync(next, self.dispatch)
+        raise StopAsyncIteration
 
     def to_list(self, length: int) -> asyncio.Future[List[MutableMapping[str, Any]]]:
         if length is not None and  length < 0:
