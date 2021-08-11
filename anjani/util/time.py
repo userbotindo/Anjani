@@ -50,3 +50,23 @@ def format_duration_us(t_us: Union[int, float]) -> str:
         return "%d ms" % t_ms
 
     return "%d μs" % t_us
+
+
+def extract_time(time_text: str) -> Union[int, bool]:
+    """Extract time from time flags"""
+    if any(time_text.endswith(unit) for unit in ("m", "h", "d")):
+        unit = time_text[-1]
+        time_num = time_text[:-1]
+        if not time_num.isdigit():
+            return False
+
+        if unit == "m":
+            return int(time.time() + int(time_num) * 60)
+
+        if unit == "h":
+            return int(time.time() + int(time_num) * 60 * 60)
+
+        if unit == "d":
+            return int(time.time() + int(time_num) * 24 * 60 * 60)
+
+    return False
