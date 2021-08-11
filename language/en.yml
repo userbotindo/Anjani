@@ -402,8 +402,14 @@ greetings-help: |
   × /setwelcome <reply> : Sets a custom welcome message.
   × /resetwelcome : Resets to bot default welcome message.
   × /welcome <on/off> : enable/disable Welcome messages.
-  × /welcome : Display current welcome message and settings.
-  × /cleanservice <on/off> : Clean 'user is joined' service messages automatically.
+  × /welcome : Display current welcome message and settings.\n
+  × /setgoodbye <reply> : Sets a custom goodbye message.
+  × /resetgoodbye : Resets to bot default goodbye message.
+  × /goodbye <on/off> : enable/disable goodbye messages.
+  × /goodbye : Display current goodbye message and settings.\n
+  × /cleanservice <on/off> : Clean 'user is joined' service messages automatically.\n
+  **Notes**:\nto get the message with no-format add "noformat" at the end
+  Example: `/welcome noformat`
 bot-added: |
   Hi... Thanks for inviting me.
   Currently, I'm still in development.
@@ -421,6 +427,15 @@ view-welcome: |
   `Welcoming user` = `{}`
   `Clean service message` = `{}`
   And the welcome message of this chat is:
+default-goodbye: "{first} just left the chat!"
+goodbye-set: Goodbye turned {} when member left.
+cust-goodbye-set: Successfully set custom goodbye message!
+reset-goodbye: Successfully reset welcome message to default!
+view-goodbye: |
+  **This chat has the goodbye setting:**
+  `Sending goodbye` = `{}`
+  `Clean service message` = `{}`
+  And the goodbye message of this chat is:
 #endregion
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"
