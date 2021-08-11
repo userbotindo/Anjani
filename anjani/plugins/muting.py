@@ -20,6 +20,7 @@ from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 from pyrogram.types import ChatMember, ChatPermissions, Message
 
 from anjani import command, filters, plugin
+from anjani.util.tg import is_staff_or_admin
 from anjani.util.time import extract_time
 
 
@@ -41,17 +42,17 @@ class Muting(plugin.Plugin):
 
     @command.filters(filters.can_restrict)
     async def cmd_mute(
-        self, ctx: command.Context, member: Optional[ChatMember], flag: str = ""
+        self, ctx: command.Context, member: Optional[ChatMember] = None, flag: str = ""
     ) -> str:
         """Mute Chat Member"""
-        chat_id = ctx.message.chat.id
-        if not isinstance(member, ChatMember) or member.user.id == ctx.author.id:
+        chat_id = ctx.chat.id
+        if member is None or member.user.id == ctx.author.id:
             return await self.text(chat_id, "no-mute-user")
 
         user = member.user
         if user.id == self.bot.uid:
             return await self.text(chat_id, "self-muting")
-        if member.status in ("creator", "administrator") or user.id in self.bot.staff:
+        if is_staff_or_admin(member, self.bot.staff):
             return await self.text(chat_id, "cant-mute-admin")
 
         if flag:
@@ -59,17 +60,20 @@ class Muting(plugin.Plugin):
             if not until:
                 return await self.text(chat_id, "invalid-time-flag")
         else:
-            if member.can_send_messages is False:
+            if not member.can_send_messages:
                 return await self.text(chat_id, "already-muted")
+
             until = 0
 
         return await self._muter(ctx.msg, member, until, flag)
 
     @command.filters(filters.can_restrict)
-    async def cmd_unmute(self, ctx: command.Context, member: Optional[ChatMember]) -> str:
+    async def cmd_unmute(
+        self, ctx: command.Context, member: Optional[ChatMember] = None
+    ) -> str:
         """Unmute chat member"""
-        chat_id = ctx.message.chat.id
-        if not isinstance(member, ChatMember) or member.user.id == ctx.author.id:
+        chat_id = ctx.chat.id
+        if member is None or member.user.id == ctx.author.id:
             return await self.text(chat_id, "no-unmute-user")
 
         if member.can_send_messages is False:
