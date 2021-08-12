@@ -16,7 +16,7 @@
 
 import asyncio
 from html import escape
-from typing import Any, ClassVar, MutableMapping, Optional, Tuple, Union
+from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
 from pyrogram.errors import MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
@@ -228,14 +228,14 @@ class Greeting(plugin.Plugin):
             {"chat_id": chat_id}, {"$set": {"should_goodbye": value}}, upsert=True
         )
 
-    async def previous_welcome(self, chat_id: int, msg_id: int) -> Union[int, bool]:
+    async def previous_welcome(self, chat_id: int, msg_id: int) -> Optional[int]:
         """Save latest welcome msg_id and return previous msg_id"""
         data = await self.db.find_one_and_update(
             {"chat_id": chat_id}, {"$set": {"prev_welc": msg_id}}, upsert=True
         )
         return data.get("prev_welc", False) if data else False
 
-    async def previous_goodbye(self, chat_id: int, msg_id: int) -> Union[int, bool]:
+    async def previous_goodbye(self, chat_id: int, msg_id: int) -> Optional[int]:
         data = await self.db.find_one_and_update(
             {"chat_id": chat_id}, {"$set": {"prev_gdby": msg_id}}, upsert=True
         )
