@@ -5,12 +5,8 @@ from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional
 from pyrogram.filters import Filter
 from pyrogram.types import (
     CallbackQuery,
-    ChatMemberUpdated,
-    ChosenInlineResult,
     InlineQuery,
     Message,
-    Poll,
-    User
 )
 
 from .anjani_mixin_base import MixinBase
@@ -20,14 +16,10 @@ from anjani.listener import Listener, ListenerFunc
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
 
-Update = (
+EventType = (
     CallbackQuery,
-    ChatMemberUpdated,
-    ChosenInlineResult,
     InlineQuery,
     Message,
-    Poll,
-    User
 )
 
 
@@ -105,15 +97,21 @@ class EventDispatcher(MixinBase):
         if not listeners:
             return
 
+        match = None
+        index = None
         for lst in listeners:
             if lst.filters:
-                for arg in args:
-                    if isinstance(arg, Update):
+                for idx, arg in enumerate(args):
+                    if isinstance(arg, EventType):
                         permitted: bool = await lst.filters(self.client, arg)
                         if permitted:
-                            break
+                            continue
 
-                        continue
+                        match = arg.matches
+                        index = idx
+                        break
+
+                    self.log.error(f"'{type(arg)}' can't be used with filters.")
                 else:
                     continue
 
@@ -122,6 +120,9 @@ class EventDispatcher(MixinBase):
 
         if not tasks:
             return
+
+        if match and index:
+            args[index].matches = match
 
         self.log.debug("Dispatching event '%s' with data %s", event, args)
         if wait:
