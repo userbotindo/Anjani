@@ -104,7 +104,7 @@ class EventDispatcher(MixinBase):
                 for idx, arg in enumerate(args):
                     if isinstance(arg, EventType):
                         permitted: bool = await lst.filters(self.client, arg)
-                        if permitted:
+                        if not permitted:
                             continue
 
                         match = arg.matches
