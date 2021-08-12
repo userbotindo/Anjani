@@ -76,8 +76,12 @@ class Cursor(_Cursor):
     _Cursor__killed: bool
     _Cursor__query_flags: int
 
-    def __init__(self, collection: Collection, *args: Any, **kwargs: Any) -> None:
-        super().__init__(collection, *args, **kwargs)
+    delegate: "AsyncCollection"
+
+    def __init__(self, collection: "AsyncCollection", *args: Any, **kwargs: Any) -> None:
+        self.delegate = collection
+
+        super().__init__(collection.dispatch, *args, **kwargs)
 
     @property
     def _AsyncCursor__data(self) -> Deque[Any]:
@@ -128,6 +132,8 @@ class CommandCursor(_CommandCursor):
     _CommandCursor__data: Deque[Any]
     _CommandCursor__killed: bool
 
+    delegate: "AsyncCollection"
+
     def __init__(
         self,
         collection: "AsyncCollection",
@@ -139,8 +145,10 @@ class CommandCursor(_CommandCursor):
         session: Optional["AsyncClientSession"] = None,
         explicit_session: bool = False,
     ) -> None:
+        self.delegate = collection
+
         super().__init__(
-            collection,
+            collection.dispatch,
             cursor_info,
             address,
             batch_size=batch_size,
@@ -1049,7 +1057,7 @@ class AsyncCollection(AsyncBaseProperty):
         return await util.run_sync(self.dispatch.estimated_document_count, **kwargs)
 
     def find(self, *args: Any, **kwargs: Any) -> "AsyncCursor":
-        return AsyncCursor(Cursor(self.dispatch, *args, **kwargs), self)
+        return AsyncCursor(Cursor(self, *args, **kwargs), self)
 
     async def find_one(
         self,
