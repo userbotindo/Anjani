@@ -24,6 +24,7 @@ TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
 
 class TelegramBot(MixinBase):
     # Initialized during instantiation
+    __running: bool
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
 
     loaded: bool
@@ -40,6 +41,7 @@ class TelegramBot(MixinBase):
     owner: int
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
+        self.__running = False
         self._plugin_event_handlers = {}
 
         self.loaded = False
@@ -67,6 +69,9 @@ class TelegramBot(MixinBase):
         )
 
     async def start(self: "Anjani") -> None:
+        if self.__running:
+            raise RuntimeError("This bot instance is already running")
+
         self.log.info("Starting")
         await self.init_client()
 
@@ -121,6 +126,9 @@ class TelegramBot(MixinBase):
         await self.dispatch_event("started")
 
     async def idle(self: "Anjani") -> None:
+        if self.__running:
+            raise RuntimeError("This bot instance is already running")
+
         signals = {
             k: v
             for v, k in signal.__dict__.items()
@@ -134,14 +142,19 @@ class TelegramBot(MixinBase):
             print(flush=True)  # Separate signal and next log
             self.log.info(f"Stop signal received ('{signals[signum]}').")
             disconnect = True
+            self.__running = False
 
         for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
             self.loop.add_signal_handler(signame, partial(signal_handler, signame))
 
+        self.__running = True
         while not disconnect:
             await asyncio.sleep(1)
 
     async def run(self: "Anjani") -> None:
+        if self.__running:
+            raise RuntimeError("This bot instance is already running")
+
         try:
             # Start client
             try:
