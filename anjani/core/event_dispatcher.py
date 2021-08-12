@@ -121,7 +121,7 @@ class EventDispatcher(MixinBase):
         if not tasks:
             return
 
-        if match and index:
+        if match and index is not None:
             args[index].matches = match
 
         self.log.debug("Dispatching event '%s' with data %s", event, args)
