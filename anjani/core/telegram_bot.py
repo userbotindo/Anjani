@@ -25,7 +25,7 @@ TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
 class TelegramBot(MixinBase):
     # Initialized during instantiation
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
-    _disconnect: bool
+
     loaded: bool
     staff: Set[int]
     chats_languages: MutableMapping[int, str]
@@ -41,7 +41,7 @@ class TelegramBot(MixinBase):
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         self._plugin_event_handlers = {}
-        self._disconnect = False
+
         self.loaded = False
         self.staff = set()
         self.chats_languages = {}
