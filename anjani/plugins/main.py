@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import json
 import re
 from typing import ClassVar, List, Optional
 
@@ -55,24 +54,33 @@ class Main(plugin.Plugin):
 
         return pairs
 
-    @listener.filters(filters.regex(r"help_(.*?)"))
+    @listener.filters(filters.regex(r"help_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Bot helper button"""
-        if isinstance(query.data, bytes):
-            encoding = json.detect_encoding(query.data)
-            query.data = query.data.decode(encoding=encoding)
-
-        plugin_match = re.match(r"help_plugin\((.+?)\)", query.data)
-        back_match = re.match(r"help_back", query.data)
-        close_match = re.match(r"help_close", query.data)
+        match = query.matches[0].group(1)
         chat = query.message.chat
 
-        if plugin_match:
-            extension = plugin_match.group(1)
+        if match == "back":
+            keyboard = await self.help_builder(chat.id)
+            try:
+                await query.edit_message_text(
+                    await self.text(chat.id, "help-pm", self.bot_name),
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode="markdown",
+                )
+            except MessageNotModified:
+                pass
+        elif match == "close":
+            await query.message.delete()
+        elif match:
+            plug = re.compile(r"plugin\((\w+)\)").match(match)
+            if not plug:
+                raise ValueError("Unable to find plugin name")
+
             text_lang = await self.text(chat.id,
-                                        f"{extension}-help",
+                                        f"{plug.group(1)}-help",
                                         username=self.bot.user.username)
-            text = (f"Here is the help for the **{extension.capitalize()}**"
+            text = (f"Here is the help for the **{match.capitalize()}**"
                     f"plugin:\n\n{text_lang}"
             )
             try:
@@ -92,18 +100,6 @@ class Main(plugin.Plugin):
                 )
             except MessageNotModified:
                 pass
-        elif back_match:
-            keyboard = await self.help_builder(chat.id)
-            try:
-                await query.edit_message_text(
-                    await self.text(chat.id, "help-pm", self.bot_name),
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode="markdown",
-                )
-            except MessageNotModified:
-                pass
-        elif close_match:
-            await query.message.delete()
 
     async def cmd_start(self, ctx: command.Context) -> Optional[str]:
         """Bot start command"""

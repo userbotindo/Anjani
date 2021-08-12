@@ -15,8 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import json
-import re
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from pyrogram import emoji, filters
@@ -61,14 +59,10 @@ class Language(plugin.Plugin):
                                  {"$set": data[self.name]},
                                  upsert=True)
 
-    @listener.filters(filters.regex(r"set_lang_(.*?)"))
+    @listener.filters(filters.regex(r"set_lang_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Set language query."""
-        if isinstance(query.data, bytes):
-            encoding = json.detect_encoding(query.data)
-            query.data = query.data.decode(encoding=encoding)
-
-        lang_match = re.findall(r"en|id", query.data)
+        lang_match = query.matches[0].group(1)
         chat = query.message.chat
 
         # Check admin rights
@@ -78,17 +72,16 @@ class Language(plugin.Plugin):
                 await query.answer(await self.text(chat.id, "error-no-rights"))
                 return
 
-        if lang_match:
-            lang = LANG_FLAG.get(lang_match[0])
-            if not lang:
-                await query.edit_message_text(await self.text(chat.id,
-                                                              "language-code-error"))
-                return
+        lang = LANG_FLAG.get(lang_match)
+        if not lang:
+            await query.edit_message_text(await self.text(chat.id,
+                                                          "language-code-error"))
+            return
 
-            await self.switch_lang(chat.id, lang_match[0])
-            await query.edit_message_text(
-                text=await self.text(chat.id, "language-set-succes", lang),
-            )
+        await self.switch_lang(chat.id, lang_match)
+        await query.edit_message_text(
+            text=await self.text(chat.id, "language-set-succes", lang),
+        )
 
     async def switch_lang(self, chat_id: int, language: str) -> None:
         """Change chat language setting."""
@@ -117,7 +110,11 @@ class Language(plugin.Plugin):
                                                                  "language-set-succes",
                                                                  LANG_FLAG[lang])))
             else:
-                return await self.text(chat.id, "language-invalid", self.bot.languages.keys())
+                return await self.text(
+                    chat.id,
+                    "language-invalid",
+                    list(self.bot.languages.keys())
+                )
         else:
             chat_name = chat.first_name or chat.title
             lang = LANG_FLAG[self.bot.chats_languages.get(chat.id, "en")]

@@ -83,11 +83,9 @@ class SpamShield(plugin.Plugin):
                                  {"$set": data[self.name]},
                                  upsert=True)
 
-    @listener.filters(filters.regex(r"spam_check_(t|f)\[(.*?)\]"))
+    @listener.filters(filters.regex(r"spam_check_(t|f)\[(.*)\]"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
-        if isinstance(query.data, bytes):
-            query.data = query.data.decode()
-
+        method = query.matches[0].group(1)
         message = query.message
         content_hash = re.compile(r"([A-Fa-f0-9]{64})").search(message.text)
         author = str(query.from_user.id)
@@ -99,7 +97,6 @@ class SpamShield(plugin.Plugin):
             return
 
         # Correct button data
-        correct = re.compile(r"spam_check_t(.*?)").match(query.data)
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             data = message.reply_markup.inline_keyboard[0][0].callback_data
             if isinstance(data, bytes):
@@ -108,7 +105,6 @@ class SpamShield(plugin.Plugin):
             users_on_correct = re.findall("[0-9]+", data)
 
         # Incorrect button data
-        incorrect = re.compile(r"spam_check_f(.*?)").match(query.data)
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             data = message.reply_markup.inline_keyboard[0][1].callback_data
             if isinstance(data, bytes):
@@ -116,7 +112,7 @@ class SpamShield(plugin.Plugin):
 
             users_on_incorrect = re.findall("[0-9]+", data)
 
-        if correct:
+        if method == "t":
             # Check user in incorrect data
             if author in users_on_incorrect:
                 users_on_incorrect.remove(author)
@@ -124,7 +120,7 @@ class SpamShield(plugin.Plugin):
                 users_on_correct.remove(author)
             else:
                 users_on_correct.append(author)
-        elif incorrect:
+        elif method == "f":
             # Check user in correct data
             if author in users_on_correct:
                 users_on_correct.remove(author)
@@ -132,6 +128,8 @@ class SpamShield(plugin.Plugin):
                 users_on_incorrect.remove(author)
             else:
                 users_on_incorrect.append(author)
+        else:
+            raise ValueError("Unknown method")
 
         total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
         users_on_correct = f"[{', '.join(users_on_correct)}]"
