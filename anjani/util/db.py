@@ -1490,7 +1490,7 @@ class AsyncCursorBase(AsyncBase):
     async def _refresh(self) -> int:
         return await util.run_sync(self.dispatch._refresh)
 
-    def batch_size(self, batch_size) -> "AsyncCursorBase":
+    def batch_size(self, batch_size: int) -> "AsyncCursorBase":
         self.dispatch.batch_size(batch_size)
         return self
 
@@ -1598,7 +1598,7 @@ class _LatentCursor:
     def _refresh(self) -> int:
         return 0
 
-    def batch_size(self, _: int) -> None:
+    def batch_size(self, batch_size: int) -> None:
         pass
 
     def close(self) -> None:
