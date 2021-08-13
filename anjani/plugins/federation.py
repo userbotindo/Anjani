@@ -155,12 +155,13 @@ class Federation(plugin.Plugin):
             {"_id": fid}, {"$unset": {f"banned.{user}": None}}, upsert=True
         )
 
-    async def check_fban(self, user: int) -> util.db.AsyncCursor:
+    async def check_fban(self, user: int) -> Optional[util.db.AsyncCursor]:
         """Check user banned list"""
-        return self.db.find(
-            {f"banned.{user}": {"$exists": True}},
-            projection={f"banned.{user}": 1, "name": 1, "chats": 1},
-        )
+        query = {f"banned.{user}": {"$exists": True}}
+        projection = {f"banned.{user}": 1, "name": 1, "chats": 1}
+
+        empty = await self.db.count_documents(query) == 0
+        return self.db.find(query, projection=projection) if not empty else None
 
     async def is_fbanned(self, chat: int, user: int) -> Optional[MutableMapping[str, Any]]:
         data = await self.get_fed_bychat(chat)
@@ -609,8 +610,12 @@ class Federation(plugin.Plugin):
 
             return text
 
+        reply_msg = ctx.msg.reply_to_message
         if len(ctx.args) == 1:
-            user = ctx.msg.from_user
+            if reply_msg:
+                user = reply_msg.from_user
+            else:
+                user = ctx.msg.from_user
             data = await self.get_fed(ctx.args[0])
             if not data:
                 return await self.text(chat.id, "fed-invalid-id")
@@ -623,7 +628,10 @@ class Federation(plugin.Plugin):
 
             return await self.text(chat.id, "fed-stat-not-banned")
 
-        user = ctx.msg.from_user
+        if reply_msg:
+            user = reply_msg.from_user
+        else:
+            user = ctx.msg.from_user
         data = await self.check_fban(user.id)
         if data:
             text = await self.text(chat.id, "fed-stat-multi")
