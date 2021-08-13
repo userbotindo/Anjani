@@ -75,7 +75,6 @@ class UserConverter(EntityConverter):
     3. Using first argument mentioned user.
     4. Using any mention available on the message.
     5. Using any text mention available on the message.
-    6. Using the author that invoke the `~Context`.
     """
 
     async def extract_user(self, client: Client, user_id: Union[str, int]) -> types.User:
@@ -89,7 +88,7 @@ class UserConverter(EntityConverter):
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
-    async def __call__(self, ctx: Context) -> types.User:
+    async def __call__(self, ctx: Context) -> Optional[types.User]:
         message = ctx.msg
         if message.reply_to_message:
             self.skip = True
@@ -110,7 +109,6 @@ class UserConverter(EntityConverter):
                 return await self.extract_user(ctx.bot.client, res)
 
         self.skip = True
-        return ctx.author
 
 
 class ChatConverter(Converter):
