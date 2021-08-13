@@ -1444,8 +1444,8 @@ class AsyncCursorBase(AsyncBase):
         self,
         length: Optional[int],
         the_list: List[MutableMapping[str, Any]],
-        future: asyncio.Future,
-        get_more_future: asyncio.Future
+        future: asyncio.Future[List[MutableMapping[str, Any]]],
+        get_more_future: asyncio.Future[int]
     ) -> None:
         # get_more_future is the result of self._get_more().
         # future will be the result of the user's to_list() call.
@@ -1638,7 +1638,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         self.kwargs["batchSize"] = batch_size
         return self
 
-    def _get_more(self) -> Union[asyncio.Future, Coroutine[Any, Any, int]]:
+    def _get_more(self) -> Union[asyncio.Future[int], Coroutine[Any, Any, int]]:
         if not self.started:
             self.started = True
             original_future = self.loop.create_future()
@@ -1655,7 +1655,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         return super()._get_more()
 
     def _on_started(
-        self, original_future: asyncio.Future, future: asyncio.Future
+        self, original_future: asyncio.Future[int], future: asyncio.Future[CommandCursor]
     ) -> None:
         try:
             self.dispatch = future.result()
