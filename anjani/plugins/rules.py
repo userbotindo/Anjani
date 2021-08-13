@@ -61,7 +61,7 @@ class Rules(plugin.Plugin):
         content = ctx.input
         ret, _ = await asyncio.gather(
             self.text(chat.id, "rules-set",
-                      f"t.me/{self.bot.username}?start=rules_{chat.id}"),
+                      f"t.me/{self.bot.user.username}?start=rules_{chat.id}"),
             self.db.update_one({"chat_id": chat.id},
                                {"$set": {"rules": content[1]}}, upsert=True)
         )
@@ -88,8 +88,8 @@ class Rules(plugin.Plugin):
                 [
                     [
                         InlineKeyboardButton(
-                            text=await self.bot.text(chat.id, "rules-button"),
-                            url=f"t.me/{self.bot.username}?start=rules_{chat.id}",
+                            text=await self.text(chat.id, "rules-button"),
+                            url=f"t.me/{self.bot.user.username}?start=rules_{chat.id}",
                         )
                     ]
                 ]

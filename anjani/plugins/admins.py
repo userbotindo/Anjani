@@ -268,4 +268,4 @@ class Admins(plugin.Plugin):
         except PeerIdInvalid:
             return await self.text(chat.id, "err-peer-invalid")
 
-        return await self.bot.text(chat.id, "unban-done", user.first_name)
+        return await self.text(chat.id, "unban-done", user.first_name)
