@@ -141,6 +141,7 @@ fed-delete-canceled: Federation deletion canceled
 fed-delete-done: I have deleted your Federation!\nAll groups that connect to **{}** are now federation-less.
 fed-cant-two-feds: You cannot join two federations in one chat!
 fed-invalid-id: Please enter a valid federation ID
+fed-invalid-user-id: Please enter a valid user ID
 fed-already-connected: This group is already connected to that federation!
 fed-chat-joined-info: Chat joined to **{}** Federation!
 fed-not-connected: This chat isn't connected to that federation!
