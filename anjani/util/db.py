@@ -1442,7 +1442,7 @@ class AsyncCursorBase(AsyncBase):
 
     def _to_list(
         self,
-        length: int,
+        length: Optional[int],
         the_list: List[MutableMapping[str, Any]],
         future: asyncio.Future,
         get_more_future: asyncio.Future
@@ -1462,9 +1462,12 @@ class AsyncCursorBase(AsyncBase):
             else:
                 n = min(length, result)
 
-            for _ in range(n):
-                the_list.append(fix_outgoing(self._data().popleft(),
-                                             collection))
+            i = 0
+            while i < n:
+                the_list.append(
+                    fix_outgoing(self._data().popleft(), collection)
+                )
+                i += 1
 
             reached_length = (length is not None and len(the_list) >= length)
             if reached_length or not self.alive:
@@ -1501,8 +1504,10 @@ class AsyncCursorBase(AsyncBase):
             return await util.run_sync(next, self.dispatch)
         raise StopAsyncIteration
 
-    def to_list(self, length: int) -> asyncio.Future[List[MutableMapping[str, Any]]]:
-        if length is not None and  length < 0:
+    def to_list(
+        self, length: Optional[int] = None
+    ) -> asyncio.Future[List[MutableMapping[str, Any]]]:
+        if length is not None and length < 0:
                 raise ValueError("length must be non-negative")
 
         if self._query_flags() & _QUERY_OPTIONS["tailable_cursor"]:
