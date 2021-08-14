@@ -3,7 +3,7 @@ import io
 from typing import Any, ClassVar, IO, MutableMapping
 
 from aiopath import PureAsyncPosixPath
-from pyrogram.types import Message
+from pyrogram.types import CallbackQuery, Message
 
 from anjani import command, plugin, util
 
@@ -23,6 +23,10 @@ class ExamplePlugin(plugin.Plugin):
         await self.db.update_one(
             {"_id": message.message_id}, {"$set": {"text": message.text}}, upsert=True
         )
+
+    async def on_callback_query(self, query: CallbackQuery) -> None:
+        self.log.info("Button clicked: %s", query.data)
+        await query.answer("You clicked the button!")
 
     async def on_chat_action(self, message: Message) -> None:
         if message.new_chat_members:
