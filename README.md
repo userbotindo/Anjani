@@ -46,4 +46,5 @@ If you want to make your custom plugins, refer to [Anjani's Wiki](https://github
 ## Credits
 
 - [Marie](https://github.com/PaulSonOfLars/tgbot)
+- [Pyrobud](https://github.com/kdrag0n/pyrobud)
 - [All Contributors 👥](https://github.com/userbotindo/Anjani/graphs/contributors)

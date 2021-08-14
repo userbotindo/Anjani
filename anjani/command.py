@@ -5,6 +5,7 @@ from typing import (
     BinaryIO,
     Callable,
     Coroutine,
+    IO,
     Optional,
     Sequence,
     Union,
@@ -147,11 +148,11 @@ class Context:
         self,
         text: str = "",
         *,
-        animation: Optional[Union[str, BinaryIO]] = None,
-        audio: Optional[Union[str, BinaryIO]] = None,
-        document: Optional[Union[str, BinaryIO]] = None,
-        photo: Optional[Union[str, BinaryIO]] = None,
-        video: Optional[Union[str, BinaryIO]] = None,
+        animation: Optional[Union[str, BinaryIO, IO[bytes]]] = None,
+        audio: Optional[Union[str, BinaryIO, IO[bytes]]] = None,
+        document: Optional[Union[str, BinaryIO, IO[bytes]]] = None,
+        photo: Optional[Union[str, BinaryIO, IO[bytes]]] = None,
+        video: Optional[Union[str, BinaryIO, IO[bytes]]] = None,
         delete_after: Optional[Union[int, float]] = None,
         mode: str = "edit",
         redact: bool = True,
@@ -165,6 +166,13 @@ class Context:
                 Text of the message to be sent.
                 *Optional* only if either :obj:`animation`, :obj:`audio`, :obj:`document`,
                 :obj:`photo`, :obj:`video` or :obj:`delete_after` is provided.
+
+            annimation (`str` | `BinaryIO`, *Optional*):
+                Annimation to send. Pass a file_id as string to send an animation(GIF) file that
+                exists on the Telegram servers, pass an HTTP URL as a string for Telegram
+                to get an animation file from the Internet, pass a file path as string to upload
+                a new animation file that exists on your local machine, or pass a binary
+                file-like object with its attribute “.name” set for in-memory uploads.
 
             audio (`str` | `BinaryIO`, *Optional*):
                 Audio file to send. Pass a file_id as string to send an audio file that

@@ -34,7 +34,6 @@ class TelegramBot(MixinBase):
 
     # Initialized during startup
     client: Client
-    prefix: str
     user: User
     uid: int
     start_time_us: int
