@@ -25,6 +25,8 @@ Help us to cover more languages by contributing in [Crowdin](https://crowdin.com
 
 Set up your bot configuration variables by renaming `config.env_sample` to `config.env` and edit it with your values.
 
+Configuration must be done before running the bot, otherwise it will fail to run.
+
 ### Dependencies
 
 Install all required dependencies by running
@@ -35,7 +37,7 @@ Install all required dependencies by running
 
 Once everything set up, start the client by running
 
-`python3 -m anjani_bot`
+`python3 -m anjani`
 
 ## Plugin
 
@@ -43,6 +45,5 @@ If you want to make your custom plugins, refer to [Anjani's Wiki](https://github
 
 ## Credits
 
-- [Userge](https://github.com/UsergeTeam/Userge)
 - [Marie](https://github.com/PaulSonOfLars/tgbot)
 - [All Contributors 👥](https://github.com/userbotindo/Anjani/graphs/contributors)
