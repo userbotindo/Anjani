@@ -45,23 +45,15 @@ class SpamShield(plugin.Plugin):
     sp_url: Optional[str]
 
     async def on_load(self) -> None:
-        try:
-            self.token = self.bot.config["sw_api"]
-        except KeyError:
+        self.token = self.bot.config.get("sw_api")
+        if not self.token:
             self.bot.log.warning("SpamWatch API token not exist")
-            self.token = None
 
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
-
-        try:
-            self.sp_token = self.bot.config["sp_token"]
-            self.sp_url = self.bot.config["sp_url"]
-        except KeyError:
-            self.sp_token = None
-            self.sp_url = None
-        else:
-            self.db_dump = self.bot.db.get_collection("SPAM_DUMP")
+        self.sp_token = self.bot.config.get("sp_token")
+        self.sp_url = self.bot.config.get("sp_url")
+        self.db_dump = self.bot.db.get_collection("SPAM_DUMP")
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -165,11 +157,8 @@ class SpamShield(plugin.Plugin):
 
     async def on_chat_action(self, message: Message) -> None:
         """Checker service for new member"""
-        if message.left_chat_member:
-            return
         chat = message.chat
-
-        if not await self.is_active(chat.id):
+        if message.left_chat_member or not await self.is_active(chat.id):
             return
 
         try:
@@ -186,9 +175,7 @@ class SpamShield(plugin.Plugin):
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
         chat = message.chat
-        if not chat or message.left_chat_member or not message.from_user:
-            return
-
+        user = message.from_user
         text = (
             message.text.strip()
             if message.text else
@@ -197,7 +184,7 @@ class SpamShield(plugin.Plugin):
                 if message.media and message.caption else None
             )
         )
-        if not text:
+        if not chat or message.left_chat_member or not user or not text:
             return
 
         # Always check the spam probability but run it in the background
@@ -212,19 +199,12 @@ class SpamShield(plugin.Plugin):
             return
 
         try:
-            user = message.from_user
-            if not user:
-                return
-
             me, target = await util.tg.fetch_permissions(
                 self.bot.client,
                 chat.id,
                 user.id
             )
-            if util.tg.is_staff_or_admin(target, self.bot.staff):
-                return
-
-            if not me.can_restrict_members:
+            if not me.can_restrict_members or util.tg.is_staff_or_admin(target, self.bot.staff):
                 return
 
             await self.check(target.user, chat.id)

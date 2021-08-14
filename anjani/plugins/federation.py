@@ -659,10 +659,10 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "user-no-feds")
 
         banned = data["banned"]
-        try:
-            file = AsyncPath(self.bot.config["download_path"] + data["name"] + ".csv")
-        except KeyError:
-            file = AsyncPath("./downloads/" + data["name"] + ".csv")
+        file = AsyncPath(
+            self.bot.config.get("download_path", "./downloads/") +
+            data["name"] + ".csv"
+        )
 
         await file.touch()
         async with file.open("w") as f:
@@ -688,10 +688,9 @@ class Federation(plugin.Plugin):
         if not data:
             return await self.text(chat.id, "user-no-feds")
 
-        try:
-            file = AsyncPath(await reply_msg.download(self.bot.config["download_path"]))
-        except KeyError:
-            file = AsyncPath(await reply_msg.download())
+        file = AsyncPath(await reply_msg.download(
+            self.bot.config.get("download_path", "./downloads/"))
+        )
 
         fid = data["_id"]
         tasks = []
