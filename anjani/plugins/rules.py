@@ -55,15 +55,15 @@ class Rules(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_setrules(self, ctx: command.Context) -> str:
         chat = ctx.chat
-        if not ctx.input:
+        if not ctx.plain_input:
             return await self.text(chat.id, "rules-blank-err")
 
-        content = ctx.input
+        content = ctx.plain_input
         ret, _ = await asyncio.gather(
             self.text(chat.id, "rules-set",
                       f"t.me/{self.bot.user.username}?start=rules_{chat.id}"),
             self.db.update_one({"chat_id": chat.id},
-                               {"$set": {"rules": content[1]}}, upsert=True)
+                               {"$set": {"rules": content}}, upsert=True)
         )
         return ret
 

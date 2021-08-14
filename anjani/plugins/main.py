@@ -20,7 +20,7 @@ from typing import ClassVar, List, Optional
 
 from pyrogram import filters
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import CallbackQuery, Chat, InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani import command, listener, plugin
 
@@ -112,14 +112,18 @@ class Main(plugin.Plugin):
                                   reply_markup=InlineKeyboardMarkup(keyboard))
                 return
 
-            regex = re.compile(r"rules_(.*?)")
-            if ctx.input and regex.match(ctx.input):
-                rules_id = ctx.input.split("_")[1]
-                db = self.bot.get_collection("RULES")
-                content, chat, text = await asyncio.gather(
-                    db.find_one({"chat_id": int(rules_id)}),
-                    self.bot.client.get_chat(int(rules_id)),
-                    self.text(chat.id, "rules-view-pm", chat.title))
+            regex = re.compile(r"rules_(.*)")
+            if ctx.input and regex.search(ctx.input):
+                rules_id = int(ctx.input.split("_")[1])
+                db = self.bot.db.get_collection("RULES")
+                content, chat = await asyncio.gather(
+                    db.find_one({"chat_id": rules_id}),
+                    self.bot.client.get_chat(rules_id),
+                )
+                text = await self.text(rules_id, "rules-view-pm", chat.title)
+                if not content:
+                    return await self.text(rules_id, "rules-none")
+
                 return text + content["rules"]
 
             buttons = [
