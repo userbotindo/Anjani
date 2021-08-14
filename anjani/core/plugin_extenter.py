@@ -3,7 +3,7 @@ import inspect
 from types import ModuleType as PluginType
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type
 
-from anjani import plugin, plugins, util
+from anjani import custom_plugins, plugin, plugins, util
 from anjani.error import ExistingPluginError
 
 from .anjani_mixin_base import MixinBase
@@ -59,6 +59,7 @@ class PluginExtender(MixinBase):
     def load_all_plugins(self: "Anjani") -> None:
         self.log.info("Loading plugins")
         self._load_all_from_metaplug(plugins.subplugins)
+        self._load_all_from_metaplug(custom_plugins.subplugins, comment="custom")
         self.log.info("All plugins loaded.")
 
     def unload_all_pluginss(self: "Anjani") -> None:
@@ -76,3 +77,6 @@ class PluginExtender(MixinBase):
 
         self.log.info("Reloading master plugin...")
         await util.run_sync(importlib.reload, plugins)
+
+        self.log.info("Reloading custom master module...")
+        await util.run_sync(importlib.reload, custom_plugins )
