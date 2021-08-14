@@ -75,6 +75,7 @@ class Context:
 
     response: pyrogram.types.Message
     input: str
+    plain_input: str
     args: Sequence[str]
 
     segments: Sequence[str]
@@ -96,10 +97,13 @@ class Context:
         self.response = None  # type: ignore
         # Single argument string
         username = self.bot.user.username
+        i = self.cmd_len + 1 + len(username)
         if username in self.msg.text:
-            self.input = self.msg.text[self.cmd_len + 1 + len(username) :]
+            self.input = self.msg.text[i :]
+            self.plain_input = self.msg.text.markdown[i :]
         else:
             self.input = self.msg.text[self.cmd_len :]
+            self.plain_input = self.msg.text.markdown[self.cmd_len :]
 
         self.segments = self.msg.command
         self.invoker = self.segments[0]
