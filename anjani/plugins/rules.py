@@ -48,22 +48,18 @@ class Rules(plugin.Plugin):
         return {self.name: rules}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @command.filters(filters.admin_only)
     async def cmd_setrules(self, ctx: command.Context) -> str:
         chat = ctx.chat
-        if not ctx.plain_input:
+        if not ctx.input_raw:
             return await self.text(chat.id, "rules-blank-err")
 
-        content = ctx.plain_input
+        content = ctx.input_raw
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "rules-set",
-                      f"t.me/{self.bot.user.username}?start=rules_{chat.id}"),
-            self.db.update_one({"chat_id": chat.id},
-                               {"$set": {"rules": content}}, upsert=True)
+            self.text(chat.id, "rules-set", f"t.me/{self.bot.user.username}?start=rules_{chat.id}"),
+            self.db.update_one({"chat_id": chat.id}, {"$set": {"rules": content}}, upsert=True),
         )
         return ret
 
@@ -71,8 +67,7 @@ class Rules(plugin.Plugin):
     async def cmd_clearrules(self, ctx: command.Context) -> str:
         chat = ctx.chat
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "rules-clear"),
-            self.db.delete_one({"chat_id": chat.id})
+            self.text(chat.id, "rules-clear"), self.db.delete_one({"chat_id": chat.id})
         )
         return ret
 

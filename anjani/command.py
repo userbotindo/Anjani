@@ -1,11 +1,11 @@
 import asyncio
 from typing import (
+    IO,
     TYPE_CHECKING,
     Any,
     BinaryIO,
     Callable,
     Coroutine,
-    IO,
     Optional,
     Sequence,
     Union,
@@ -75,7 +75,6 @@ class Context:
 
     response: pyrogram.types.Message
     input: str
-    plain_input: str
     args: Sequence[str]
 
     segments: Sequence[str]
@@ -99,11 +98,9 @@ class Context:
         username = self.bot.user.username
         i = self.cmd_len + 1 + len(username)
         if username in self.msg.text:
-            self.input = self.msg.text[i :]
-            self.plain_input = self.msg.text.markdown[i :]
+            self.input = self.msg.text[i:]
         else:
             self.input = self.msg.text[self.cmd_len :]
-            self.plain_input = self.msg.text.markdown[self.cmd_len :]
 
         self.segments = self.msg.command
         self.invoker = self.segments[0]
@@ -119,6 +116,13 @@ class Context:
     def _get_args(self) -> Sequence[str]:
         self.args = self.segments[1:]
         return self.args
+
+    @property
+    def input_raw(self) -> str:
+        username = self.bot.user.username
+        if username in self.msg.text:
+            return self.msg.text.markdown[self.cmd_len + 1 + len(username) :]
+        return self.msg.text.markdown[self.cmd_len :]
 
     async def delete(
         self, delay: Optional[float] = None, message: Optional[pyrogram.types.Message] = None
