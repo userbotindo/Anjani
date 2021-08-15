@@ -8,7 +8,7 @@ RUN apt -qq update && apt -qq upgrade -y
 RUN apt -qq install -y --no-install-recommends \
     wget \
     git \
-    gnupg2 
+    gnupg2
 
 # Copy directory and install dependencies
 COPY . .
@@ -17,7 +17,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 ENV PATH="${PATH}:/root/.poetry/bin"
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-dev -E uvloop
+RUN poetry install --no-root --no-dev -E all
 
 # command to run on container start
 CMD ["python3","-m","anjani"]

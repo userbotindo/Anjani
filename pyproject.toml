@@ -47,6 +47,8 @@ pre-commit = "^2.14.0"
 pylint = "^2.9.6"
 
 [tool.poetry.extras]
+all = ["scikit-learn", "uvloop"]
+ml = ["scikit-learn"]
 uvloop = ["uvloop"]
 
 

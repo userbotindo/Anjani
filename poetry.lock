@@ -1,6 +1,6 @@
 [[package]]
 name = "aiofile"
-version = "3.6.0"
+version = "3.7.1"
 description = "Asynchronous file operations."
 category = "main"
 optional = false
@@ -33,7 +33,7 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
 name = "aiopath"
-version = "0.5.11"
+version = "0.5.12"
 description = "📁 Async pathlib for Python"
 category = "main"
 optional = false
@@ -560,7 +560,7 @@ test = ["aiohttp", "flake8 (>=3.8.4,<3.9.0)", "psutil", "pycodestyle (>=2.6.0,<2
 
 [[package]]
 name = "virtualenv"
-version = "20.7.0"
+version = "20.7.2"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -598,17 +598,19 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [extras]
+all = ["scikit-learn", "uvloop"]
+ml = ["scikit-learn"]
 uvloop = ["uvloop"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "bda64a455e1ee724b4c6eb8af62389cb665a1872715268051a0baf9af5d6d367"
+content-hash = "2ac0396eac0699ec8909003cef8a35f1869325563fb8deaf9602456c660a3536"
 
 [metadata.files]
 aiofile = [
-    {file = "aiofile-3.6.0-py3-none-any.whl", hash = "sha256:8300ed179d4003560db1ea4ffb52f0f42cd23d754b63b63ea18b2358b2b53926"},
-    {file = "aiofile-3.6.0.tar.gz", hash = "sha256:864940bf81c3d20fb079c8a0e9773a63539d1cfcef03ceeffead2551846bc513"},
+    {file = "aiofile-3.7.1-py3-none-any.whl", hash = "sha256:cab1d3deb1545b7a9d92de16c021a8c90ac739b875336d4da82fea58a2ed60a5"},
+    {file = "aiofile-3.7.1.tar.gz", hash = "sha256:068f38b8fce3bae17a324a8dc8aac61f5f71fdd218f14222186cc2be507f92c1"},
 ]
 aiohttp = [
     {file = "aiohttp-3.7.4.post0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:3cf75f7cdc2397ed4442594b935a11ed5569961333d49b7539ea741be2cc79d5"},
@@ -650,8 +652,8 @@ aiohttp = [
     {file = "aiohttp-3.7.4.post0.tar.gz", hash = "sha256:493d3299ebe5f5a7c66b9819eacdcfbbaaf1a8e84911ddffcdc48888497afecf"},
 ]
 aiopath = [
-    {file = "aiopath-0.5.11-py2.py3-none-any.whl", hash = "sha256:ad4219be82d087636350665b2186cf08f927fc86aca9e9aed10fc0a319ecd446"},
-    {file = "aiopath-0.5.11.tar.gz", hash = "sha256:e61bcb2e1eda69d112adae7552074e10cd98ca166e510a6c3f3559d062117aa1"},
+    {file = "aiopath-0.5.12-py2.py3-none-any.whl", hash = "sha256:9d85fd17ef1cbc75c0e81619acb3a1632cf5e15ead459e57fef5ec85e0b7a1da"},
+    {file = "aiopath-0.5.12.tar.gz", hash = "sha256:de2f9401dd098b9a279afb265df5a6eb5b78f39c2c4f3871f671fc1dd4b21d64"},
 ]
 aiorun = [
     {file = "aiorun-2020.12.1-py3-none-any.whl", hash = "sha256:7ca5f8f908585e6e4e6070c04abd0632a110432ddcd4809ad88724dd59aa91ba"},
@@ -1180,8 +1182,8 @@ uvloop = [
     {file = "uvloop-0.15.3.tar.gz", hash = "sha256:905f0adb0c09c9f44222ee02f6b96fd88b493478fffb7a345287f9444e926030"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.7.0-py2.py3-none-any.whl", hash = "sha256:fdfdaaf0979ac03ae7f76d5224a05b58165f3c804f8aa633f3dd6f22fbd435d5"},
-    {file = "virtualenv-20.7.0.tar.gz", hash = "sha256:97066a978431ec096d163e72771df5357c5c898ffdd587048f45e0aecc228094"},
+    {file = "virtualenv-20.7.2-py2.py3-none-any.whl", hash = "sha256:e4670891b3a03eb071748c569a87cceaefbf643c5bac46d996c5a45c34aa0f06"},
+    {file = "virtualenv-20.7.2.tar.gz", hash = "sha256:9ef4e8ee4710826e98ff3075c9a4739e2cb1040de6a2a8d35db0055840dc96a0"},
 ]
 wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
