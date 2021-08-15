@@ -236,7 +236,7 @@ class Admins(plugin.Plugin):
         return ret
 
     @command.filters(filters.can_restrict)
-    async def ban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
+    async def cmd_ban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Ban chat member"""
         chat = ctx.chat
 
@@ -256,7 +256,7 @@ class Admins(plugin.Plugin):
         return ret
 
     @command.filters(filters.can_restrict)
-    async def unban_member(self, ctx: command.Context, user: Optional[User] = None) -> str:
+    async def cmd_unban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban chat member"""
         chat = ctx.chat
 
