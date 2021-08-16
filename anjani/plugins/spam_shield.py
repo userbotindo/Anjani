@@ -231,8 +231,7 @@ class SpamShield(plugin.Plugin):
         if not self.model:
             return
 
-        text = repr(text.strip())
-        response = await run_sync(self._predict, text)
+        response = await run_sync(self._predict, repr(text.strip()))
         probability = response[0][1]
         if probability <= 0.6:
             return
