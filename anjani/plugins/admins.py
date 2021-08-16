@@ -15,17 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from datetime import datetime
 from typing import ClassVar, Optional
 
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
-    MessageDeleteForbidden,
-    PeerIdInvalid,
     UserAdminInvalid,
     UserIdInvalid,
-    UserNotParticipant,
 )
 from pyrogram.types import ChatMember, User
 
@@ -116,7 +112,7 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "cleaning-zombie", zombie)
 
     @command.filters(filters.can_promote)
-    async def cmd_promote(self, ctx: command.Context, user: User) -> str:
+    async def cmd_promote(self, ctx: command.Context, user: Optional[User]) -> str:
         """Bot promote member, required Both permission of can_promote"""
         chat = ctx.msg.chat
 
@@ -152,7 +148,7 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "promote-success")
 
     @command.filters(filters.can_promote)
-    async def cmd_demote(self, ctx: command.Context, user: User) -> str:
+    async def cmd_demote(self, ctx: command.Context, user: Optional[User]) -> str:
         """Demoter Just owner and promoter can demote admin."""
         chat = ctx.msg.chat
 
@@ -182,61 +178,3 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "demote-error-perm")
 
         return await self.text(chat.id, "demote-success")
-
-    @command.filters(filters.can_restrict)
-    async def cmd_kick(self, ctx: command.Context, user: Optional[User] = None) -> str:
-        """Kick chat member"""
-        chat = ctx.chat
-
-        if not user:
-            return await self.text(chat.id, "no-kick-user")
-
-        try:
-            target = await chat.get_member(user.id)
-            if util.tg.is_staff_or_admin(target, self.bot.staff):
-                return await self.text(chat.id, "admin-kick")
-        except UserNotParticipant:
-            return await self.text(chat.id, "err-not-participant")
-
-        await chat.kick_member(user.id)
-        ret, _ = await asyncio.gather(
-            self.text(chat.id, "kick-done", user.first_name), chat.unban_member(user.id)
-        )
-
-        return ret
-
-    @command.filters(filters.can_restrict)
-    async def cmd_ban(self, ctx: command.Context, user: Optional[User] = None) -> str:
-        """Ban chat member"""
-        chat = ctx.chat
-
-        if not user:
-            return await self.text(chat.id, "no-ban-user")
-
-        try:
-            target = await chat.get_member(user.id)
-            if util.tg.is_staff_or_admin(target, self.bot.staff):
-                return await self.text(chat.id, "admin-ban")
-        except UserNotParticipant:
-            return await self.text(chat.id, "err-not-participant")
-
-        ret, _ = await asyncio.gather(
-            self.text(chat.id, "ban-done", user.first_name), chat.kick_member(user.id)
-        )
-
-        return ret
-
-    @command.filters(filters.can_restrict)
-    async def cmd_unban(self, ctx: command.Context, user: Optional[User] = None) -> str:
-        """Unban chat member"""
-        chat = ctx.chat
-
-        if not user:
-            return await self.text(chat.id, "unban-no-user")
-
-        try:
-            await chat.unban_member(user.id)
-        except PeerIdInvalid:
-            return await self.text(chat.id, "err-peer-invalid")
-
-        return await self.text(chat.id, "unban-done", user.first_name)
