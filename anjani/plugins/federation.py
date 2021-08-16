@@ -266,7 +266,9 @@ class Federation(plugin.Plugin):
         )
         if log := data.get("log"):
             await self.bot.client.send_message(
-                log, "**Joined Federation**\n" f"**Name**:" + data["name"]
+                log,
+                "**New Chat Joined Federation**\n"
+                f"**Name**:" + chat.first_name + (chat.last_name or ""),
             )
 
         return ret
