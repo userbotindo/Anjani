@@ -397,7 +397,7 @@ class Federation(plugin.Plugin):
         return await self.text(
             chat.id,
             "fed-info-text",
-            data["id"],
+            data["_id"],
             data["name"],
             owner.mention,
             len(data.get("admins", [])),
@@ -443,7 +443,7 @@ class Federation(plugin.Plugin):
         return text
 
     async def cmd_fban(
-        self, ctx: command.Context, user: Optional[User] = None, reason: Optional[str] = None
+        self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
     ) -> str:
         """Fed ban a user"""
         chat = ctx.chat
