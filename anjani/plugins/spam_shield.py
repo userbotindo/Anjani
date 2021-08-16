@@ -41,7 +41,7 @@ except ImportError:
     _run_predict = False
 
 from anjani import command, listener, plugin, util
-from anjani.filters import admin_only
+from anjani.filters import admin_only, staff_only
 from anjani.util import run_sync
 
 
@@ -387,3 +387,50 @@ class SpamShield(plugin.Plugin):
             self.setting(chat.id, enable),
         )
         return ret
+
+    @command.filters(staff_only)
+    async def cmd_spam(self, ctx: command.Context, *, content: str = ""):
+        """Manual spam detection by bot staff"""
+        if not self.model:
+            return "Prediction model isn't available"
+        if ctx.chat.type != "private":
+            return "This command only avaliable on PM's!"
+
+        user_id = None
+        if ctx.msg.reply_to_message:
+            content = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
+            if ctx.msg.reply_to_message.forward_from:
+                user_id = ctx.msg.reply_to_message.forward_from.id
+        else:
+            if not content:
+                return "Give me a text or reply to a message / forwarded message"
+
+        content_hash = self._build_hash(content)
+        pred = await run_sync(self._predict, repr(content.strip()))
+        proba = pred[0][1]
+        text = (
+            "#SPAM\n\n"
+            f"**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
+            f"**Message Hash:** `{content_hash}`\n"
+            f"\n**====== CONTENT =======**\n\n{content}"
+        )
+        await asyncio.gather(
+            self.db_dump.update_one(
+                {"_id": content_hash},
+                {
+                    "$set": {
+                        "text": content.strip(),
+                        "spam": 1,
+                        "ham": 0,
+                        "chat": None,
+                        "id": user_id,
+                    }
+                },
+                upsert=True,
+            ),
+            self.bot.client.send_message(
+                chat_id=-1001314588569,
+                text=text,
+                disable_web_page_preview=True,
+            ),
+        )
