@@ -18,6 +18,7 @@ import asyncio
 from io import BytesIO
 from typing import ClassVar, Optional, Set
 
+from aiopath import AsyncPath
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChannelInvalid,
     PeerIdInvalid,
@@ -50,8 +51,7 @@ class Staff(plugin.Plugin):
                 # sleep every 25 msg tasks to prevent flood limit.
                 await asyncio.sleep(1)
 
-            task = self.bot.loop.create_task(
-                self.bot.client.send_message(chat["chat_id"], text))
+            task = self.bot.loop.create_task(self.bot.client.send_message(chat["chat_id"], text))
             tasks.add(task)
 
         failed = 0
@@ -96,3 +96,17 @@ class Staff(plugin.Plugin):
                 document=output,
                 caption="Here is the list of chats in my database.",
             )
+
+    @command.filters(filters.staff_only)
+    async def cmd_logs(self, ctx: command.Context) -> None:
+        """Send bot log"""
+        file = AsyncPath("Anjani.log")
+        if ctx.message.chat.type != "private":
+            await ctx.respond("I've send the log on PM's")
+
+        await self.bot.client.send_document(
+            ctx.author.id,
+            str(file),
+            caption="**Bot Logs**",
+            force_document=True,
+        )
