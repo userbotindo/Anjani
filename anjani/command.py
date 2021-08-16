@@ -6,6 +6,7 @@ from typing import (
     BinaryIO,
     Callable,
     Coroutine,
+    List,
     Optional,
     Sequence,
     Union,
@@ -38,11 +39,13 @@ def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> Non
         filters.anjani = anjani
 
 
-def filters(filters: Filter) -> Decorator:
+def filters(filters: Optional[Filter] = None, *, alias: List[str] = []) -> Decorator:
     """Sets filters on a command function."""
 
     def filter_decorator(func: CommandFunc) -> CommandFunc:
         setattr(func, "_cmd_filters", filters)
+        if alias:
+            setattr(func, "_cmd_alias", alias)
         return func
 
     return filter_decorator

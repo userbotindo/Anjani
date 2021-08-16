@@ -29,7 +29,7 @@ from pyrogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
-    User
+    User,
 )
 
 from anjani import command, listener, plugin, util
@@ -83,9 +83,7 @@ class Federation(plugin.Plugin):
                 )
 
             data = await self.db.find_one_and_delete({"_id": arg})
-            await query.message.edit_text(
-                await self.text(chat.id, "fed-delete-done", data["name"])
-            )
+            await query.message.edit_text(await self.text(chat.id, "fed-delete-done", data["name"]))
         elif cmd == "log":
             owner_id, fid = arg.split("_")
             if user.id != int(owner_id):
@@ -93,9 +91,7 @@ class Federation(plugin.Plugin):
                     await self.text(chat.id, "fed-invalid-identity")
                 )
 
-            data = await self.db.find_one_and_update(
-                {"_id": fid}, {"$set": {"log": chat.id}}
-            )
+            data = await self.db.find_one_and_update({"_id": fid}, {"$set": {"log": chat.id}})
             await query.edit_message_text(
                 await self.text(chat.id, "fed-log-set-chnl", data["name"])
             )
@@ -137,23 +133,17 @@ class Federation(plugin.Plugin):
         """Ban a user"""
         await self.db.update_one(
             {"_id": fid},
-            {"$set":
-                {
-                    f"banned.{user}": {
-                        "name": fullname,
-                        "reason": reason,
-                        "time": datetime.now()
-                    }
+            {
+                "$set": {
+                    f"banned.{user}": {"name": fullname, "reason": reason, "time": datetime.now()}
                 }
             },
-            upsert=True
+            upsert=True,
         )
 
     async def unfban_user(self, fid: str, user: int) -> None:
         """Remove banned user"""
-        await self.db.update_one(
-            {"_id": fid}, {"$unset": {f"banned.{user}": None}}, upsert=True
-        )
+        await self.db.update_one({"_id": fid}, {"$unset": {f"banned.{user}": None}}, upsert=True)
 
     async def check_fban(self, user: int) -> Optional[util.db.AsyncCursor]:
         """Check user banned list"""
@@ -177,9 +167,7 @@ class Federation(plugin.Plugin):
         """get a date format from a timestamp"""
         return date.strftime("%Y %b %d %H:%M UTC")
 
-    async def fban_handler(
-        self, chat: Chat, user: User, data: MutableMapping[str, Any]
-    ) -> None:
+    async def fban_handler(self, chat: Chat, user: User, data: MutableMapping[str, Any]) -> None:
         try:
             await asyncio.gather(
                 self.bot.client.send_message(
@@ -190,18 +178,15 @@ class Federation(plugin.Plugin):
                         user.mention,
                         data["fed-name"],
                         data["reason"],
-                        self.parse_date(data["time"])
-                    )
+                        self.parse_date(data["time"]),
+                    ),
                 ),
-                self.bot.client.kick_chat_member(chat.id, user.id)
+                self.bot.client.kick_chat_member(chat.id, user.id),
             )
         except ChatAdminRequired:
             self.log.debug(f"Can't ban user {user.username} on {chat.title}")
 
-    
-    async def cmd_newfed(
-        self, ctx: command.Context, name: Optional[str] = None
-    ) -> str:
+    async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
         """Create a new federations"""
         chat = ctx.chat
         if chat.type != "private":
@@ -217,9 +202,7 @@ class Federation(plugin.Plugin):
         if exists:
             return await self.text(chat.id, "federation-limit")
 
-        await self.db.insert_one(
-            {"_id": fed_id, "name": name, "owner": owner.id, "log": owner.id}
-        )
+        await self.db.insert_one({"_id": fed_id, "name": name, "owner": owner.id, "log": owner.id})
         return await self.text(chat.id, "new-federation", fed_name=name, fed_id=fed_id)
 
     async def cmd_delfed(self, ctx: command.Context) -> Optional[str]:
@@ -232,7 +215,7 @@ class Federation(plugin.Plugin):
 
         exists = await self.db.find_one({"owner": owner.id})
         if not exists:
-            return await self.text(chat.id,  "user-no-feds")
+            return await self.text(chat.id, "user-no-feds")
 
         await ctx.respond(
             await self.text(chat.id, "del-fed-confirm", exists["name"]),
@@ -241,7 +224,7 @@ class Federation(plugin.Plugin):
                     [
                         InlineKeyboardButton(
                             text=await self.text(chat.id, "fed-confirm-text"),
-                            callback_data="rmfed_" + exists['_id'],
+                            callback_data="rmfed_" + exists["_id"],
                         )
                     ],
                     [
@@ -255,9 +238,7 @@ class Federation(plugin.Plugin):
         )
 
     @command.filters(admin_only)
-    async def cmd_joinfed(
-        self, ctx: command.Context, fid: Optional[str] = None
-    ) -> str:
+    async def cmd_joinfed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Join a federation in chats"""
         chat = ctx.chat
         user = ctx.msg.from_user
@@ -281,21 +262,17 @@ class Federation(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "fed-chat-joined-info", data["name"]),
-            self.db.update_one({"_id": fid}, {"$push": {"chats": chat.id}})
+            self.db.update_one({"_id": fid}, {"$push": {"chats": chat.id}}),
         )
         if log := data.get("log"):
             await self.bot.client.send_message(
-                log,
-                "**Joined Federation**\n"
-                f"**Name**:" + data["name"]
+                log, "**Joined Federation**\n" f"**Name**:" + data["name"]
             )
 
         return ret
 
     @command.filters(admin_only)
-    async def cmd_leavefed(
-        self, ctx: command.Context, fid: Optional[str] = None
-    ) -> str:
+    async def cmd_leavefed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Leave a federation in chats"""
         chat = ctx.chat
         user = ctx.msg.from_user
@@ -316,13 +293,12 @@ class Federation(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "fed-chat-leave-info", exists["name"]),
-            self.db.update_one({"_id": fid}, {"$pull": {"chats": chat.id}})
+            self.db.update_one({"_id": fid}, {"$pull": {"chats": chat.id}}),
         )
         return ret
 
-    async def cmd_fedpromote(
-        self, ctx: command.Context, user: Optional[User] = None
-    ) -> str:
+    @command.filters(alias=["fpromote"])
+    async def cmd_fedpromote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Promote user to fed admin"""
         chat = ctx.chat
         if chat.type == "private":
@@ -344,9 +320,7 @@ class Federation(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "fed-promote-done"),
-            self.db.update_one(
-                {"_id": data["_id"]}, {"$push": {"admins": user.id}}
-            )
+            self.db.update_one({"_id": data["_id"]}, {"$push": {"admins": user.id}}),
         )
         if log := data.get("log"):
             await self.bot.client.send_message(
@@ -354,14 +328,13 @@ class Federation(plugin.Plugin):
                 "**New Fed Promotion**\n"
                 f"**Fed**:" + data["name"] + "\n"
                 f"**Promoted FedAdmin**: {user.mention}\n"
-                f"**User ID**: `{user.id}`"
+                f"**User ID**: `{user.id}`",
             )
 
         return ret
 
-    async def cmd_feddemote(
-        self, ctx: command.Context, user: Optional[User] = None
-    ) -> str:
+    @command.filters(alias=["fdemote"])
+    async def cmd_feddemote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Demote user to fed admin"""
         chat = ctx.chat
         if chat.type == "private":
@@ -383,9 +356,7 @@ class Federation(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "fed-demote-done"),
-            self.db.update_one(
-                {"_id": data["_id"]}, {"$pull": {"admins": user.id}}
-            )
+            self.db.update_one({"_id": data["_id"]}, {"$pull": {"admins": user.id}}),
         )
         if log := data.get("log"):
             await self.bot.client.send_message(
@@ -398,9 +369,7 @@ class Federation(plugin.Plugin):
 
         return ret
 
-    async def cmd_fedinfo(
-        self, ctx: command.Context, fid: Optional[str] = None
-    ) -> str:
+    async def cmd_fedinfo(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Fetch federation info"""
         chat = ctx.chat
 
@@ -412,9 +381,9 @@ class Federation(plugin.Plugin):
             data = await self.get_fed_bychat(chat.id)
             if not data:
                 return (
-                    await self.text(chat.id, "fed-no-fed-chat") +
-                    "\n" +
-                    await self.text(chat.id, "fed-specified-id")
+                    await self.text(chat.id, "fed-no-fed-chat")
+                    + "\n"
+                    + await self.text(chat.id, "fed-specified-id")
                 )
         else:
             return await self.text(chat.id, "fed-specified-id")
@@ -431,12 +400,10 @@ class Federation(plugin.Plugin):
             owner.mention,
             len(data.get("admins", [])),
             len(data.get("banned", [])),
-            len(data.get("chats", []))
+            len(data.get("chats", [])),
         )
 
-    async def cmd_fedadmins(
-        self, ctx: command.Context, fid: Optional[str] = None
-    ) -> str:
+    async def cmd_fedadmins(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Fetch federation admins"""
         chat = ctx.chat
         user = ctx.msg.from_user
@@ -474,10 +441,7 @@ class Federation(plugin.Plugin):
         return text
 
     async def cmd_fban(
-        self,
-        ctx: command.Context,
-        user: Optional[User] = None,
-        reason: Optional[str] = None
+        self, ctx: command.Context, user: Optional[User] = None, reason: Optional[str] = None
     ) -> str:
         """Fed ban a user"""
         chat = ctx.chat
@@ -499,9 +463,11 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-ban-self")
         if self.is_fed_admin(data, user.id):
             return await self.text(chat.id, "fed-ban-owner")
-        if (user.id in self.bot.staff or
-                user.id in (777000, 1087968824) or
-                user.id == self.bot.owner):
+        if (
+            user.id in self.bot.staff
+            or user.id in (777000, 1087968824)
+            or user.id == self.bot.owner
+        ):
             return await self.text(chat.id, "fed-ban-protected")
 
         if not reason:
@@ -512,9 +478,7 @@ class Federation(plugin.Plugin):
             update = True
 
         fullname = user.first_name + user.last_name if user.last_name else user.first_name
-        await self.fban_user(
-            data["_id"], user.id, fullname=fullname, reason=reason
-        )
+        await self.fban_user(data["_id"], user.id, fullname=fullname, reason=reason)
 
         if update:
             text = await self.text(
@@ -550,9 +514,7 @@ class Federation(plugin.Plugin):
 
         return text
 
-    async def cmd_unfban(
-        self, ctx: command.Context, user: Optional[User] = None
-    ) -> str:
+    async def cmd_unfban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban a user on federation"""
         chat = ctx.chat
         if chat.type == "private":
@@ -585,6 +547,7 @@ class Federation(plugin.Plugin):
 
         return text
 
+    @command.filters(alias=["fstats"])
     async def cmd_fedstats(self, ctx: command.Context) -> str:
         """Get user status"""
         chat = ctx.chat
@@ -660,8 +623,7 @@ class Federation(plugin.Plugin):
 
         banned = data["banned"]
         file = AsyncPath(
-            self.bot.config.get("download_path", "./downloads/") +
-            data["name"] + ".csv"
+            self.bot.config.get("download_path", "./downloads/") + data["name"] + ".csv"
         )
 
         await file.touch()
@@ -688,8 +650,8 @@ class Federation(plugin.Plugin):
         if not data:
             return await self.text(chat.id, "user-no-feds")
 
-        file = AsyncPath(await reply_msg.download(
-            self.bot.config.get("download_path", "./downloads/"))
+        file = AsyncPath(
+            await reply_msg.download(self.bot.config.get("download_path", "./downloads/"))
         )
 
         fid = data["_id"]
@@ -705,11 +667,7 @@ class Federation(plugin.Plugin):
                 )
                 tasks.append(task)
 
-        ret, _ = await asyncio.gather(
-            self.text(chat.id, "fed-restore-done"),
-            file.unlink(),
-            *tasks
-        )
+        ret, _ = await asyncio.gather(self.text(chat.id, "fed-restore-done"), file.unlink(), *tasks)
         return ret
 
     @command.filters(filters.private)
@@ -721,8 +679,8 @@ class Federation(plugin.Plugin):
         data = await self.db.find_one({"owner": user.id})
         if data:
             return (
-                await self.text(chat.id, "fed-myfeds-owner") +
-                f"\n- `{data['_id']}`: {data['name']}"
+                await self.text(chat.id, "fed-myfeds-owner")
+                + f"\n- `{data['_id']}`: {data['name']}"
             )
 
         data = self.db.find({"admins": user.id})
@@ -736,14 +694,12 @@ class Federation(plugin.Plugin):
 
         return await self.text(chat.id, "fed-myfeds-no-admin")
 
-    async def cmd_setfedlog(
-        self, ctx: command.Context, fid: Optional[str] = None
-    ) -> Optional[str]:
+    async def cmd_setfedlog(self, ctx: command.Context, fid: Optional[str] = None) -> Optional[str]:
         chat = ctx.chat
         if chat.type == "channel":
             if not fid:
                 return await self.text(chat.id, "fed-set-log-args")
-    
+
             data = await self.get_fed(fid)
             if not data:
                 return await self.text(chat.id, "Fed not found!")
@@ -770,7 +726,7 @@ class Federation(plugin.Plugin):
 
             ret, _ = await asyncio.gather(
                 self.text(chat.id, "fed-log-set-group", data["name"]),
-                self.db.update_one({"_id": data["_id"]}, {"$set": {"log": chat.id}})
+                self.db.update_one({"_id": data["_id"]}, {"$set": {"log": chat.id}}),
             )
             return ret
 
@@ -786,7 +742,7 @@ class Federation(plugin.Plugin):
 
             ret, _ = await asyncio.gather(
                 self.text(chat.id, "fed-log-unset", data["name"]),
-                self.db.update_one({"_id": data["_id"]}, {"$set": {"log": None}})
+                self.db.update_one({"_id": data["_id"]}, {"$set": {"log": None}}),
             )
             return ret
 

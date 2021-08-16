@@ -46,6 +46,10 @@ class CommandDispatcher(MixinBase):
 
             try:
                 self.register_command(plug, name, func)
+                alias = getattr(func, "_cmd_alias", None)
+                if alias:
+                    for i in alias:
+                        self.register_command(plug, i, func)
                 done = True
             finally:
                 if not done:
@@ -109,7 +113,6 @@ class CommandDispatcher(MixinBase):
 
         try:
             cmd = self.commands[message.command[0]]
-
             # Construct invocation context
             ctx = command.Context(
                 self,

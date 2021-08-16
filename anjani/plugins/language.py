@@ -18,18 +18,21 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from pyrogram import emoji, filters
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from anjani import command, listener, plugin, util
 
-LANG_FLAG = {
-    "en": f"{emoji.FLAG_UNITED_STATES} English",
-    "id": f"{emoji.FLAG_INDONESIA} Indonesia"
-}
+LANG_FLAG = {"en": f"{emoji.FLAG_UNITED_STATES} English", "id": f"{emoji.FLAG_INDONESIA} Indonesia"}
 
 
 class Language(plugin.Plugin):
     """Bot language plugin"""
+
     name: ClassVar[str] = "Language"
     helpable: ClassVar[bool] = True
 
@@ -55,9 +58,7 @@ class Language(plugin.Plugin):
         return {self.name: language}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @listener.filters(filters.regex(r"set_lang_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
@@ -74,8 +75,7 @@ class Language(plugin.Plugin):
 
         lang = LANG_FLAG.get(lang_match)
         if not lang:
-            await query.edit_message_text(await self.text(chat.id,
-                                                          "language-code-error"))
+            await query.edit_message_text(await self.text(chat.id, "language-code-error"))
             return
 
         await self.switch_lang(chat.id, lang_match)
@@ -92,6 +92,7 @@ class Language(plugin.Plugin):
         )
         self.bot.chats_languages[chat_id] = language
 
+    @command.filters(alias=["lang", "language"])
     async def cmd_setlang(self, ctx: command.Context) -> Optional[str]:
         """Set user/chat language."""
         chat = ctx.msg.chat
@@ -105,16 +106,12 @@ class Language(plugin.Plugin):
         if ctx.input:
             lang = ctx.input.lower()
             if lang in self.bot.languages:
-                await asyncio.gather(self.switch_lang(chat.id, lang),
-                                     ctx.respond(await self.text(chat.id,
-                                                                 "language-set-succes",
-                                                                 LANG_FLAG[lang])))
-            else:
-                return await self.text(
-                    chat.id,
-                    "language-invalid",
-                    list(self.bot.languages.keys())
+                await asyncio.gather(
+                    self.switch_lang(chat.id, lang),
+                    ctx.respond(await self.text(chat.id, "language-set-succes", LANG_FLAG[lang])),
                 )
+            else:
+                return await self.text(chat.id, "language-invalid", list(self.bot.languages.keys()))
         else:
             chat_name = chat.first_name or chat.title
             lang = LANG_FLAG[self.bot.chats_languages.get(chat.id, "en")]

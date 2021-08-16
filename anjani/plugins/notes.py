@@ -44,7 +44,7 @@ class Notes(plugin.Plugin):
             Types.AUDIO.value: self.bot.client.send_audio,
             Types.VOICE.value: self.bot.client.send_voice,
             Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
-            Types.ANIMATION.value: self.bot.client.send_animation
+            Types.ANIMATION.value: self.bot.client.send_animation,
         }
 
     async def on_chat_migrate(self, message: Message) -> None:
@@ -64,15 +64,13 @@ class Notes(plugin.Plugin):
         return {self.name: notes}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @listener.filters(filters.regex(r"^#[^\s]+"))
     async def on_message(self, message: Message) -> None:
         """Notes hashtag trigger."""
         entity = message.entities
-        if not entity or entity and entity[0].type != "hashtag": 
+        if not entity or entity and entity[0].type != "hashtag":
             return
 
         invoker = message.text[1 : entity[0].length]
@@ -154,20 +152,22 @@ class Notes(plugin.Plugin):
         name = ctx.args[0]
         text, types, content, buttons = get_message_info(ctx.msg)
         ret = await asyncio.gather(
-            self.db.update_one({"chat_id": chat.id},
-                               {
-                                    "$set": {
-                                        "chat_name": chat.title,
-                                        f"notes.{name}": {
-                                            "text": text if text else f"__{name}__",
-                                            "type": types,
-                                            "content": content,
-                                            "button": buttons,
-                                        },
-                                    }
-                                },
-                                upsert=True),
-            self.text(chat.id, "note-saved", name)
+            self.db.update_one(
+                {"chat_id": chat.id},
+                {
+                    "$set": {
+                        "chat_name": chat.title,
+                        f"notes.{name}": {
+                            "text": text if text else f"__{name}__",
+                            "type": types,
+                            "content": content,
+                            "button": buttons,
+                        },
+                    }
+                },
+                upsert=True,
+            ),
+            self.text(chat.id, "note-saved", name),
         )
         return ret[1]
 
@@ -184,7 +184,7 @@ class Notes(plugin.Plugin):
             notes += f"× `{key}`\n"
         return notes
 
-    @command.filters(admin_only)
+    @command.filters(admin_only, alias=["clear"])
     async def cmd_delnote(self, ctx: command.Context) -> str:
         """Delete chat note."""
         chat = ctx.chat
@@ -203,7 +203,8 @@ class Notes(plugin.Plugin):
         except KeyError:
             return await self.text(chat.id, "notes-not-exist")
 
-        ret = await asyncio.gather(self.db.update_one({"chat_id": chat.id},
-                                                      {"$unset": {f"notes.{name}": ""}}),
-                                   self.text(chat.id, "notes-deleted", name))
+        ret = await asyncio.gather(
+            self.db.update_one({"chat_id": chat.id}, {"$unset": {f"notes.{name}": ""}}),
+            self.text(chat.id, "notes-deleted", name),
+        )
         return ret[1]
