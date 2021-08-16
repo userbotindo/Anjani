@@ -6,20 +6,15 @@ import aiohttp
 import pyrogram
 
 from anjani.util.config import TelegramConfig
-from anjani.util.tg import fetch_permissions
 
-from .database_provider import DatabaseProvider
 from .command_dispatcher import CommandDispatcher
+from .database_provider import DatabaseProvider
 from .event_dispatcher import EventDispatcher
 from .plugin_extenter import PluginExtender
 from .telegram_bot import TelegramBot
 
 
-class Anjani(TelegramBot,
-             DatabaseProvider,
-             PluginExtender,
-             CommandDispatcher,
-             EventDispatcher):
+class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, EventDispatcher):
     # Initialized during instantiation
     log: logging.Logger
     http: aiohttp.ClientSession
@@ -42,10 +37,7 @@ class Anjani(TelegramBot,
 
     @classmethod
     async def init_and_run(
-        cls,
-        config: TelegramConfig[str, Any],
-        *,
-        loop: Optional[asyncio.AbstractEventLoop] = None
+        cls, config: TelegramConfig[str, Any], *, loop: Optional[asyncio.AbstractEventLoop] = None
     ) -> "Anjani":
         anjani = None
 
@@ -69,7 +61,6 @@ class Anjani(TelegramBot,
                 await self.client.stop()
         await self.http.close()
         await self.db.close()
-        fetch_permissions.close()
 
         self.log.info("Running post-stop hooks")
         if self.loaded:
