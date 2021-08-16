@@ -313,7 +313,7 @@ class Federation(plugin.Plugin):
         if not data:
             return await self.text(chat.id, "fed-no-fed-chat")
 
-        if user.id != data["owner"]:
+        if ctx.author.id != data["owner"]:
             return await self.text(chat.id, "fed-owner-only-promote")
         if user.id == data["owner"]:
             return await self.text(chat.id, "fed-already-owner")
