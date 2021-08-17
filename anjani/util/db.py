@@ -264,9 +264,6 @@ class AsyncClientSession(AsyncBase):
     def __enter__(self) -> None:
         raise RuntimeError("Use 'async with' not just 'with'")
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        pass
-
     async def abort_transaction(self) -> None:
         return await util.run_sync(self.dispatch.abort_transaction)
 
@@ -294,7 +291,7 @@ class AsyncClientSession(AsyncBase):
         )
         try:
             yield self
-        except Exception:
+        except Exception:  # skipcq: PYL-W0703
             if self.in_transaction:
                 await self.abort_transaction()
         else:
@@ -491,7 +488,7 @@ class AsyncClient(AsyncBaseProperty):
                                      read_preference=ReadPreference.PRIMARY,
                                      write_concern=DEFAULT_WRITE_CONCERN)
         res: MutableMapping[str, Any] = await util.run_sync(
-            database.dispatch._retryable_read_command,
+            database.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session
         )
@@ -772,13 +769,13 @@ class AsyncDB(AsyncBaseProperty):
         self,
         *,
         session: Optional[AsyncClientSession] = None,
-        filter: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[MutableMapping[str, Any]] = None,
         **kwargs: Any
     ) -> List[str]:
         return await util.run_sync(
             self.dispatch.list_collection_names,
             session=session.dispatch if session else session,
-            filter=filter,
+            filter=query,
             **kwargs
         )
 
@@ -786,14 +783,14 @@ class AsyncDB(AsyncBaseProperty):
         self,
         *,
         session: Optional[AsyncClientSession] = None,
-        filter: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[MutableMapping[str, Any]] = None,
         **kwargs: Any
     ) -> "AsyncCommandCursor":
         cmd = SON([("listCollections", 1)])
-        cmd.update(filter, **kwargs)
+        cmd.update(query, **kwargs)
 
         res: MutableMapping[str, Any] = await util.run_sync(
-            self.dispatch._retryable_read_command,
+            self.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session
         )
@@ -945,14 +942,14 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def count_documents(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         *,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
     ) -> int:
         return await util.run_sync(
             self.dispatch.count_documents,
-            filter,
+            query,
             session=session.dispatch if session else session,
             **kwargs
         )
@@ -982,7 +979,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def delete_many(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         *,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
@@ -990,7 +987,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> DeleteResult:
         return await util.run_sync(
             self.dispatch.delete_many,
-            filter,
+            query,
             collation=collation,
             hint=hint,
             session=session.dispatch if session else session
@@ -998,7 +995,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def delete_one(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         *,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
@@ -1006,7 +1003,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> DeleteResult:
         return await util.run_sync(
             self.dispatch.delete_one,
-            filter,
+            query,
             collation=collation,
             hint=hint,
             session=session.dispatch if session else session
@@ -1015,15 +1012,15 @@ class AsyncCollection(AsyncBaseProperty):
     async def distinct(
         self,
         key: str,
-        filter: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[MutableMapping[str, Any]] = None,
         *,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
-    ) -> List[Any]:
+    ) -> List[str]:
         return await util.run_sync(
             self.dispatch.distinct,
             key,
-            filter=filter,
+            filter=query,
             session=session.dispatch if session else session,
             **kwargs
         )
@@ -1061,16 +1058,17 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def find_one(
         self,
-        filter: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[MutableMapping[str, Any]],
         *args: Any,
         **kwargs: Any
     ) -> Optional[MutableMapping[str, Any]]:
         return await util.run_sync(
-            self.dispatch.find_one, filter, *args, **kwargs)
+            self.dispatch.find_one, query, *args, **kwargs
+        )
 
     async def find_one_and_delete(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         *,
         projection: Optional[Union[List[Any], MutableMapping[str, Any]]] = None,
         sort: Optional[List[Tuple[str, Any]]] = None,
@@ -1080,7 +1078,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_delete,
-            filter,
+            query,
             projection=projection,
             sort=sort,
             hint=hint,
@@ -1090,7 +1088,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def find_one_and_replace(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         replacement: MutableMapping[str, Any],
         *,
         projection: Optional[Union[List[Any], MutableMapping[str, Any]]] = None,
@@ -1103,7 +1101,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_replace,
-            filter,
+            query,
             replacement,
             projection=projection,
             sort=sort,
@@ -1116,7 +1114,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def find_one_and_update(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         update: MutableMapping[str, Any],
         *,
         projection: Optional[Union[List[Any], MutableMapping[str, Any]]] = None,
@@ -1130,7 +1128,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_update,
-            filter,
+            query,
             update,
             projection=projection,
             sort=sort,
@@ -1161,7 +1159,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def inline_map_reduce(
         self,
-        map: JavaScriptCode,
+        mapping: JavaScriptCode,
         reduce: JavaScriptCode,
         *,
         full_response: bool = False,
@@ -1170,7 +1168,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.inline_map_reduce,
-            map,
+            mapping,
             reduce,
             full_response=full_response,
             session=session.dispatch if session else session,
@@ -1218,7 +1216,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def map_reduce(
         self,
-        map: JavaScriptCode,
+        mapping: JavaScriptCode,
         reduce: JavaScriptCode,
         out: Union[str, MutableMapping[str, Any], SON],
         *,
@@ -1228,7 +1226,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.map_reduce,
-            map,
+            mapping,
             reduce,
             out,
             full_response=full_response,
@@ -1260,7 +1258,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def replace_one(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         replacement: MutableMapping[str, Any],
         *,
         upsert: bool = False,
@@ -1271,7 +1269,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.replace_one,
-            filter,
+            query,
             replacement,
             upsert=upsert,
             bypass_document_validation=bypass_document_validation,
@@ -1282,7 +1280,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def update_many(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         update: MutableMapping[str, Any],
         *,
         upsert: bool = False,
@@ -1294,7 +1292,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.update_many,
-            filter,
+            query,
             update,
             upsert=upsert,
             array_filters=array_filters,
@@ -1306,7 +1304,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def update_one(
         self,
-        filter: MutableMapping[str, Any],
+        query: MutableMapping[str, Any],
         update: MutableMapping[str, Any],
         *,
         upsert: bool = False,
@@ -1318,7 +1316,7 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.update_one,
-            filter,
+            query,
             update,
             upsert=upsert,
             array_filters=array_filters,
@@ -1455,7 +1453,7 @@ class AsyncCursorBase(AsyncBase):
             if future.done():
                 return
             collection = self.collection
-            fix_outgoing = collection.database._fix_outgoing
+            fix_outgoing = collection.database._fix_outgoing  # skipcq: PYL-W0212
 
             if length is None:
                 n = result
@@ -1483,12 +1481,12 @@ class AsyncCursorBase(AsyncBase):
                         future
                     )
                 )
-        except Exception as exc:
+        except Exception as exc:  # skipcq: PYL-W0703
             if not future.done():
                 future.set_exception(exc)
 
     async def _refresh(self) -> int:
-        return await util.run_sync(self.dispatch._refresh)
+        return await util.run_sync(self.dispatch._refresh)  # skipcq: PYL-W0212
 
     def batch_size(self, batch_size: int) -> "AsyncCursorBase":
         self.dispatch.batch_size(batch_size)
@@ -1564,10 +1562,10 @@ class AsyncCommandCursor(AsyncCursorBase):
         return 0
 
     def _data(self) -> Deque[Any]:
-        return self.dispatch._CommandCursor__data
+        return self.dispatch._CommandCursor__data  # skipcq: PYL-W0212
 
     def _killed(self) -> bool:
-        return self.dispatch._CommandCursor__killed
+        return self.dispatch._CommandCursor__killed  # skipcq: PYL-W0212
 
 
 class _LatentCursor:
@@ -1590,25 +1588,26 @@ class _LatentCursor:
         self._CommandCursor__collection = collection
 
     def _CommandCursor__end_session(self, *args: Any, **kwargs: Any) -> None:
-        pass
+        pass  # Only for initialization
 
     def _CommandCursor__die(self, *args: Any, **kwargs: Any) -> None:
-        pass
+        pass  # Only for initialization
 
-    def _refresh(self) -> int:
+    def _refresh(self) -> int:  # skipcq: PYL-R0201
+        """Only for initialization"""
         return 0
 
     def batch_size(self, batch_size: int) -> None:
-        pass
+        pass  # Only for initialization
 
     def close(self) -> None:
-        pass
+        pass  # Only for initialization
 
     def clone(self) -> "_LatentCursor":
         return _LatentCursor(self._CommandCursor__collection)
 
     def rewind(self):
-        pass
+        pass  # Only for initialization
 
     @property
     def collection(self):
@@ -1659,7 +1658,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
     ) -> None:
         try:
             self.dispatch = future.result()
-        except Exception as exc:
+        except Exception as exc:  # skipcq: PYL-W0703
             if not original_future.done():
                 original_future.set_exception(exc)
         else:
@@ -1667,9 +1666,9 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
             if original_future.done():
                 return
 
-            if self.dispatch._CommandCursor__data or not self.dispatch.alive:
+            if self.dispatch._CommandCursor__data or not self.dispatch.alive:  # skipcq: PYL-W0212
                 # _get_more is complete.
-                original_future.set_result(len(self.dispatch._CommandCursor__data))
+                original_future.set_result(len(self.dispatch._CommandCursor__data))  # skipcq: PYL-W0212
             else:
                 # Send a getMore.
                 fut = super()._get_more()
@@ -1765,13 +1764,13 @@ class AsyncCursor(AsyncCursorBase):
         return self
 
     def _query_flags(self):
-        return self.dispatch._AsyncCursor__query_flags
+        return self.dispatch._AsyncCursor__query_flags  # skipcq: PYL-W0212
 
     def _data(self):
-        return self.dispatch._AsyncCursor__data
+        return self.dispatch._AsyncCursor__data  # skipcq: PYL-W0212
 
     def _killed(self):
-        return self.dispatch._AsyncCursor__killed
+        return self.dispatch._AsyncCursor__killed  # skipcq: PYL-W0212
 
 
 class AsyncRawBatchCommandCursor(AsyncCursor):
@@ -1790,7 +1789,7 @@ class AsyncChangeStream(AsyncBase):
 
     _target: Union[AsyncClient, AsyncDB, AsyncCollection]
 
-    dispatch: Optional[ChangeStream]
+    dispatch: ChangeStream
 
     def __init__(
         self,
@@ -1841,9 +1840,6 @@ class AsyncChangeStream(AsyncBase):
 
     def __enter__(self) -> None:
         raise RuntimeError("Use 'async with' not just 'with'")
-
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        pass
 
     async def _init(self) -> ChangeStream:
         if not self.dispatch:
