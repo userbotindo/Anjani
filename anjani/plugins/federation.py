@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import time
 from datetime import datetime
 from typing import Any, Iterable, MutableMapping, Optional
 from uuid import uuid4
@@ -134,7 +133,7 @@ class Federation(plugin.Plugin):
         """Ban a user"""
         await self.db.update_one(
             {"_id": fid},
-            {"$set": {f"banned.{user}": {"name": fullname, "reason": reason, "time": time.time()}}},
+            {"$set": {f"banned.{user}": {"name": fullname, "reason": reason, "time": datetime.now()}}},
             upsert=True,
         )
 
@@ -159,11 +158,6 @@ class Federation(plugin.Plugin):
         data["fed_name"] = data["name"]
         return data
 
-    @staticmethod
-    def parse_date(timestamp: float) -> str:
-        """get a date format from a timestamp"""
-        return datetime.fromtimestamp(timestamp).strftime("%Y %b %d %H:%M UTC")
-
     async def fban_handler(self, chat: Chat, user: User, data: MutableMapping[str, Any]) -> None:
         try:
             await asyncio.gather(
@@ -175,7 +169,7 @@ class Federation(plugin.Plugin):
                         user.mention,
                         data["fed-name"],
                         data["reason"],
-                        self.parse_date(data["time"]),
+                        data["time"].strftime("%Y %b %d %H:%M UTC"),
                     ),
                 ),
                 self.bot.client.kick_chat_member(chat.id, user.id),
@@ -561,7 +555,8 @@ class Federation(plugin.Plugin):
                 if str(user_id) in data.get("banned", {}):
                     res = data["banned"][str(user_id)]
                     return await self.text(
-                        chat.id, "fed-stat-banned", res["reason"], self.parse_date(res["time"])
+                        chat.id, "fed-stat-banned", res["reason"],
+                        res["time"].strftime("%Y %b %d %H:%M UTC")
                     )
                 else:
                     return await self.text(chat.id, "fed-stat-not-banned")
