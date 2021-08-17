@@ -295,7 +295,7 @@ class Federation(plugin.Plugin):
         )
         return ret
 
-    @command.filters(alias=["fpromote"])
+    @command.filters(aliases=["fpromote"])
     async def cmd_fedpromote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Promote user to fed admin"""
         chat = ctx.chat
@@ -331,7 +331,7 @@ class Federation(plugin.Plugin):
 
         return ret
 
-    @command.filters(alias=["fdemote"])
+    @command.filters(aliases=["fdemote"])
     async def cmd_feddemote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Demote user to fed admin"""
         chat = ctx.chat
@@ -401,7 +401,7 @@ class Federation(plugin.Plugin):
             len(data.get("chats", [])),
         )
 
-    @command.filters(alias=["fedadmin", "fadmin", "fadmins"])
+    @command.filters(aliases=["fedadmin", "fadmin", "fadmins"])
     async def cmd_fedadmins(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Fetch federation admins"""
         chat = ctx.chat
@@ -546,7 +546,7 @@ class Federation(plugin.Plugin):
 
         return text
 
-    @command.filters(alias=["fstats"])
+    @command.filters(aliases=["fstats"])
     async def cmd_fedstats(self, ctx: command.Context) -> str:
         """Get user status"""
         chat = ctx.chat

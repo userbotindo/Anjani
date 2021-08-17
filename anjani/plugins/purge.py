@@ -35,7 +35,7 @@ class Purges(plugin.Plugin):
 
         await asyncio.gather(ctx.msg.reply_to_message.delete(), ctx.msg.delete())
 
-    @command.filters(filters.can_delete, alias=["prune"])
+    @command.filters(filters.can_delete, aliases=["prune"])
     async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
         """purge message from message replied"""
         if not ctx.msg.reply_to_message:

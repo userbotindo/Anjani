@@ -20,7 +20,7 @@ from typing import ClassVar, List, Optional
 
 from pyrogram import filters
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import CallbackQuery, Chat, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani import command, listener, plugin
 

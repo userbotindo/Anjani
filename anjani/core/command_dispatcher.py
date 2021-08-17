@@ -37,8 +37,21 @@ class CommandDispatcher(MixinBase):
 
         self.commands[name] = cmd
 
+        for alias in cmd.aliases:
+            if alias in self.commands:
+                orig = self.commands[alias]
+                raise ExistingCommandError(orig, cmd, alias=True)
+
+            self.commands[alias] = cmd
+
     def unregister_command(self: "Anjani", cmd: command.Command) -> None:
         del self.commands[cmd.name]
+
+        for alias in cmd.aliases:
+            try:
+                del self.commands[alias]
+            except KeyError:
+                continue
 
     def register_commands(self: "Anjani", plug: plugin.Plugin) -> None:
         for name, func in util.misc.find_prefixed_funcs(plug, "cmd_"):
@@ -46,10 +59,6 @@ class CommandDispatcher(MixinBase):
 
             try:
                 self.register_command(plug, name, func)
-                alias = getattr(func, "_cmd_alias", None)
-                if alias:
-                    for i in alias:
-                        self.register_command(plug, i, func)
                 done = True
             finally:
                 if not done:

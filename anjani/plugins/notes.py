@@ -184,7 +184,7 @@ class Notes(plugin.Plugin):
             notes += f"× `{key}`\n"
         return notes
 
-    @command.filters(admin_only, alias=["clear"])
+    @command.filters(admin_only, aliases=["clear"])
     async def cmd_delnote(self, ctx: command.Context) -> str:
         """Delete chat note."""
         chat = ctx.chat
