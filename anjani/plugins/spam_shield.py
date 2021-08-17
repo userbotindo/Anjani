@@ -23,7 +23,7 @@ from typing import Any, ClassVar, List, MutableMapping, Optional, TypeVar
 
 from aiohttp import ClientResponseError
 from pyrogram import filters
-from pyrogram.errors import ChannelPrivate
+from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -224,7 +224,7 @@ class SpamShield(plugin.Plugin):
                 return
 
             await self.check(target.user, chat.id)
-        except ChannelPrivate:
+        except (ChannelPrivate, UserNotParticipant):
             return
 
     async def check_probability(self, chat: int, user: int, text: str) -> None:
@@ -316,7 +316,7 @@ class SpamShield(plugin.Plugin):
             data = await res.json()
             if data["ok"]:
                 fullname = user.first_name + user.last_name if user.last_name else user.first_name
-                reason = f"https://cas.chat/query?u={user.id}"
+                reason = f"Automated fban https://cas.chat/query?u={user.id}"
                 await self.federation_db.update_one(
                     {"_id": "AnjaniSpamShield"},
                     {
