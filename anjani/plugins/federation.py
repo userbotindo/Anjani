@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import time
 from datetime import datetime
 from typing import Any, Iterable, MutableMapping, Optional
 from uuid import uuid4
@@ -133,11 +134,7 @@ class Federation(plugin.Plugin):
         """Ban a user"""
         await self.db.update_one(
             {"_id": fid},
-            {
-                "$set": {
-                    f"banned.{user}": {"name": fullname, "reason": reason, "time": datetime.now()}
-                }
-            },
+            {"$set": {f"banned.{user}": {"name": fullname, "reason": reason, "time": time.time()}}},
             upsert=True,
         )
 
@@ -163,9 +160,9 @@ class Federation(plugin.Plugin):
         return data
 
     @staticmethod
-    def parse_date(date: datetime) -> str:
+    def parse_date(timestamp: float) -> str:
         """get a date format from a timestamp"""
-        return date.strftime("%Y %b %d %H:%M UTC")
+        return datetime.fromtimestamp(timestamp).strftime("%Y %b %d %H:%M UTC")
 
     async def fban_handler(self, chat: Chat, user: User, data: MutableMapping[str, Any]) -> None:
         try:
@@ -267,8 +264,7 @@ class Federation(plugin.Plugin):
         if log := data.get("log"):
             await self.bot.client.send_message(
                 log,
-                "**New Chat Joined Federation**\n"
-                f"**Name**:" + chat.first_name + (chat.last_name or ""),
+                f"**New Chat Joined Federation**\n**Name**: {chat.title}",
             )
 
         return ret
@@ -405,6 +401,7 @@ class Federation(plugin.Plugin):
             len(data.get("chats", [])),
         )
 
+    @command.filters(alias=["fedadmin", "fadmin", "fadmins"])
     async def cmd_fedadmins(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Fetch federation admins"""
         chat = ctx.chat
@@ -553,45 +550,44 @@ class Federation(plugin.Plugin):
     async def cmd_fedstats(self, ctx: command.Context) -> str:
         """Get user status"""
         chat = ctx.chat
-        if len(ctx.args) > 1:
+        if len(ctx.args) > 1:  # <user_id> <fed_id>
             try:
-                user = int(ctx.args[0]) if ctx.args[0].isdigit() else int(ctx.args[1])
-            except (TypeError, ValueError):
+                user_id = int(ctx.args[0])
+            except TypeError:
                 return await self.text(chat.id, "fed-invalid-user-id")
 
-            data = await self.check_fban(user)
+            data = await self.get_fed(ctx.args[1])
             if data:
-                text = await self.text(chat.id, "fed-stat-multi")
-                async for bans in data:
-                    text += "\n" + await self.text(
-                        chat.id,
-                        "fed-stat-multi-info",
-                        bans["name"],
-                        bans["_id"],
-                        bans["banned"][str(user)]["reason"],
+                if str(user_id) in data.get("banned", {}):
+                    res = data["banned"][str(user_id)]
+                    return await self.text(
+                        chat.id, "fed-stat-banned", res["reason"], self.parse_date(res["time"])
                     )
+                else:
+                    return await self.text(chat.id, "fed-stat-not-banned")
             else:
-                text = await self.text(chat.id, "fed-stat-multi-not-banned")
-
-            return text
+                return await self.text(chat.id, "fed-not-found")
 
         reply_msg = ctx.msg.reply_to_message
-        if len(ctx.args) == 1:
-            if reply_msg:
-                user = reply_msg.from_user
-            else:
-                user = ctx.msg.from_user
-            data = await self.get_fed(ctx.args[0])
+        if len(ctx.args) == 1:  # <user_id>
+
+            user_id = int(ctx.args[0])
+            data = await self.check_fban(user_id)
             if not data:
-                return await self.text(chat.id, "fed-invalid-id")
+                return await self.text(chat.id, "fed-stat-multi-not-banned")
 
-            if str(user.id) in data.get("banned", {}):
-                res = data["banned"][str(user.id)]
-                return await self.text(
-                    chat.id, "fed-stat-banned", res["reason"], self.parse_date(res["time"])
+            text = await self.text(chat.id, "fed-stat-multi")
+            async for bans in data:
+                text += "\n" + await self.text(
+                    chat.id,
+                    "fed-stat-multi-info",
+                    bans["name"],
+                    bans["_id"],
+                    bans["banned"][str(user_id)]["reason"],
                 )
+                return text
 
-            return await self.text(chat.id, "fed-stat-not-banned")
+            return await self.text(chat.id, "fed-stat-multi-not-banned")
 
         if reply_msg:
             user = reply_msg.from_user
