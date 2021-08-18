@@ -88,6 +88,11 @@ class SpamShield(plugin.Plugin):
     def _build_hash(self, content: str) -> str:
         return hashlib.sha256(content.strip().encode()).hexdigest()
 
+    def _build_hex(self, user_id: int, chat_id: int) -> str:
+        if user_id == chat_id:
+            return hex(user_id)
+        return f"{hex(user_id)}{chat_id: x}"
+
     def _predict(self, text: str) -> List[List[float]]:
         return self.model.predict_proba([text])  # type: ignore
 
@@ -246,6 +251,7 @@ class SpamShield(plugin.Plugin):
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {str(probability * 10 ** 2)[0:7]}\n"
             f"**Message Hash:** `{content_hash}`\n"
+            f"**Identifier:** `{self._build_hex(user, chat)}`"
             f"\n**====== CONTENT =======**\n\n{text}"
         )
         await asyncio.gather(
@@ -391,10 +397,10 @@ class SpamShield(plugin.Plugin):
     @command.filters(staff_only)
     async def cmd_spam(self, ctx: command.Context, *, content: str = ""):
         """Manual spam detection by bot staff"""
-        if not self.model:
-            return "Prediction model isn't available"
         if ctx.chat.type != "private":
             return "This command only avaliable on PM's!"
+        if not self.model:
+            return "Prediction model isn't available"
 
         user_id = None
         if ctx.msg.reply_to_message:
@@ -434,3 +440,50 @@ class SpamShield(plugin.Plugin):
                 disable_web_page_preview=True,
             ),
         )
+
+    @command.filters(staff_only, aliases=["prediction"])
+    async def cmd_predict(self, ctx: command.Context) -> Optional[str]:
+        """Look a prediction for a replied message"""
+        if not self.model:
+            await ctx.respond("Prediction model isn't available", delete_after=5)
+            return
+        replied = ctx.msg.reply_to_message
+        if not replied:
+            await ctx.respond("Reply to a message!", delete_after=5)
+            return
+        content = replied.text or replied.caption
+        pred = self._predict(repr(content))[0]
+        return (
+            f"**Spam Prediction:** `{str(pred[1] * 10 ** 2)[0:7]}`\n"
+            f"**Ham Prediction:** `{str(pred[0] * 10 ** 2)[0:7]}`"
+        )
+
+    @command.filters(staff_only, aliases=["spaminfo"])
+    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = ""):
+        """Get information fro spam identifier"""
+        res = re.search(r"(0x[\da-f]+)(-[\da-f]+)?", arg, re.IGNORECASE)
+        if not res:
+            return
+        user = await self.bot.client.get_users(int(res.group(1), 0))
+        text = (
+            "**User Info**\n\n"
+            f"**Private ID: **`{res.group(1)}`\n"
+            f"**User ID: **`{user.id}`\n"
+            f"**First Name: **{user.first_name}\n"
+        )
+        if user.last_name:
+            text += f"**Last Name: **{user.last_name}\n"
+        text += f"**Username: **@{user.username}\n"
+        text += f"**User Link: **{user.mention}\n"
+
+        if res.group(2):
+            chat = await self.bot.client.get_chat(int(res.group(2), 16))
+            text += "\n**Chat Info**\n\n"
+            text += f"**Private ID:** `{res.group(2)}`\n"
+            text += f"**Chat ID:** `{chat.id}`\n"
+            text += f"**Chat Type :** {chat.type}\n"
+            text += f"**Chat Title :** {chat.title}\n"
+            if chat.username:
+                text += f"**Chat Username :** @{chat.username}\n"
+
+        await ctx.respond(text)
