@@ -46,8 +46,16 @@ class Muting(plugin.Plugin):
     ) -> str:
         """Mute Chat Member"""
         chat_id = ctx.chat.id
-        if member is None or member.user.id == ctx.author.id:
-            return await self.text(chat_id, "no-mute-user")
+        if member is None:
+            if ctx.args and not ctx.args[0].endswith(("s", "m", "h")):
+                return await self.text(chat_id, "no-mute-user")
+            if ctx.msg.reply_to_message:
+                member = await self.bot.client.get_chat_member(
+                    chat_id, ctx.msg.reply_to_message.from_user.id
+                )
+                flag = ctx.args[0] if ctx.args else ""
+            else:
+                return await self.text(chat_id, "no-mute-user")
 
         user = member.user
         if user.id == self.bot.uid:
@@ -60,7 +68,7 @@ class Muting(plugin.Plugin):
             if not until:
                 return await self.text(chat_id, "invalid-time-flag")
         else:
-            if not member.can_send_messages:
+            if member.can_send_messages is False:
                 return await self.text(chat_id, "already-muted")
 
             until = 0
@@ -68,13 +76,18 @@ class Muting(plugin.Plugin):
         return await self._muter(ctx.msg, member, until, flag)
 
     @command.filters(filters.can_restrict)
-    async def cmd_unmute(
-        self, ctx: command.Context, member: Optional[ChatMember] = None
-    ) -> str:
+    async def cmd_unmute(self, ctx: command.Context, member: Optional[ChatMember] = None) -> str:
         """Unmute chat member"""
         chat_id = ctx.chat.id
-        if member is None or member.user.id == ctx.author.id:
-            return await self.text(chat_id, "no-unmute-user")
+        if member is None:
+            if ctx.args:
+                return await self.text(chat_id, "err-peer-invalid")
+            if ctx.msg.reply_to_message:
+                member = await self.bot.client.get_chat_member(
+                    chat_id, ctx.msg.reply_to_message.from_user.id
+                )
+            else:
+                return await self.text(chat_id, "no-unmute-user")
 
         if member.can_send_messages is False:
             await ctx.message.chat.unban_member(member.user.id)

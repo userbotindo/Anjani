@@ -33,7 +33,9 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            return await self.text(chat.id, "no-kick-user")
+            if ctx.args or not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "no-kick-user")
+            user = ctx.msg.reply_to_message.from_user
 
         try:
             target = await chat.get_member(user.id)
@@ -55,7 +57,9 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            return await self.text(chat.id, "no-ban-user")
+            if ctx.args or not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "no-ban-user")
+            user = ctx.msg.reply_to_message.from_user
 
         try:
             target = await chat.get_member(user.id)
@@ -76,7 +80,9 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            return await self.text(chat.id, "unban-no-user")
+            if ctx.args or not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "unban-no-user")
+            user = ctx.msg.reply_to_message.from_user
 
         try:
             await chat.unban_member(user.id)

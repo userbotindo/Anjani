@@ -116,8 +116,10 @@ class Admins(plugin.Plugin):
         """Bot promote member, required Both permission of can_promote"""
         chat = ctx.msg.chat
 
-        if not isinstance(user, User):
-            return await self.text(chat.id, "err-peer-invalid")
+        if not user:
+            if ctx.arg or not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "err-peer-invalid")
+            user = ctx.msg.reply_to_message.from_user
         if user.id == ctx.author.id and ctx.args:
             return await self.text(chat.id, "promote-error-self")
         if user.id == ctx.author.id:
@@ -152,8 +154,10 @@ class Admins(plugin.Plugin):
         """Demoter Just owner and promoter can demote admin."""
         chat = ctx.msg.chat
 
-        if not isinstance(user, User):
-            return await self.text(chat.id, "err-peer-invalid")
+        if not user:
+            if ctx.arg or not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "err-peer-invalid")
+            user = ctx.msg.reply_to_message.from_user
         if user.id == ctx.author.id and ctx.args:
             return await self.text(chat.id, "demote-error-self")
         if user.id == ctx.author.id:

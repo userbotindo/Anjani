@@ -133,7 +133,11 @@ class Federation(plugin.Plugin):
         """Ban a user"""
         await self.db.update_one(
             {"_id": fid},
-            {"$set": {f"banned.{user}": {"name": fullname, "reason": reason, "time": datetime.now()}}},
+            {
+                "$set": {
+                    f"banned.{user}": {"name": fullname, "reason": reason, "time": datetime.now()}
+                }
+            },
             upsert=True,
         )
 
@@ -450,7 +454,9 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-admin-only")
 
         if not user:
-            return await self.text(chat.id, "fed-no-ban-user")
+            if ctx.arg and not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "fed-no-ban-user")
+            user = ctx.msg.reply_to_message.from_user
 
         if user.id == self.bot.uid:
             return await self.text(chat.id, "fed-ban-self")
@@ -522,7 +528,9 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-admin-only")
 
         if not user:
-            return await self.text(chat.id, "fed-no-ban-user")
+            if ctx.args and not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "fed-no-ban-user")
+            user = ctx.msg.reply_to_message.from_user
 
         if str(user.id) not in data.get("banned", {}).keys():
             return await self.text(chat.id, "fed-user-not-banned")
@@ -555,8 +563,10 @@ class Federation(plugin.Plugin):
                 if str(user_id) in data.get("banned", {}):
                     res = data["banned"][str(user_id)]
                     return await self.text(
-                        chat.id, "fed-stat-banned", res["reason"],
-                        res["time"].strftime("%Y %b %d %H:%M UTC")
+                        chat.id,
+                        "fed-stat-banned",
+                        res["reason"],
+                        res["time"].strftime("%Y %b %d %H:%M UTC"),
                     )
                 else:
                     return await self.text(chat.id, "fed-stat-not-banned")
