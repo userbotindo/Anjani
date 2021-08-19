@@ -88,10 +88,12 @@ class SpamShield(plugin.Plugin):
     def _build_hash(self, content: str) -> str:
         return hashlib.sha256(content.strip().encode()).hexdigest()
 
-    def _build_hex(self, user_id: int, chat_id: int) -> str:
-        if user_id == chat_id:
-            return hex(user_id)
-        return f"{hex(user_id)}{chat_id: x}"
+    def _build_hex(self, user_id: Optional[int], chat_id: Optional[int]) -> Optional[str]:
+        if not user_id:
+            return
+        if not chat_id or user_id == chat_id:
+            return f"{user_id: #x}"
+        return f"{user_id: #x}{chat_id: x}"
 
     def _predict(self, text: str) -> List[List[float]]:
         return self.model.predict_proba([text])  # type: ignore
@@ -238,7 +240,7 @@ class SpamShield(plugin.Plugin):
 
         response = await run_sync(self._predict, repr(text.strip()))
         probability = response[0][1]
-        if probability <= 0.6:
+        if probability <= 0.5:
             return
 
         content_hash = self._build_hash(text)
@@ -250,8 +252,8 @@ class SpamShield(plugin.Plugin):
         msg = (
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {str(probability * 10 ** 2)[0:7]}\n"
-            f"**Message Hash:** `{content_hash}`\n"
             f"**Identifier:** `{self._build_hex(user, chat)}`"
+            f"**Message Hash:** `{content_hash}`\n"
             f"\n**====== CONTENT =======**\n\n{text}"
         )
         await asyncio.gather(
@@ -276,7 +278,7 @@ class SpamShield(plugin.Plugin):
             ),
             self.db_dump.update_one(
                 {"_id": content_hash},
-                {"$set": {"text": text, "spam": 0, "ham": 0, "chat": chat, "id": user}},
+                {"$set": {"text": text, "spam": 0, "ham": 0}},
                 upsert=True,
             ),
         )
@@ -397,29 +399,28 @@ class SpamShield(plugin.Plugin):
     @command.filters(staff_only)
     async def cmd_spam(self, ctx: command.Context, *, content: str = ""):
         """Manual spam detection by bot staff"""
-        if ctx.chat.type != "private":
-            return "This command only avaliable on PM's!"
         if not self.model:
             return "Prediction model isn't available"
 
-        user_id = None
         if ctx.msg.reply_to_message:
             content = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
-            if ctx.msg.reply_to_message.forward_from:
-                user_id = ctx.msg.reply_to_message.forward_from.id
+            user_id = ctx.msg.reply_to_message.from_user.id
+            chat_id = ctx.chat.id if ctx.chat.type != "private" else None
         else:
+            user_id = chat_id = None
             if not content:
                 return "Give me a text or reply to a message / forwarded message"
+
+        identifier = self._build_hex(user_id, chat_id)
 
         content_hash = self._build_hash(content)
         pred = await run_sync(self._predict, repr(content.strip()))
         proba = pred[0][1]
-        text = (
-            "#SPAM\n\n"
-            f"**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
-            f"**Message Hash:** `{content_hash}`\n"
-            f"\n**====== CONTENT =======**\n\n{content}"
-        )
+        text = f"#SPAM\n\n**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
+        if identifier:
+            text += f"**Identifier:** {identifier}"
+
+        text += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{content}"
         await asyncio.gather(
             self.db_dump.update_one(
                 {"_id": content_hash},
@@ -428,8 +429,6 @@ class SpamShield(plugin.Plugin):
                         "text": content.strip(),
                         "spam": 1,
                         "ham": 0,
-                        "chat": None,
-                        "id": user_id,
                     }
                 },
                 upsert=True,
@@ -454,20 +453,21 @@ class SpamShield(plugin.Plugin):
         content = replied.text or replied.caption
         pred = self._predict(repr(content))[0]
         return (
+            "**Result**\n\n"
             f"**Spam Prediction:** `{str(pred[1] * 10 ** 2)[0:7]}`\n"
             f"**Ham Prediction:** `{str(pred[0] * 10 ** 2)[0:7]}`"
         )
 
-    @command.filters(staff_only, aliases=["spaminfo"])
-    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = ""):
+    @command.filters(aliases=["spaminfo"])
+    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> str:
         """Get information fro spam identifier"""
         res = re.search(r"(0x[\da-f]+)(-[\da-f]+)?", arg, re.IGNORECASE)
         if not res:
-            return
+            return "Can't find any identifier"
         user = await self.bot.client.get_users(int(res.group(1), 0))
         text = (
+            f"**Private ID: **`{res.group(0)}`\n\n"
             "**User Info**\n\n"
-            f"**Private ID: **`{res.group(1)}`\n"
             f"**User ID: **`{user.id}`\n"
             f"**First Name: **{user.first_name}\n"
         )
@@ -479,11 +479,10 @@ class SpamShield(plugin.Plugin):
         if res.group(2):
             chat = await self.bot.client.get_chat(int(res.group(2), 16))
             text += "\n**Chat Info**\n\n"
-            text += f"**Private ID:** `{res.group(2)}`\n"
             text += f"**Chat ID:** `{chat.id}`\n"
             text += f"**Chat Type :** {chat.type}\n"
             text += f"**Chat Title :** {chat.title}\n"
             if chat.username:
                 text += f"**Chat Username :** @{chat.username}\n"
 
-        await ctx.respond(text)
+        return text
