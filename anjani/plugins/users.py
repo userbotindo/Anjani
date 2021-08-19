@@ -97,7 +97,9 @@ class Users(plugin.Plugin):
         chat = ctx.msg.chat
 
         if not user:
-            return await self.text(chat.id, "err-peer-invalid")
+            if ctx.args:
+                return await self.text(chat.id, "err-peer-invalid")
+            user = ctx.author
 
         text = f"**{'Bot' if user.is_bot else 'User'} Info**\n"
         text += f"**ID:** `{user.id}`\n"
