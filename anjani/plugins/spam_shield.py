@@ -92,8 +92,8 @@ class SpamShield(plugin.Plugin):
         if not user_id:
             return
         if not chat_id or user_id == chat_id:
-            return f"{user_id: #x}"
-        return f"{user_id: #x}{chat_id: x}"
+            return f"{user_id:#x}"
+        return f"{user_id:#x}{chat_id:x}"
 
     def _predict(self, text: str) -> List[List[float]]:
         return self.model.predict_proba([text])  # type: ignore
@@ -252,7 +252,7 @@ class SpamShield(plugin.Plugin):
         msg = (
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {str(probability * 10 ** 2)[0:7]}\n"
-            f"**Identifier:** `{self._build_hex(user, chat)}`"
+            f"**Identifier:** `{self._build_hex(user, chat)}`\n"
             f"**Message Hash:** `{content_hash}`\n"
             f"\n**====== CONTENT =======**\n\n{text}"
         )
@@ -418,7 +418,7 @@ class SpamShield(plugin.Plugin):
         proba = pred[0][1]
         text = f"#SPAM\n\n**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
         if identifier:
-            text += f"**Identifier:** {identifier}"
+            text += f"**Identifier:** {identifier}\n"
 
         text += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{content}"
         await asyncio.gather(
