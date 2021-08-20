@@ -457,6 +457,7 @@ class Federation(plugin.Plugin):
             if ctx.args and not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "fed-no-ban-user")
             user = ctx.msg.reply_to_message.from_user
+            reason = ctx.input
 
         if user.id == self.bot.uid:
             return await self.text(chat.id, "fed-ban-self")
