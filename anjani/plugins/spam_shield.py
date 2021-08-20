@@ -477,12 +477,15 @@ class SpamShield(plugin.Plugin):
         text += f"**User Link: **{user.mention}\n"
 
         if res.group(2):
-            chat = await self.bot.client.get_chat(int(res.group(2), 16))
-            text += "\n**Chat Info**\n\n"
-            text += f"**Chat ID:** `{chat.id}`\n"
-            text += f"**Chat Type :** {chat.type}\n"
-            text += f"**Chat Title :** {chat.title}\n"
-            if chat.username:
-                text += f"**Chat Username :** @{chat.username}\n"
+            try:
+                chat = await self.bot.client.get_chat(int(res.group(2), 16))
+                text += "\n**Chat Info**\n\n"
+                text += f"**Chat ID:** `{chat.id}`\n"
+                text += f"**Chat Type :** {chat.type}\n"
+                text += f"**Chat Title :** {chat.title}\n"
+                if chat.username:
+                    text += f"**Chat Username :** @{chat.username}\n"
+            except ChannelPrivate:
+                pass
 
         return text
