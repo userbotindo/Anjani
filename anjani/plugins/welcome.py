@@ -18,7 +18,7 @@ import asyncio
 from html import escape
 from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
-from pyrogram.errors import MessageDeleteForbidden
+from pyrogram.errors import ChatWriteForbidden, MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
@@ -65,11 +65,14 @@ class Greeting(plugin.Plugin):
             text = await self.text(chat.id, "default-goodbye", noformat=True)
 
         formatted_text = self._build_text(text, left_member, chat)
-        msg = await self.bot.client.send_message(
-            chat.id,
-            formatted_text,
-            reply_to_message_id=reply_to,
-        )
+        try:
+            msg = await self.bot.client.send_message(
+                chat.id,
+                formatted_text,
+                reply_to_message_id=reply_to,
+            )
+        except ChatWriteForbidden:
+            return
 
         previous = await self.previous_goodbye(chat.id, msg.message_id)
         if previous:
@@ -85,35 +88,38 @@ class Greeting(plugin.Plugin):
 
         new_members = message.new_chat_members
         for new_member in new_members:
-            if new_member.id == self.bot.uid:
-                await self.bot.client.send_message(
-                    chat.id,
-                    await self.text(chat.id, "bot-added"),
-                    reply_to_message_id=reply_to,
-                )
-            else:
-                text, button = await self.welc_message(chat.id)
-                if not text:
-                    text = await self.text(chat.id, "default-welcome", noformat=True)
+            try:
+                if new_member.id == self.bot.uid:
+                    await self.bot.client.send_message(
+                        chat.id,
+                        await self.text(chat.id, "bot-added"),
+                        reply_to_message_id=reply_to,
+                    )
+                else:
+                    text, button = await self.welc_message(chat.id)
+                    if not text:
+                        text = await self.text(chat.id, "default-welcome", noformat=True)
 
-                formatted_text = self._build_text(text, new_member, chat)
+                    formatted_text = self._build_text(text, new_member, chat)
 
-                if button:
-                    button = util.tg.build_button(button)
+                    if button:
+                        button = util.tg.build_button(button)
 
-                msg = await self.bot.client.send_message(
-                    chat.id,
-                    formatted_text,
-                    reply_to_message_id=reply_to,
-                    reply_markup=button,
-                )
+                    msg = await self.bot.client.send_message(
+                        chat.id,
+                        formatted_text,
+                        reply_to_message_id=reply_to,
+                        reply_markup=button,
+                    )
 
-                previous = await self.previous_welcome(chat.id, msg.message_id)
-                if previous:
-                    try:
-                        await self.bot.client.delete_messages(chat.id, previous)
-                    except MessageDeleteForbidden:
-                        pass
+                    previous = await self.previous_welcome(chat.id, msg.message_id)
+                    if previous:
+                        try:
+                            await self.bot.client.delete_messages(chat.id, previous)
+                        except MessageDeleteForbidden:
+                            pass
+            except ChatWriteForbidden:
+                pass
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
