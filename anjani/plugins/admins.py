@@ -74,6 +74,8 @@ class Admins(plugin.Plugin):
     async def cmd_adminlist(self, ctx: command.Context) -> str:
         """Get list of chat admins"""
         chat = ctx.msg.chat
+        if chat.type == "private":
+            return await self.text(chat.id, "err-chat-groups")
         admins = ""
 
         member: ChatMember
