@@ -1458,7 +1458,7 @@ class AsyncCursorBase(AsyncBase):
             if length is None:
                 n = result
             else:
-                n = min(length, result)
+                n = min(length - len(the_list), result)
 
             i = 0
             while i < n:
