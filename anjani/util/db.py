@@ -35,7 +35,7 @@ from pymongo.change_stream import ChangeStream
 from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.collation import Collation
 from pymongo.collection import Collection
-from pymongo.command_cursor import CommandCursor as _CommandCursor, RawBatchCommandCursor
+from pymongo.command_cursor import CommandCursor as _CommandCursor
 from pymongo.cursor import _QUERY_OPTIONS, Cursor as _Cursor, RawBatchCursor
 from pymongo.database import Database
 from pymongo.driver_info import DriverInfo
@@ -172,6 +172,10 @@ class CommandCursor(_CommandCursor):
     @property
     def collection(self) -> "AsyncCollection":
         return self.__collection
+
+
+class RawBatchCommandCursor(CommandCursor):
+    pass
 
 
 class AsyncBase:
@@ -1618,12 +1622,12 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
     """Temporary Cursor for initializing in aggregate,
        and will be overwrite by :obj:`~asyncio.Future`"""
 
-    dispatch: CommandCursor
+    dispatch: Union[CommandCursor, RawBatchCommandCursor]
 
     def __init__(
         self,
         collection: AsyncCollection,
-        start: Callable[..., Coroutine[Any, Any, int]],
+        start: Callable[..., Union[CommandCursor, RawBatchCommandCursor]],
         *args: Any,
         **kwargs: Any
     ) -> None:
@@ -1654,7 +1658,9 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         return super()._get_more()
 
     def _on_started(
-        self, original_future: asyncio.Future[int], future: asyncio.Future[CommandCursor]
+        self,
+        original_future: asyncio.Future[int],
+        future: asyncio.Future[Union[CommandCursor, RawBatchCommandCursor]]
     ) -> None:
         try:
             self.dispatch = future.result()
