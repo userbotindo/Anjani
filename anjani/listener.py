@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 from pyrogram.filters import Filter
 
@@ -28,7 +28,7 @@ def filters(_filters: Filter) -> Decorator:
 
 class Listener:
     event: str
-    func: ListenerFunc
+    func: Union[ListenerFunc, ListenerFunc]
     plugin: Any
     priority: int
     filters: Optional[Filter]

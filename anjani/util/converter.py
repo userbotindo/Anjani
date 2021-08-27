@@ -142,6 +142,8 @@ class ChatMemberConverter(EntityConverter):
         if res:
             return await self.get_member(ctx.bot.client, ctx.chat.id, res.id)
 
+        return None
+
 
 CONVERTER_MAP: MutableMapping[Type[Any], Any] = {
     types.User: UserConverter,

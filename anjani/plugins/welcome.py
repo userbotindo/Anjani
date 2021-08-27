@@ -98,9 +98,11 @@ class Greeting(plugin.Plugin):
                 else:
                     text, button = await self.welc_message(chat.id)
                     if not text:
-                        text = await self.text(chat.id, "default-welcome", noformat=True)
+                        string = await self.text(chat.id, "default-welcome", noformat=True)
+                    else:
+                        string = text
 
-                    formatted_text = self._build_text(text, new_member, chat)
+                    formatted_text = self._build_text(string, new_member, chat)
 
                     if button:
                         button = util.tg.build_button(button)
@@ -140,7 +142,7 @@ class Greeting(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
-    def _build_text(self, text: str, user: User, chat: Chat):
+    def _build_text(self, text: str, user: User, chat: Chat) -> str:
         first_name = user.first_name
         last_name = user.last_name
         full_name = first_name + last_name if last_name else first_name
@@ -350,6 +352,7 @@ class Greeting(plugin.Plugin):
             parse_mode=parse_mode,
             disable_web_page_preview=True,
         )
+        return None
 
     @command.filters(filters.admin_only)
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:
@@ -389,6 +392,7 @@ class Greeting(plugin.Plugin):
             parse_mode=parse_mode,
             disable_web_page_preview=True,
         )
+        return None
 
     @command.filters(filters.admin_only)
     async def cmd_cleanservice(self, ctx: command.Context, active: Optional[bool] = None) -> str:

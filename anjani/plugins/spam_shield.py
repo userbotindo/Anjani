@@ -19,13 +19,14 @@ import hashlib
 import pickle
 import re
 from datetime import datetime
-from typing import Any, ClassVar, List, MutableMapping, Optional, TypeVar
+from typing import Any, ClassVar, List, MutableMapping, Optional
 
 from aiohttp import ClientResponseError
 from pyrogram import filters
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
+    Chat,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -37,7 +38,8 @@ try:
 
     _run_predict = True
 except ImportError:
-    Pipeline = TypeVar("Pipeline")
+    Pipeline = Any
+
     _run_predict = False
 
 from anjani import command, listener, plugin, util
@@ -51,12 +53,15 @@ class SpamShield(plugin.Plugin):
     db: util.db.AsyncCollection
     db_dump: util.db.AsyncCollection
     federation_db: util.db.AsyncCollection
-    model: Optional[Pipeline] = None
-    token: Optional[str] = None
-    sp_token: Optional[str] = None
-    sp_url: Optional[str] = None
+    model: Optional[Pipeline]
+    sp_token: Optional[str]
+    sp_url: Optional[str]
+    token: Optional[str]
 
     async def on_load(self) -> None:
+        self.model = None
+        self.sp_token = None
+        self.sp_url = None
         self.token = self.bot.config.get("sw_api")
         if not self.token:
             self.bot.log.warning("SpamWatch API token not exist")
@@ -88,15 +93,22 @@ class SpamShield(plugin.Plugin):
     def _build_hash(self, content: str) -> str:
         return hashlib.sha256(content.strip().encode()).hexdigest()
 
-    def _build_hex(self, user_id: Optional[int], chat_id: Optional[int]) -> Optional[str]:
+    def _build_hex(
+        self, user_id: Optional[int] = None, chat_id: Optional[int] = None
+    ) -> str:
         if not user_id:
-            return
+            return ""
+
         if not chat_id or user_id == chat_id:
             return f"{user_id:#x}"
+
         return f"{user_id:#x}{chat_id:x}"
 
     def _predict(self, text: str) -> List[List[float]]:
-        return self.model.predict_proba([text])  # type: ignore
+        if not self.model:
+            return []
+
+        return self.model.predict_proba([text])
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -166,18 +178,18 @@ class SpamShield(plugin.Plugin):
             raise ValueError("Unknown method")
 
         total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
-        users_on_correct = f"[{', '.join(users_on_correct)}]"
-        users_on_incorrect = f"[{', '.join(users_on_incorrect)}]"
+        _users_on_correct = f"[{', '.join(users_on_correct)}]"
+        _users_on_incorrect = f"[{', '.join(users_on_incorrect)}]"
         button = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         text=f"✅ Correct ({total_correct})",
-                        callback_data=f"spam_check_t{users_on_correct}",
+                        callback_data=f"spam_check_t{_users_on_correct}",
                     ),
                     InlineKeyboardButton(
                         text=f"❌ Incorrect ({total_incorrect})",
-                        callback_data=f"spam_check_f{users_on_incorrect}",
+                        callback_data=f"spam_check_f{_users_on_incorrect}",
                     ),
                 ]
             ]
@@ -239,6 +251,9 @@ class SpamShield(plugin.Plugin):
             return
 
         response = await run_sync(self._predict, repr(text.strip()))
+        if not response:
+            return
+
         probability = response[0][1]
         if probability <= 0.5:
             return
@@ -252,7 +267,7 @@ class SpamShield(plugin.Plugin):
         msg = (
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {str(probability * 10 ** 2)[0:7]}\n"
-            f"**Identifier:** `{self._build_hex(user, chat)}`\n"
+            f"**Identifier:** `{self._build_hex(user_id=user, chat_id=chat)}`\n"
             f"**Message Hash:** `{content_hash}`\n"
             f"\n**====== CONTENT =======**\n\n{text}"
         )
@@ -397,7 +412,7 @@ class SpamShield(plugin.Plugin):
         return ret
 
     @command.filters(staff_only)
-    async def cmd_spam(self, ctx: command.Context, *, content: str = ""):
+    async def cmd_spam(self, ctx: command.Context, *, content: str = "") -> Optional[str]:
         """Manual spam detection by bot staff"""
         if not self.model:
             return "Prediction model isn't available"
@@ -411,10 +426,13 @@ class SpamShield(plugin.Plugin):
             if not content:
                 return "Give me a text or reply to a message / forwarded message"
 
-        identifier = self._build_hex(user_id, chat_id)
+        identifier = self._build_hex(user_id=user_id, chat_id=chat_id)
 
         content_hash = self._build_hash(content)
         pred = await run_sync(self._predict, repr(content.strip()))
+        if not pred:
+            return "Prediction failed"
+
         proba = pred[0][1]
         text = f"#SPAM\n\n**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
         if identifier:
@@ -439,19 +457,25 @@ class SpamShield(plugin.Plugin):
                 disable_web_page_preview=True,
             ),
         )
+        return None
 
     @command.filters(staff_only, aliases=["prediction"])
     async def cmd_predict(self, ctx: command.Context) -> Optional[str]:
         """Look a prediction for a replied message"""
         if not self.model:
             await ctx.respond("Prediction model isn't available", delete_after=5)
-            return
+            return None
+
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond("Reply to a message!", delete_after=5)
-            return
+            return None
+
         content = replied.text or replied.caption
         pred = self._predict(repr(content))[0]
+        if not pred:
+            return "Prediction failed"
+
         return (
             "**Result**\n\n"
             f"**Spam Prediction:** `{str(pred[1] * 10 ** 2)[0:7]}`\n"
@@ -459,12 +483,16 @@ class SpamShield(plugin.Plugin):
         )
 
     @command.filters(aliases=["spaminfo"])
-    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> str:
+    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> Optional[str]:
         """Get information fro spam identifier"""
         res = re.search(r"(0x[\da-f]+)(-[\da-f]+)?", arg, re.IGNORECASE)
         if not res:
             return "Can't find any identifier"
+
         user = await self.bot.client.get_users(int(res.group(1), 0))
+        if isinstance(user, List):
+            user = user[0]
+
         text = (
             f"**Private ID: **`{res.group(0)}`\n\n"
             "**User Info**\n\n"
@@ -479,6 +507,9 @@ class SpamShield(plugin.Plugin):
         if res.group(2):
             try:
                 chat = await self.bot.client.get_chat(int(res.group(2), 16))
+                if not isinstance(chat, Chat):
+                    return "Invalid Chat type"
+
                 text += "\n**Chat Info**\n\n"
                 text += f"**Chat ID:** `{chat.id}`\n"
                 text += f"**Chat Type :** {chat.type}\n"
@@ -488,4 +519,5 @@ class SpamShield(plugin.Plugin):
             except ChannelPrivate:
                 pass
 
-        return text
+        await ctx.respond(text)
+        return None

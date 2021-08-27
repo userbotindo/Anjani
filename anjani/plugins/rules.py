@@ -90,3 +90,4 @@ class Rules(plugin.Plugin):
                 ]
             ),
         )
+        return None

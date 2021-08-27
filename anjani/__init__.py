@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 import sys
-from datetime import datetime
+from typing import Any
 
 import aiorun
 import colorlog
@@ -88,7 +88,7 @@ def start() -> None:
     loop = asyncio.new_event_loop()
 
     # Check mandatory configuration
-    config = TelegramConfig()
+    config: TelegramConfig[str, Any] = TelegramConfig()
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
         return log.error("Configuration must be done correctly before running the bot.")
 

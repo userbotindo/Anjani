@@ -34,6 +34,7 @@ class Purges(plugin.Plugin):
             return await self.text(ctx.chat.id, "error-reply-to-message")
 
         await asyncio.gather(ctx.msg.reply_to_message.delete(), ctx.msg.delete())
+        return None
 
     @command.filters(filters.can_delete, aliases=["prune"])
     async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
@@ -49,7 +50,7 @@ class Purges(plugin.Plugin):
             await self.bot.client.delete_messages(chat_id=ctx.chat.id, message_ids=messages)
         except MessageDeleteForbidden:
             await ctx.respond(await self.text(ctx.chat.id, "purge-error", delete_after=5))
-            return
+            return None
         else:
             await ctx.msg.delete()
 
@@ -59,3 +60,4 @@ class Purges(plugin.Plugin):
         await ctx.respond(
             await self.text(ctx.chat.id, "purge-done", len(messages), run_time), delete_after=5
         )
+        return None

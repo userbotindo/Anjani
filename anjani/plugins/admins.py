@@ -23,7 +23,7 @@ from pyrogram.errors import (
     UserAdminInvalid,
     UserIdInvalid,
 )
-from pyrogram.types import ChatMember, User
+from pyrogram.types import User
 
 from anjani import command, filters, plugin, util
 
@@ -45,7 +45,9 @@ class Admins(plugin.Plugin):
             "violence",
         }:
             is_silent = False
+
         await ctx.msg.reply_to_message.pin(disable_notification=is_silent)
+        return None
 
     @command.filters(filters.can_pin)
     async def cmd_unpin(self, ctx: command.Context) -> None:
@@ -60,6 +62,8 @@ class Admins(plugin.Plugin):
         else:
             await ctx.msg.reply_to_message.unpin()
 
+        return None
+
     @command.filters(filters.can_change_info)
     async def cmd_setgpic(self, ctx: command.Context) -> Optional[str]:
         """Set group picture"""
@@ -70,6 +74,7 @@ class Admins(plugin.Plugin):
             return await self.text(msg.chat.id, "gpic-no-photo")
 
         await self.bot.client.set_chat_photo(msg.chat.id, photo=file.file_id)
+        return None
 
     async def cmd_adminlist(self, ctx: command.Context) -> str:
         """Get list of chat admins"""
@@ -78,16 +83,13 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "err-chat-groups")
         admins = ""
 
-        member: ChatMember
-        async for member in self.bot.client.iter_chat_members(chat.id, filter="administrators"):  # type: ignore
-            # Pyrogram is weird it returns all members even tho we provided the filter
-            if member.status == "administrator":
-                name = (
-                    (member.user.first_name + " " + member.user.last_name)
-                    if member.user.last_name
-                    else member.user.first_name
-                )
-                admins += f"• [{name}](tg://user?id={member.user.id})\n"
+        async for admin in util.tg.get_chat_admins(ctx.bot.client, chat.id):
+            name = (
+                (admin.user.first_name + " " + admin.user.last_name)
+                 if admin.user.last_name
+                 else admin.user.first_name
+            ) + f" **[{admin.status.capitalize()}]**" if admin.status == "creator" else ""
+            admins += f"• [{name}](tg://user?id={admin.user.id})\n"
 
         return admins
 

@@ -139,3 +139,5 @@ class Language(plugin.Plugin):
                 await self.text(chat.id, "current-language", chat_name, lang),
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
+
+        return None

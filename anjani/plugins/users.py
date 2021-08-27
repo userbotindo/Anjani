@@ -135,3 +135,5 @@ class Users(plugin.Plugin):
             await file.unlink()
         else:
             await ctx.respond(text)
+
+        return None

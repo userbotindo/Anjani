@@ -1,7 +1,7 @@
 import asyncio
 import re
 from enum import IntEnum, unique
-from typing import List, Optional, Set, Tuple, Union
+from typing import AsyncGenerator, List, Optional, Set, Tuple, Union
 
 from pyrogram import Client
 from pyrogram.types import (
@@ -93,7 +93,7 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
     types = None
     content = None
     text = ""
-    buttons = []
+    buttons = []  # type: Button
 
     if msg.reply_to_message:
         t = msg.reply_to_message.text or msg.reply_to_message.caption
@@ -147,13 +147,19 @@ def is_staff_or_admin(target: ChatMember, staff: Set[int]) -> bool:
 
 
 # { Permission
-Bot = ChatMember
-Member = ChatMember
-
-
 async def fetch_permissions(
-    client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
+    client: Client, chat: int, user: int
+) -> Tuple[ChatMember, ChatMember]:
     bot, member = await asyncio.gather(client.get_chat_member(chat, "me"),
                                        client.get_chat_member(chat, user))
     return bot, member
+# }
+
+
+# { ChatAdmin
+async def get_chat_admins(client: Client, chat: int) -> AsyncGenerator[ChatMember, None]:
+    member: ChatMember
+    async for member in client.iter_chat_members(chat, filter="administrators"):  # type: ignore
+        if member.status in {"administrator", "creator"}:
+            yield member
 # }

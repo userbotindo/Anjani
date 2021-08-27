@@ -81,5 +81,7 @@ class Debug(plugin.Plugin):
                 await ctx.msg.reply_document(
                     document=out_file, caption=cmd, disable_notification=True
                 )
-        else:
-            return output
+
+            return None
+
+        return output

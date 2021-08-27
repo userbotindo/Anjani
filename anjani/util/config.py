@@ -31,13 +31,13 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
             super().__setattr__(key, value)
             self.__data[key] = value
 
-    def __delattr__(self, name: _KT) -> None:  # skipcq: PYL-W0613
+    def __delattr__(self, obj: object) -> None:  # skipcq: PYL-W0613
         raise RuntimeError("Can't delete configuration while running the bot.")
 
     def __delitem__(self, k: _KT) -> None:  # skipcq: PYL-W0613
         raise RuntimeError("Can't delete configuration while running the bot.")
 
-    def __getattr__(self, name: _KT) -> _VT:
+    def __getattr__(self, name: str) -> _VT:
         return self.__getattribute__(name)
 
     def __getitem__(self, k: _KT) -> _VT:

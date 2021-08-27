@@ -19,7 +19,7 @@ import re
 from typing import ClassVar, List, Optional
 
 from pyrogram import filters
-from pyrogram.errors import MessageNotModified
+from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani import command, listener, plugin
@@ -110,7 +110,7 @@ class Main(plugin.Plugin):
                 keyboard = await self.help_builder(chat.id)
                 await ctx.respond(await self.text(chat.id, "help-pm", self.bot_name),
                                   reply_markup=InlineKeyboardMarkup(keyboard))
-                return
+                return None
 
             regex = re.compile(r"rules_(.*)")
             if ctx.input and regex.search(ctx.input):
@@ -144,7 +144,7 @@ class Main(plugin.Plugin):
                 disable_web_page_preview=True,
                 parse_mode="markdown",
             )
-            return
+            return None
 
         return await self.text(chat.id, "start-chat")
 

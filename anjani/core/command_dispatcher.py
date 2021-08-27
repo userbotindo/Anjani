@@ -148,15 +148,15 @@ class CommandDispatcher(MixinBase):
                     f"Command '{cmd.name}' triggered a message edit with no changes; make sure there is only a single bot instance running"
                 )
             except Exception as e:
-                constructor = CommandInvokeError(
+                constructor_invoke = CommandInvokeError(
                     f"raised from {type(e).__name__}: {str(e)}"
                 ).with_traceback(e.__traceback__)
-                cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=constructor)
+                cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=constructor_invoke)
 
             await self.dispatch_event("command", cmd, message)
         except Exception as e:
-            constructor = CommandHandlerError(
+            constructor_handler = CommandHandlerError(
                 f"raised from {type(e).__name__}: {str(e)}"
             ).with_traceback(e.__traceback__)
             if cmd is not None:
-                cmd.plugin.log.error("Error in command handler", exc_info=constructor)
+                cmd.plugin.log.error("Error in command handler", exc_info=constructor_handler)

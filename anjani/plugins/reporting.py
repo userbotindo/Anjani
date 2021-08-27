@@ -18,7 +18,7 @@ import asyncio
 from typing import Any, MutableMapping, Optional
 
 from pyrogram import filters
-from pyrogram.types import ChatMember, Message
+from pyrogram.types import Message
 
 from anjani import command, listener, plugin, util
 from anjani.filters import admin_only
@@ -85,11 +85,9 @@ class Reporting(plugin.Plugin):
             return
 
         reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
-        member: ChatMember
-        async for member in self.bot.client.iter_chat_members(chat.id, filter="administrators"):  # type: ignore
-            if (await self.is_active(member.user.id, True) and
-                    member.status in {"administrator", "creator"}):
-                reply_text += f"<a href='tg://user?id={member.user.id}'>\u200B</a>"
+        async for admin in util.tg.get_chat_admins(self.bot.client, chat.id):
+            if await self.is_active(admin.user.id, True):
+                reply_text += f"<a href='tg://user?id={admin.user.id}'>\u200B</a>"
 
         await message.reply_text(reply_text, parse_mode="html")
 
@@ -119,13 +117,11 @@ class Reporting(plugin.Plugin):
 
     @command.filters(admin_only)
     async def cmd_reports(
-        self,
-        ctx: command.Context,
-        setting: Optional[bool] = None
+        self, ctx: command.Context, setting: Optional[bool] = None
     ) -> Optional[str]:
         """Report setting command"""
         if ctx.msg.reply_to_message:
-            return
+            return None
 
         chat = ctx.chat
         if chat.type == "private":
@@ -146,7 +142,7 @@ class Reporting(plugin.Plugin):
         _, member = await util.tg.fetch_permissions(self.bot.client, chat.id,
                                                     ctx.author.id)
         if member.status not in {"administrator", "creator"}:
-            return
+            return None
 
         if setting is True:
             text = "report-on" if private else "chat-report-on"

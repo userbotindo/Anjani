@@ -37,7 +37,7 @@ class Backups(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "backup-progress"))
 
-        tasks = await self.bot.dispatch_event("plugin_backup", chat.id, get_results=True)
+        tasks = await self.bot.dispatch_event("plugin_backup", chat.id, get_tasks=True)
         if not tasks:
             return await self.text(chat.id, "backup-null")
 
@@ -75,6 +75,7 @@ class Backups(plugin.Plugin):
             ctx.response.delete(),
             file.unlink(),
         )
+        return None
 
     @command.filters(filters.admin_only)
     async def cmd_restore(self, ctx: command.Context) -> Optional[str]:
@@ -100,3 +101,4 @@ class Backups(plugin.Plugin):
 
         await self.bot.dispatch_event("plugin_restore", chat.id, data)
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
+        return None

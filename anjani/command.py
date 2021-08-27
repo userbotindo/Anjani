@@ -55,7 +55,7 @@ class Command:
     filters: Optional[Union[Filter, CustomFilter]]
     plugin: Any
     aliases: Iterable[str]
-    func: CommandFunc
+    func: Union[CommandFunc, CommandFunc]
 
     def __init__(self, name: str, plugin: Any, func: CommandFunc) -> None:
         self.name = name

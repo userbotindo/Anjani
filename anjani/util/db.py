@@ -1430,10 +1430,10 @@ class AsyncCursorBase(AsyncBase):
     def _data(self) -> Deque[Any]:
         raise NotImplementedError
 
-    def _killed(self) -> None:
+    def _killed(self) -> bool:
         raise NotImplementedError
 
-    def _get_more(self) -> Coroutine[Any, Any, int]:
+    def _get_more(self) -> Union[asyncio.Future[int], Coroutine[Any, Any, int]]:
         if not self.alive:
             raise InvalidOperation(
                 "Can't call get_more() on a AsyncCursor that has been"
@@ -1516,7 +1516,7 @@ class AsyncCursorBase(AsyncBase):
             raise InvalidOperation("Can't call to_list on tailable cursor")
 
         future = self.loop.create_future()
-        the_list = []
+        the_list: List[MutableMapping[str, Any]] = []
 
         if not self.alive:
             future.set_result(the_list)

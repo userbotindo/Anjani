@@ -74,3 +74,4 @@ class Misc(plugin.Plugin):
             reply_to_message_id=msg.message_id,
             caption=text,
         )
+        return None

@@ -16,7 +16,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Iterable, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional
 from uuid import uuid4
 
 from aiofile import LineReader
@@ -156,10 +156,10 @@ class Federation(plugin.Plugin):
     async def is_fbanned(self, chat: int, user: int) -> Optional[MutableMapping[str, Any]]:
         data = await self.get_fed_bychat(chat)
         if not data or str(user) not in data.get("banned", {}):
-            return
+            return None
 
-        data = data["banned"][str(user)]
-        data["fed_name"] = data["name"]
+        user_data = data["banned"][str(user)]
+        user_data["fed_name"] = data["name"]
         return data
 
     async def fban_handler(self, chat: Chat, user: User, data: MutableMapping[str, Any]) -> None:
@@ -231,6 +231,7 @@ class Federation(plugin.Plugin):
                 ]
             ),
         )
+        return None
 
     @command.filters(admin_only)
     async def cmd_joinfed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
@@ -385,7 +386,7 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-specified-id")
 
         owner = await self.bot.client.get_users(data["owner"])
-        if isinstance(owner, Iterable):
+        if isinstance(owner, List):
             owner = owner[0]
 
         return await self.text(
@@ -419,7 +420,7 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-admin-only")
 
         owner = await self.bot.client.get_users(data["owner"])
-        if isinstance(owner, Iterable):
+        if isinstance(owner, List):
             owner = owner[0]
 
         text = await self.text(chat.id, "fed-admin-text", data["name"], owner.mention)
@@ -578,12 +579,12 @@ class Federation(plugin.Plugin):
         if len(ctx.args) == 1:  # <user_id>
 
             user_id = int(ctx.args[0])
-            data = await self.check_fban(user_id)
-            if not data:
+            cursor = await self.check_fban(user_id)
+            if not cursor:
                 return await self.text(chat.id, "fed-stat-multi-not-banned")
 
             text = await self.text(chat.id, "fed-stat-multi")
-            async for bans in data:
+            async for bans in cursor:
                 text += "\n" + await self.text(
                     chat.id,
                     "fed-stat-multi-info",
@@ -599,10 +600,11 @@ class Federation(plugin.Plugin):
             user = reply_msg.from_user
         else:
             user = ctx.msg.from_user
-        data = await self.check_fban(user.id)
-        if data:
+
+        cursor = await self.check_fban(user.id)
+        if cursor:
             text = await self.text(chat.id, "fed-stat-multi")
-            async for bans in data:
+            async for bans in cursor:
                 text += "\n" + await self.text(
                     chat.id,
                     "fed-stat-multi-info",
@@ -640,6 +642,7 @@ class Federation(plugin.Plugin):
 
         await ctx.respond(document=str(file))
         await file.unlink()
+        return None
 
     @command.filters(filters.private)
     async def cmd_fedexport(self, ctx: command.Context) -> Optional[str]:
@@ -687,8 +690,8 @@ class Federation(plugin.Plugin):
                 + f"\n- `{data['_id']}`: {data['name']}"
             )
 
-        data = self.db.find({"admins": user.id})
-        fed_list = await data.to_list()
+        cursor = self.db.find({"admins": user.id})
+        fed_list = await cursor.to_list()
         if fed_list:
             text = await self.text(chat.id, "fed-myfeds-admin") + "\n"
             for fed in fed_list:
@@ -721,7 +724,7 @@ class Federation(plugin.Plugin):
                     ]
                 ),
             )
-            return
+            return None
 
         if chat.type in {"group", "supergroup"}:
             data = await self.get_fed_byowner(ctx.author.id)

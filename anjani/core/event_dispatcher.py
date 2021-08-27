@@ -84,7 +84,7 @@ class EventDispatcher(MixinBase):
         event: str,
         *args: Any,
         wait: bool = True,
-        get_results: bool = False,
+        get_tasks: bool = False,
         **kwargs: Any
     ) -> Optional[Set[asyncio.Task]]:
         tasks = set()
@@ -95,7 +95,7 @@ class EventDispatcher(MixinBase):
             return None
 
         if not listeners:
-            return
+            return None
 
         match = None
         index = None
@@ -119,7 +119,7 @@ class EventDispatcher(MixinBase):
             tasks.add(task)
 
         if not tasks:
-            return
+            return None
 
         if match and index is not None:
             args[index].matches = match
@@ -127,5 +127,7 @@ class EventDispatcher(MixinBase):
         self.log.debug("Dispatching event '%s' with data %s", event, args)
         if wait:
             await asyncio.wait(tasks)
-            if get_results:
-                return tasks
+
+        if get_tasks:
+            return tasks
+        return None
