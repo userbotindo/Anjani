@@ -88,8 +88,11 @@ class Admins(plugin.Plugin):
                 (admin.user.first_name + " " + admin.user.last_name)
                  if admin.user.last_name
                  else admin.user.first_name
-            ) + f" **[{admin.status.capitalize()}]**" if admin.status == "creator" else ""
-            admins += f"• [{name}](tg://user?id={admin.user.id})\n"
+            )
+            if admin.status == "creator":
+                admins += f"• [{name}](tg://user?id={admin.user.id}) (**Creator**)\n"
+            else:
+                admins += f"• [{name}](tg://user?id={admin.user.id})\n"
 
         return admins
 
