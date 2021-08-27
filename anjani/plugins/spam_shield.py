@@ -21,7 +21,9 @@ import re
 from datetime import datetime
 from typing import Any, ClassVar, List, MutableMapping, Optional
 
+import numpy as np
 from aiohttp import ClientResponseError
+from numpy.typing import NDArray
 from pyrogram import filters
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import (
@@ -76,9 +78,13 @@ class SpamShield(plugin.Plugin):
                 await self._load_model()
 
     async def _load_model(self) -> None:
+        if not self.sp_url:
+            self.model = None
+            return
+
         self.log.info("Downloading spam prediction model!")
         async with self.bot.http.get(
-            self.sp_url,  # type: ignore
+            self.sp_url,
             headers={
                 "Authorization": f"token {self.sp_token}",
                 "Accept": "application/vnd.github.v3.raw",
@@ -104,9 +110,9 @@ class SpamShield(plugin.Plugin):
 
         return f"{user_id:#x}{chat_id:x}"
 
-    def _predict(self, text: str) -> List[List[float]]:
+    def _predict(self, text: str) -> NDArray[np.float64]:
         if not self.model:
-            return []
+            return np.array([])
 
         return self.model.predict_proba([text])
 
@@ -251,7 +257,7 @@ class SpamShield(plugin.Plugin):
             return
 
         response = await run_sync(self._predict, repr(text.strip()))
-        if not response:
+        if response.size == 0:
             return
 
         probability = response[0][1]
@@ -430,7 +436,7 @@ class SpamShield(plugin.Plugin):
 
         content_hash = self._build_hash(content)
         pred = await run_sync(self._predict, repr(content.strip()))
-        if not pred:
+        if pred.size == 0:
             return "Prediction failed"
 
         proba = pred[0][1]
@@ -472,14 +478,14 @@ class SpamShield(plugin.Plugin):
             return None
 
         content = replied.text or replied.caption
-        pred = self._predict(repr(content))[0]
-        if not pred:
+        pred = await util.run_sync(self._predict, repr(content))
+        if pred.size == 0:
             return "Prediction failed"
 
         return (
             "**Result**\n\n"
-            f"**Spam Prediction:** `{str(pred[1] * 10 ** 2)[0:7]}`\n"
-            f"**Ham Prediction:** `{str(pred[0] * 10 ** 2)[0:7]}`"
+            f"**Spam Prediction:** `{str(pred[0][1] * 10 ** 2)[0:7]}`\n"
+            f"**Ham Prediction:** `{str(pred[0][0] * 10 ** 2)[0:7]}`"
         )
 
     @command.filters(aliases=["spaminfo"])
