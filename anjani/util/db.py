@@ -32,7 +32,7 @@ from pymongo import (
     ReplaceOne
 )
 from pymongo.change_stream import ChangeStream
-from pymongo.client_session import ClientSession, SessionOptions
+from pymongo.client_session import ClientSession, SessionOptions, TransactionOptions
 from pymongo.collation import Collation
 from pymongo.collection import Collection
 from pymongo.command_cursor import CommandCursor as _CommandCursor
@@ -63,10 +63,18 @@ from pymongo.write_concern import DEFAULT_WRITE_CONCERN, WriteConcern
 
 from anjani import util
 
-PREFERENCE = Union[Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest]
-
 JavaScriptCode = TypeVar("JavaScriptCode", bound=str)
-Requests = Union[DeleteOne, InsertOne, ReplaceOne]
+ReadPreferences = TypeVar(
+    "ReadPreferences",
+    bound=Union[
+        Primary,
+        PrimaryPreferred,
+        Secondary,
+        SecondaryPreferred,
+        Nearest
+    ]
+)
+Request = TypeVar("Request", bound=Union[DeleteOne, InsertOne, ReplaceOne])
 Results = TypeVar("Results")
 
 
@@ -283,7 +291,7 @@ class AsyncClientSession(AsyncBase):
         *,
         read_concern: Optional[ReadConcern] = None,
         write_concern: Optional[WriteConcern] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         max_commit_time_ms: Optional[int] = None
     ) -> AsyncGenerator["AsyncClientSession", None]:
         await util.run_sync(
@@ -308,7 +316,7 @@ class AsyncClientSession(AsyncBase):
         *,
         read_concern: Optional[ReadConcern] = None,
         write_concern: Optional[WriteConcern] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         max_commit_time_ms: Optional[int] = None
     ) -> Results:
         # 99% Of this code from motor's lib
@@ -442,7 +450,7 @@ class AsyncClient(AsyncBaseProperty):
         name: Optional[str] = None,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncDB":
@@ -462,7 +470,7 @@ class AsyncClient(AsyncBaseProperty):
         default: Optional[str] = None,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncDB":
@@ -478,7 +486,8 @@ class AsyncClient(AsyncBaseProperty):
         )
 
     async def list_database_names(
-        self, session: Optional[AsyncClientSession] = None) -> List[str]:
+        self, session: Optional[AsyncClientSession] = None
+    ) -> List[str]:
         return await util.run_sync(self.dispatch.list_database_names,
                                    session=session.dispatch if session else session)
 
@@ -517,8 +526,8 @@ class AsyncClient(AsyncBaseProperty):
     async def start_session(
         self,
         *,
-        causal_consistency: Any = None,
-        default_transaction_options: Any = None,
+        causal_consistency: Optional[bool] = None,
+        default_transaction_options: Optional[TransactionOptions] = None,
         snapshot: bool = False,
     ) -> AsyncGenerator[AsyncClientSession, None]:
         session = await util.run_sync(
@@ -683,7 +692,7 @@ class AsyncDB(AsyncBaseProperty):
         value: int = 1,
         check: bool = True,
         allowable_errors: Optional[str] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         codec_options: Optional[CodecOptions] = None,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
@@ -707,7 +716,7 @@ class AsyncDB(AsyncBaseProperty):
         name: str,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None,
         session: Optional[AsyncClientSession] = None,
@@ -755,7 +764,7 @@ class AsyncDB(AsyncBaseProperty):
         name: str,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncCollection":
@@ -851,7 +860,7 @@ class AsyncDB(AsyncBaseProperty):
         self,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncDB":
@@ -930,7 +939,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     async def bulk_write(
         self,
-        request: List[Requests],
+        request: List[Request],
         *,
         ordered: bool = True,
         bypass_document_validation: bool = False,
@@ -1360,7 +1369,7 @@ class AsyncCollection(AsyncBaseProperty):
         self,
         *,
         codec_options: Optional[CodecOptions] = None,
-        read_preference: Optional[PREFERENCE] = None,
+        read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None
     ) -> "AsyncCollection":
