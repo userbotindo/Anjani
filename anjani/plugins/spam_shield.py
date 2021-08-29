@@ -99,9 +99,7 @@ class SpamShield(plugin.Plugin):
     def _build_hash(self, content: str) -> str:
         return hashlib.sha256(content.strip().encode()).hexdigest()
 
-    def _build_hex(
-        self, user_id: Optional[int] = None, chat_id: Optional[int] = None
-    ) -> str:
+    def _build_hex(self, user_id: Optional[int] = None, chat_id: Optional[int] = None) -> str:
         if not user_id:
             return ""
 
@@ -115,6 +113,12 @@ class SpamShield(plugin.Plugin):
             return np.array([])
 
         return self.model.predict_proba([text])
+
+    def _is_spam(self, text: str) -> Optional[bool]:
+        if not self.model:
+            return None
+
+        return True if self.model.predict([text])[0] == "spam" else False
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -256,7 +260,7 @@ class SpamShield(plugin.Plugin):
         if not self.model:
             return
 
-        response = await run_sync(self._predict, repr(text.strip()))
+        response = await run_sync(self._predict, text.strip())
         if response.size == 0:
             return
 
@@ -418,7 +422,7 @@ class SpamShield(plugin.Plugin):
         return ret
 
     @command.filters(staff_only)
-    async def cmd_spam(self, ctx: command.Context, *, content: str = "") -> Optional[str]:
+    async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
         """Manual spam detection by bot staff"""
         if not self.model:
             return "Prediction model isn't available"
@@ -429,13 +433,14 @@ class SpamShield(plugin.Plugin):
             chat_id = ctx.chat.id if ctx.chat.type != "private" else None
         else:
             user_id = chat_id = None
+            content = ctx.input
             if not content:
                 return "Give me a text or reply to a message / forwarded message"
 
         identifier = self._build_hex(user_id=user_id, chat_id=chat_id)
 
         content_hash = self._build_hash(content)
-        pred = await run_sync(self._predict, repr(content.strip()))
+        pred = await run_sync(self._predict, content.strip())
         if pred.size == 0:
             return "Prediction failed"
 
@@ -444,8 +449,8 @@ class SpamShield(plugin.Plugin):
         if identifier:
             text += f"**Identifier:** {identifier}\n"
 
-        text += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{content}"
-        await asyncio.gather(
+        text += f"**Message Hash:** `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
+        _, msg = await asyncio.gather(
             self.db_dump.update_one(
                 {"_id": content_hash},
                 {
@@ -463,6 +468,12 @@ class SpamShield(plugin.Plugin):
                 disable_web_page_preview=True,
             ),
         )
+        await ctx.respond(
+            "Message logged as spam!",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("View Message", url=msg.link)]]
+            ),
+        )
         return None
 
     @command.filters(staff_only, aliases=["prediction"])
@@ -478,12 +489,14 @@ class SpamShield(plugin.Plugin):
             return None
 
         content = replied.text or replied.caption
-        pred = await util.run_sync(self._predict, repr(content))
+        pred = await util.run_sync(self._predict, content)
+        is_spam = await util.run_sync(self._is_spam, content)
         if pred.size == 0:
             return "Prediction failed"
 
         return (
             "**Result**\n\n"
+            f"**Is Spam:** {is_spam}\n"
             f"**Spam Prediction:** `{str(pred[0][1] * 10 ** 2)[0:7]}`\n"
             f"**Ham Prediction:** `{str(pred[0][0] * 10 ** 2)[0:7]}`"
         )
