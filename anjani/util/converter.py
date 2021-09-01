@@ -111,7 +111,7 @@ class ChatConverter(Converter):
             if isinstance(chat, types.Chat):
                 return chat
 
-            raise BadResult(f"Invalid conversion types `{types(chat)}` result")
+            raise BadResult(f"Invalid conversion types `{type(chat)}` result")
         except PeerIdInvalid as err:
             raise ConversionError(self, err) from err
 
