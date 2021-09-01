@@ -79,18 +79,21 @@ class Users(plugin.Plugin):
         if not user or not chat:  # sanity check for service
             return
 
-        await asyncio.gather(
-            self.users_db.update_one(
-                {"_id": user.id},
-                {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}},
-                upsert=True,
-            ),
-            self.chats_db.update_one(
-                {"chat_id": chat.id},
-                {"$set": {"chat_name": chat.title}, "$addToSet": {"member": user.id}},
-                upsert=True,
-            ),
-        )
+        if chat == "private":
+            await self.users_db.update_one({"_id": user.id}, {"$set": {"username": user.username}})
+        else:
+            await asyncio.gather(
+                self.users_db.update_one(
+                    {"_id": user.id},
+                    {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}},
+                    upsert=True,
+                ),
+                self.chats_db.update_one(
+                    {"chat_id": chat.id},
+                    {"$set": {"chat_name": chat.title}, "$addToSet": {"member": user.id}},
+                    upsert=True,
+                ),
+            )
 
     async def cmd_info(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Fetch user info"""
