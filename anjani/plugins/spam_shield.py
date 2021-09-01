@@ -154,7 +154,7 @@ class SpamShield(plugin.Plugin):
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             data = await self.db_dump.find_one({"hash": content_hash})
             if not data:
-                self.log.warning("Can't find message data on database.")
+                await query.answer("The voting poll for this message has ended!")
                 return
             users_on_correct = data["spam"]
             users_on_incorrect = data["ham"]
