@@ -413,11 +413,7 @@ greetings-help: |
   Example: `/welcome noformat`
 bot-added: |
   Hi... Thanks for inviting me.
-  Currently, I'm still in development.
-  Some features haven't been added yet and will be added by time.
-  If you found something that not supposed to happen,
-  We would appreciate a report on our support group.
-  Thank You 😊
+  To see available commands type /help.
 default-welcome: Hey {first}, how are you?\nWelcome to {chatname}
 clean-serv-set: Turned {} service messages cleaning.
 welcome-set: Welcome turned {} on new member join.
