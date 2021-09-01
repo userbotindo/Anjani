@@ -139,78 +139,75 @@ class SpamShield(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
-    @listener.filters(filters.regex(r"spam_check_(t|f)\[(.*)\]"))
+    @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
         method = query.matches[0].group(1)
         message = query.message
         content_hash = re.compile(r"([A-Fa-f0-9]{64})").search(message.text)
-        author = str(query.from_user.id)
-        users_on_correct = users_on_incorrect = []
-        total_correct = total_incorrect = 0
+        author = query.from_user.id
 
         if not content_hash:
             self.log.warning("Can't get hash from 'MessageID: %d'", message.message_id)
             return
+        content_hash = content_hash[0]
 
-        # Correct button data
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
-            data = message.reply_markup.inline_keyboard[0][0].callback_data
-            if isinstance(data, bytes):
-                data = data.decode()
-
-            users_on_correct = re.findall("[0-9]+", data)
-
-        # Incorrect button data
-        if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
-            data = message.reply_markup.inline_keyboard[0][1].callback_data
-            if isinstance(data, bytes):
-                data = data.decode()
-
-            users_on_incorrect = re.findall("[0-9]+", data)
-
-        if method == "t":
-            # Check user in incorrect data
-            if author in users_on_incorrect:
-                users_on_incorrect.remove(author)
-            if author in users_on_correct:
-                users_on_correct.remove(author)
+            data = await self.db_dump.find_one({"hash": content_hash})
+            if not data:
+                self.log.warning("Can't find message data on database.")
+                return
+            users_on_correct = data["spam"]
+            users_on_incorrect = data["ham"]
+            if method == "t":
+                # Check user in incorrect data
+                if author in users_on_incorrect:
+                    await self.db_dump.update_one({"_id": content_hash}, {"$pull": {"ham": author}})
+                    users_on_incorrect.remove(author)
+                if author in users_on_correct:
+                    await self.db_dump.update_one(
+                        {"_id": content_hash}, {"$pull": {"spam": author}}
+                    )
+                    users_on_correct.remove(author)
+                else:
+                    await self.db_dump.update_one(
+                        {"_id": content_hash}, {"$addToSet": {"spam": author}}
+                    )
+                    users_on_correct.append(author)
+            elif method == "f":
+                # Check user in correct data
+                if author in users_on_correct:
+                    await self.db_dump.update_one(
+                        {"_id": content_hash}, {"$pull": {"spam": author}}
+                    )
+                    users_on_correct.remove(author)
+                if author in users_on_incorrect:
+                    await self.db_dump.update_one({"_id": content_hash}, {"$pull": {"ham": author}})
+                    users_on_incorrect.remove(author)
+                else:
+                    await self.db_dump.update_one(
+                        {"_id": content_hash}, {"$addToSet": {"ham": author}}
+                    )
+                    users_on_incorrect.append(author)
             else:
-                users_on_correct.append(author)
-        elif method == "f":
-            # Check user in correct data
-            if author in users_on_correct:
-                users_on_correct.remove(author)
-            if author in users_on_incorrect:
-                users_on_incorrect.remove(author)
-            else:
-                users_on_incorrect.append(author)
-        else:
-            raise ValueError("Unknown method")
+                raise ValueError("Unknown method")
 
         total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
-        _users_on_correct = f"[{', '.join(users_on_correct)}]"
-        _users_on_incorrect = f"[{', '.join(users_on_incorrect)}]"
         button = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         text=f"✅ Correct ({total_correct})",
-                        callback_data=f"spam_check_t{_users_on_correct}",
+                        callback_data=f"spam_check_t",
                     ),
                     InlineKeyboardButton(
                         text=f"❌ Incorrect ({total_incorrect})",
-                        callback_data=f"spam_check_f{_users_on_incorrect}",
+                        callback_data=f"spam_check_f",
                     ),
                 ]
             ]
         )
 
-        await asyncio.gather(
-            self.db_dump.update_one(
-                {"_id": content_hash[0]}, {"$set": {"spam": total_correct, "ham": total_incorrect}}
-            ),
-            query.edit_message_reply_markup(reply_markup=button),
-        )
+        await asyncio.gather(query.edit_message_reply_markup(reply_markup=button), query.answer())
 
     async def on_chat_action(self, message: Message) -> None:
         """Checker service for new member"""
@@ -291,20 +288,18 @@ class SpamShield(plugin.Plugin):
                         [
                             InlineKeyboardButton(
                                 text="✅ Correct (0)",
-                                callback_data=f"spam_check_t[]",
+                                callback_data=f"spam_check_t",
                             ),
                             InlineKeyboardButton(
                                 text="❌ Incorrect (0)",
-                                callback_data=f"spam_check_f[]",
+                                callback_data=f"spam_check_f",
                             ),
                         ]
                     ]
                 ),
             ),
-            self.db_dump.update_one(
-                {"_id": content_hash},
-                {"$set": {"text": text, "spam": 0, "ham": 0}},
-                upsert=True,
+            self.db_dump.insert_one(
+                {"_id": content_hash, "hash": content_hash, "text": text, "spam": [], "ham": []}
             ),
         )
 
