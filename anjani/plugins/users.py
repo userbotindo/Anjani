@@ -130,6 +130,12 @@ class Users(plugin.Plugin):
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
+            try:
+                text += f"\n**Reputation: **`{user_db['reputation']}`"
+            except KeyError:
+                # we modify a bit the database for spam prediction
+                # any unofficial forks would not have this key
+                pass
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:
