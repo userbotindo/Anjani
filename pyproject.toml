@@ -43,7 +43,7 @@ scikit-learn = {version = "0.24.2", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "^21.7b0"
-pre-commit = "^2.14.0"
+pre-commit = "^2.14.1"
 pylint = "^2.9.6"
 
 [tool.poetry.extras]
