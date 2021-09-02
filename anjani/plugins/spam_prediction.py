@@ -18,7 +18,7 @@ import asyncio
 import pickle
 import re
 from hashlib import sha256
-from typing import Any, ClassVar, List, Optional
+from typing import ClassVar, List, Optional
 
 from pyrogram import filters
 from pyrogram.errors import ChannelPrivate
@@ -31,31 +31,35 @@ from pyrogram.types import (
 )
 
 try:
-    import numpy as np
     from sklearn.pipeline import Pipeline
 
     _run_predict = True
 except ImportError:
+    from anjani.util.types import Pipeline
+
     _run_predict = False
-    Pipeline = Any
+
 
 from anjani import command, listener, plugin, util
 from anjani.filters import staff_only
 from anjani.util import run_sync
+from anjani.util.types import NDArray
 
 
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
+    disabled: ClassVar[bool] = not _run_predict
 
     db: util.db.AsyncCollection
-    model: Optional[Pipeline]
+    model: Pipeline
 
-    async def on_load(self):
+    async def on_load(self) -> None:
         token = self.bot.config.get("sp_token")
         url = self.bot.config.get("sp_url")
-        if not (_run_predict and token and url):
+        if not (token and url):
             self.bot.unload_plugin(self)
             return
+
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         await self.__load_model(token, url)
 
@@ -71,7 +75,7 @@ class SpamPrediction(plugin.Plugin):
             if res.status == 200:
                 self.model = await run_sync(pickle.loads, await res.read())
             else:
-                self.model = None
+                self.model = None  # type: ignore
                 self.log.warning("Failed to download prediction model!")
                 self.bot.unload_plugin(self)
 
@@ -87,29 +91,24 @@ class SpamPrediction(plugin.Plugin):
 
         return f"{user_id:#x}{chat_id:x}"
 
-    def _predict(self, text: str) -> List[List[Any]]:
-        if not self.model:
-            return np.array([])  # type: ignore
-
+    def _predict(self, text: str) -> NDArray[float]:
         return self.model.predict_proba([text])
 
     def _is_spam(self, text: str) -> Optional[bool]:
-        if not self.model:
-            return None
-
         return True if self.model.predict([text])[0] == "spam" else False
 
     @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
         method = query.matches[0].group(1)
         message = query.message
-        content_hash = re.compile(r"([A-Fa-f0-9]{64})").search(message.text)
+        content = re.compile(r"([A-Fa-f0-9]{64})").search(message.text)
         author = query.from_user.id
 
-        if not content_hash:
+        if not content:
             self.log.warning("Can't get hash from 'MessageID: %d'", message.message_id)
             return
-        content_hash = content_hash[0]
+
+        content_hash = content[0]
 
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             data = await self.db.find_one({"hash": content_hash})
@@ -180,11 +179,8 @@ class SpamPrediction(plugin.Plugin):
         self.bot.loop.create_task(self.spam_check(chat.id, message.from_user.id, text))
 
     async def spam_check(self, chat: int, user: int, text: str) -> None:
-        if not self.model:
-            return
-
         response = await run_sync(self._predict, text.strip())
-        if len(response) == 0:
+        if response.size == 0:
             return
 
         probability = response[0][1]
@@ -232,9 +228,6 @@ class SpamPrediction(plugin.Plugin):
     @command.filters(staff_only)
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
         """Manual spam detection by bot staff"""
-        if not self.model:
-            return "Prediction model isn't available"
-
         if ctx.msg.reply_to_message:
             content = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
             user_id = ctx.msg.reply_to_message.from_user.id
@@ -249,7 +242,7 @@ class SpamPrediction(plugin.Plugin):
 
         content_hash = self._build_hash(content)
         pred = await run_sync(self._predict, content.strip())
-        if len(pred) == 0:
+        if pred.size == 0:
             return "Prediction failed"
 
         proba = pred[0][1]
@@ -287,10 +280,6 @@ class SpamPrediction(plugin.Plugin):
     @command.filters(staff_only, aliases=["prediction"])
     async def cmd_predict(self, ctx: command.Context) -> Optional[str]:
         """Look a prediction for a replied message"""
-        if not self.model:
-            await ctx.respond("Prediction model isn't available", delete_after=5)
-            return None
-
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond("Reply to a message!", delete_after=5)
@@ -299,7 +288,7 @@ class SpamPrediction(plugin.Plugin):
         content = replied.text or replied.caption
         pred = await util.run_sync(self._predict, content)
         is_spam = await util.run_sync(self._is_spam, content)
-        if len(pred) == 0:
+        if pred.size == 0:
             return "Prediction failed"
 
         return (
