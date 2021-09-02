@@ -82,6 +82,7 @@ purges-help: |
   × /del: Hapus pesan yang dibalas.
   × /purge | /prune: Menghapus semua pesan hingga pesan dibalas.
 purge-done: "`{} pesan dibershikan dalam {} detik...`"
+purge-error: "__Tidak bisa membersihkan pesan lebih dari 2 hari__"
 #endregion
 #region restrictions
 restriction-button: Pembatasan
@@ -127,11 +128,7 @@ greetings-help: |
   × /cleanservice <on/off>: Bersihkan pesan layanan 'pengguna bergabung' secara otomatis.
 bot-added: |
   Hai... Terima kasih telah mengundang saya.
-  Saat ini saya masih dalam pengembangan.
-  Beberapa fitur belum ditambahkan dan akan ditambahkan seiring waktu.
-  Jika Anda menemukan sesuatu yang tidak seharusnya terjadi,
-  Kami sangat menghargai laporan tentang dukungan kelompok kami.
-  Terima kasih 😊
+  Unutuk melihat perintah yang tersedia silahkan ketik /help.
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Setting pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.

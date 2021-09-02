@@ -12,7 +12,7 @@ RUN apt-get -qq install -y --no-install-recommends \
     wget \
     curl \
     git \
-    gnupg2 
+    gnupg2
 
 # Copy directory and install dependencies
 COPY . /anjani
@@ -20,7 +20,7 @@ RUN pip install --upgrade pip
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-dev -E uvloop
+RUN poetry install --no-root --no-dev -E all
 
 # command to run on container start
-CMD ["python3","-m","anjani_bot"]
+CMD ["python3","-m","anjani"]
