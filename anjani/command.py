@@ -79,6 +79,7 @@ class Context:
 
     response: pyrogram.types.Message
     input: str
+    input_raw: str
     args: Sequence[str]
 
     segments: Sequence[str]
@@ -100,11 +101,13 @@ class Context:
         self.response = None  # type: ignore
         # Single argument string
         username = self.bot.user.username
-        i = self.cmd_len + 1 + len(username)
+        slices = self.cmd_len + 1 + len(username)
         if username in self.msg.text:
-            self.input = self.msg.text[i:]
+            self.input = self.msg.text[slices :]
+            self.input_raw = self.msg.text.markdown[slices :]
         else:
             self.input = self.msg.text[self.cmd_len :]
+            self.input_raw = self.msg.text.markdown[self.cmd_len :]
 
         self.segments = self.msg.command
         self.invoker = self.segments[0]
@@ -120,13 +123,6 @@ class Context:
     def _get_args(self) -> Sequence[str]:
         self.args = self.segments[1:]
         return self.args
-
-    @property
-    def input_raw(self) -> str:
-        username = self.bot.user.username
-        if username in self.msg.text:
-            return self.msg.text.markdown[self.cmd_len + 1 + len(username) :]
-        return self.msg.text.markdown[self.cmd_len :]
 
     async def delete(
         self, delay: Optional[float] = None, message: Optional[pyrogram.types.Message] = None
