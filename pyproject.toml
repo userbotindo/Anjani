@@ -64,7 +64,7 @@ target-version = ["py38"]
 #
 [tool.isort]
 profile = "black"
-known_third_party = ["aiohttp", "aiopath", "aiorun", "colorlog", "covid", "dotenv", "pymongo", "pyrogram", "spamwatch", "yaml"]
+known_third_party = ["aiohttp", "aiopath", "aiorun", "colorlog", "dotenv", "pymongo", "pyrogram", "yaml"]
 
 #
 # Pylint Config
