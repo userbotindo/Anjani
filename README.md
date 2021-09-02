@@ -17,21 +17,31 @@ Can be found on Telegram as [Anjani](https://t.me/dAnjani_bot).
 - [Telegram Bot Token](https://t.me/botfather)
 - [MongoDB Database](https://cloud.mongodb.com/).
 
-## Set Up
+# Set Up
 
-### Configuration
+## Configuration
 
 Set up your bot configuration variables by renaming `config.env_sample` to `config.env` and edit it with your values.
 
 Configuration must be done before running the bot, otherwise it will fail to run.
 
-### Dependencies
+## Dependencies
 
-Install all required dependencies by running
+### Install all required dependencies by running
 
-`pip3 install -r requirements.txt`.
+`python3 -m pip install -r requirements.txt`.
 
-### Run
+### Install the bot along with depencies by running
+
+`python3 -m pip install .`
+
+#### Error: Directory '.' is not installable. File 'setup.py' not found.
+
+This common error is caused by an outdated version of pip. This is a relatively new standard, so a newer version of pip is necessary to make it work.
+
+Upgrade to pip 19 to fix this issue: `pip3 install -U pip`
+
+## Run
 
 Once everything set up, start the client by running
 
