@@ -181,8 +181,8 @@ class TelegramBot(MixinBase):
             if name not in self._plugin_event_handlers:
 
                 async def event_handler(
-                    client: Client, event: EventType
-                ) -> None:  # skipcq: PYL-W0613
+                    client: Client, event: EventType  # skipcq: PYL-W0613
+                ) -> None:
                     await self.dispatch_event(name, event)
 
                 handler_info = (event_type(event_handler, filters), group)

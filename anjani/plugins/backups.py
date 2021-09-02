@@ -63,7 +63,7 @@ class Backups(plugin.Plugin):
 
         saved = ""
         del data["chat_id"]
-        for key in data.keys():
+        for key in data:
             saved += f"\n× `{key}`"
 
         date = datetime.now().strftime("%H:%M - %d/%b/%Y")

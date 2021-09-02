@@ -33,17 +33,19 @@ class Listener:
     priority: int
     filters: Optional[Filter]
 
-    def __init__(self,
-                 event: str,
-                 func: ListenerFunc,
-                 plugin: Any,
-                 prio: int,
-                 filters: Filter = None) -> None:
+    def __init__(
+        self,
+        event: str,
+        func: ListenerFunc,
+        plugin: Any,
+        prio: int,
+        filt: Filter = None
+    ) -> None:
         self.event = event
         self.func = func
         self.plugin = plugin
         self.priority = prio
-        self.filters = filters
+        self.filters = filt
 
     def __lt__(self, other: "Listener") -> bool:
         return self.priority < other.priority

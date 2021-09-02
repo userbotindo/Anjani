@@ -16,7 +16,7 @@ from typing import (
 from pyrogram import Client, types
 from pyrogram.errors import PeerIdInvalid
 
-from anjani.command import Context
+from anjani.command import CommandFunc, Context
 from anjani.error import BadArgument, BadBoolArgument, BadResult, ConversionError
 
 __all__ = [
@@ -53,13 +53,13 @@ class Converter:
         raise NotImplementedError("Derived classes need to implement __call__ method!")
 
 
-class EntityConverter(Converter):
+class EntityConverter(Converter):  # skipcq: PYL-W0223
     @staticmethod
     def parse_entities(msg: types.Message, arg: str) -> Optional[types.User]:
         for i in msg.entities:
-            if i.type == "text_mention":
-                if msg.text[i.offset : i.offset + i.length] == arg:
-                    return i.user
+            if (i.type == "text_mention" and
+                    msg.text[i.offset : i.offset + i.length] == arg):
+                return i.user
         return None
 
 
@@ -184,8 +184,8 @@ async def transform(ctx: Context, param: inspect.Parameter, arg: str) -> Any:
     if isinstance(converter, (FunctionType, partial)):
         if inspect.iscoroutinefunction(converter):
             return await converter(arg)
-        else:
-            return converter(arg)
+
+        return converter(arg)
 
     try:
         module = converter.__module__
@@ -210,14 +210,16 @@ async def transform(ctx: Context, param: inspect.Parameter, arg: str) -> Any:
 
 
 async def parse_arguments(
-    sig: inspect.Signature, ctx: Context, func: Callable[[Any], Any]
+    sig: inspect.Signature, ctx: Context, func: CommandFunc
 ) -> Tuple[List[Any], Dict[Any, Any]]:
     to_convert = ctx.args
     args = []  # type: List[Any]
     kwargs = {}  # type: Dict[Any, Any]
     idx = 0
     items = iter(sig.parameters.items())
-    next(items)  # skip Context argument
+
+    # skip Context argument
+    next(items)  # skipcq: PTC-W0063
     for name, param in items:
         if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
             try:
@@ -233,6 +235,6 @@ async def parse_arguments(
         elif param.kind == param.VAR_POSITIONAL:
             raise BadArgument(
                 "Unsuported Variable Positional Argument conversion "
-                f"Found '*{name}' on '{func.__name__ }'"
+                f"Found '*{name}' on '{func.name}'"
             )
     return args, kwargs

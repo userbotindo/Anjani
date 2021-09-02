@@ -323,7 +323,7 @@ class Federation(plugin.Plugin):
             await self.bot.client.send_message(
                 log,
                 "**New Fed Promotion**\n"
-                f"**Fed**:" + data["name"] + "\n"
+                "**Fed**: " + data["name"] + "\n"
                 f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
@@ -359,7 +359,7 @@ class Federation(plugin.Plugin):
             await self.bot.client.send_message(
                 log,
                 "**New Fed Demotion**\n"
-                f"**Fed**: " + data["name"] + "\n"
+                "**Fed**: " + data["name"] + "\n"
                 f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
@@ -570,10 +570,10 @@ class Federation(plugin.Plugin):
                         res["reason"],
                         res["time"].strftime("%Y %b %d %H:%M UTC"),
                     )
-                else:
-                    return await self.text(chat.id, "fed-stat-not-banned")
-            else:
-                return await self.text(chat.id, "fed-not-found")
+
+                return await self.text(chat.id, "fed-stat-not-banned")
+
+            return await self.text(chat.id, "fed-not-found")
 
         reply_msg = ctx.msg.reply_to_message
         if len(ctx.args) == 1:  # <user_id>

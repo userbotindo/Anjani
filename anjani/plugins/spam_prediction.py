@@ -79,10 +79,12 @@ class SpamPrediction(plugin.Plugin):
                 self.log.warning("Failed to download prediction model!")
                 self.bot.unload_plugin(self)
 
-    def _build_hash(self, content: str) -> str:
+    @staticmethod
+    def _build_hash(content: str) -> str:
         return sha256(content.strip().encode()).hexdigest()
 
-    def _build_hex(self, user_id: Optional[int] = None, chat_id: Optional[int] = None) -> str:
+    @staticmethod
+    def _build_hex(user_id: Optional[int] = None, chat_id: Optional[int] = None) -> str:
         if not user_id:
             return ""
 
@@ -95,7 +97,7 @@ class SpamPrediction(plugin.Plugin):
         return self.model.predict_proba([text])
 
     def _is_spam(self, text: str) -> Optional[bool]:
-        return True if self.model.predict([text])[0] == "spam" else False
+        return self.model.predict([text])[0] == "spam"
 
     @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
@@ -150,11 +152,11 @@ class SpamPrediction(plugin.Plugin):
                 [
                     InlineKeyboardButton(
                         text=f"✅ Correct ({total_correct})",
-                        callback_data=f"spam_check_t",
+                        callback_data="spam_check_t",
                     ),
                     InlineKeyboardButton(
                         text=f"❌ Incorrect ({total_incorrect})",
-                        callback_data=f"spam_check_f",
+                        callback_data="spam_check_f",
                     ),
                 ]
             ]
@@ -210,11 +212,11 @@ class SpamPrediction(plugin.Plugin):
                         [
                             InlineKeyboardButton(
                                 text="✅ Correct (0)",
-                                callback_data=f"spam_check_t",
+                                callback_data="spam_check_t",
                             ),
                             InlineKeyboardButton(
                                 text="❌ Incorrect (0)",
-                                callback_data=f"spam_check_f",
+                                callback_data="spam_check_f",
                             ),
                         ]
                     ]

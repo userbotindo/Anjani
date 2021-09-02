@@ -3,7 +3,7 @@ import inspect
 import logging
 import os.path
 from functools import wraps
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Protocol
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional
 
 from anjani import util
 
@@ -11,20 +11,7 @@ if TYPE_CHECKING:
     from .core import Anjani
 
 
-class Func(Protocol):
-    def __call__(
-        _self,
-        self: "Plugin",
-        chat_id: int,
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any
-    ) -> str:
-        ...
-
-
-def loop_safe(func: Func):  # Let default typing choose the return type
+def loop_safe(func: Callable[..., str]):  # Let default typing choose the return type
     """ Decorator for text methods """
 
     @wraps(func)

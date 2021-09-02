@@ -147,14 +147,14 @@ class CommandDispatcher(MixinBase):
                 cmd.plugin.log.warning(
                     f"Command '{cmd.name}' triggered a message edit with no changes; make sure there is only a single bot instance running"
                 )
-            except Exception as e:
+            except Exception as e:  # skipcq: PYL-W0703
                 constructor_invoke = CommandInvokeError(
                     f"raised from {type(e).__name__}: {str(e)}"
                 ).with_traceback(e.__traceback__)
                 cmd.plugin.log.error(f"Error in command '{cmd.name}'", exc_info=constructor_invoke)
 
             await self.dispatch_event("command", cmd, message)
-        except Exception as e:
+        except Exception as e:  # skipcq: PYL-W0703
             constructor_handler = CommandHandlerError(
                 f"raised from {type(e).__name__}: {str(e)}"
             ).with_traceback(e.__traceback__)

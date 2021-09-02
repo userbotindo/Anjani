@@ -124,10 +124,7 @@ class Reporting(plugin.Plugin):
             return None
 
         chat = ctx.chat
-        if chat.type == "private":
-            private = True
-        else:
-            private = False
+        private = chat.type == "private"
 
         if setting is None:
             if not ctx.input:

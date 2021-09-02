@@ -67,7 +67,9 @@ class ConversionError(BadArgument):
         origin (`Exception`): The original exception that was raised.
     """
 
-    def __init__(self, converter: "Converter" = None, err: Exception = None, *args: Any) -> None:
+    def __init__(  # skipcq: PYL-W1113
+        self, converter: "Converter" = None, err: Exception = None, *args: Any
+    ) -> None:
         if converter and err:
             self.converter = type(converter).__name__
             self.origin = err

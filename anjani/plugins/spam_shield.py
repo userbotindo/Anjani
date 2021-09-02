@@ -109,7 +109,7 @@ class SpamShield(plugin.Plugin):
         path = f"https://api.spamwat.ch/banlist/{user_id}"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with self.bot.http.get(path, headers=headers) as resp:
-            if resp.status == 200 or resp.status == 201:
+            if resp.status in {200, 201}:
                 return await resp.json()
             if resp.status == 204:
                 return {}
@@ -119,23 +119,23 @@ class SpamShield(plugin.Plugin):
                     resp.history,
                     message="Make sure your Spamwatch API token is corret",
                 )
-            elif resp.status == 403:
+            if resp.status == 403:
                 raise ClientResponseError(
                     resp.request_info,
                     resp.history,
                     message="Forbidden, your token permissions is not valid",
                 )
-            elif resp.status == 404:
+            if resp.status == 404:
                 return {}
-            elif resp.status == 429:
+            if resp.status == 429:
                 until = (await resp.json()).get("until", 0)
                 raise ClientResponseError(
                     resp.request_info,
                     resp.history,
                     message=f"Too many requests. Try again in {until - datetime.now()}",
                 )
-            else:
-                raise ClientResponseError(resp.request_info, resp.history)
+
+            raise ClientResponseError(resp.request_info, resp.history)
 
     async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""

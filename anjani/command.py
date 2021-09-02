@@ -27,23 +27,23 @@ CommandFunc = Union[
 Decorator = Callable[[CommandFunc], CommandFunc]
 
 
-def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
+def check_filters(_filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
     """ Recursively check filters to set :obj:`~Anjani` into :obj:`~CustomFilter` if needed """
-    if isinstance(filters, (AndFilter, OrFilter, InvertFilter)):
-        check_filters(filters.base, anjani)
-    if isinstance(filters, (AndFilter, OrFilter)):
-        check_filters(filters.other, anjani)
+    if isinstance(_filters, (AndFilter, OrFilter, InvertFilter)):
+        check_filters(_filters.base, anjani)
+    if isinstance(_filters, (AndFilter, OrFilter)):
+        check_filters(_filters.other, anjani)
 
     # Only accepts CustomFilter instance
-    if getattr(filters, "include_bot", False) and isinstance(filters, CustomFilter):
-        filters.anjani = anjani
+    if getattr(_filters, "include_bot", False) and isinstance(_filters, CustomFilter):
+        _filters.anjani = anjani
 
 
-def filters(filters: Optional[Filter] = None, *, aliases: Iterable[str] = []) -> Decorator:
+def filters(_filters: Optional[Filter] = None, *, aliases: Iterable[str] = []) -> Decorator:
     """Sets filters on a command function."""
 
     def filter_decorator(func: CommandFunc) -> CommandFunc:
-        setattr(func, "_cmd_filters", filters)
+        setattr(func, "_cmd_filters", _filters)
         setattr(func, "_cmd_aliases", aliases)
         return func
 
