@@ -18,11 +18,13 @@ import asyncio
 import re
 from typing import ClassVar, List, Optional
 
+import bson
+from aiopath import AsyncPath
 from pyrogram import filters
-from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
+from pyrogram.errors import MessageNotModified
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani import command, listener, plugin
+from anjani import command, listener, plugin, util
 
 
 class Main(plugin.Plugin):
@@ -30,10 +32,23 @@ class Main(plugin.Plugin):
     name: ClassVar[str] = "Main"
 
     bot_name: str
+    db: util.db.AsyncCollection
+
+    async def on_load(self) -> None:
+        self.db = self.bot.db.get_collection("SESSION")
 
     async def on_start(self, _: int) -> None:
         self.bot_name = (self.bot.user.first_name + self.bot.user.last_name if
                          self.bot.user.last_name else self.bot.user.first_name)
+
+    async def on_stop(self) -> None:
+        file = AsyncPath("anjani/anjani.session")
+        if not await file.exists():
+            return
+
+        await self.db.update_one(
+            {"_id": 2}, {"$set": {"session": bson.Binary(await file.read_bytes())}}, upsert=True
+        )
 
     async def help_builder(self, chat_id: int) -> List[List[InlineKeyboardButton]]:
         """Build the help button"""

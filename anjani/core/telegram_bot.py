@@ -4,6 +4,7 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt
+from aiopath import AsyncPath
 from pyrogram import Client
 from pyrogram.filters import Filter
 from pyrogram.handlers import CallbackQueryHandler, InlineQueryHandler, MessageHandler
@@ -62,9 +63,21 @@ class TelegramBot(MixinBase):
             self.log.warning("Owner id is not set! you won't be able to run staff command!")
             self.owner = 0
 
+        # Load session from database
+        db = self.db.get_collection("SESSION")
+        data = await db.find_one({"_id": 2})
+        file = AsyncPath("anjani/anjani.session")
+        if data and not await file.exists():
+            self.log.info("Loading session from database")
+            await file.write_bytes(data["session"])
+
         # Initialize Telegram client with gathered parameters
         self.client = Client(
-            session_name=":memory:", api_id=api_id, api_hash=api_hash, bot_token=bot_token
+            session_name="anjani",
+            api_id=api_id,
+            api_hash=api_hash,
+            bot_token=bot_token,
+            workdir="anjani"
         )
 
     async def start(self: "Anjani") -> None:
