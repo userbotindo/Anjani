@@ -85,7 +85,11 @@ class Users(plugin.Plugin):
             await asyncio.gather(
                 self.users_db.update_one(
                     {"_id": user.id},
-                    {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}},
+                    {
+                        "$set": {"username": user.username},
+                        "$setOnInsert": {"reputation": 0},
+                        "$addToSet": {"chats": chat.id},
+                    },
                     upsert=True,
                 ),
                 self.chats_db.update_one(
@@ -130,12 +134,7 @@ class Users(plugin.Plugin):
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
-            try:
-                text += f"\n**Reputation: **`{user_db['reputation']}`"
-            except KeyError:
-                # we modify a bit the database for spam prediction
-                # any unofficial forks would not have this key
-                pass
+            text += f"\n**Reputation: **`{user_db['reputation']}`"
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:

@@ -21,10 +21,9 @@ from hashlib import sha256
 from typing import ClassVar, List, Optional
 
 from pyrogram import filters
-from pyrogram.errors import ChannelPrivate
+from pyrogram.errors import PeerIdInvalid
 from pyrogram.types import (
     CallbackQuery,
-    Chat,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -61,6 +60,7 @@ class SpamPrediction(plugin.Plugin):
             return
 
         self.db = self.bot.db.get_collection("SPAM_DUMP")
+        self.user_db = self.bot.db.get_collection("USERS")
         await self.__load_model(token, url)
 
     async def __load_model(self, token: str, url: str) -> None:
@@ -84,14 +84,12 @@ class SpamPrediction(plugin.Plugin):
         return sha256(content.strip().encode()).hexdigest()
 
     @staticmethod
-    def _build_hex(user_id: Optional[int] = None, chat_id: Optional[int] = None) -> str:
-        if not user_id:
-            return ""
+    def _build_hex(user_id: Optional[int]) -> str:
+        return f"{user_id:#x}" if user_id else ""
 
-        if not chat_id or user_id == chat_id:
-            return f"{user_id:#x}"
-
-        return f"{user_id:#x}{chat_id:x}"
+    @staticmethod
+    def prob_to_string(value: float) -> str:
+        return str(value * 10 ** 2)[0:7]
 
     def _predict(self, text: str) -> NDArray[float]:
         return self.model.predict_proba([text])
@@ -147,22 +145,26 @@ class SpamPrediction(plugin.Plugin):
             return
 
         total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
-        button = InlineKeyboardMarkup(
+        button = [
             [
-                [
-                    InlineKeyboardButton(
-                        text=f"✅ Correct ({total_correct})",
-                        callback_data="spam_check_t",
-                    ),
-                    InlineKeyboardButton(
-                        text=f"❌ Incorrect ({total_incorrect})",
-                        callback_data="spam_check_f",
-                    ),
-                ]
-            ]
-        )
+                InlineKeyboardButton(
+                    text=f"✅ Correct ({total_correct})",
+                    callback_data="spam_check_t",
+                ),
+                InlineKeyboardButton(
+                    text=f"❌ Incorrect ({total_incorrect})",
+                    callback_data="spam_check_f",
+                ),
+            ],
+        ]
+        old_btn = query.message.reply_markup.inline_keyboard
+        if len(old_btn) > 1:
+            button.append([old_btn[1][0]])
 
-        await asyncio.gather(query.edit_message_reply_markup(reply_markup=button), query.answer())
+        await asyncio.gather(
+            query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(button)),
+            query.answer(),
+        )
 
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
@@ -178,9 +180,15 @@ class SpamPrediction(plugin.Plugin):
             return
 
         # Always check the spam probability but run it in the background
-        self.bot.loop.create_task(self.spam_check(chat.id, message.from_user.id, text))
+        self.bot.loop.create_task(self.spam_check(message, text))
 
-    async def spam_check(self, chat: int, user: int, text: str) -> None:
+    async def spam_check(self, message: Message, text: str) -> None:
+        if not self.model:
+            return
+
+        user = message.from_user.id
+        chat = message.chat.id
+
         response = await run_sync(self._predict, text.strip())
         if response.size == 0:
             return
@@ -192,55 +200,65 @@ class SpamPrediction(plugin.Plugin):
         content_hash = self._build_hash(text)
 
         data = await self.db.find_one({"_id": content_hash})
-        if data:
-            return
+        if not data:
+            await self.db.insert_one(
+                {"_id": content_hash, "hash": content_hash, "text": text, "spam": [], "ham": []}
+            )
+
+        identifier = self._build_hex(user)
+        proba_str = self.prob_to_string(probability)
 
         msg = (
             "#SPAM_PREDICTION\n\n"
-            f"**Prediction Result**: {str(probability * 10 ** 2)[0:7]}\n"
-            f"**Identifier:** `{self._build_hex(user_id=user, chat_id=chat)}`\n"
+            f"**Prediction Result**: {proba_str}\n"
+            f"**Identifier:** `{identifier}`\n"
             f"**Message Hash:** `{content_hash}`\n"
             f"\n**====== CONTENT =======**\n\n{text}"
         )
-        await asyncio.gather(
-            self.bot.client.send_message(
-                chat_id=-1001314588569,
-                text=msg,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="✅ Correct (0)",
-                                callback_data="spam_check_t",
-                            ),
-                            InlineKeyboardButton(
-                                text="❌ Incorrect (0)",
-                                callback_data="spam_check_f",
-                            ),
-                        ]
-                    ]
-                ),
-            ),
-            self.db.insert_one(
-                {"_id": content_hash, "hash": content_hash, "text": text, "spam": [], "ham": []}
-            ),
+
+        keyb = [
+            [
+                InlineKeyboardButton(text="✅ Correct (0)", callback_data=f"spam_check_t"),
+                InlineKeyboardButton(text="❌ Incorrect (0)", callback_data=f"spam_check_f"),
+            ]
+        ]
+
+        if message.chat.username:
+            keyb.append(
+                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")]
+            )
+
+        msg = await self.bot.client.send_message(
+            chat_id=-1001314588569,
+            text=msg,
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(keyb),
         )
+        if probability >= 0.9:
+            await message.reply_text(
+                f"❗️**SPAM ALERT**❗️\n"
+                f"**ID:** `{identifier}`\n"
+                f"**Message Hash:** `{content_hash}`\n"
+                f"**Spam Probability:** {proba_str}%",
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("View Message", url=msg.link)]]
+                ),
+            )
 
     @command.filters(staff_only)
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
         """Manual spam detection by bot staff"""
+        user_id = None
         if ctx.msg.reply_to_message:
             content = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
-            user_id = ctx.msg.reply_to_message.from_user.id
-            chat_id = ctx.chat.id if ctx.chat.type != "private" else None
+            if ctx.msg.reply_to_message.from_user.id != ctx.author.id:
+                user_id = ctx.msg.reply_to_message.from_user.id
         else:
-            user_id = chat_id = None
             content = ctx.input
             if not content:
                 return "Give me a text or reply to a message / forwarded message"
 
-        identifier = self._build_hex(user_id=user_id, chat_id=chat_id)
+        identifier = self._build_hex(user_id)
 
         content_hash = self._build_hash(content)
         pred = await run_sync(self._predict, content.strip())
@@ -248,7 +266,7 @@ class SpamPrediction(plugin.Plugin):
             return "Prediction failed"
 
         proba = pred[0][1]
-        text = f"#SPAM\n\n**CPU Prediction:** `{str(proba * 10 ** 2)[0:7]}`\n"
+        text = f"#SPAM\n\n**CPU Prediction:** `{self.prob_to_string(proba)}`\n"
         if identifier:
             text += f"**Identifier:** {identifier}\n"
 
@@ -296,46 +314,40 @@ class SpamPrediction(plugin.Plugin):
         return (
             "**Result**\n\n"
             f"**Is Spam:** {is_spam}\n"
-            f"**Spam Prediction:** `{str(pred[0][1] * 10 ** 2)[0:7]}`\n"
-            f"**Ham Prediction:** `{str(pred[0][0] * 10 ** 2)[0:7]}`"
+            f"**Spam Prediction:** `{self.prob_to_string(pred[0][1])}`\n"
+            f"**Ham Prediction:** `{self.prob_to_string(pred[0][0])}`"
         )
 
     @command.filters(aliases=["spaminfo"])
     async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> Optional[str]:
         """Get information fro spam identifier"""
-        res = re.search(r"(0x[\da-f]+)(-[\da-f]+)?", arg, re.IGNORECASE)
+        res = re.search(r"(0x[\da-f]+)", arg, re.IGNORECASE)
         if not res:
             return "Can't find any identifier"
 
-        user = await self.bot.client.get_users(int(res.group(1), 0))
-        if isinstance(user, List):
-            user = user[0]
+        user_id = int(res.group(0), 0)
+        user_data = await self.user_db.find_one({"_id": user_id})
+        if not user_data:
+            return "Looks like I don't have control over that user, or the ID isn't a valid one."
 
         text = (
-            f"**Private ID: **`{res.group(0)}`\n\n"
+            f"**Private ID:** `{res.group(0)}`\n\n"
             "**User Info**\n\n"
-            f"**User ID: **`{user.id}`\n"
-            f"**First Name: **{user.first_name}\n"
+            f"**User ID:** `{user_id}`\n"
         )
-        if user.last_name:
-            text += f"**Last Name: **{user.last_name}\n"
-        text += f"**Username: **@{user.username}\n"
-        text += f"**User Link: **{user.mention}\n"
+        try:
+            user = await self.bot.client.get_users(user_id)
+            if isinstance(user, List):
+                user = user[0]
+            text += f"**First Name:** {user.first_name}\n"
+            if user.last_name:
+                text += f"**Last Name:** {user.last_name}\n"
+            text += f"**Username:** @{user.username}\n"
+            text += f"**Reputation:** {user_data['reputation']}\n"
+            text += f"**User Link:** {user.mention}"
+        except PeerIdInvalid:
+            text += f"**Username:** @{user_data['username']}\n"
+            text += f"**Reputation:** {user_data['reputation']}\n"
+            text += f"**User Link:** tg://user?id={user_id}"
 
-        if res.group(2):
-            try:
-                chat = await self.bot.client.get_chat(int(res.group(2), 16))
-                if not isinstance(chat, Chat):
-                    return "Invalid Chat type"
-
-                text += "\n**Chat Info**\n\n"
-                text += f"**Chat ID:** `{chat.id}`\n"
-                text += f"**Chat Type :** {chat.type}\n"
-                text += f"**Chat Title :** {chat.title}\n"
-                if chat.username:
-                    text += f"**Chat Username :** @{chat.username}\n"
-            except ChannelPrivate:
-                pass
-
-        await ctx.respond(text)
-        return None
+        await ctx.respond(text, parse_mode="md")
