@@ -3,6 +3,7 @@ aiorun
 aiopath
 colorlog
 dnspython
+meval
 pymongo
 pyrogram
 python-dotenv
