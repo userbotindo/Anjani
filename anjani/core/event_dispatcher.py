@@ -86,7 +86,7 @@ class EventDispatcher(MixinBase):
         wait: bool = True,
         get_tasks: bool = False,
         **kwargs: Any
-    ) -> Optional[Set[asyncio.Task]]:
+    ) -> Optional[Set[asyncio.Task[Any]]]:
         tasks = set()
 
         try:
