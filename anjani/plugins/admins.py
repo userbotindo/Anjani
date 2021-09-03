@@ -124,7 +124,7 @@ class Admins(plugin.Plugin):
         chat = ctx.msg.chat
 
         if not user:
-            if ctx.arg or not ctx.msg.reply_to_message:
+            if ctx.args or not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "err-peer-invalid")
             user = ctx.msg.reply_to_message.from_user
         if user.id == ctx.author.id and ctx.args:
@@ -162,7 +162,7 @@ class Admins(plugin.Plugin):
         chat = ctx.msg.chat
 
         if not user:
-            if ctx.arg or not ctx.msg.reply_to_message:
+            if ctx.args or not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "err-peer-invalid")
             user = ctx.msg.reply_to_message.from_user
         if user.id == ctx.author.id and ctx.args:
