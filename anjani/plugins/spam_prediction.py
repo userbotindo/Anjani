@@ -187,7 +187,6 @@ class SpamPrediction(plugin.Plugin):
             return
 
         user = message.from_user.id
-        chat = message.chat.id
 
         response = await run_sync(self._predict, text.strip())
         if response.size == 0:
@@ -218,8 +217,8 @@ class SpamPrediction(plugin.Plugin):
 
         keyb = [
             [
-                InlineKeyboardButton(text="✅ Correct (0)", callback_data=f"spam_check_t"),
-                InlineKeyboardButton(text="❌ Incorrect (0)", callback_data=f"spam_check_f"),
+                InlineKeyboardButton(text="✅ Correct (0)", callback_data="spam_check_t"),
+                InlineKeyboardButton(text="❌ Incorrect (0)", callback_data="spam_check_f"),
             ]
         ]
 
@@ -244,6 +243,15 @@ class SpamPrediction(plugin.Plugin):
                     [[InlineKeyboardButton("View Message", url=msg.link)]]
                 ),
             )
+
+    @command.filters(staff_only)
+    async def cmd_update_model(self, _):
+        token = self.bot.config.get("sp_token")
+        url = self.bot.config.get("sp_url")
+        if not (token and url):
+            return "No token provided!"
+        await self.__load_model(token, url)
+        return "Done"
 
     @command.filters(staff_only)
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
