@@ -358,4 +358,4 @@ class SpamPrediction(plugin.Plugin):
             text += f"**Reputation:** {user_data['reputation']}\n"
             text += f"**User Link:** tg://user?id={user_id}"
 
-        await ctx.respond(text, parse_mode="md")
+        await ctx.respond(text)
