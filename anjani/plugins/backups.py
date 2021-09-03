@@ -81,8 +81,9 @@ class Backups(plugin.Plugin):
     async def cmd_restore(self, ctx: command.Context) -> Optional[str]:
         """Restore data to a file"""
         chat = ctx.msg.chat
+        reply_msg = ctx.msg.reply_to_message
 
-        if not (ctx.msg.reply_to_message or ctx.msg.reply_to_message.document):
+        if not reply_msg or (reply_msg and not reply_msg.document):
             return await self.text(chat.id, "no-backup-file")
 
         await ctx.respond(await self.text(chat.id, "restore-progress"))
