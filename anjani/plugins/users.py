@@ -33,6 +33,14 @@ class Users(plugin.Plugin):
     async def on_load(self) -> None:
         self.chats_db = self.bot.db.get_collection("CHATS")
         self.users_db = self.bot.db.get_collection("USERS")
+        self.predict_loaded = False
+
+        async def c_pred():
+            await asyncio.sleep(2)  # wait for model download
+            if "SpamPredict" in self.bot.plugins.keys():
+                self.predict_loaded = True
+
+        self.bot.loop.create_task(c_pred())
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -82,14 +90,21 @@ class Users(plugin.Plugin):
         if chat == "private":
             await self.users_db.update_one({"_id": user.id}, {"$set": {"username": user.username}})
         else:
+            if self.predict_loaded:
+                update = {
+                    "$set": {"username": user.username},
+                    "$setOnInsert": {"reputation": 0},
+                    "$addToSet": {"chats": chat.id},
+                }
+            else:
+                update = {
+                    "$set": {"username": user.username},
+                    "$addToSet": {"chats": chat.id},
+                }
             await asyncio.gather(
                 self.users_db.update_one(
                     {"_id": user.id},
-                    {
-                        "$set": {"username": user.username},
-                        "$setOnInsert": {"reputation": 0},
-                        "$addToSet": {"chats": chat.id},
-                    },
+                    update,
                     upsert=True,
                 ),
                 self.chats_db.update_one(
@@ -134,7 +149,8 @@ class Users(plugin.Plugin):
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
-            text += f"\n**Reputation: **`{user_db['reputation']}`"
+            if self.predict_loaded:
+                text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:
