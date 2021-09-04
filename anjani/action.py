@@ -2,36 +2,58 @@ import asyncio
 from types import TracebackType
 from typing import TYPE_CHECKING, Optional, Type
 
+from pyrogram.types import Chat
+
 if TYPE_CHECKING:
     from anjani.command import Context
+    from anjani.core import Anjani
 
 
 class BotAction:
-    context: "Context"
-    action: str
+
+    # Instances variable
+    __running: bool
+    __current: str
+    __chat: Chat
+
+    bot: "Anjani"
     loop: asyncio.AbstractEventLoop
 
-    def __init__(self, ctx: "Context", action: str = "typing") -> None:
-        self.context = ctx
-        self.action = action
+    # Instance variable to be filled later
+    __task: asyncio.Task[None]
 
+    def __init__(self, ctx: "Context", action: str = "typing") -> None:
+        self.__running = True
+        self.__current = action
+        self.__chat = ctx.chat
+
+        self.bot = ctx.bot
         self.loop = ctx.bot.loop
 
-    async def do_action(self) -> None:
-        chat = self.context.chat
-        send = self.context.bot.client.send_chat_action
+    async def __cancel(self) -> None:
+        await self.bot.client.send_chat_action(self.__chat.id, "cancel")
 
-        while True:
-            await send(chat.id, self.action)
+    async def __start(self) -> None:
+        while self.__running:
+            await self.bot.client.send_chat_action(self.__chat.id, self.__current)
             await asyncio.sleep(1)
 
-    async def cancel(self) -> None:
-        chat = self.context.chat
-        send = self.context.bot.client.send_chat_action
-        await send(chat.id, "cancel")
+    async def __stop(self) -> None:
+        self.__running = False
+        await self.__cancel()
+
+        if not self.__task.done():
+            self.__task.cancel()
+
+    async def switch(self, action: str) -> None:
+        """Switch current BotAction"""
+        # avoid race condition with current action
+        async with asyncio.Lock():
+            await self.__cancel()
+            self.__current = action
 
     def __enter__(self) -> "BotAction":
-        self.task = self.loop.create_task(self.do_action())
+        self.__task = self.loop.create_task(self.__start())
         return self
 
     def __exit__(
@@ -40,8 +62,7 @@ class BotAction:
         exc: Optional[Exception],
         tb: Optional[TracebackType]
     ) -> None:
-        self.task.cancel()
-        self.loop.create_task(self.cancel())
+        self.loop.create_task(self.__stop())
 
     async def __aenter__(self) -> "BotAction":
         return self.__enter__()
@@ -52,5 +73,4 @@ class BotAction:
         exc: Optional[Exception],
         tb: Optional[TracebackType]
     ) -> None:
-        self.task.cancel()
-        await self.cancel()
+        await self.__stop()
