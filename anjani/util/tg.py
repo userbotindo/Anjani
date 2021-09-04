@@ -120,6 +120,12 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
         elif msg.reply_to_message.video:
             content = msg.reply_to_message.video.file_id
             types = Types.VIDEO
+        elif msg.reply_to_message.video_note:
+            content = msg.reply_to_message.video_note.file_id
+            types = Types.VIDEO_NOTE
+        elif msg.reply_to_message.animation:
+            content = msg.reply_to_message.animation.file_id
+            types = Types.ANIMATION
         else:
             raise ValueError("Can't get message information")
     else:
