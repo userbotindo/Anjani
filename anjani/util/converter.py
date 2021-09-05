@@ -33,19 +33,14 @@ class Converter:
 
     Class that derived this base converter need to have the `__call__`
     to do the conversion. This method should also be a `coroutine`.
-
-    Attribute:
-        skip (`bool`):
-            if the value is True. The converter will not consume any argument from the message text.
-            Hence the argument can be used for the next converter.
     """
 
     async def __call__(self, ctx: Context, arg: str) -> None:  # skipcq: PYL-W0613
-        """The base method that should be overided and will be called on conversion.
+        """The base method that should be overrided and will be called on conversion.
 
         Parameters:
-            ctx (`~Context`):
-                The invocation context that the client are currently used in.
+            ctx (`~Context`): The command invocation context that the argument used in.
+            arg (`str`): The argument that is being converted.
 
         Raises:
             ConversionError: The converter failed to convert an argument.
@@ -57,8 +52,7 @@ class EntityConverter(Converter):  # skipcq: PYL-W0223
     @staticmethod
     def parse_entities(msg: types.Message, arg: str) -> Optional[types.User]:
         for i in msg.entities:
-            if (i.type == "text_mention" and
-                    msg.text[i.offset : i.offset + i.length] == arg):
+            if i.type == "text_mention" and msg.text[i.offset : i.offset + i.length] == arg:
                 return i.user
         return None
 
