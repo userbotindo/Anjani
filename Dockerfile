@@ -1,9 +1,6 @@
 # set base image (host OS)
 FROM python:3.9-slim-buster
 
-# System Environment
-ENV PATH="${PATH}:/root/.poetry/bin"
-
 # set the working directory in the container
 WORKDIR /anjani/
 
@@ -17,7 +14,10 @@ RUN apt-get -qq install -y --no-install-recommends \
 # Copy directory and install dependencies
 COPY . /anjani
 RUN pip install --upgrade pip
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+
+# Add poetry environment
+ENV PATH="${PATH}:/root/.local/bin:$PATH"
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-dev -E all
