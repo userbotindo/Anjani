@@ -62,6 +62,7 @@ class Plugin:
         **kwargs: Any
     ) -> str:
         """Parse the string with user language setting.
+
         Parameters:
             chat_id (`int`):
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
@@ -94,13 +95,13 @@ class Plugin:
                         "__Please forward this to__ @userbotindo"
                     )
 
-                self.bot.log.warning(f"NO LANGUAGE STRING FOR '{text_name}' in '{lang_code}'")
+                self.bot.log.warning("NO LANGUAGE STRING FOR '%s' in '%s'", text_name, lang_code)
                 return get_text("en")
             else:
                 try:
                     return text if noformat else text.format(*args, **kwargs)
                 except (IndexError, KeyError):
-                    self.bot.log.error(f"Failed to format '{text_name}'' string on '{lang_code}'")
+                    self.bot.log.error("Failed to format '%s' string on '%s'", text_name, lang_code)
                     raise
 
         data = self.bot.chats_languages.get(chat_id, "en")

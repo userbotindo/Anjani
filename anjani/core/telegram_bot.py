@@ -146,21 +146,17 @@ class TelegramBot(MixinBase):
             for v, k in signal.__dict__.items()
             if v.startswith("SIG") and not v.startswith("SIG_")
         }
-        disconnect = False
 
         def signal_handler(signum):
-            nonlocal disconnect
-
             print(flush=True)  # Separate signal and next log
             self.log.info(f"Stop signal received ('{signals[signum]}').")
-            disconnect = True
             self.__running = False
 
         for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
             self.loop.add_signal_handler(signame, partial(signal_handler, signame))
 
         self.__running = True
-        while not disconnect:
+        while self.__running:
             await asyncio.sleep(1)
 
     async def run(self: "Anjani") -> None:

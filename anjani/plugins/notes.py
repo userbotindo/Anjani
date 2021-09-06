@@ -30,10 +30,23 @@ class Notes(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
+    ACTION: MutableMapping[int, str]
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self):
         self.db = self.bot.db.get_collection("NOTES")
+        self.ACTION = {
+            Types.TEXT.value: "typing",
+            Types.BUTTON_TEXT.value: "typing",
+            Types.DOCUMENT.value: "upload_document",
+            Types.PHOTO.value: "upload_photo",
+            Types.VIDEO.value: "upload_video",
+            Types.STICKER.value: "cancel",  # "choose_sticker"
+            Types.AUDIO.value: "upload_audio",
+            Types.VOICE.value: "upload_audio",
+            Types.VIDEO_NOTE.value: "upload_video_note",
+            Types.ANIMATION.value: "upload_video", 
+        }
         self.SEND = {
             Types.TEXT.value: self.bot.client.send_message,
             Types.BUTTON_TEXT.value: self.bot.client.send_message,
@@ -107,6 +120,7 @@ class Notes(plugin.Plugin):
                 keyb = button
 
         types: int = note["type"]
+        await self.bot.client.send_chat_action(chat.id, self.ACTION[types])
         if types in {Types.TEXT, Types.BUTTON_TEXT}:
             await self.SEND[types](
                 chat.id,
@@ -116,7 +130,7 @@ class Notes(plugin.Plugin):
                 reply_markup=keyb,
                 parse_mode=parse_mode,
             )
-        elif types == Types.STICKER:
+        elif types in {Types.STICKER, Types.ANIMATION}:
             await self.SEND[types](
                 chat.id,
                 note["content"],
@@ -131,6 +145,7 @@ class Notes(plugin.Plugin):
                 reply_markup=keyb,
                 parse_mode=parse_mode,
             )
+        await self.bot.client.send_chat_action(chat.id, "cancel")
 
     async def cmd_get(self, ctx: command.Context) -> None:
         """Notes command trigger."""
@@ -158,7 +173,7 @@ class Notes(plugin.Plugin):
                     "$set": {
                         "chat_name": chat.title,
                         f"notes.{name}": {
-                            "text": text if text else f"__{name}__",
+                            "text": text if text else "",
                             "type": types,
                             "content": content,
                             "button": buttons,

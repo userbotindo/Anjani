@@ -245,11 +245,12 @@ class SpamPrediction(plugin.Plugin):
             )
 
     @command.filters(staff_only)
-    async def cmd_update_model(self, _):
+    async def cmd_update_model(self, _: command.Context) -> str:
         token = self.bot.config.get("sp_token")
         url = self.bot.config.get("sp_url")
         if not (token and url):
             return "No token provided!"
+
         await self.__load_model(token, url)
         return "Done"
 
@@ -358,4 +359,4 @@ class SpamPrediction(plugin.Plugin):
             text += f"**Reputation:** {user_data['reputation']}\n"
             text += f"**User Link:** tg://user?id={user_id}"
 
-        await ctx.respond(text)
+        return text

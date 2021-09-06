@@ -29,6 +29,7 @@ class Users(plugin.Plugin):
     chats_db: util.db.AsyncCollection
     users_db: util.db.AsyncCollection
     lock: asyncio.locks.Lock
+    predict_loaded: bool
 
     async def on_load(self) -> None:
         self.chats_db = self.bot.db.get_collection("CHATS")
@@ -37,7 +38,7 @@ class Users(plugin.Plugin):
 
         async def c_pred():
             await asyncio.sleep(2)  # wait for model download
-            if "SpamPredict" in self.bot.plugins.keys():
+            if "SpamPredict" in self.bot.plugins:
                 self.predict_loaded = True
 
         self.bot.loop.create_task(c_pred())
@@ -47,15 +48,9 @@ class Users(plugin.Plugin):
         old_chat = message.migrate_from_chat_id
 
         await asyncio.gather(
-            self.users_db.update_many(
-                {"chats": old_chat},
-                {"$push": {"chats": new_chat}},
-            ),
-            self.users_db.update_many(
-                {"chats": old_chat},
-                {"$pull": {"chats": old_chat}},
-            ),
-            self.chats_db.update_one({"chat_id": old_chat}, {"$set": {"chat_id": new_chat}}),
+            self.users_db.update_many({"chats": old_chat}, {"$push": {"chats": new_chat}}),
+            self.users_db.update_many({"chats": old_chat}, {"$pull": {"chats": old_chat}}),
+            self.chats_db.update_one({"chat_id": old_chat}, {"$set": {"chat_id": new_chat}})
         )
 
     async def on_chat_action(self, message: Message) -> None:
@@ -68,10 +63,7 @@ class Users(plugin.Plugin):
         if user.id == self.bot.uid:
             await asyncio.gather(
                 self.chats_db.delete_one({"chat_id": chat.id}),
-                self.users_db.update_many(
-                    {"chats": chat.id},
-                    {"$pull": {"chats": chat.id}},
-                ),
+                self.users_db.update_many({"chats": chat.id}, {"$pull": {"chats": chat.id}})
             )
         else:
             await asyncio.gather(
@@ -97,16 +89,10 @@ class Users(plugin.Plugin):
                     "$addToSet": {"chats": chat.id},
                 }
             else:
-                update = {
-                    "$set": {"username": user.username},
-                    "$addToSet": {"chats": chat.id},
-                }
+                update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
+
             await asyncio.gather(
-                self.users_db.update_one(
-                    {"_id": user.id},
-                    update,
-                    upsert=True,
-                ),
+                self.users_db.update_one({"_id": user.id}, update, upsert=True),
                 self.chats_db.update_one(
                     {"chat_id": chat.id},
                     {"$set": {"chat_name": chat.title}, "$addToSet": {"member": user.id}},
@@ -147,6 +133,7 @@ class Users(plugin.Plugin):
                 text += "\nThis person is one of my **Devs**!\nNearly as powerfull as my owner.\n"
         elif user.is_self:
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
+
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
             if self.predict_loaded:
@@ -154,10 +141,11 @@ class Users(plugin.Plugin):
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:
-            file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
-            await self.bot.client.send_photo(chat.id, str(file), text)
-            await file.unlink()
-        else:
-            await ctx.respond(text)
+            async with ctx.action("upload_photo"):
+                file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
+                await self.bot.client.send_photo(chat.id, str(file), text)
+                await file.unlink()
 
-        return None
+            return None
+
+        return text
