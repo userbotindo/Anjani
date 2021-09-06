@@ -122,9 +122,12 @@ class Notes(plugin.Plugin):
         types: int = note["type"]
         await self.bot.client.send_chat_action(chat.id, self.ACTION[types])
         if types in {Types.TEXT, Types.BUTTON_TEXT}:
+            text = note["text"] + btn_text
+            if not text or text == "\n\n":
+                text = name
             await self.SEND[types](
                 chat.id,
-                note["text"] + btn_text,
+                text,
                 disable_web_page_preview=True,
                 reply_to_message_id=reply_to,
                 reply_markup=keyb,
@@ -173,7 +176,7 @@ class Notes(plugin.Plugin):
                     "$set": {
                         "chat_name": chat.title,
                         f"notes.{name}": {
-                            "text": text if text else "",
+                            "text": text,
                             "type": types,
                             "content": content,
                             "button": buttons,
