@@ -345,7 +345,7 @@ class SpamPrediction(plugin.Plugin):
             f"**User ID:** `{user_id}`\n"
         )
         try:
-            user = await self.bot.client.get_users(user_id)
+            user = await ctx.bot.client.get_users(user_id)
             if isinstance(user, List):
                 user = user[0]
             text += f"**First Name:** {user.first_name}\n"
