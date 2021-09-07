@@ -159,7 +159,7 @@ class SpamPrediction(plugin.Plugin):
         ]
         old_btn = query.message.reply_markup.inline_keyboard
         if len(old_btn) > 1:
-            button.append([old_btn[1][0]])
+            button.append(old_btn[1])
 
         await asyncio.gather(
             query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(button)),
@@ -226,6 +226,14 @@ class SpamPrediction(plugin.Plugin):
             keyb.append(
                 [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")]
             )
+        if message.forward_from_chat and message.forward_from_chat.username:
+            raw_btn = InlineKeyboardButton(
+                text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+            )
+            if message.chat.username:
+                keyb[1].append(raw_btn)
+            else:
+                keyb.append([raw_btn])
 
         msg = await self.bot.client.send_message(
             chat_id=-1001314588569,
