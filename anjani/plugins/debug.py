@@ -103,9 +103,7 @@ class Debug(plugin.Plugin):
                 first_snip_idx = -1
                 tb = traceback.extract_tb(e.__traceback__)
                 for i, frame in enumerate(tb):
-                    if frame.filename == "<string>" or frame.filename.endswith(
-                        "ast.py"
-                    ):
+                    if frame.filename == "<string>" or frame.filename.endswith("ast.py"):
                         first_snip_idx = i
                         break
 
@@ -118,32 +116,33 @@ class Debug(plugin.Plugin):
                 formatted_tb = util.error.format_exception(e, tb=stripped_tb)
                 return "⚠️ Error executing snippet\n\n", formatted_tb
 
-        before = util.time.usec()
-        prefix, result = await _eval()
-        after = util.time.usec()
+        async with ctx.action():
+            before = util.time.usec()
+            prefix, result = await _eval()
+            after = util.time.usec()
 
-        # Always write result if no output has been collected thus far
-        if not out_buf.getvalue() or result is not None:
-            print(result, file=out_buf)
+            # Always write result if no output has been collected thus far
+            if not out_buf.getvalue() or result is not None:
+                print(result, file=out_buf)
 
-        el_us = after - before
-        el_str = util.time.format_duration_us(el_us)
+            el_us = after - before
+            el_str = util.time.format_duration_us(el_us)
 
-        out = out_buf.getvalue()
-        # Strip only ONE final newline to compensate for our message formatting
-        if out.endswith("\n"):
-            out = out[:-1]
+            out = out_buf.getvalue()
+            # Strip only ONE final newline to compensate for our message formatting
+            if out.endswith("\n"):
+                out = out[:-1]
 
-        if len(out) > 4096:
-            with io.BytesIO(str.encode(out)) as out_file:
-                out_file.name = "eval.text"
-                await ctx.msg.reply_document(
-                    document=out_file, caption=code, disable_notification=True
-                )
+            if len(out) > 4096:
+                with io.BytesIO(str.encode(out)) as out_file:
+                    out_file.name = "eval.text"
+                    await ctx.msg.reply_document(
+                        document=out_file, caption=code, disable_notification=True
+                    )
 
-            return None
+                return None
 
-        return f"""{prefix}**In:**
+            return f"""{prefix}**In:**
 ```{code}```
 
 **Out:**
