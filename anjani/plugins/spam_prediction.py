@@ -314,9 +314,17 @@ class SpamPrediction(plugin.Plugin):
         )
         return None
 
-    @command.filters(staff_only, aliases=["prediction"])
+    @command.filters(aliases=["prediction"])
     async def cmd_predict(self, ctx: command.Context) -> Optional[str]:
         """Look a prediction for a replied message"""
+        user = await self.user_db.find_one({"_id": ctx.author.id})
+        if not user or user["reputation"] < 100:
+            if not user:
+                return None
+            return (
+                "Your reputation point is not enough to use this command!"
+                f"\n**Needed point:** 100\n**Current point:** {user['reputation']}"
+            )
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond("Reply to a message!", delete_after=5)
@@ -347,11 +355,7 @@ class SpamPrediction(plugin.Plugin):
         if not user_data:
             return "Looks like I don't have control over that user, or the ID isn't a valid one."
 
-        text = (
-            f"**Private ID:** `{res.group(0)}`\n\n"
-            "**User Info**\n\n"
-            f"**User ID:** `{user_id}`\n"
-        )
+        text = f"**Private ID:** `{res.group(0)}`\n\n**User ID:** `{user_id}`\n"
         try:
             user = await ctx.bot.client.get_users(user_id)
             if isinstance(user, List):
@@ -359,7 +363,7 @@ class SpamPrediction(plugin.Plugin):
             text += f"**First Name:** {user.first_name}\n"
             if user.last_name:
                 text += f"**Last Name:** {user.last_name}\n"
-            text += f"**Username:** @{user.username}\n"
+            text += f"**Username:** @{user.username}\n" if user.username else ""
             text += f"**Reputation:** {user_data['reputation']}\n"
             text += f"**User Link:** {user.mention}"
         except PeerIdInvalid:
