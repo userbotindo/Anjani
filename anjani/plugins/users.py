@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from hashlib import md5
 from typing import ClassVar, Optional
 
 from aiopath import AsyncPath
@@ -50,7 +51,7 @@ class Users(plugin.Plugin):
         await asyncio.gather(
             self.users_db.update_many({"chats": old_chat}, {"$push": {"chats": new_chat}}),
             self.users_db.update_many({"chats": old_chat}, {"$pull": {"chats": old_chat}}),
-            self.chats_db.update_one({"chat_id": old_chat}, {"$set": {"chat_id": new_chat}})
+            self.chats_db.update_one({"chat_id": old_chat}, {"$set": {"chat_id": new_chat}}),
         )
 
     async def on_chat_action(self, message: Message) -> None:
@@ -63,7 +64,7 @@ class Users(plugin.Plugin):
         if user.id == self.bot.uid:
             await asyncio.gather(
                 self.chats_db.delete_one({"chat_id": chat.id}),
-                self.users_db.update_many({"chats": chat.id}, {"$pull": {"chats": chat.id}})
+                self.users_db.update_many({"chats": chat.id}, {"$pull": {"chats": chat.id}}),
             )
         else:
             await asyncio.gather(
@@ -83,8 +84,14 @@ class Users(plugin.Plugin):
             await self.users_db.update_one({"_id": user.id}, {"$set": {"username": user.username}})
         else:
             if self.predict_loaded:
+                set_content = {"username": user.username}
+                data = await self.users_db.find_one({"_id": user.id})
+                if not data or "hash" not in data.keys():
+                    set_content["hash"] = md5(
+                        (str(user.id) + self.bot.user.username).encode()
+                    ).hexdigest()
                 update = {
-                    "$set": {"username": user.username},
+                    "$set": set_content,
                     "$setOnInsert": {"reputation": 0},
                     "$addToSet": {"chats": chat.id},
                 }

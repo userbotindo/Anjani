@@ -17,7 +17,7 @@
 import asyncio
 import pickle
 import re
-from hashlib import sha256
+from hashlib import md5, sha256
 from typing import ClassVar, List, Optional
 
 from pyrogram import filters
@@ -83,9 +83,8 @@ class SpamPrediction(plugin.Plugin):
     def _build_hash(content: str) -> str:
         return sha256(content.strip().encode()).hexdigest()
 
-    @staticmethod
-    def _build_hex(user_id: Optional[int]) -> str:
-        return f"{user_id:#x}" if user_id else ""
+    def _build_hex(self, user_id: Optional[int]) -> str:
+        return md5((str(user_id) + self.bot.user.username).encode()).hexdigest()
 
     @staticmethod
     def prob_to_string(value: float) -> str:
@@ -324,6 +323,7 @@ class SpamPrediction(plugin.Plugin):
             return (
                 "Your reputation point is not enough to use this command!"
                 f"\n**Needed point:** 100\n**Current point:** {user['reputation']}"
+                "\n\nTo get a reputation point cast a vote on @SpamPredictionLog."
             )
         replied = ctx.msg.reply_to_message
         if not replied:
@@ -346,15 +346,14 @@ class SpamPrediction(plugin.Plugin):
     @command.filters(aliases=["spaminfo"])
     async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> Optional[str]:
         """Get information fro spam identifier"""
-        res = re.search(r"(0x[\da-f]+)", arg, re.IGNORECASE)
+        res = re.search(r"([a-fA-F\d]{32})", arg)
         if not res:
             return "Can't find any identifier"
 
-        user_id = int(res.group(0), 0)
-        user_data = await self.user_db.find_one({"_id": user_id})
+        user_data = await self.user_db.find_one({"hash": res.group(0)})
         if not user_data:
             return "Looks like I don't have control over that user, or the ID isn't a valid one."
-
+        user_id = user_data["_id"]
         text = f"**Private ID:** `{res.group(0)}`\n\n**User ID:** `{user_id}`\n"
         try:
             user = await ctx.bot.client.get_users(user_id)
