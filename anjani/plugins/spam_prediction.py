@@ -110,7 +110,7 @@ class SpamPrediction(plugin.Plugin):
         content_hash = content[0]
 
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
-            data = await self.db.find_one({"hash": content_hash})
+            data = await self.db.find_one({"_id": content_hash})
             if not data:
                 await query.answer("The voting poll for this message has ended!")
                 return
@@ -160,10 +160,11 @@ class SpamPrediction(plugin.Plugin):
         if len(old_btn) > 1:
             button.append(old_btn[1])
 
-        await asyncio.gather(
-            query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(button)),
-            query.answer(),
-        )
+        for i in data["msg_id"]:
+            await self.bot.client.edit_message_reply_markup(
+                -1001314588569, i, InlineKeyboardMarkup(button)
+            )
+        await query.answer()
 
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
@@ -197,16 +198,10 @@ class SpamPrediction(plugin.Plugin):
 
         content_hash = self._build_hash(text)
 
-        data = await self.db.find_one({"_id": content_hash})
-        if not data:
-            await self.db.insert_one(
-                {"_id": content_hash, "hash": content_hash, "text": text, "spam": [], "ham": []}
-            )
-
         identifier = self._build_hex(user)
         proba_str = self.prob_to_string(probability)
 
-        msg = (
+        notice = (
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {proba_str}\n"
             f"**Identifier:** `{identifier}`\n"
@@ -214,10 +209,16 @@ class SpamPrediction(plugin.Plugin):
             f"\n**====== CONTENT =======**\n\n{text}"
         )
 
+        data = await self.db.find_one({"_id": content_hash})
+        l_spam, l_ham = 0, 0
+        if data:
+            l_spam = len(data["spam"])
+            l_ham = len(data["ham"])
+
         keyb = [
             [
-                InlineKeyboardButton(text="✅ Correct (0)", callback_data="spam_check_t"),
-                InlineKeyboardButton(text="❌ Incorrect (0)", callback_data="spam_check_f"),
+                InlineKeyboardButton(text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"),
+                InlineKeyboardButton(text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"),
             ]
         ]
 
@@ -236,10 +237,24 @@ class SpamPrediction(plugin.Plugin):
 
         msg = await self.bot.client.send_message(
             chat_id=-1001314588569,
-            text=msg,
+            text=notice,
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(keyb),
         )
+
+        if data:
+            await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
+        else:
+            await self.db.insert_one(
+                {
+                    "_id": content_hash,
+                    "text": text,
+                    "spam": [],
+                    "ham": [],
+                    "msg_id": [msg.message_id],
+                }
+            )
+
         if probability >= 0.9:
             await message.reply_text(
                 f"❗️**SPAM ALERT**❗️\n"
