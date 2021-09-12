@@ -16,13 +16,13 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, Dict, List, MutableMapping, Optional, Set
 from uuid import uuid4
 
 from aiofile import LineReader
 from aiopath import AsyncPath
 from pyrogram import filters
-from pyrogram.errors import ChatAdminRequired
+from pyrogram.errors import BadRequest, Forbidden
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -503,15 +503,27 @@ class Federation(plugin.Plugin):
                 reason,
             )
 
+        failed: Dict = {}
         for chat in data["chats"]:
             try:
                 await self.bot.client.kick_chat_member(chat, user.id)
-            except ChatAdminRequired:
-                pass
+            except BadRequest as br:
+                self.log.error(f"Failed to fban {user.username} due to {br.MESSAGE}")
+                failed[chat] = br.MESSAGE
+            except Forbidden as err:
+                self.log.error(f"Can't to fban {user.username} caused by {err.MESSAGE}")
+                failed[chat] = err.MESSAGE
+                # don't remove the chat for now
+                # await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
 
         # send message to federation log
         if log := data.get("log"):
             await self.bot.client.send_message(log, text, disable_web_page_preview=True)
+            if failed:
+                text = ""
+                for key, err_msg in failed:
+                    text = f"failed to fban on chat {key} caused by {err_msg}"
+                await self.bot.client.send_message(log, text)
 
         return text
 
@@ -543,7 +555,10 @@ class Federation(plugin.Plugin):
             chat.id, "fed-unban-info", data["name"], banner.mention, user.mention, user.id
         )
         for chat in data["chats"]:
-            await self.bot.client.unban_chat_member(chat, user.id)
+            try:
+                await self.bot.client.unban_chat_member(chat, user.id)
+            except (BadRequest, Forbidden):
+                pass
 
         if log := data.get("log"):
             await self.bot.client.send_message(log, text, disable_web_page_preview=True)
