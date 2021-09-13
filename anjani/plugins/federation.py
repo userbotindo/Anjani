@@ -482,7 +482,7 @@ class Federation(plugin.Plugin):
         await self.fban_user(data["_id"], user.id, fullname=fullname, reason=reason)
 
         if update:
-            text = await self.text(
+            string = await self.text(
                 chat.id,
                 "fed-ban-info-update",
                 data["name"],
@@ -493,7 +493,7 @@ class Federation(plugin.Plugin):
                 reason,
             )
         else:
-            text = await self.text(
+            string = await self.text(
                 chat.id,
                 "fed-ban-info",
                 data["name"],
@@ -518,14 +518,14 @@ class Federation(plugin.Plugin):
 
         # send message to federation log
         if log := data.get("log"):
-            await self.bot.client.send_message(log, text, disable_web_page_preview=True)
+            await self.bot.client.send_message(log, string, disable_web_page_preview=True)
             if failed:
                 text = ""
                 for key, err_msg in failed.items():
-                    text = f"failed to fban on chat {key} caused by {err_msg}"
+                    text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
                 await self.bot.client.send_message(log, text)
 
-        return text
+        return string
 
     async def cmd_unfban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban a user on federation"""
