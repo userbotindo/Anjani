@@ -84,7 +84,7 @@ class SpamPrediction(plugin.Plugin):
         return sha256(content.strip().encode()).hexdigest()
 
     def _build_hex(self, user_id: Optional[int]) -> str:
-        return md5((str(user_id) + self.bot.user.username).encode()).hexdigest()
+        return md5((str(user_id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
 
     @staticmethod
     def prob_to_string(value: float) -> str:

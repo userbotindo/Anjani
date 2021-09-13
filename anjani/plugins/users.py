@@ -87,7 +87,7 @@ class Users(plugin.Plugin):
                 set_content = {"username": user.username}
                 data = await self.users_db.find_one({"_id": user.id})
                 if not data or "hash" not in data.keys():
-                    set_content["hash"] = md5(
+                    set_content["hash"] = md5(  # skipcq: PTC-W1003
                         (str(user.id) + self.bot.user.username).encode()
                     ).hexdigest()
                 update = {

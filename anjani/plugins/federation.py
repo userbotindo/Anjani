@@ -16,13 +16,13 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, MutableMapping, Optional, Set
+from typing import Any, Dict, List, MutableMapping, Optional
 from uuid import uuid4
 
 from aiofile import LineReader
 from aiopath import AsyncPath
 from pyrogram import filters
-from pyrogram.errors import BadRequest, Forbidden
+from pyrogram.errors import BadRequest, ChatAdminRequired ,Forbidden
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -503,7 +503,7 @@ class Federation(plugin.Plugin):
                 reason,
             )
 
-        failed: Dict = {}
+        failed: Dict[int, str] = {}
         for chat in data["chats"]:
             try:
                 await self.bot.client.kick_chat_member(chat, user.id)
@@ -521,7 +521,7 @@ class Federation(plugin.Plugin):
             await self.bot.client.send_message(log, text, disable_web_page_preview=True)
             if failed:
                 text = ""
-                for key, err_msg in failed:
+                for key, err_msg in failed.items():
                     text = f"failed to fban on chat {key} caused by {err_msg}"
                 await self.bot.client.send_message(log, text)
 
