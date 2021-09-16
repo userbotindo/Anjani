@@ -45,7 +45,7 @@ class Notes(plugin.Plugin):
             Types.AUDIO.value: "upload_audio",
             Types.VOICE.value: "upload_audio",
             Types.VIDEO_NOTE.value: "upload_video_note",
-            Types.ANIMATION.value: "upload_video", 
+            Types.ANIMATION.value: "upload_video",
         }
         self.SEND = {
             Types.TEXT.value: self.bot.client.send_message,
@@ -92,7 +92,9 @@ class Notes(plugin.Plugin):
     async def get_note(self, message: Message, name: str, noformat: bool = False) -> None:
         """Get note data and send based on types."""
         chat = message.chat
-        reply_to = message.message_id
+        reply_to = (
+            message.reply_to_message.message_id if message.reply_to_message else message.message_id
+        )
 
         data = await self.db.find_one({"chat_id": chat.id})
         if not data or not data.get("notes"):
