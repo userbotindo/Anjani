@@ -654,9 +654,9 @@ class Federation(plugin.Plugin):
         await file.touch()
         async with file.open("w") as f:
             for banned_user in banned:
-                ban_data = banned[str(user)]
+                ban_data = banned[banned_user]
                 await f.write(
-                    f"{banned_user},{ban_data['name']},{ban_data['reason']},{ban_data['time']}"
+                    f"{banned_user},{ban_data['name']},{ban_data['reason']},{ban_data['time']}\n"
                 )
 
         await ctx.respond(document=str(file))
