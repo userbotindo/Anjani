@@ -162,8 +162,8 @@ class SpamShield(plugin.Plugin):
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
-        data = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
-        return data["setting"] if data else False
+        data = await self.db.find_one({"chat_id": chat_id})
+        return data["setting"] if data else True
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off SpamShield in chats"""
