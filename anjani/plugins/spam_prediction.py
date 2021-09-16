@@ -83,8 +83,8 @@ class SpamPrediction(plugin.Plugin):
     def _build_hash(content: str) -> str:
         return sha256(content.strip().encode()).hexdigest()
 
-    def _build_hex(self, user_id: Optional[int]) -> str:
-        return md5((str(user_id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
+    def _build_hex(self, id: Optional[int]) -> str:
+        return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
 
     @staticmethod
     def prob_to_string(value: float) -> str:
@@ -205,9 +205,10 @@ class SpamPrediction(plugin.Plugin):
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {proba_str}\n"
             f"**Identifier:** `{identifier}`\n"
-            f"**Message Hash:** `{content_hash}`\n"
-            f"\n**====== CONTENT =======**\n\n{text}"
         )
+        if ch := message.forward_from_chat:
+            notice += f"Channel ID: `{self._build_hex(ch.id)}`"
+        notice += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
         data = await self.db.find_one({"_id": content_hash})
         l_spam, l_ham = 0, 0
@@ -299,7 +300,7 @@ class SpamPrediction(plugin.Plugin):
         proba = pred[0][1]
         text = f"#SPAM\n\n**CPU Prediction:** `{self.prob_to_string(proba)}`\n"
         if identifier:
-            text += f"**Identifier:** {identifier}\n"
+            text += f"**Identifier:** `{identifier}`\n"
 
         text += f"**Message Hash:** `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
         _, msg = await asyncio.gather(

@@ -19,7 +19,7 @@ from hashlib import md5
 from typing import ClassVar, Optional
 
 from aiopath import AsyncPath
-from pyrogram.types import Message, User
+from pyrogram.types import Chat, Message, User
 
 from anjani import command, plugin, util
 
@@ -43,6 +43,20 @@ class Users(plugin.Plugin):
                 self.predict_loaded = True
 
         self.bot.loop.create_task(c_pred())
+
+    def hash_id(self, id: int) -> str:
+        return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
+
+    async def build_channel_task(self, channel: Chat) -> Optional[asyncio.Task]:
+        if channel.type == "channel":
+            data = await self.chats_db.find_one({"chat_id": channel.id})
+            content = {"chat_name": channel.title, "type": channel.type}
+            if not data or "hash" not in data.keys():
+                content["hash"] = self.hash_id(channel.id)
+            return self.bot.loop.create_task(
+                self.chats_db.update_one({"chat_id": channel.id}, {"$set": content}, upsert=True)
+            )
+        return None
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -73,38 +87,52 @@ class Users(plugin.Plugin):
             )
 
     async def on_message(self, message: Message) -> None:
-        """User database."""
+        """Incoming message handler."""
         chat = message.chat
         user = message.from_user
 
         if not user or not chat:  # sanity check for service
             return
 
+        tasks = []
+        set_content = {"username": user.username}
+        user_data = await self.users_db.find_one({"_id": user.id})
+
         if chat == "private":
-            await self.users_db.update_one({"_id": user.id}, {"$set": {"username": user.username}})
-        else:
             if self.predict_loaded:
-                set_content = {"username": user.username}
-                data = await self.users_db.find_one({"_id": user.id})
-                if not data or "hash" not in data.keys():
-                    set_content["hash"] = md5(  # skipcq: PTC-W1003
-                        (str(user.id) + self.bot.user.username).encode()
-                    ).hexdigest()
-                update = {
-                    "$set": set_content,
-                    "$setOnInsert": {"reputation": 0},
-                    "$addToSet": {"chats": chat.id},
-                }
-            else:
-                update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
+                if ch := message.forward_from_chat:
+                    tasks.append(await self.build_channel_task(ch))
+                if not user_data or "hash" not in user_data.keys():
+                    set_content["hash"] = self.hash_id(user.id)
+            await asyncio.gather(
+                self.users_db.update_one({"_id": user.id}, {"$set": set_content}), *tasks
+            )
+            return
+
+        if self.predict_loaded:
+            if not user_data or "hash" not in user_data.keys():
+                set_content["hash"] = self.hash_id(user.id)
+            update = {
+                "$set": set_content,
+                "$setOnInsert": {"reputation": 0},
+                "$addToSet": {"chats": chat.id},
+            }
+            if ch := message.forward_from_chat:
+                tasks.append(await self.build_channel_task(ch))
+        else:
+            update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
 
             await asyncio.gather(
                 self.users_db.update_one({"_id": user.id}, update, upsert=True),
                 self.chats_db.update_one(
                     {"chat_id": chat.id},
-                    {"$set": {"chat_name": chat.title}, "$addToSet": {"member": user.id}},
+                    {
+                        "$set": {"chat_name": chat.title, "type": chat.type},
+                        "$addToSet": {"member": user.id},
+                    },
                     upsert=True,
                 ),
+                *tasks,
             )
 
     async def cmd_info(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
@@ -144,6 +172,7 @@ class Users(plugin.Plugin):
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
             if self.predict_loaded:
+                text += f"\n**Identifier: `{user_db.get('hash', 'unknown')}`**"
                 text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
