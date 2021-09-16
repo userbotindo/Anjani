@@ -22,7 +22,7 @@ from uuid import uuid4
 from aiofile import LineReader
 from aiopath import AsyncPath
 from pyrogram import filters
-from pyrogram.errors import BadRequest, ChatAdminRequired ,Forbidden
+from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -302,7 +302,9 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "err-chat-groups")
 
         if not user:
-            return await self.text(chat.id, "fed-no-promote-user")
+            if not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "fed-no-promote-user")
+            user = ctx.msg.reply_to_message.from_user
 
         data = await self.get_fed_bychat(chat.id)
         if not data:
@@ -338,7 +340,9 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "err-chat-groups")
 
         if not user:
-            return await self.text(chat.id, "fed-no-demote-user")
+            if not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "fed-no-demote-user")
+            user = ctx.msg.reply_to_message.from_user
 
         data = await self.get_fed_bychat(chat.id)
         if not data:
