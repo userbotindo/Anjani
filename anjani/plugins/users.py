@@ -98,7 +98,7 @@ class Users(plugin.Plugin):
         set_content = {"username": user.username}
         user_data = await self.users_db.find_one({"_id": user.id})
 
-        if chat == "private":
+        if chat.type == "private":
             if self.predict_loaded:
                 if ch := message.forward_from_chat:
                     tasks.append(await self.build_channel_task(ch))
@@ -122,18 +122,18 @@ class Users(plugin.Plugin):
         else:
             update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
 
-            await asyncio.gather(
-                self.users_db.update_one({"_id": user.id}, update, upsert=True),
-                self.chats_db.update_one(
-                    {"chat_id": chat.id},
-                    {
-                        "$set": {"chat_name": chat.title, "type": chat.type},
-                        "$addToSet": {"member": user.id},
-                    },
-                    upsert=True,
-                ),
-                *tasks,
-            )
+        await asyncio.gather(
+            self.users_db.update_one({"_id": user.id}, update, upsert=True),
+            self.chats_db.update_one(
+                {"chat_id": chat.id},
+                {
+                    "$set": {"chat_name": chat.title, "type": chat.type},
+                    "$addToSet": {"member": user.id},
+                },
+                upsert=True,
+            ),
+            *tasks,
+        )
 
     async def cmd_info(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Fetch user info"""
