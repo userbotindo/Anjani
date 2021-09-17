@@ -68,6 +68,7 @@ demote-error-self: "__You sure you want to demote yourself?__"
 promote-success: "`Successfully Promoted..` ❤️"
 promote-error-perm: "`This user is already an admin!`"
 no-promote-user: "`Who should I promote?\nGive me some user!`"
+no-pinned-message: "__No pinned message__"
 #endregion
 #region Backups
 backups-button: Backups
