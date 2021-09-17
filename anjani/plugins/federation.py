@@ -19,7 +19,6 @@ from datetime import datetime
 from typing import Any, Dict, List, MutableMapping, Optional
 from uuid import uuid4
 
-from aiofile import LineReader
 from aiopath import AsyncPath
 from pyrogram import filters
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
@@ -240,7 +239,7 @@ class Federation(plugin.Plugin):
         user = ctx.msg.from_user
 
         invoker = await chat.get_member(user.id)
-        if invoker.status != "creator" or invoker.user.id != self.bot.owner:
+        if invoker.status != "creator":
             return await self.text(chat.id, "err-group-creator-cmd")
 
         if not fid:
@@ -646,7 +645,11 @@ class Federation(plugin.Plugin):
         if not data:
             return await self.text(chat.id, "user-no-feds")
 
-        banned = data["banned"]
+        try:
+            banned = data["banned"]
+        except KeyError:
+            return await self.text(chat.id, "fed-backup-empty")
+
         file = AsyncPath(
             self.bot.config.get("download_path", "./downloads/") + data["name"] + ".csv"
         )
@@ -681,20 +684,18 @@ class Federation(plugin.Plugin):
         )
 
         fid = data["_id"]
-        tasks = []
+        tasks = []  # type: List[asyncio.Task[None]]
         async with file.open("r") as f:
-            async for line in LineReader(f):
-                if isinstance(line, bytes):
-                    line = line.decode()
-
+            line: str
+            async for line in f:  # type: ignore
                 d = line.split(",")
                 task = self.bot.loop.create_task(
                     self.fban_user(fid, int(d[0]), fullname=d[1], reason=d[2])
                 )
                 tasks.append(task)
 
-        ret, _ = await asyncio.gather(self.text(chat.id, "fed-restore-done"), file.unlink(), *tasks)
-        return ret
+        ret = await asyncio.gather(self.text(chat.id, "fed-restore-done"), file.unlink(), *tasks)
+        return ret[0]
 
     @command.filters(filters.private)
     async def cmd_myfed(self, ctx: command.Context) -> str:

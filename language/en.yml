@@ -205,6 +205,7 @@ fed-stat-not-banned: User is not banned in that federation!
 fed-stat-multi: This user has been banned in this federations\n
 fed-stat-multi-info: " -  **{}**(`{}`)\n    **Reason: **{}\n"
 fed-stat-multi-not-banned: This user is not banned in any federation!
+fed-backup-empty: Empty federation data...
 fed-restore-done: Done restoring backup
 fed-myfeds-owner: "You are the **owner** of this Federation:\n"
 fed-myfeds-admin: "\nYou are **admin** in this following Federation:\n"
