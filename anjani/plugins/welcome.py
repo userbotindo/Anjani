@@ -151,7 +151,7 @@ class Greeting(plugin.Plugin):
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
-            username=user.username,
+            username=user.username or escape(first_name),
             mention=user.mention,
             count=chat.members_count,
             chatname=escape(chat.title),
