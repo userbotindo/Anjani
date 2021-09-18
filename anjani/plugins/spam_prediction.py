@@ -207,7 +207,7 @@ class SpamPrediction(plugin.Plugin):
             f"**Identifier:** `{identifier}`\n"
         )
         if ch := message.forward_from_chat:
-            notice += f"Channel ID: `{self._build_hex(ch.id)}`"
+            notice += f"Channel ID: `{self._build_hex(ch.id)}`\n"
         notice += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
         data = await self.db.find_one({"_id": content_hash})
