@@ -207,7 +207,7 @@ class SpamPrediction(plugin.Plugin):
             f"**Identifier:** `{identifier}`\n"
         )
         if ch := message.forward_from_chat:
-            notice += f"Channel ID: `{self._build_hex(ch.id)}`\n"
+            notice += f"**Channel ID:** `{self._build_hex(ch.id)}`\n"
         notice += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
         data = await self.db.find_one({"_id": content_hash})
@@ -358,32 +358,3 @@ class SpamPrediction(plugin.Plugin):
             f"**Spam Prediction:** `{self.prob_to_string(pred[0][1])}`\n"
             f"**Ham Prediction:** `{self.prob_to_string(pred[0][0])}`"
         )
-
-    @command.filters(aliases=["spaminfo"])
-    async def cmd_sinfo(self, ctx: command.Context, *, arg: str = "") -> Optional[str]:
-        """Get information fro spam identifier"""
-        res = re.search(r"([a-fA-F\d]{32})", arg)
-        if not res:
-            return "Can't find any identifier"
-
-        user_data = await self.user_db.find_one({"hash": res.group(0)})
-        if not user_data:
-            return "Looks like I don't have control over that user, or the ID isn't a valid one."
-        user_id = user_data["_id"]
-        text = f"**Private ID:** `{res.group(0)}`\n\n**User ID:** `{user_id}`\n"
-        try:
-            user = await ctx.bot.client.get_users(user_id)
-            if isinstance(user, List):
-                user = user[0]
-            text += f"**First Name:** {user.first_name}\n"
-            if user.last_name:
-                text += f"**Last Name:** {user.last_name}\n"
-            text += f"**Username:** @{user.username}\n" if user.username else ""
-            text += f"**Reputation:** {user_data['reputation']}\n"
-            text += f"**User Link:** {user.mention}"
-        except PeerIdInvalid:
-            text += f"**Username:** @{user_data['username']}\n"
-            text += f"**Reputation:** {user_data['reputation']}\n"
-            text += f"**User Link:** tg://user?id={user_id}"
-
-        return text

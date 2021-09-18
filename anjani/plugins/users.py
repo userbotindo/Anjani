@@ -15,11 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import re
 from hashlib import md5
-from typing import ClassVar, Optional
+from typing import ClassVar, List, Optional, Union
 
 from aiopath import AsyncPath
-from pyrogram.types import Chat, Message, User
+from pyrogram.errors import PeerIdInvalid
+from pyrogram.types import Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
 
@@ -51,7 +53,7 @@ class Users(plugin.Plugin):
         if channel.type == "channel":
             data = await self.chats_db.find_one({"chat_id": channel.id})
             content = {"chat_name": channel.title, "type": channel.type}
-            if not data or "hash" not in data.keys():
+            if not data or "hash" not in data:
                 content["hash"] = self.hash_id(channel.id)
             return self.bot.loop.create_task(
                 self.chats_db.update_one({"chat_id": channel.id}, {"$set": content}, upsert=True)
@@ -102,16 +104,23 @@ class Users(plugin.Plugin):
             if self.predict_loaded:
                 if ch := message.forward_from_chat:
                     tasks.append(await self.build_channel_task(ch))
-                if not user_data or "hash" not in user_data.keys():
+                if not user_data or "hash" not in user_data:
                     set_content["hash"] = self.hash_id(user.id)
             await asyncio.gather(
                 self.users_db.update_one({"_id": user.id}, {"$set": set_content}), *tasks
             )
             return
 
+        chat_data = await self.chats_db.find_one({"chat_id": chat.id})
+        chat_update = {
+            "$set": {"chat_name": chat.title, "type": chat.type},
+            "$addToSet": {"member": user.id},
+        }
         if self.predict_loaded:
-            if not user_data or "hash" not in user_data.keys():
+            if not user_data or "hash" not in user_data:
                 set_content["hash"] = self.hash_id(user.id)
+            if not chat_data or "hash" not in chat_data:
+                chat_update["$set"]["hash"] = self.hash_id(chat.id)
             update = {
                 "$set": set_content,
                 "$setOnInsert": {"reputation": 0},
@@ -124,36 +133,20 @@ class Users(plugin.Plugin):
 
         await asyncio.gather(
             self.users_db.update_one({"_id": user.id}, update, upsert=True),
-            self.chats_db.update_one(
-                {"chat_id": chat.id},
-                {
-                    "$set": {"chat_name": chat.title, "type": chat.type},
-                    "$addToSet": {"member": user.id},
-                },
-                upsert=True,
-            ),
+            self.chats_db.update_one({"chat_id": chat.id}, chat_update, upsert=True),
             *tasks,
         )
 
-    async def cmd_info(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
-        """Fetch user info"""
-        chat = ctx.msg.chat
-
-        if not user:
-            if ctx.args:
-                return await self.text(chat.id, "err-peer-invalid")
-            if ctx.msg.reply_to_message:
-                user = ctx.msg.reply_to_message.from_user
-            else:
-                user = ctx.author
-
-        text = f"**{'Bot' if user.is_bot else 'User'} Info**\n"
+    async def _user_info(self, ctx: command.Context, user: User):
+        """User Info"""
+        text = f"**{'Bot' if user.is_bot else 'User'} Info**\n\n"
         text += f"**ID:** `{user.id}`\n"
         text += f"**DC ID: **`{user.dc_id if user.dc_id else 'N/A'}`\n"
         text += f"**First Name: **{user.first_name}\n"
         if user.last_name:
             text += f"**Last Name: **{user.last_name}\n"
-        text += f"**Username: **@{user.username}\n"
+        if user.username:
+            text += f"**Username: **@{user.username}\n"
         text += f"**Permanent user link: **{user.mention}\n"
         text += (
             "**Number of profile pics: **"
@@ -172,16 +165,88 @@ class Users(plugin.Plugin):
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db:
             if self.predict_loaded:
-                text += f"\n**Identifier: `{user_db.get('hash', 'unknown')}`**"
+                text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
                 text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
             text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:
             async with ctx.action("upload_photo"):
                 file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
-                await self.bot.client.send_photo(chat.id, str(file), text)
+                await self.bot.client.send_photo(
+                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                )
                 await file.unlink()
-
             return None
 
         return text
+
+    async def _chat_info(self, ctx: command.Context, chat: Union[Chat, ChatPreview]):
+        """Chat Info"""
+        text = "**Chat info**\n\n"
+        if isinstance(chat, ChatPreview):
+            text += f"**Chat Type:** `{chat.type}`\n"
+            text += f"**Title:** `{chat.title}`\n"
+            text += f"**Member Count:** `{chat.members_count}`\n"
+        else:
+            text += f"**ID:** `{chat.id}`\n"
+            if chat.dc_id:
+                text += f"**DC ID:** `{chat.dc_id}`\n"
+            text += f"**Chat Type:** `{chat.type}`\n"
+            text += f"**Title:** `{chat.title}`\n"
+            if chat.username:
+                text += f"**Chat Username:** @{chat.username}\n"
+            text += f"**Member Count:** `{chat.members_count}`\n"
+            if chat.linked_chat:
+                text += f"**Linked Chat:** `{chat.linked_chat.title}`\n"
+
+            if self.predict_loaded:
+                chat_data = await self.chats_db.find_one({"chat_id": chat.id})
+                if chat_data:
+                    text += f"**Identifier:** `{chat_data.get('hash', 'unknown')}`\n"
+
+        if chat.photo:
+            async with ctx.action("upload_photo"):
+                file = AsyncPath(await self.bot.client.download_media(chat.photo.big_file_id))
+                await self.bot.client.send_photo(
+                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                )
+                await file.unlink()
+            return None
+        return text
+
+    async def cmd_info(self, ctx: command.Context, args: Optional[str]):
+        """Fetch a telegram peer data"""
+        if not args:
+            if ctx.msg.reply_to_message:
+                return await self._user_info(ctx, ctx.msg.reply_to_message.from_user)
+            if not ctx.msg.reply_to_message:
+                return await self._user_info(ctx, ctx.author)
+            return
+
+        id_match = None
+        if self.predict_loaded:
+            id_match = re.search(r"([a-fA-F\d]{32})", args)
+        if id_match:
+            user = await self.users_db.find_one({"hash": id_match.group(0)})
+            if user:
+                user = await ctx.bot.client.get_users(user["_id"])
+                if isinstance(user, List):
+                    user = user[0]
+                return await self._user_info(ctx, user)
+            chat = await self.chats_db.find_one({"hash": id_match.group(0)})
+            if chat:
+                chat = await ctx.bot.client.get_chat(chat["chat_id"])
+                return await self._chat_info(ctx, chat)
+            return await self.text(ctx.chat.id, "err-invalid-pid")
+
+        try:
+            user = await ctx.bot.client.get_users(args)
+            if isinstance(user, List):
+                user = user[0]
+            return await self._user_info(ctx, user)
+        except (IndexError, PeerIdInvalid):  # chat peer
+            try:
+                chat = await ctx.bot.client.get_chat(args)
+                return await self._chat_info(ctx, chat)
+            except PeerIdInvalid:
+                return await self.text(ctx.chat.id, "err-peer-invalid")

@@ -146,3 +146,4 @@ err-not-participant: "Pengguna ini bukan anggota obrolan!"
 err-invalid-option: Opsi tidak valid!
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
+err-invalid-pid: Identifier tidak valid!
