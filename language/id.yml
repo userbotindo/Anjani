@@ -211,61 +211,62 @@ fed-info-text: |
   **Pemilik: **{}
   **Total adminstrator: ** `{}`
   **Total pengguna yang dilarang: ** `{}`
-  **Total grup yang terhubung federasi: ** `{}`
-  
-  
-fed-admin-only: Only federation admin can do this!
+  **Total grup yang terhubung federasi: ** `{}` 
+fed-admin-only: Hanya Administrator federasi yang dapat melakukan ini!
 fed-admin-text: |
   **{} admins:**
   👑 Owner: {}
-fed-no-admin: There are no admin in this federation!
-fed-no-ban-user: You don't seems to refering a user
-fed-ban-self: Please... I'm not that dumb!
-fed-ban-owner: How can a federation owner banned in his own federation!
-fed-ban-protected: I won't fban this user!
+fed-no-admin: Tidak ada Administrator di dalam federasi ini!
+fed-no-ban-user: Siapa yang harus saya blokir?
+fed-ban-self: Mohon maaf, saya tidak bisa!
+fed-ban-owner: Bagaimana cara saya memblokir seorang pemilik federasi dalam federasi yang dia miliki!
+fed-ban-protected: Saya tidak akan melakukan fban kepada pengguna ini!
+
 fed-ban-info-update: |
-  **New Federation Ban**
-  **Federation: **{}
-  **Federation admin: **{}
-  **User: ** {}
-  **User ID: ** {}
-  **Old reason**: {}
-  **New reason**: {}
+  **Larangan Baru Federasi**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Pengguna: ** {}
+  **ID Pengguna: ** {}
+  **Alasan lama**: {}
+  **Alasan baru**: {}
 fed-ban-info: |
-  **New Federation Ban**
-  **Federation: **{}
-  **Federation admin: **{}
-  **User: ** {}
-  **User ID: ** {}
-  **Reason**: {}
-fed-user-not-banned: This user is not Fbanned!
+  **Larangan Baru Federasi**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Pengguna: ** {}
+  **ID Pengguna: ** {}
+  **Alasan**: {}
+fed-user-not-banned: Pengguna ini tidak diblokir dalam federeasi ini!
 fed-unban-info: |
-  **Un-FedBan**
-  **Federation: **{}
-  **Federation admin: **{}
-  **User: **{}
-  **User ID: **`{}`
+  **Membatalkan Larangan Federasi**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Pengguna: **{}
+  **ID Pengguna: **`{}`
 fed-stat-banned: |
-  User is banned in that federation
-  **Reason: ** {}
-  **Banned on: ** {}
-fed-stat-not-banned: User is not banned in that federation!
-fed-stat-multi: This user has been banned in this federations\n
-fed-stat-multi-info: " -  **{}**(`{}`)\n    **Reason: **{}\n"
-fed-stat-multi-not-banned: This user is not banned in any federation!
-fed-backup-empty: Empty federation data...
-fed-restore-done: Done restoring backup
-fed-myfeds-owner: "You are the **owner** of this Federation:\n"
-fed-myfeds-admin: "\nYou are **admin** in this following Federation:\n"
-fed-myfeds-no-admin: Looks like you don't have a federation you're admin on
-fed-set-log-args: "To set a federation log in a channel, please specify the FedID to connect.\neg: `/setfedlog fedID`"
-fed-not-found: Fed not found!
-fed-check-identity: Please ask the fed creator to confirm this action by pressing this button.
-fed-log-set-group: "This chat is set as **{name}** logs"
-fed-log-set-chnl: "This channel has been set as the fed log for **{}**\nall fed related actions will be logged here."
-fed-invalid-identity: The user who clicked confirmation button was not the fed creator.\nOnly the federation creator can set the fed log.
-fed-log-unset: Federation log of **{}** is unset.
-fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
+ Pengguna ini di blokir dalam federasi ini.
+  **Alasan: ** {}
+  **Diblokir dalam federasi: ** {}
+  
+  
+fed-stat-not-banned: Pengguna ini tidak di blokir dalam federasi itu!
+fed-stat-multi: Pengguna ini sudah di blokir dalam federasi ini.\n
+fed-stat-multi-info: " -  **{}**(`{}`)\n    **Alasan: **{}\n"
+fed-stat-multi-not-banned: Pengguna ini tidak di blokir dalam federasi manapun!
+fed-backup-empty: Tidak ada data federasi.
+fed-restore-done: Selesai memulihkan file cadangan.
+fed-myfeds-owner: "Kamu adalah **pemilik** dari federasi ini:\n"
+fed-myfeds-admin: "\nKamu adalah **Administrator** dalam federasi ini:\n"
+fed-myfeds-no-admin: Sepertinya Anda tidak menjadi Administrator di federasi manapun.
+fed-set-log-args: "Untuk membuat log federasi di saluran atau grup, silahkan gunakan federasi ID yang jelas dan benar untuk dihubungkan.\neg: `/setfedlog federasi ID`"
+fed-not-found: Federasi tidak ditemukan!
+fed-check-identity: Tolong tanyakan kepada pemilik federasi untuk konfirmasi tindakan ini dengan mengklik tombol dibawah ini.
+fed-log-set-group: "Grup ini diatur sebagai **{name}** catatan"
+fed-log-set-chnl: "Saluran ini telah ditetapkan sebagai catatan federasi untuk **{}**\nall tindakan terkait federasi akan dicatat di sini."
+fed-invalid-identity: Pengguna yang mengklik tombol konfirmasi bukanlah pemilik federasi.\nHanya pemilik federasi yang dapat menetapkan catatan federasi.
+fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
+fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Reason:** {}\n**Banned on:** {}"
 #endregion
 
 #region language
@@ -291,6 +292,19 @@ language-invalid: Mohon maaf kode bahasa tidak cocok.\nKode bahasa yang tersedia
 
 #region misc
 miscs-button: Lainnya
+miscs-help: |
+ Berisi perintah kecil dan sederhana yang mungkin tidak cocok di mana pun.\n
+  **Perintah:**
+  ×  /id : Menampilkan ID pengguna, ID pesan, ID grup dan banyak lagi.
+  ×  /info: Menampilkan informasi tentang seorang pengguna.
+  ×  /ping : Menampilkan latensi bot.
+  ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
+      flags:
+          [-d, -dogbin] = menggunakan dogbin (default)
+          [-n, -neko, -nekobin] = menggunakan nekobin
+          [-h, -haste, -hastebin] = menggunakan hastebin\n
+  **Perintah Spesial:**
+  ×  /covid <country> : Get Covid-19 data in your country.
 covid-text: |
   **Statistik Virus Corona di {country}**
   **pada {date}**\n
