@@ -247,7 +247,7 @@ miscs-help: |
   ×  /paste <flags> : paste text file to a pastebin service.
       flags:
           [-h, -haste, -hastebin] = use hastebin\n
-          [-k, -katbin, -katbin] = use katbin
+          [k, -katbin, -katbin] = use katbin (katbin no need to use (-) symbol.)
 wait-paste: "`Pasting to {}...`"
 paste-succes: "**Pasted to {} successfully..!**"
 fail-paste: "`Failed to reach {}!`\nYou can use flags [-n, -h] to use other service"
