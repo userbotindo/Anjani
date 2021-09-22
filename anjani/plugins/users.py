@@ -60,6 +60,17 @@ class Users(plugin.Plugin):
             )
         return None
 
+    async def build_user_task(self, user: User) -> asyncio.Task:
+        data = await self.users_db.find_one({"_id": user.id})
+        content = {"username": user.username}
+        if not data or "hash" not in data:
+            content["hash"] = self.hash_id(user.id)
+        if not data or "chats" not in data:
+            content["chats"] = []
+        return self.bot.loop.create_task(
+            self.users_db.update_one({"_id": user.id}, {"$set": content}, upsert=True)
+        )
+
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
         old_chat = message.migrate_from_chat_id
@@ -106,6 +117,9 @@ class Users(plugin.Plugin):
                     tasks.append(await self.build_channel_task(ch))
                 if not user_data or "hash" not in user_data:
                     set_content["hash"] = self.hash_id(user.id)
+                if usr := message.forward_from:
+                    tasks.append(await self.build_user_task(usr))
+
             await asyncio.gather(
                 self.users_db.update_one({"_id": user.id}, {"$set": set_content}), *tasks
             )
@@ -128,6 +142,8 @@ class Users(plugin.Plugin):
             }
             if ch := message.forward_from_chat:
                 tasks.append(await self.build_channel_task(ch))
+            if usr := message.forward_from:
+                tasks.append(await self.build_user_task(usr))
         else:
             update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
 
