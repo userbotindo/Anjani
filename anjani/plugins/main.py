@@ -47,7 +47,7 @@ class Main(plugin.Plugin):
             return
 
         await self.db.update_one(
-            {"_id": 2}, {"$set": {"session": bson.Binary(await file.read_bytes())}}, upsert=True
+            {"_id": 1}, {"$set": {"session": bson.Binary(await file.read_bytes())}}, upsert=True
         )
 
     async def help_builder(self, chat_id: int) -> List[List[InlineKeyboardButton]]:

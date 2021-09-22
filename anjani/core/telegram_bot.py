@@ -65,7 +65,7 @@ class TelegramBot(MixinBase):
 
         # Load session from database
         db = self.db.get_collection("SESSION")
-        data = await db.find_one({"_id": 2})
+        data = await db.find_one({"_id": 1})
         file = AsyncPath("anjani/anjani.session")
         if data and not await file.exists():
             self.log.info("Loading session from database")
