@@ -131,10 +131,11 @@ class Admins(plugin.Plugin):
         chat = ctx.msg.chat
 
         if not user:
-            if not ctx.msg.reply_to_message:
-                return await self.text(chat.id, "no-demote-user")
             if ctx.input:
                 return await self.text(chat.id, "err-peer-invalid")
+
+            if not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "no-promote-user")
 
             user = ctx.msg.reply_to_message.from_user
 
@@ -170,10 +171,11 @@ class Admins(plugin.Plugin):
         chat = ctx.msg.chat
 
         if not user:
-            if not ctx.msg.reply_to_message:
-                return await self.text(chat.id, "no-demote-user")
             if ctx.input:
                 return await self.text(chat.id, "err-peer-invalid")
+
+            if not ctx.msg.reply_to_message:
+                return await self.text(chat.id, "no-demote-user")
 
             user = ctx.msg.reply_to_message.from_user
 
