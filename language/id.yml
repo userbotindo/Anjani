@@ -22,6 +22,34 @@ add-to-group-button: Tambahkan saya
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
 back-button: ⬅️ Kembali
+
+markdown-helper: |
+  Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk Anda membuat tombol-tombol.\n
+  <b>Markdown yang didukung:</b>
+  
+  - <code>__italic__</code>: Buat dua garis bawah diantara kata, akan menghasilkan <i>italic</i> text.
+  
+  - <code>**bold**</code>: Buat dua tanda bintang diantara kata, akan menghasilkan <b>bold</b> text
+  
+  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks diantara kata, akan menghasilkan <code>monospace</code> text.
+  
+  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes diantara kata, akan menghasilkan <del>strikethrough</del> text
+  
+  - <code>--underline--</code>: Buat tanda penghubung diantara kata, akan menghasilkan  <u>underline</u> text
+  
+  - <code>[sometext](someURL)</code>: Ini akan membuat tautan - pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
+  
+  EG: <code>[test](example.com)</code>
+  - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
+  EG: <code>[This is a button](buttonurl:google.com)</code>
+  
+  Jika Anda ingin beberapa tombol pada baris yang sama, gunakan :same, maka akan seperti berikut ini:
+  <code>[one](buttonurl://example.com)</code>
+  <code>[two](buttonurl://google.com:same)</code>
+  
+  Ini akan membuat dua tombol pada satu baris, bukan satu tombol per baris.
+  
+  Ingatlah bahwa pesan Anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
 #endregion
 
 
