@@ -304,7 +304,7 @@ miscs-help: |
           [-n, -neko, -nekobin] = menggunakan nekobin
           [-h, -haste, -hastebin] = menggunakan hastebin\n
   **Perintah Spesial:**
-  ×  /covid <country> : Get Covid-19 data in your country.
+  ×  /covid <country> : Menampilkan informasi Covid-19 di suatu negara.
 covid-text: |
   **Statistik Virus Corona di {country}**
   **pada {date}**\n
@@ -320,6 +320,56 @@ covid-text: |
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
+#endregion
+
+
+#region mute
+muting-button: Membisukan
+muting-help: |
+  Beberapa orang spammer, gangguan, atau troll perlu didisiplinkan.
+  Dengan perintah ini Anda dapat dengan mudah membisukan seseorang.\n
+  **Hanya Administrator federasi yang dapat melakukan ini!:**
+  × /mute <Melalui id atau username>: Membisukan seseorang di supergroup.
+  × /mute <Melalui id atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
+  × /unmute <Melalui id atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
+  Contoh untuk membisukan sementara seseorang :
+  m = Menit, h = Jam and d = Hari.
+  ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
+invalid-time-flag: Tidak sah atau benar tipe waktu. Tolong gunakan m,h, or d.
+no-mute-user: Berikan saya pengguna yang akan dibisukan!
+no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
+mute-success: Berhasil dibisukan **{}**!
+mute-success-time: Berhasil dibisukan **{}** untuk {}!
+unmute-done: Sudah tidak dibisukan!\n pengguna ini bisa berbicara kembali!
+cant-mute-admin: Saya tidak akan membisukan seorang Administrator!
+self-muting: Hahaha, saya tidak akan membisukan diri saya sendiri!
+already-muted: Pengguna ini sudah dibisukan!
+user-not-muted: Pengguna ini tidak dibisukkan dan memiliki ijin untuk bisa berbicara!
+#endregion
+
+
+
+#region note
+notes-button: Catatan
+notes-help: |
+  \nSimpan data yang akan dibaca atau digunakan dikemudian hari didalam catatan!\n
+  **Perintah pengguna:**
+  × /get <notename>: Menampilkan catatan dengan nama catatan ini. Contoh, jika anda ingin membuka catatan bernama test, itu akan menjadi /get test.
+  × #<notename>: Sama seperti /get. Contoh : #test
+  × /notes: Daftar semua catatan pada grup ini.\n
+  **Perintah Administrator:**
+  × /save <nama catatan> <isi catatan>: menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
+  × /clear <nama catatan> | /delnote <notename>: Hapus catatan yang tersimpan jika ada dan tersimpan.
+  \nCheck /markdownhelp untuk info format catatan lainnya silahkan di cek.
+notes-invalid-args : |
+ Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
+  Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
+note-saved: "Pesan disimpan dengan nama `{}`."
+note-list: "**Daftar semua catatan pada grup ini {}:**\n"
+no-notes: "`Tidak ada catatan pada grup ini!`"
+notes-del-noargs: Berikan saya nama catatan yang akan dihapus!
+notes-not-exist: Tidak ada catatan itu pada grup ini!
+notes-deleted: "Catatan `{}` dihapus!."
 #endregion
 
 
@@ -344,9 +394,9 @@ restriction-help: |
   Dengan perintah ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar. 
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
-  × /kick <userhandle>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
-  × /ban <userhandle>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id, username atau, atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
-  × /unban <userhandle>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup Anda (Melalui id, username atau balas pesan orang tersebut)
+  × /kick <Melalui id atau username>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
+  × /ban <Melalui id atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id, username atau, atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
+  × /unban <Melalui id atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup Anda (Melalui id, username atau balas pesan orang tersebut)
   \nhandle bisa menjadi Id pengguna atau username pengguna
 no-kick-user: siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang administrator.
