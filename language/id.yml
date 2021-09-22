@@ -142,14 +142,14 @@ federations-button: Federasi
 federations-help: |
   Manajemen grup itu menyenangkan, sampai anda mulai mendapatkan spammer, dan anda harus melarang mereka. Dan anda harus mulai melarang mereka lebih banyak, dan lebih banyak lagi, dan itu akan menyusahkan.
   Tapi ternyata anda memiliki beberapa grup, dan anda tidak ingin spammer ini ada di grup mana pun - bagaimana anda bisa menanganinya? Apakah anda harus memblokirnya secara manual, di semua grup anda?
-  Tidak lagi! Dengan federasi, anda dapat membuat larangan dalam satu obrolan dan kemudian orang tersebut akan dilarang di semua grup anda yang lain.
-  anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua obrolan yang ingin anda lindungi.
+  Tidak lagi! Dengan federasi, anda dapat membuat larangan dalam satu grup dan kemudian orang tersebut akan dilarang di semua grup anda yang lain.
+  anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
   
   
   **Perintah yang tersedia:**
   × /newfed <name>: Buat federasi baru dengan nama yang anda ditentukan.
   × /delfed <fedID>: Menghapus federasi yang anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
-  × /joinfed <fedID>: Digabungkan obrolan saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat mel
+  × /joinfed <fedID>: Digabungkan grup saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat mel
   kan ini**)
   × /leavefed <fedID>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
@@ -355,12 +355,12 @@ notes-button: Catatan
 notes-help: |
   \nSimpan data yang akan dibaca atau digunakan dikemudian hari didalam catatan!\n
   **Perintah pengguna:**
-  × /get <notename>: Menampilkan catatan dengan nama catatan ini. Contoh, jika anda ingin membuka catatan bernama test, itu akan menjadi /get test.
-  × #<notename>: Sama seperti /get. Contoh : #test
+  × /get <nama catatan>: Menampilkan catatan dengan nama catatan ini. Contoh, jika anda ingin membuka catatan bernama test, itu akan menjadi /get test.
+  × #<nama catatan>: Sama seperti /get. Contoh : #test
   × /notes: Daftar semua catatan pada grup ini.\n
   **Perintah Administrator:**
   × /save <nama catatan> <isi catatan>: menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
-  × /clear <nama catatan> | /delnote <notename>: Hapus catatan yang tersimpan jika ada dan tersimpan.
+  × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCheck /markdownhelp untuk info format catatan lainnya silahkan di cek.
 notes-invalid-args : |
  Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
@@ -378,7 +378,7 @@ notes-deleted: "Catatan `{}` dihapus!."
 #region purge
 purges-button: Pembersihan
 purges-help: |
-  Hapus pesan obrolan dengan mudah menggunakan saya dengan perintah berikut ini.\n
+  Hapus pesan di grup dengan mudah menggunakan saya dengan perintah berikut ini.\n
   ** Hanya Administrator yang bisa menggunakan: **
   × /del: Hapus pesan yang dibalas.
   × /purge | /prune: Menghapus semua pesan hingga pesan yang dibalas /purge.
@@ -398,7 +398,7 @@ reporting-help: |
   × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh admin.
   × @admin: Sama seperti /report.
   \nSimply balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
-  **Catatan** /reports and @admin tidak akan direspon jika itu adalah oleh pesan atau obrolan Administrator.
+  **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
 report-on: Pelaporan diaktifkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
 chat-report-on: Pelaporan diaktifkan! Admin yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
 report-off: Pelaporan dinonaktifkan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
@@ -486,20 +486,39 @@ greetings-help: |
   × /resetwelcome: Merubah pesan sambutan anda kepada pesan sambutan bawaan saya.
   × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
   × /welcome : Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
+  × /setgoodbye <reply> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
+  × /resetgoodbye : Merubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
+  × /goodbye <on/off> :  Menyalakan / mematikan pesan selamat tinggal.
+  × /goodbye : Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini..\n
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
+   **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir
+  Contoh: `/welcome noformat`
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
   Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
+  
+  
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Merubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
 cust-welcome-set: Berhasil merubah pesan sambutan sesuai yang anda inginkan!
 reset-welcome: Berhasil merubah pesan sambutan ke pesan sambutan bawaan saya!
 view-welcome: |
-  ** Obrolan ini memiliki pengaturan: **
+  **Grup ini memiliki pengaturan: **
   `Menyambut pengguna` = `{}`
   `Pembersihan Pesan layanan` = `{}`
-  Dan pesan sambutan dari obrolan ini adalah:
+  Dan pesan sambutan dari grup ini adalah:
+  
+  
+default-goodbye: "{first} dia baru saja keluar!"
+goodbye-set: Selamat tinggal menjadi {} saat ada anggota yang keluar.
+cust-goodbye-set: Berhasil merubah pesan selamat tinggal sesuai yang anda inginkan!
+reset-goodbye: Berhasil merubah pesan selamat tinggal ke pesan selamat tinggal bawaan saya!
+view-goodbye: |
+  **Grup ini memiliki pengaturan:**
+  `Ucapan selamat tinggal untuk anggota yang keluar` = `{}`
+  `Pembersihan Pesan layanan` = `{}`
+  Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
 
 
@@ -509,7 +528,7 @@ error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
 err-chat-private: Perintah ini khusus untuk PM!
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
-err-not-participant: "Pengguna ini bukan anggota obrolan!"
+err-not-participant: "Pengguna ini bukan anggota grup!"
 err-invalid-option: Pilihan ini tidak valid!
 err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
