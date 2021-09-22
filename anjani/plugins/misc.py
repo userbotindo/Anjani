@@ -90,12 +90,14 @@ class Misc(plugin.Plugin):
             hastebin = "hastebin" in uri
             katbin = "katb" in uri
 
-        await ctx.respond(await self.text(chat.id, "wait-paste", service))
-
         if hastebin:
+            service = "hastebin"
             json = {}
         else:
+            service = "katbin"
             json = {"json": {"content": data}}
+
+        await ctx.respond(await self.text(chat.id, "wait-paste", service))
 
         try:
             async with self.bot.http.post(uri, data=data if hastebin else None, **json) as resp:
