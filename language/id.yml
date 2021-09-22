@@ -4,8 +4,9 @@ start-pm: |
   Saya dibuat untuk mengelola grup Anda dengan menyenangkan dan mudah!
   **Dikelola dengan ❤️ oleh:** [Tim UserbotIndo](https://t.me/userbotindo)\n
   Apakah Anda bingung bagaimana menggunakan saya? Silahkan Anda menggunakan /help untuk melihat perintah yang dapat Anda gunakan.\n
-  Silahkan Anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya 🙂\n
+  Silahkan Anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya! \n
   Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
+  
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
   Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup Anda! Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa \
@@ -14,6 +15,7 @@ help-pm: |
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
   × /setlang: Mengganti bahasa yang saya gunakan.
+  
 start-chat: Memberi Anda salam hangat & berharap hari Anda menyenangkan!
 help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
 add-to-group-button: Tambahkan saya
@@ -21,6 +23,9 @@ start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
 back-button: ⬅️ Kembali
 #endregion
+
+
+
 #region admin
 admins-button: Admin
 admins-help: |
@@ -36,6 +41,10 @@ finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup Anda!
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup Anda!` 🚮"
 zombie-clean: "`Akun yang sudah terhapus tidak di temukan pada grup Anda, Grup bersih` 🙌"
 #endregion
+
+
+
+
 #region language
 language-button: Bahasa
 language-help: |
@@ -50,10 +59,13 @@ language-help: |
   Anda dapat menggunakan perintah ini pada grup Anda untuk mengganti bahasa yang digunakan.\n
   Bantu kami mencakup lebih banyak bahasa dengan berkontribusi di [Crowdin!] (https://crowdin.com/project/anjani-bot)
 current-language: "Bahasa **{}** saat ini adalah **{}**\nKlik bahasa yang ingin kamu gunakan"
-language-code-error: Telah terjadi kesalahan (tidak ada string bahasa yang tersedia) Silahkan hubungi grup support saya
+language-code-error: Telah terjadi kesalahan (tidak ada string bahasa yang tersedia) Silahkan hubungi grup support saya.
 language-set-succes: Bahasa yang digunakan sudah berhasil dirubah ke {}
 language-invalid: Mohon maaf kode bahasa tidak cocok.\nKode bahasa yang tersedia {}
 #endregion
+
+
+
 #region misc
 miscs-button: Lainnya
 covid-text: |
@@ -72,6 +84,9 @@ wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
 #endregion
+
+
+
 #region purge
 purges-button: Pembersihan
 purges-help: |
@@ -82,11 +97,14 @@ purges-help: |
 purge-done: "`{} pesan telah dihapus dalam {} detik...`"
 purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
 #endregion
+
+
+
 #region restrictions
 restriction-button: Pembatasan
 restriction-help: |
   Orang yang mengirim spam, mengolok-olok, atau mengganggu perlu dibatasi.
-  Dengan ekstensi ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar. 
+  Dengan perintah ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar. 
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
   × /kick <userhandle>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
@@ -97,11 +115,14 @@ no-kick-user: siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang administrator.
 kick-done: "**{}** Dikeluarkan!"
 no-ban-user: Siapa yang harus saya blokir?
-admin-ban: Saya tidak akan memblokir admin!
+admin-ban: Saya tidak akan memblokir administrator!
 ban-done: "**{}** Terblokir!"
 unban-no-user: berikan saya pengguna untuk diblokir.
 unban-done: "blokir **{}** dihapus..."
 #endregion
+
+
+
 #region spam shield
 banned-text: |
   #SPAM_SHIELD\n
@@ -115,14 +136,17 @@ spamshield-view: |
   Spam shield setting: {} 
   Spam shield adalah fitur yang digunakan untuk melindungi grup Anda dari orang yang melakukan spam dan orang iseng.
 #endregion
+
+
+
 #region greetings
-greetings-button: Sambutan
+greetings-button: Pesan Sambutan
 greetings-help: |
   Pesan selamat datang di grup Anda yang dapat diatur dengan berbagai cara yang Anda mau.\n
   **Hanya administrator yang bisa menggunakan:**
   × /setwelcome <reply>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup Anda. Silahkan membalas dengan pesan sambutan yang Anda inginkan!
   × /resetwelcome: Merubah pesan sambutan Anda kepada pesan sambutan bawaan saya.
-  × /welcome <on/off>: menyalakan / mematikan pesan sambutan.
+  × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
   × /welcome : Menampilkan pesan sambutan Anda saat ini dan pengaturannya saat ini.
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
 bot-added: |
@@ -139,6 +163,9 @@ view-welcome: |
   `Pembersihan Pesan layanan` = `{}`
   Dan pesan sambutan dari obrolan ini adalah:
 #endregion
+
+
+
 #region common-error
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota obrolan!"
