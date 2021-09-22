@@ -116,25 +116,157 @@ backups-help: |
   
   × /backup: Cadangkan data grup, contoh : catatan, pesan sambutan, spam shield, dan lain-lain. Yang mana tersimpan di basis data aku.
   \n× /restore: Balas ke file cadangan Anda untuk mengembalikan data grup.
-  \nNote: File cadangan dari suatu obrolan tidak dapat dikembalikan ke obrolan lain.
+  \nNote: File cadangan dari suatu grup tidak dapat dikembalikan ke grup lain.
   
 backup-doc: |
   **Berhasil mencadangkan data:**
-  Obrolan: `{}`
-  Obrolan ID: `{}`
+  Grup: `{}`
+  Grup ID: `{}`
   Waktu: `{}`
   \nFile ini berisi cadangan data yaitu:{}
   
-backup-null: Obrolan ini tidak memiliki data yang tersimpan di basis data aku.
+backup-null: Grup ini tidak memiliki data yang tersimpan di basis data aku.
 backup-data-null: Tidak ada data untuk dikembalikan.
-backup-progress: Mencadangkan data obrolan.
-backup-id-invalid: Mohon maaf ini adalah file cadangan dari obrolan lain! Aku tidak dapat mengembalikan data obrolan lain!
+backup-progress: Mencadangkan data grup.
+backup-id-invalid: Mohon maaf ini adalah file cadangan dari grup lain! Aku tidak dapat mengembalikan data grup lain!
 backup-done: Berhasil mengembalikan data.
 invalid-backup-file: Sepertinya file ini bukan file yang dicadangkan dari aku. Aku tidak dapat mengembalikan file tersebut!
 no-backup-file: Balas ke file yang dicadangkan!
 restore-progress: Mengembalikan data.
 #endregion
 
+
+
+#region federations
+federations-button: Federasi
+federations-help: |
+  Manajemen grup itu menyenangkan, sampai Anda mulai mendapatkan spammer, dan Anda harus melarang mereka. Dan Anda harus mulai melarang mereka lebih banyak, dan lebih banyak lagi, dan itu akan menyusahkan.
+  Tapi ternyata Anda memiliki beberapa grup, dan Anda tidak ingin spammer ini ada di grup mana pun - bagaimana Anda bisa menanganinya? Apakah Anda harus memblokirnya secara manual, di semua grup Anda?
+  Tidak lagi! Dengan federasi, Anda dapat membuat larangan dalam satu obrolan dan kemudian orang tersebut akan dilarang di semua grup Anda yang lain.
+  Anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya Anda dapat memblokir orang tersebut ke semua obrolan yang ingin Anda lindungi.
+  
+  
+  **Perintah yang tersedia:**
+  × /newfed <name>: Buat federasi baru dengan nama yang Anda ditentukan.
+  × /delfed <fedID>: Menghapus federasi yang Anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
+  × /joinfed <fedID>: Digabungkan obrolan saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat melakukan ini**)
+  × /leavefed <fedID>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
+  × /fedinfo: Menampilkan informasi tentang suatu federasi.
+  × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
+  × /myfeds: Daftar semua federasi dimana Anda menjadi admin.
+  
+  **Perintah yang tersedia untuk pemilik federasi:**
+  × /fedpromote | /fpromote: Mengangkat seseorang untuk menjadi seorang Administrator federasi.
+  × /feddemote | /fdemote:  Menurunkan seorang Administrator federasi di federasi Anda.
+  × /fbackup: Mendapatkan file cadangan tentang pengguna yang dilarang dalam federasi dalam CSV (Hanya melalui PM).
+  × /fexport: Mengembalikan file candangan untuk memulihkan pengguna yang dilarang (Hanya melalui PM).
+  × /setfedlog: Membuat grup atau channel saat ini sebagai log federasi. Semua peristiwa federasi akan dicatat di sini.
+  × /unsetfedlog: Membatalkan log federation. Semua peristiwa federasi tidak akan dicatat di sini.
+  
+  **Perintah yang tersedia untuk Administrator federasi:**
+  × /fban: Melarang seorang pengguna di federasi saat ini.
+  × /unfban: Membatalkan larang atau blokir seorang pengguna di federasi saat ini.
+  × /fadmins: Menampilkan Administrator federasi saat ini.
+  
+federation-limit: Kamu hanya dapat memiliki 1 federasi!
+new-federation: |
+  **Federasi baru sudah dibuat**
+  **Nama:** {fed_name}
+  **Fed ID:** {fed_id}\n
+  Gunakan perintah ini di grup untuk bergabung dengan federasi
+  `/joinfed {fed_id}`
+need-fed-name: Tolong tulis nama federasi yang akan Anda buat!
+user-no-feds: Sepertinya kamu tidak memiliki suatu federasi saat ini!\nBuat dengan cara `/newfed <nama federasi>`
+del-fed-confirm: |
+  Anda yakin ingin menghapus federasi ini?
+  Tindakan ini tidak bisa dibatalkan!
+  Anda akan kehilangan seluruh daftar pengguna yang Anda larang dan federasi Anda akan hilang secara permanen!
+  \nKonfirmasi penghapusan dari **{}**
+fed-confirm-text: "⚠️ Konfirmasi dihapus ⚠️"
+fed-abort-text: Batalkan
+fed-delete-canceled: Penghapus federasi dibatalkan
+fed-delete-done: Aku sudah menghapus federasi kamu!\nSemua grup yang terhubung dengan **{}** sekarang tanpa federasi.
+fed-cant-two-feds: Anda tidak dapat bergabung dengan dua federasi dalam satu grup!
+fed-invalid-id: Tolong masukkan ID federasi yang sah dan benar
+fed-invalid-user-id: Harap masukkan ID pengguna yang sah dan benar
+fed-already-connected: Grup ini sudah terhubung ke federasi itu!
+fed-chat-joined-info: Grup ini sekarang bergabung dalam **{}** Federation!
+fed-not-connected: Grup ini tidak terhubung ke federasi itu!
+fed-chat-leave-info: Grup ini sekarang meninggalkan **{}** Federation!
+fed-no-promote-user: Siapa yang harus aku angkat menjadi Administrator?\nBerikan aku orang tersebut!
+fed-no-fed-chat: Grup ini tidak terhubung ke federasi apapun!
+fed-owner-only-promote: Hanya pemilik federasi yang dapat mengangkat Administrator baru!
+fed-already-owner: Anda adalah pemilik Federasi ini!
+fed-already-admin: Pengguna sudah menjadi admin di federasi ini!
+fed-promote-done: Berhasil diangkat menjadi Administrator federasi!
+fed-no-demote-user: Siapa yang harus aku turunkan dari Administrator federasi?\nBerikan aku orang tersebut!
+fed-owner-only-demote: Hanya pemilik federasi yang dapat menurunkan seorang Administrator!
+fed-user-not-admin: Pengguna ini bukan seorang Administrator di federasi ini!
+fed-demote-done: Berhasil diturunkan!
+fed-specified-id: Tolong ID federasi yang benar dan jelas!
+fed-info-text: |
+  **Informasi Federasi:**
+  **Fed ID: **` {}`
+  **Nama: **`{}`
+  **Pemilik: **{}
+  **Total adminstrator: ** `{}`
+  **Total pengguna yang dilarang: ** `{}`
+  **Total grup yang terhubung federasi: ** `{}`
+  
+  
+fed-admin-only: Only federation admin can do this!
+fed-admin-text: |
+  **{} admins:**
+  👑 Owner: {}
+fed-no-admin: There are no admin in this federation!
+fed-no-ban-user: You don't seems to refering a user
+fed-ban-self: Please... I'm not that dumb!
+fed-ban-owner: How can a federation owner banned in his own federation!
+fed-ban-protected: I won't fban this user!
+fed-ban-info-update: |
+  **New Federation Ban**
+  **Federation: **{}
+  **Federation admin: **{}
+  **User: ** {}
+  **User ID: ** {}
+  **Old reason**: {}
+  **New reason**: {}
+fed-ban-info: |
+  **New Federation Ban**
+  **Federation: **{}
+  **Federation admin: **{}
+  **User: ** {}
+  **User ID: ** {}
+  **Reason**: {}
+fed-user-not-banned: This user is not Fbanned!
+fed-unban-info: |
+  **Un-FedBan**
+  **Federation: **{}
+  **Federation admin: **{}
+  **User: **{}
+  **User ID: **`{}`
+fed-stat-banned: |
+  User is banned in that federation
+  **Reason: ** {}
+  **Banned on: ** {}
+fed-stat-not-banned: User is not banned in that federation!
+fed-stat-multi: This user has been banned in this federations\n
+fed-stat-multi-info: " -  **{}**(`{}`)\n    **Reason: **{}\n"
+fed-stat-multi-not-banned: This user is not banned in any federation!
+fed-backup-empty: Empty federation data...
+fed-restore-done: Done restoring backup
+fed-myfeds-owner: "You are the **owner** of this Federation:\n"
+fed-myfeds-admin: "\nYou are **admin** in this following Federation:\n"
+fed-myfeds-no-admin: Looks like you don't have a federation you're admin on
+fed-set-log-args: "To set a federation log in a channel, please specify the FedID to connect.\neg: `/setfedlog fedID`"
+fed-not-found: Fed not found!
+fed-check-identity: Please ask the fed creator to confirm this action by pressing this button.
+fed-log-set-group: "This chat is set as **{name}** logs"
+fed-log-set-chnl: "This channel has been set as the fed log for **{}**\nall fed related actions will be logged here."
+fed-invalid-identity: The user who clicked confirmation button was not the fed creator.\nOnly the federation creator can set the fed log.
+fed-log-unset: Federation log of **{}** is unset.
+fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
+#endregion
 
 #region language
 language-button: Bahasa
