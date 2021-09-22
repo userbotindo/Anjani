@@ -1,0 +1,148 @@
+#region Main
+start-pm: |
+  Hai! Salam kenal nama saya adalah **{}**.
+  Saya dibuat untuk mengelola grup Anda dengan menyenangkan dan mudah!
+  **Dikelola dengan ❤️ oleh:** [Tim UserbotIndo](https://t.me/userbotindo)\n
+  Apakah Anda bingung bagaimana menggunakan saya? Silahkan Anda menggunakan /help untuk melihat perintah yang dapat Anda gunakan.\n
+  Silahkan Anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya 🙂\n
+  Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
+help-pm: |
+  Hai salam kenal! Nama saya adalah **{}**.
+  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup Anda! Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa \
+  hal-hal yang dapat saya lakukan...
+  perintah yang tersedia:
+  × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
+  × /help: Menampilkan anda pesan bantuan ini.
+  × /setlang: Mengganti bahasa yang saya gunakan.
+start-chat: Memberi Anda salam hangat & berharap hari Anda menyenangkan!
+help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
+add-to-group-button: Tambahkan saya
+start-help-button: Bantuan & Perintah ❔
+help-chat-button: Bantuan
+back-button: ⬅️ Kembali
+#endregion
+#region admin
+admins-button: Admin
+admins-help: |
+  Ini adalah daftar perintah yang dapat saya lakukan
+  Untuk Anda yang merupakan seorang Administrator di suatu grup.\n
+  × /adminlist: Untuk menampilkan daftar semua administartor di grup Anda.\n
+  **Admin only:**
+  × /pin: Untuk menyematkan suatu pesan pada grup Anda.
+  × /unpin: Untuk membatalkan pesan yang disematkan pada grup Anda.
+  × /setgpic : Merubah foto profile grup Anda.
+gpic-no-photo: Berikan saya sebuah foto!
+finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup Anda!`"
+cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup Anda!` 🚮"
+zombie-clean: "`Akun yang sudah terhapus tidak di temukan pada grup Anda, Grup bersih` 🙌"
+#endregion
+#region language
+language-button: Bahasa
+language-help: |
+  Bot ini hadir dengan dukungan multi bahasa.
+  Anda dapat memilih preferensi bahasa Anda!\n
+  ** Bahasa yang tersedia: **
+  - 🇺🇸 Bahasa Inggris.
+  - 🇮🇩 Bahasa Indonesia.\n
+  Perintah:
+  × /setlang | /lang | /language : Mengganti bahasa yang saya gunakan.\n
+  **Catatan**
+  Anda dapat menggunakan perintah ini pada grup Anda untuk mengganti bahasa yang digunakan.\n
+  Bantu kami mencakup lebih banyak bahasa dengan berkontribusi di [Crowdin!] (https://crowdin.com/project/anjani-bot)
+current-language: "Bahasa **{}** saat ini adalah **{}**\nKlik bahasa yang ingin kamu gunakan"
+language-code-error: Telah terjadi kesalahan (tidak ada string bahasa yang tersedia) Silahkan hubungi grup support saya
+language-set-succes: Bahasa yang digunakan sudah berhasil dirubah ke {}
+language-invalid: Mohon maaf kode bahasa tidak cocok.\nKode bahasa yang tersedia {}
+#endregion
+#region misc
+miscs-button: Lainnya
+covid-text: |
+  **Statistik Virus Corona di {country}**
+  **pada {date}**\n
+  **Kasus Terkonfirmasi :** `{confirmed}`
+  **Kasus Aktif :** `{active}`
+  **Total Korban Meninggal :** `{deaths}`
+  **Total Sembuh :** `{recovered}`\n
+  **Kasus Baru :** `{new_cases}`
+  **Korban Meninggal Baru :** `{new_deaths}`
+  **Kasus Kritis :** `{critical}`
+  **Total Tes :** `{total_tests}`\n
+  Data berasal dari [Worldometer]({link})
+wait-paste: "`Menyalin ke {}...`"
+paste-succes: "**Berhasil Ditempel ke {}..!**"
+fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
+#endregion
+#region purge
+purges-button: Pembersihan
+purges-help: |
+  Hapus pesan obrolan dengan mudah menggunakan saya dengan perintah berikut ini.\n
+  ** Hanya Administrator yang bisa menggunakan: **
+  × /del: Hapus pesan yang dibalas.
+  × /purge | /prune: Menghapus semua pesan hingga pesan yang dibalas /purge.
+purge-done: "`{} pesan telah dihapus dalam {} detik...`"
+purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
+#endregion
+#region restrictions
+restriction-button: Pembatasan
+restriction-help: |
+  Orang yang mengirim spam, mengolok-olok, atau mengganggu perlu dibatasi.
+  Dengan ekstensi ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar. 
+  Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
+  **Hanya Administrator yang bisa menggunakan:**
+  × /kick <userhandle>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
+  × /ban <userhandle>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id, username atau, atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
+  × /unban <userhandle>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup Anda (Melalui id, username atau balas pesan orang tersebut)
+  \nhandle bisa menjadi Id pengguna atau username pengguna
+no-kick-user: siapa yang harus saya keluarkan?
+admin-kick: Saya tidak bisa mengeluarkan seorang administrator.
+kick-done: "**{}** Dikeluarkan!"
+no-ban-user: Siapa yang harus saya blokir?
+admin-ban: Saya tidak akan memblokir admin!
+ban-done: "**{}** Terblokir!"
+unban-no-user: berikan saya pengguna untuk diblokir.
+unban-done: "blokir **{}** dihapus..."
+#endregion
+#region spam shield
+banned-text: |
+  #SPAM_SHIELD\n
+  **Nama:** {}
+  **ID:** `{}`
+  **Alasan**: {}
+  **Client:** {}
+  Orang ini terdeteksi sebagai spambot dan sudah dikeluarkan!
+spamshield-set: "Chat #SPAM_SHIELD turned {}"
+spamshield-view: |
+  Spam shield setting: {} 
+  Spam shield adalah fitur yang digunakan untuk melindungi grup Anda dari orang yang melakukan spam dan orang iseng.
+#endregion
+#region greetings
+greetings-button: Sambutan
+greetings-help: |
+  Pesan selamat datang di grup Anda yang dapat diatur dengan berbagai cara yang Anda mau.\n
+  **Hanya administrator yang bisa menggunakan:**
+  × /setwelcome <reply>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup Anda. Silahkan membalas dengan pesan sambutan yang Anda inginkan!
+  × /resetwelcome: Merubah pesan sambutan Anda kepada pesan sambutan bawaan saya.
+  × /welcome <on/off>: menyalakan / mematikan pesan sambutan.
+  × /welcome : Menampilkan pesan sambutan Anda saat ini dan pengaturannya saat ini.
+  × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
+bot-added: |
+  Hai salam kenal. Terima kasih telah mengundang saya ke grup Anda.
+  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
+default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
+clean-serv-set: "Merubah pembersihan pesan layanan : {}."
+welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
+cust-welcome-set: Berhasil merubah pesan sambutan sesuai yang Anda inginkan!
+reset-welcome: Berhasil merubah pesan sambutan ke pesan sambutan bawaan saya!
+view-welcome: |
+  ** Obrolan ini memiliki pengaturan: **
+  `Menyambut pengguna` = `{}`
+  `Pembersihan Pesan layanan` = `{}`
+  Dan pesan sambutan dari obrolan ini adalah:
+#endregion
+#region common-error
+error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
+err-not-participant: "Pengguna ini bukan anggota obrolan!"
+err-invalid-option: Pilihan ini tidak valid!
+error-reply-to-message: Balas ke sebuah pesan!
+err-yes-no-args: Usage is on/yes or off/no
+err-invalid-pid: Identifier tidak valid!
