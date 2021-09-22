@@ -443,7 +443,7 @@ class Federation(plugin.Plugin):
 
     async def cmd_fban(
         self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
-    ) -> str:
+    ) -> Optional[str]:
         """Fed ban a user"""
         chat = ctx.chat
         if chat.type == "private":
@@ -519,16 +519,17 @@ class Federation(plugin.Plugin):
                 # don't remove the chat for now
                 # await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
 
+        await ctx.respond(string)
+
+        if failed:
+            text = ""
+            for key, err_msg in failed.items():
+                text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
+            await ctx.respond(text, delete_after=20, mode="reply", reference=ctx.respondse)
+
         # send message to federation log
         if log := data.get("log"):
             await self.bot.client.send_message(log, string, disable_web_page_preview=True)
-            if failed:
-                text = ""
-                for key, err_msg in failed.items():
-                    text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
-                await self.bot.client.send_message(log, text)
-
-        return string
 
     async def cmd_unfban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban a user on federation"""
