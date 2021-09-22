@@ -126,7 +126,7 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "cleaning-zombie", zombie)
 
     @command.filters(filters.can_promote)
-    async def cmd_promote(self, ctx: command.Context, user: Optional[User]) -> str:
+    async def cmd_promote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Bot promote member, required Both permission of can_promote"""
         chat = ctx.msg.chat
 
@@ -134,15 +134,13 @@ class Admins(plugin.Plugin):
             if ctx.args or not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "err-peer-invalid")
             user = ctx.msg.reply_to_message.from_user
+
         if user.id == ctx.author.id and ctx.args:
             return await self.text(chat.id, "promote-error-self")
-        if user.id == ctx.author.id:
-            return await self.text(chat.id, "no-promote-user")
 
         if user.id == self.bot.uid:
             return await self.text(chat.id, "error-its-myself")
 
-        # use cached permissions from filters
         bot, _ = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
         try:
             await chat.promote_member(
@@ -164,7 +162,7 @@ class Admins(plugin.Plugin):
         return await self.text(chat.id, "promote-success")
 
     @command.filters(filters.can_promote)
-    async def cmd_demote(self, ctx: command.Context, user: Optional[User]) -> str:
+    async def cmd_demote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Demoter Just owner and promoter can demote admin."""
         chat = ctx.msg.chat
 
@@ -172,10 +170,9 @@ class Admins(plugin.Plugin):
             if ctx.args or not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "err-peer-invalid")
             user = ctx.msg.reply_to_message.from_user
+
         if user.id == ctx.author.id and ctx.args:
             return await self.text(chat.id, "demote-error-self")
-        if user.id == ctx.author.id:
-            return await self.text(chat.id, "no-demote-user")
 
         if user.id == self.bot.uid:
             return await self.text(chat.id, "error-its-myself")
