@@ -3,7 +3,7 @@ start-pm: |
   Hai! Salam kenal nama saya adalah **{}**.
   Saya dibuat untuk mengelola grup Anda dengan menyenangkan dan mudah!
   **Dikelola dengan ❤️ oleh:** [Tim UserbotIndo](https://t.me/userbotindo)\n
-  Apakah Anda bingung bagaimana menggunakan saya? Silahkan Anda menggunakan /help untuk melihat perintah yang dapat Anda gunakan.\n
+  Apakah anda bingung bagaimana menggunakan saya? Silahkan Anda menggunakan /help untuk melihat perintah yang dapat anda gunakan.\n
   Silahkan Anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya! \n
   Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
   
@@ -440,6 +440,26 @@ unban-done: "blokir **{}** dihapus..."
 
 
 
+#region rules
+rules-button: Aturan
+rules-help: |
+  Setiap grup memiliki aturan yang berbeda, modul ini akan membantu memperjelas aturan tersebut!\n
+  × /rules: Menampilkan aturan suatu grup.\n
+  **Hanya Administrator yang bisa menggunakan:**
+  × /setrules <chat rules>: Menetapkan aturan dalam grup.
+  × /clearrules: Menghapus aturan dalam grup.\n
+  **Catatan**
+ Untuk membuat tautan tampilan aturan khusus, yang anda butuhkan hanyalah id grup dan tempelkan ke tautan:
+  `t.me/{username}?start=rules_<chat_id>`
+rules-blank-err: Aturan tidak boleh kosong!
+rules-set: "Aturan grup sudah ditetapkan!\nTautan untuk melihat aturan: `{}`"
+rules-clear: Berhasil menghapus aturan dalam grup!
+rules-none: Grup ini belum menetapkan aturan!
+rules-view-caption: Klik tombol ini untuk melihat aturan grup!
+rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
+#endregion
+
+
 #region spam shield
 banned-text: |
   #SPAM_SHIELD\n
@@ -484,9 +504,17 @@ view-welcome: |
 
 
 #region common-error
+error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
+err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
+err-chat-private: Perintah ini khusus untuk PM!
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota obrolan!"
 err-invalid-option: Pilihan ini tidak valid!
+err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
+err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, atau IDnya tidak sah atau benar."
+err-api-down: Neko api sedang bermasalah, coba lagi nanti.
+err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
+#endregion
 err-invalid-pid: Identifier tidak valid!
