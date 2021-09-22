@@ -6,7 +6,6 @@ start-pm: |
   Apakah anda bingung bagaimana menggunakan saya? Silahkan anda menggunakan /help untuk melihat perintah yang dapat anda gunakan.\n
   Silahkan anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya! \n
   Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
-  
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
   Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda! Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa \
@@ -14,117 +13,74 @@ help-pm: |
   perintah yang tersedia:
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
-  × /setlang: Mengganti bahasa yang saya gunakan.
-  
+  × /setlang: Mengganti bahasa yang saya gunakan. 
 start-chat: Memberi anda salam hangat & berharap hari anda menyenangkan!
 help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
 add-to-group-button: Tambahkan saya
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
 back-button: ⬅️ Kembali
-
 markdown-helper: |
   Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
   <b>Markdown yang didukung:</b>
-  
-  - <code>__italic__</code>: Buat dua garis bawah diantara kata, akan menghasilkan <i>italic</i> text.
-  
-  - <code>**bold**</code>: Buat dua tanda bintang diantara kata, akan menghasilkan <b>bold</b> text
-  
-  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks diantara kata, akan menghasilkan <code>monospace</code> text.
-  
-  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes diantara kata, akan menghasilkan <del>strikethrough</del> text
-  
-  - <code>--underline--</code>: Buat tanda penghubung diantara kata, akan menghasilkan  <u>underline</u> text
-  
+  - <code>__italic__</code>: Buat dua garis bawah di antara kata, akan menghasilkan <i>italic</i> text.
+  - <code>**bold**</code>: Buat dua tanda bintang di antara kata, akan menghasilkan <b>bold</b> text
+  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks di antara kata, akan menghasilkan <code>monospace</code> text.
+  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes di antara kata, akan menghasilkan <del>strikethrough</del> text
+  - <code>--underline--</code>: Buat tanda penghubung di antara kata, akan menghasilkan  <u>underline</u> text
   - <code>[sometext](someURL)</code>: Ini akan membuat tautan - pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
-  
-  EG: <code>[test](example.com)</code>
+  Contoh: <code>[test](example.com)</code>
   - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
-  EG: <code>[This is a button](buttonurl:google.com)</code>
+  Contoh: <code>[This is a button](buttonurl:google.com)</code>
   
   Jika anda ingin beberapa tombol pada baris yang sama, gunakan :same, maka akan seperti berikut ini:
   <code>[one](buttonurl://example.com)</code>
   <code>[two](buttonurl://google.com:same)</code>
-  
   Ini akan membuat dua tombol pada satu baris, bukan satu tombol per baris.
   
   Ingatlah bahwa pesan anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
 #endregion
-
-
-
 #region admin
 admins-button: Admin
 admins-help: |
-
   Ini adalah daftar perintah yang dapat saya lakukan
-  
   Untuk anda yang merupakan seorang Administrator di suatu grup.\n
   × /adminlist: Untuk menampilkan daftar semua administartor di grup anda.\n
   **Hanya Administrator yang bisa menggunakan:**
-  
   × /pin: Untuk menyematkan suatu pesan pada grup anda.
-  
   × /unpin: Untuk membatalkan pesan yang disematkan pada grup anda.
-  
-  × /setgpic : Merubah foto profile grup anda.
-  
+  × /setgpic : Mengubah foto profile grup anda.
   × /zombies : Menghapus akun yang sudah terhapus namun masih ada di grup anda!
-  
   × /promote <user_id/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
-  
-  × /demote <user_id/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
-  
-  
-  
+  × /demote <user_id/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup. 
 gpic-no-photo: Berikan saya sebuah foto!
-
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
-
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
-
 zombie-clean: "`Akun yang sudah terhapus tidak di temukan pada grup anda, Grup bersih` 🙌"
-
 promote-error-invalid: "**User id tidak sah**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id atau username yang benar`"
-
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
-
 demote-success: "`Menurunkan sudah berhasil`"
-
 demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
-
 no-demote-user: "`Beritahu saya, siapa yang mau kamu turunkan?"
-
 demote-error-self: "__Apakah kamu yakin akan menurunkan dirimu sendiri?__"
-
 promote-success: "`Berhasil diangkat menjadi Administrator`"
-
 promote-error-perm: "`Orang ini sudah menjadi Administrator!`"
-
 no-promote-user: "`Siapa yang harus saya angkat menjadi Administrator?\nBerikan saya orang tersebut!`"
-
 no-pinned-message: "__Tidak ada pesan yang disematkan__"
 #endregion
-
-
-
 #region Backups
 backups-button: Cadangan
 backups-help: |
   **Hanya Administrator yang bisa menggunakan:**\n
-  
   × /backup: Cadangkan data grup, contoh : catatan, pesan sambutan, spam shield, dan lain-lain. Yang mana tersimpan di basis data saya.
   \n× /restore: Balas ke file cadangan anda untuk mengembalikan data grup.
   \nNote: File cadangan dari suatu grup tidak dapat dikembalikan ke grup lain.
-  
 backup-doc: |
   **Berhasil mencadangkan data:**
   Grup: `{}`
   Grup ID: `{}`
   Waktu: `{}`
   \nFile ini berisi cadangan data yaitu:{}
-  
 backup-null: Grup ini tidak memiliki data yang tersimpan di basis data saya.
 backup-data-null: Tidak ada data untuk dikembalikan.
 backup-progress: Mencadangkan data grup.
@@ -134,23 +90,19 @@ invalid-backup-file: Sepertinya file ini bukan file yang dicadangkan dari saya. 
 no-backup-file: Balas ke file yang dicadangkan!
 restore-progress: Mengembalikan data.
 #endregion
-
-
-
 #region federations
 federations-button: Federasi
 federations-help: |
   Manajemen grup itu menyenangkan, sampai anda mulai mendapatkan spammer, dan anda harus melarang mereka. Dan anda harus mulai melarang mereka lebih banyak, dan lebih banyak lagi, dan itu akan menyusahkan.
   Tapi ternyata anda memiliki beberapa grup, dan anda tidak ingin spammer ini ada di grup mana pun - bagaimana anda bisa menanganinya? Apakah anda harus memblokirnya secara manual, di semua grup anda?
+  
   Tidak lagi! Dengan federasi, anda dapat membuat larangan dalam satu grup dan kemudian orang tersebut akan dilarang di semua grup anda yang lain.
   anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
-  
   
   **Perintah yang tersedia:**
   × /newfed <name>: Buat federasi baru dengan nama yang anda ditentukan.
   × /delfed <fedID>: Menghapus federasi yang anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
-  × /joinfed <fedID>: Digabungkan grup saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat mel
-  kan ini**)
+  × /joinfed <fedID>: Digabungkan grup saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /leavefed <fedID>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
   × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
@@ -168,7 +120,6 @@ federations-help: |
   × /fban: Melarang seorang pengguna di federasi saat ini.
   × /unfban: Membatalkan larang atau blokir seorang pengguna di federasi saat ini.
   × /fadmins: Menampilkan Administrator federasi saat ini.
-  
 federation-limit: Kamu hanya dapat memiliki 1 federasi!
 new-federation: |
   **Federasi baru sudah dibuat**
@@ -222,7 +173,6 @@ fed-no-ban-user: Siapa yang harus saya blokir?
 fed-ban-self: Mohon maaf, saya tidak bisa!
 fed-ban-owner: Bagaimana cara saya memblokir seorang pemilik federasi dalam federasi yang dia miliki!
 fed-ban-protected: Saya tidak akan melakukan fban kepada pengguna ini!
-
 fed-ban-info-update: |
   **Larangan Baru Federasi**
   **Federasi: **{}
@@ -248,9 +198,7 @@ fed-unban-info: |
 fed-stat-banned: |
  Pengguna ini di blokir dalam federasi ini.
   **Alasan: ** {}
-  **Diblokir dalam federasi: ** {}
-  
-  
+  **Diblokir dalam federasi: ** {} 
 fed-stat-not-banned: Pengguna ini tidak di blokir dalam federasi itu!
 fed-stat-multi: Pengguna ini sudah di blokir dalam federasi ini.\n
 fed-stat-multi-info: " -  **{}**(`{}`)\n    **Alasan: **{}\n"
@@ -269,7 +217,6 @@ fed-invalid-identity: Pengguna yang mengklik tombol konfirmasi bukanlah pemilik 
 fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
 fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Reason:** {}\n**Banned on:** {}"
 #endregion
-
 #region language
 language-button: Bahasa
 language-help: |
