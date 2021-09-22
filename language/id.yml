@@ -244,8 +244,8 @@ miscs-help: |
   ×  /ping : Menampilkan latensi bot.
   ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
       flags:
-          [-h, -haste, -hastebin] = menggunakan hastebin\n
-          [k, katbin] = menggunakan katbin (katbin tidak membutuhkan simbol (-) untuk digunakan.)
+          [-h, hastebin] = menggunakan hastebin.\n
+          [-k, katbin] = menggunakan katbin.
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
