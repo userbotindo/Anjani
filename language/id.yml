@@ -56,7 +56,7 @@ admins-help: |
 gpic-no-photo: Berikan saya sebuah foto!
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
-zombie-clean: "`Akun yang sudah terhapus tidak di temukan pada grup anda, Grup bersih` 🙌"
+zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
 promote-error-invalid: "**User id tidak sah**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id atau username yang benar`"
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
 demote-success: "`Menurunkan sudah berhasil`"
@@ -196,13 +196,13 @@ fed-unban-info: |
   **Pengguna: **{}
   **ID Pengguna: **`{}`
 fed-stat-banned: |
- Pengguna ini di blokir dalam federasi ini.
+ Pengguna ini diblokir dalam federasi ini.
   **Alasan: ** {}
   **Diblokir dalam federasi: ** {} 
-fed-stat-not-banned: Pengguna ini tidak di blokir dalam federasi itu!
-fed-stat-multi: Pengguna ini sudah di blokir dalam federasi ini.\n
+fed-stat-not-banned: Pengguna ini tidak diblokir dalam federasi itu!
+fed-stat-multi: Pengguna ini sudah diblokir dalam federasi ini.\n
 fed-stat-multi-info: " -  **{}**(`{}`)\n    **Alasan: **{}\n"
-fed-stat-multi-not-banned: Pengguna ini tidak di blokir dalam federasi manapun!
+fed-stat-multi-not-banned: Pengguna ini tidak diblokir dalam federasi manapun!
 fed-backup-empty: Tidak ada data federasi.
 fed-restore-done: Selesai memulihkan file cadangan.
 fed-myfeds-owner: "Kamu adalah **pemilik** dari federasi ini:\n"
@@ -229,15 +229,11 @@ language-help: |
   × /setlang | /lang | /language : Mengganti bahasa yang saya gunakan.\n
   **Catatan**
   Anda dapat menggunakan perintah ini pada grup anda untuk mengganti bahasa yang digunakan.\n
-  Bantu kami mencakup lebih banyak bahasa dengan berkontribusi di [Crowdin!] (https://crowdin.com/project/anjani-bot)
 current-language: "Bahasa **{}** saat ini adalah **{}**\nKlik bahasa yang ingin kamu gunakan"
 language-code-error: Telah terjadi kesalahan (tidak ada string bahasa yang tersedia) Silahkan hubungi grup support saya.
 language-set-succes: Bahasa yang digunakan sudah berhasil dirubah ke {}
 language-invalid: Mohon maaf kode bahasa tidak cocok.\nKode bahasa yang tersedia {}
 #endregion
-
-
-
 #region misc
 miscs-button: Lainnya
 miscs-help: |
@@ -248,35 +244,17 @@ miscs-help: |
   ×  /ping : Menampilkan latensi bot.
   ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
       flags:
-          [-d, -dogbin] = menggunakan dogbin (default)
-          [-n, -neko, -nekobin] = menggunakan nekobin
           [-h, -haste, -hastebin] = menggunakan hastebin\n
-  **Perintah Spesial:**
-  ×  /covid <country> : Menampilkan informasi Covid-19 di suatu negara.
-covid-text: |
-  **Statistik Virus Corona di {country}**
-  **pada {date}**\n
-  **Kasus Terkonfirmasi :** `{confirmed}`
-  **Kasus Aktif :** `{active}`
-  **Total Korban Meninggal :** `{deaths}`
-  **Total Sembuh :** `{recovered}`\n
-  **Kasus Baru :** `{new_cases}`
-  **Korban Meninggal Baru :** `{new_deaths}`
-  **Kasus Kritis :** `{critical}`
-  **Total Tes :** `{total_tests}`\n
-  Data berasal dari [Worldometer]({link})
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
 #endregion
-
-
 #region mute
 muting-button: Membisukan
 muting-help: |
   Beberapa orang spammer, gangguan, atau troll perlu didisiplinkan.
   Dengan perintah ini anda dapat dengan mudah membisukan seseorang.\n
-  **Hanya Administrator federasi yang dapat melakukan ini!:**
+  **Hanya Administrator yang dapat melakukan ini!:**
   × /mute <Melalui id atau username>: Membisukan seseorang di supergroup.
   × /mute <Melalui id atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
   × /unmute <Melalui id atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
@@ -294,9 +272,6 @@ self-muting: Hahaha, saya tidak akan membisukan diri saya sendiri!
 already-muted: Pengguna ini sudah dibisukan!
 user-not-muted: Pengguna ini tidak dibisukkan dan memiliki ijin untuk bisa berbicara!
 #endregion
-
-
-
 #region note
 notes-button: Catatan
 notes-help: |
@@ -308,7 +283,7 @@ notes-help: |
   **Perintah Administrator:**
   × /save <nama catatan> <isi catatan>: menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
-  \nCheck /markdownhelp untuk info format catatan lainnya silahkan di cek.
+  \nCek /markdownhelp untuk info format catatan lainnya silahkan dicek.
 notes-invalid-args : |
  Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
   Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
@@ -319,9 +294,6 @@ notes-del-noargs: Berikan saya nama catatan yang akan dihapus!
 notes-not-exist: Tidak ada catatan itu pada grup ini!
 notes-deleted: "Catatan `{}` dihapus!."
 #endregion
-
-
-
 #region purge
 purges-button: Pembersihan
 purges-help: |
@@ -332,8 +304,6 @@ purges-help: |
 purge-done: "`{} pesan telah dihapus dalam {} detik...`"
 purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
 #endregion
-
-
 #region reporting
 reporting-button: Laporan
 reporting-help: |
@@ -362,9 +332,6 @@ report-admin-format: |
   × **Dilaporkan oleh: ** {by_user} ``{by_user_id}``
   × **Pengguna yang dilaporkan: ** {reported_mention} ``{reported_id}``
 #endregion
-
-
-
 #region restrictions
 restriction-button: Pembatasan
 restriction-help: |
@@ -385,9 +352,6 @@ ban-done: "**{}** Terblokir!"
 unban-no-user: berikan saya pengguna untuk diblokir.
 unban-done: "blokir **{}** dihapus..."
 #endregion
-
-
-
 #region rules
 rules-button: Aturan
 rules-help: |
@@ -406,8 +370,6 @@ rules-none: Grup ini belum menetapkan aturan!
 rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #endregion
-
-
 #region spam shield
 banned-text: |
   #SPAM_SHIELD\n
@@ -421,9 +383,6 @@ spamshield-view: |
   Spam shield setting: {} 
   Spam shield adalah fitur yang digunakan untuk melindungi grup anda dari orang yang melakukan spam dan orang iseng.
 #endregion
-
-
-
 #region greetings
 greetings-button: Pesan Sambutan
 greetings-help: |
@@ -442,9 +401,7 @@ greetings-help: |
   Contoh: `/welcome noformat`
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
-  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
-  
-  
+  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help. 
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Merubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
@@ -455,8 +412,6 @@ view-welcome: |
   `Menyambut pengguna` = `{}`
   `Pembersihan Pesan layanan` = `{}`
   Dan pesan sambutan dari grup ini adalah:
-  
-  
 default-goodbye: "{first} dia baru saja keluar!"
 goodbye-set: Selamat tinggal menjadi {} saat ada anggota yang keluar.
 cust-goodbye-set: Berhasil merubah pesan selamat tinggal sesuai yang anda inginkan!
@@ -467,9 +422,6 @@ view-goodbye: |
   `Pembersihan Pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
-
-
-
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
@@ -483,5 +435,5 @@ err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, atau IDnya tidak sah atau benar."
 err-api-down: Neko api sedang bermasalah, coba lagi nanti.
 err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
-#endregion
 err-invalid-pid: Identifier tidak valid!
+#endregion
