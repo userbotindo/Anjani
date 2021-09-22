@@ -33,8 +33,11 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            if ctx.args or not ctx.msg.reply_to_message:
+            if not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "no-kick-user")
+            if ctx.input:
+                return await self.text(chat.id, "err-peer-invalid")
+
             user = ctx.msg.reply_to_message.from_user
 
         try:
@@ -57,8 +60,11 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            if ctx.args or not ctx.msg.reply_to_message:
+            if not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "no-ban-user")
+            if ctx.input:
+                return await self.text(chat.id, "err-peer-invalid")
+
             user = ctx.msg.reply_to_message.from_user
 
         try:
@@ -80,8 +86,11 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            if ctx.args or not ctx.msg.reply_to_message:
+            if not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "unban-no-user")
+            if ctx.input:
+                return await self.text(chat.id, "err-peer-invalid")
+
             user = ctx.msg.reply_to_message.from_user
 
         try:
