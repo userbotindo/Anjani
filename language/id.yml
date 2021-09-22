@@ -386,6 +386,36 @@ purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
 #endregion
 
 
+#region reporting
+reporting-button: Laporan
+reporting-help: |
+  **Hanya Administrator yang bisa menggunakan:**
+  × /reports <yes/no/on/off>: aktifkan atau nonaktifkan laporan grup.
+    - jika dijalankan di grup akan merubah pengaturan grup dan akan menampilkan notifikasi.
+    - jika dijalankan di PM akan merubah pengaturan kamu dan akan menampilkan notifikasi.
+  \n**Perintah pengguna:**
+  × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh admin.
+  × @admin: Sama seperti /report.
+  \nSimply balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
+  **Catatan** /reports and @admin tidak akan direspon jika itu adalah oleh pesan atau obrolan Administrator.
+report-on: Pelaporan diaktifkan! Anda akan diberi tahu setiap kali laporan terjadi dalam grup.
+chat-report-on: Pelaporan diaktifkan! Admin yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
+report-off: Pelaporan dinonaktifkan! Anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
+chat-report-off: Pelaporan dinonaktifkan! Admin tidak akan diberi tahu jika ada /report atau @admin!
+report-setting: "Pengaturan laporan chat ini saat ini adalah: `{}`"
+chat-report-setting: "Pengaturan laporan anda saat ini adalah: `{}`"
+no-report-user: Siapa yang harus saya laporkan?
+cant-report-me: Tidak, saya tidak akan melaporkan diri saya sendiri!
+cant-report-admin: Mengapa saya harus melaporkan Administrator grup?
+cant-self-report: Kenapa anda melaporkan diri anda sendiri?
+report-notif: Melaporkan {} kepada para Administrator!
+report-admin-format: |
+  **Laporan dari: {chat}**
+  × **Dilaporkan oleh: ** {by_user} ``{by_user_id}``
+  × **Pengguna yang dilaporkan: ** {reported_mention} ``{reported_id}``
+#endregion
+
+
 
 #region restrictions
 restriction-button: Pembatasan
