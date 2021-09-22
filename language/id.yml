@@ -245,6 +245,7 @@ miscs-help: |
   ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
       flags:
           [-h, -haste, -hastebin] = menggunakan hastebin\n
+          [-k, -katbin, -katbin] = menggunakan katbin
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
@@ -309,8 +310,8 @@ reporting-button: Laporan
 reporting-help: |
   **Hanya Administrator yang bisa menggunakan:**
   × /reports <yes/no/on/off>: aktifkan atau nonaktifkan laporan grup.
-    - jika dijalankan di grup akan merubah pengaturan grup dan akan menampilkan notifikasi.
-    - jika dijalankan di PM akan merubah pengaturan kamu dan akan menampilkan notifikasi.
+    - jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
+    - jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
   \n**Perintah pengguna:**
   × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh admin.
   × @admin: Sama seperti /report.
@@ -389,11 +390,11 @@ greetings-help: |
   Pesan selamat datang di grup anda yang dapat diatur dengan berbagai cara yang anda mau.\n
   **Hanya administrator yang bisa menggunakan:**
   × /setwelcome <reply>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
-  × /resetwelcome: Merubah pesan sambutan anda kepada pesan sambutan bawaan saya.
+  × /resetwelcome: Mengubah pesan sambutan anda kepada pesan sambutan bawaan saya.
   × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
   × /welcome : Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
   × /setgoodbye <reply> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
-  × /resetgoodbye : Merubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
+  × /resetgoodbye : Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
   × /goodbye <on/off> :  Menyalakan / mematikan pesan selamat tinggal.
   × /goodbye : Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini..\n
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
@@ -403,10 +404,10 @@ bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
   Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help. 
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
-clean-serv-set: "Merubah pembersihan pesan layanan : {}."
+clean-serv-set: "Mengubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
-cust-welcome-set: Berhasil merubah pesan sambutan sesuai yang anda inginkan!
-reset-welcome: Berhasil merubah pesan sambutan ke pesan sambutan bawaan saya!
+cust-welcome-set: Berhasil mengubah pesan sambutan sesuai yang anda inginkan!
+reset-welcome: Berhasil mengubah pesan sambutan ke pesan sambutan bawaan saya!
 view-welcome: |
   **Grup ini memiliki pengaturan: **
   `Menyambut pengguna` = `{}`
@@ -414,8 +415,8 @@ view-welcome: |
   Dan pesan sambutan dari grup ini adalah:
 default-goodbye: "{first} dia baru saja keluar!"
 goodbye-set: Selamat tinggal menjadi {} saat ada anggota yang keluar.
-cust-goodbye-set: Berhasil merubah pesan selamat tinggal sesuai yang anda inginkan!
-reset-goodbye: Berhasil merubah pesan selamat tinggal ke pesan selamat tinggal bawaan saya!
+cust-goodbye-set: Berhasil mengubah pesan selamat tinggal sesuai yang anda inginkan!
+reset-goodbye: Berhasil mengubah pesan selamat tinggal ke pesan selamat tinggal bawaan saya!
 view-goodbye: |
   **Grup ini memiliki pengaturan:**
   `Ucapan selamat tinggal untuk anggota yang keluar` = `{}`
