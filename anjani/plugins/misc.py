@@ -14,8 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from json import JSONDecodeError
 from typing import ClassVar, Optional
 
+from aiohttp import ClientConnectorError
+from aiopath import AsyncPath
 from pyrogram import filters
 
 from anjani import command, plugin
@@ -47,6 +50,64 @@ class Misc(plugin.Plugin):
             out_str += f"📄 **File ID :** `{file.file_id}`"
 
         return out_str
+
+    async def cmd_paste(
+        self, ctx: command.Context, service: Optional[str] = None
+    ) -> Optional[str]:
+        if not ctx.msg.reply_to_message:
+            return None
+        if not service:
+            service = "katbin"
+
+        chat = ctx.chat
+        reply_msg = ctx.msg.reply_to_message
+        if reply_msg.document:
+            file = AsyncPath(await reply_msg.download())
+            data = await file.read_text()
+            await file.unlink()
+        elif reply_msg.text:
+            data = reply_msg.text
+        else:
+            return None
+
+        urls = {
+            "-h": "https://hastebin.com/",
+            "-k": "https://katb.in/",
+            "hastebin": "https://hastebin.com/",
+            "katbin": "https://katb.in/",
+        }
+        uris = {
+            "-h": "https://hastebin.com/documents",
+            "-k": "https://api.katb.in/api/paste",
+            "hastebin": "https://hastebin.com/documents",
+            "katbin": "https://api.katb.in/api/paste",
+        }
+        try:
+            uri = uris[service]
+        except KeyError:
+            return None
+        else:
+            hastebin = "hastebin" in uri
+            katbin = "katb" in uri
+
+        await ctx.respond(await self.text(chat.id, "wait-paste", service))
+
+        if hastebin:
+            json = {}
+        else:
+            json = {"json": {"content": data}}
+
+        try:
+            async with self.bot.http.post(uri, data=data if hastebin else None, **json) as resp:
+                try:
+                    result = await resp.json()
+                except JSONDecodeError:
+                    return await self.text(ctx.chat.id, "paste-fail", service)
+
+                text = urls[service] + result["paste_id"] if katbin else urls[service] + result["key"]
+                return await self.text(ctx.chat.id, "paste-succes", f"[{service}]({text})")
+        except ClientConnectorError:
+            return await self.text(ctx.chat.id, "paste-fail", service)
 
     @command.filters(filters.private)
     async def cmd_source(self, ctx: command.Context) -> None:
