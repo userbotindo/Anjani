@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class DatabaseProvider(MixinBase):
-    db: util.db.AsyncDB
+    db: util.db.AsyncDatabase
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         client = util.db.AsyncClient(self.config["db_uri"], connect=False)
