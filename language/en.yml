@@ -246,8 +246,8 @@ miscs-help: |
   ×  /ping : Get bot latency.
   ×  /paste <flags> : paste text file to a pastebin service.
       flags:
-          [-h, -haste, -hastebin] = use hastebin\n
-          [k, katbin] = use katbin (katbin no need to use (-) symbol.)
+          [-h, hastebin] = use hastebin.\n
+          [-k, katbin] = use katbin.
 wait-paste: "`Pasting to {}...`"
 paste-succes: "**Pasted to {} successfully..!**"
 fail-paste: "`Failed to reach {}!`\nYou can use flags [-n, -h] to use other service"
