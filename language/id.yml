@@ -51,8 +51,8 @@ admins-help: |
   × /unpin: Untuk membatalkan pesan yang disematkan pada grup anda.
   × /setgpic : Mengubah foto profile grup anda.
   × /zombies : Menghapus akun yang sudah terhapus namun masih ada di grup anda!
-  × /promote <user_id/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
-  × /demote <user_id/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
+  × /promote <ID Pengguna/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
+  × /demote <ID Pengguna/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
 gpic-no-photo: Berikan saya sebuah foto!
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
@@ -100,10 +100,10 @@ federations-help: |
   anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
 
   **Perintah yang tersedia:**
-  × /newfed <name>: Buat federasi baru dengan nama yang anda ditentukan.
-  × /delfed <fedID>: Menghapus federasi yang anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
-  × /joinfed <fedID>: Digabungkan grup saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat melakukan ini**)
-  × /leavefed <fedID>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
+  × /newfed <nama>: Buat federasi baru dengan nama yang anda ditentukan.
+  × /delfed <ID Federasi>: Menghapus federasi yang anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
+  × /joinfed <ID Federasi>: Digabungkan grup saat ini ke federasi yang ditentukan. (**Hanya pemilik grup yang dapat melakukan ini**)
+  × /leavefed <ID Federasi>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
   × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
   × /myfeds: Daftar semua federasi dimana anda menjadi admin.
@@ -124,7 +124,7 @@ federation-limit: Kamu hanya dapat memiliki 1 federasi!
 new-federation: |
   **Federasi baru sudah dibuat**
   **Nama:** {fed_name}
-  **Fed ID:** {fed_id}\n
+  **ID Federasi:** {fed_id}\n
   Gunakan perintah ini di grup untuk bergabung dengan federasi
   `/joinfed {fed_id}`
 need-fed-name: Tolong tulis nama federasi yang akan anda buat!
@@ -158,7 +158,7 @@ fed-demote-done: Berhasil diturunkan!
 fed-specified-id: Tolong ID federasi yang benar dan jelas!
 fed-info-text: |
   **Informasi Federasi:**
-  **Fed ID: **` {}`
+  **ID Federasi: **` {}`
   **Nama: **`{}`
   **Pemilik: **{}
   **Total adminstrator: ** `{}`
@@ -315,7 +315,7 @@ reporting-help: |
   \n**Perintah pengguna:**
   × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh admin.
   × @admin: Sama seperti /report.
-  \nSimply balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
+  \nSecara sederhana balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
   **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
 report-on: Pelaporan diaktifkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
 chat-report-on: Pelaporan diaktifkan! Admin yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
@@ -337,18 +337,17 @@ report-admin-format: |
 restriction-button: Pembatasan
 restriction-help: |
   Orang yang mengirim spam, mengolok-olok, atau mengganggu perlu dibatasi.
-  Dengan perintah ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar.
+  Dengan perintah ini, Administrator grup dapat dengan mudah membatasi anggota yang melanggar.
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
   × /kick <Melalui id atau username>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
   × /ban <Melalui id atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id, username atau, atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id, username atau balas pesan orang tersebut)
-  \nhandle bisa menjadi Id pengguna atau username pengguna
 no-kick-user: siapa yang harus saya keluarkan?
-admin-kick: Saya tidak bisa mengeluarkan seorang administrator.
+admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
 no-ban-user: Siapa yang harus saya blokir?
-admin-ban: Saya tidak akan memblokir administrator!
+admin-ban: Saya tidak akan memblokir Administrator!
 ban-done: "**{}** Terblokir!"
 unban-no-user: berikan saya pengguna untuk diblokir.
 unban-done: "blokir **{}** dihapus..."
@@ -388,12 +387,12 @@ spamshield-view: |
 greetings-button: Pesan Sambutan
 greetings-help: |
   Pesan selamat datang di grup anda yang dapat diatur dengan berbagai cara yang anda mau.\n
-  **Hanya administrator yang bisa menggunakan:**
-  × /setwelcome <reply>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
+  **Hanya Administrator yang bisa menggunakan:**
+  × /setwelcome <balas pesan>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
   × /resetwelcome: Mengubah pesan sambutan anda kepada pesan sambutan bawaan saya.
   × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
   × /welcome : Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
-  × /setgoodbye <reply> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
+  × /setgoodbye <balas pesan> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
   × /resetgoodbye : Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
   × /goodbye <on/off> :  Menyalakan / mematikan pesan selamat tinggal.
   × /goodbye : Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini..\n
