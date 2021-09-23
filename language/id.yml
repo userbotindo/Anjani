@@ -41,7 +41,7 @@ markdown-helper: |
   Ingatlah bahwa pesan anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
 #endregion
 #region admin
-admins-button: Admin
+admins-button: Administrator
 admins-help: |
   Ini adalah daftar perintah yang dapat saya lakukan
   Untuk anda yang merupakan seorang Administrator di suatu grup.\n
@@ -97,7 +97,7 @@ federations-help: |
   Tapi ternyata anda memiliki beberapa grup, dan anda tidak ingin spammer ini ada di grup mana pun - bagaimana anda bisa menanganinya? Apakah anda harus memblokirnya secara manual, di semua grup anda?
 
   Tidak lagi! Dengan federasi, anda dapat membuat larangan dalam satu grup dan kemudian orang tersebut akan dilarang di semua grup anda yang lain.
-  anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
+  anda bahkan dapat menunjuk Administrator federasi, sehingga Administrator tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
 
   **Perintah yang tersedia:**
   × /newfed <nama>: Buat federasi baru dengan nama yang anda ditentukan.
@@ -106,7 +106,7 @@ federations-help: |
   × /leavefed <ID Federasi>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
   × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
-  × /myfeds: Daftar semua federasi dimana anda menjadi admin.
+  × /myfeds: Daftar semua federasi dimana anda menjadi Administrator.
 
   **Perintah yang tersedia untuk pemilik federasi:**
   × /fedpromote | /fpromote: Mengangkat seseorang untuk menjadi seorang Administrator federasi.
@@ -149,7 +149,7 @@ fed-no-promote-user: Siapa yang harus saya angkat menjadi Administrator?\nBerika
 fed-no-fed-chat: Grup ini tidak terhubung ke federasi apapun!
 fed-owner-only-promote: Hanya pemilik federasi yang dapat mengangkat Administrator baru!
 fed-already-owner: Anda adalah pemilik Federasi ini!
-fed-already-admin: Pengguna sudah menjadi admin di federasi ini!
+fed-already-admin: Pengguna sudah menjadi Administrator di federasi ini!
 fed-promote-done: Berhasil diangkat menjadi Administrator federasi!
 fed-no-demote-user: Siapa yang harus saya turunkan dari Administrator federasi?\nBerikan saya orang tersebut!
 fed-owner-only-demote: Hanya pemilik federasi yang dapat menurunkan seorang Administrator!
