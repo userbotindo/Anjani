@@ -116,24 +116,24 @@ class Debug(plugin.Plugin):
                 formatted_tb = util.error.format_exception(e, tb=stripped_tb)
                 return "⚠️ Error executing snippet\n\n", formatted_tb
 
-        async with ctx.action():
-            before = util.time.usec()
-            prefix, result = await _eval()
-            after = util.time.usec()
+        before = util.time.usec()
+        prefix, result = await _eval()
+        after = util.time.usec()
 
-            # Always write result if no output has been collected thus far
-            if not out_buf.getvalue() or result is not None:
-                print(result, file=out_buf)
+        # Always write result if no output has been collected thus far
+        if not out_buf.getvalue() or result is not None:
+            print(result, file=out_buf)
 
-            el_us = after - before
-            el_str = util.time.format_duration_us(el_us)
+        el_us = after - before
+        el_str = util.time.format_duration_us(el_us)
 
-            out = out_buf.getvalue()
-            # Strip only ONE final newline to compensate for our message formatting
-            if out.endswith("\n"):
-                out = out[:-1]
+        out = out_buf.getvalue()
+        # Strip only ONE final newline to compensate for our message formatting
+        if out.endswith("\n"):
+            out = out[:-1]
 
-            if len(out) > 4096:
+        if len(out) > 4096:
+            async with ctx.action("upload_document"):
                 with io.BytesIO(str.encode(out)) as out_file:
                     out_file.name = "eval.text"
                     await ctx.msg.reply_document(
