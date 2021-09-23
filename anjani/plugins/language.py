@@ -125,16 +125,6 @@ class Language(plugin.Plugin):
                     temp = []
                 if count == len(self.bot.languages):
                     keyboard.append(temp)
-
-            keyboard += [
-                [
-                    InlineKeyboardButton(
-                        "Help us translating language",
-                        url="https://crowdin.com/project/anjani-bot",
-                    )
-                ]
-            ]
-
             await ctx.respond(
                 await self.text(chat.id, "current-language", chat_name, lang),
                 reply_markup=InlineKeyboardMarkup(keyboard),
