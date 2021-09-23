@@ -57,7 +57,7 @@ gpic-no-photo: Berikan saya sebuah foto!
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
 zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
-promote-error-invalid: "**ID Pengguna tidak sah**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
+promote-error-invalid: "**ID Pengguna tidak sah atau tidak benar**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
 demote-success: "`Menurunkan sudah berhasil`"
 demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
@@ -256,9 +256,9 @@ muting-help: |
   Beberapa orang spammer, gangguan, atau troll perlu didisiplinkan.
   Dengan perintah ini anda dapat dengan mudah membisukan seseorang.\n
   **Hanya Administrator yang dapat melakukan ini!:**
-  × /mute <Melalui id atau username>: Membisukan seseorang di supergroup.
-  × /mute <Melalui id atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
-  × /unmute <Melalui id atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
+  × /mute <Melalui id pengguna atau username>: Membisukan seseorang di supergroup.
+  × /mute <Melalui id pengguna atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
+  × /unmute <Melalui id pengguna atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
   Contoh untuk membisukan sementara seseorang :
   m = Menit, h = Jam and d = Hari.
   ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
@@ -313,7 +313,7 @@ reporting-help: |
     - jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
     - jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
   \n**Perintah pengguna:**
-  × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh admin.
+  × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh Administrator.
   × @admin: Sama seperti /report.
   \nSecara sederhana balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
   **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
@@ -340,9 +340,9 @@ restriction-help: |
   Dengan perintah ini, Administrator grup dapat dengan mudah membatasi anggota yang melanggar.
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
-  × /kick <Melalui id atau username>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
-  × /ban <Melalui id atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id, username atau, atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
-  × /unban <Melalui id atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id, username atau balas pesan orang tersebut)
+  × /kick <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
+  × /ban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
+  × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
 no-kick-user: siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
