@@ -318,9 +318,9 @@ reporting-help: |
   \nSecara sederhana balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
   **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
 report-on: Pelaporan diaktifkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
-chat-report-on: Pelaporan diaktifkan! Admin yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
+chat-report-on: Pelaporan diaktifkan! Administrator yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
 report-off: Pelaporan dinonaktifkan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
-chat-report-off: Pelaporan dinonaktifkan! Admin tidak akan diberi tahu jika ada /report atau @admin!
+chat-report-off: Pelaporan dinonaktifkan! Administrator tidak akan diberi tahu jika ada /report atau @admin!
 report-setting: "Pengaturan laporan grup ini saat ini adalah: `{}`"
 chat-report-setting: "Pengaturan laporan anda saat ini adalah: `{}`"
 no-report-user: Siapa yang harus saya laporkan?
