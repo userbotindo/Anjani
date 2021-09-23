@@ -67,7 +67,8 @@ class AsyncDatabase(AsyncBaseProperty):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any
     ) -> MutableMapping[str, Any]:
-        return await self.dispatch.command(
+        return await util.run_sync(
+            self.dispatch.command,
             command,
             value=value,
             check=check,

@@ -11,6 +11,7 @@ from anjani import util
 if TYPE_CHECKING:
     from .collection import AsyncCollection
 
+
 class Cursor(_Cursor):
 
     _Cursor__data: Deque[Any]

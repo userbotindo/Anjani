@@ -26,6 +26,7 @@ from .types import JavaScriptCode, ReadPreferences, Request
 
 from anjani import util
 
+
 class AsyncCollection(AsyncBaseProperty):
     """AsyncIO :obj:`~Collection`
 
@@ -364,7 +365,7 @@ class AsyncCollection(AsyncBaseProperty):
 
     def list_indexes(
         self, session: Optional[AsyncClientSession] = None
-    ) -> "AsyncLatentCommandCursor":
+    ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
             self,
             self.dispatch.list_indexes,
@@ -495,7 +496,7 @@ class AsyncCollection(AsyncBaseProperty):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None
-    ) -> "AsyncChangeStream":
+    ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
             pipeline,

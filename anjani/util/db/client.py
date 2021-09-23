@@ -33,6 +33,7 @@ from .types import ReadPreferences
 
 from anjani import util
 
+
 class AsyncClient(AsyncBaseProperty):
     """AsyncIO :obj:`~MongoClient`
 
@@ -42,12 +43,13 @@ class AsyncClient(AsyncBaseProperty):
     dispatch: MongoClient
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs.update({"driver":
-                       DriverInfo(
-                           name="AsyncIOMongoDB",
-                           version="staging",
-                           platform="AsyncIO"
-                        )})
+        kwargs.update(
+            {"driver": DriverInfo(
+                name="AsyncIOMongoDB",
+                version="staging",
+                platform="AsyncIO"
+            )}
+        )
         dispatch = MongoClient(*args, **kwargs)
 
         # Propagate initialization to base
@@ -116,8 +118,10 @@ class AsyncClient(AsyncBaseProperty):
     async def list_database_names(
         self, session: Optional[AsyncClientSession] = None
     ) -> List[str]:
-        return await util.run_sync(self.dispatch.list_database_names,
-                                   session=session.dispatch if session else session)
+        return await util.run_sync(
+            self.dispatch.list_database_names,
+            session=session.dispatch if session else session
+        )
 
     async def list_databases(
         self, session: Optional[AsyncClientSession] = None, **kwargs: Any

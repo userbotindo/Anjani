@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Union
 
 from bson.timestamp import Timestamp
@@ -83,10 +82,6 @@ class AsyncChangeStream(AsyncBase):
 
         return self.dispatch
 
-    async def _try_next(self) -> Optional[MutableMapping[str, Any]]:
-        self.dispatch = await self._init()
-        return await util.run_sync(self.dispatch.try_next)
-
     async def close(self):
         if self.dispatch:
             await util.run_sync(self.dispatch.close)
@@ -100,7 +95,8 @@ class AsyncChangeStream(AsyncBase):
         raise StopAsyncIteration
 
     async def try_next(self) -> Optional[MutableMapping[str, Any]]:
-        return await self._try_next()
+        self.dispatch = await self._init()
+        return await util.run_sync(self.dispatch.try_next)
 
     @property
     def alive(self) -> bool:
