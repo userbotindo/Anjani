@@ -45,7 +45,7 @@ admins-button: Admin
 admins-help: |
   Ini adalah daftar perintah yang dapat saya lakukan
   Untuk anda yang merupakan seorang Administrator di suatu grup.\n
-  × /adminlist: Untuk menampilkan daftar semua administartor di grup anda.\n
+  × /adminlist: Untuk menampilkan daftar semua Administartor di grup anda.\n
   **Hanya Administrator yang bisa menggunakan:**
   × /pin: Untuk menyematkan suatu pesan pada grup anda.
   × /unpin: Untuk membatalkan pesan yang disematkan pada grup anda.
