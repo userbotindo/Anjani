@@ -231,7 +231,6 @@ language-help: |
   ×  /setlang | /lang | /language : set your prefered language.\n
   **Note**
   You can use this command on group chats to change the language setting on that chat.\n
-  Help us to cover more languages to the bot by contributing in [Crowdin!](https://crowdin.com/project/anjani-bot)
 current-language: "**{}** current language is **{}**\nSelect language bellow to change"
 language-code-error: An error has occured (No language code)... please contact support
 language-set-succes: Language set to {} successfully
@@ -247,23 +246,8 @@ miscs-help: |
   ×  /ping : Get bot latency.
   ×  /paste <flags> : paste text file to a pastebin service.
       flags:
-          [-d, -dogbin] = use dogbin (default)
-          [-n, -neko, -nekobin] = use nekobin
-          [-h, -haste, -hastebin] = use hastebin\n
-  **Special commands:**
-  ×  /covid <country> : Get Covid-19 data in your country.
-covid-text: |
-  **Corona Virus Statistics in {country}**
-  **on {date}**\n
-  **Confirmed Cases :** `{confirmed}`
-  **Active Cases :** `{active}`
-  **Deaths :** `{deaths}`
-  **Recovered :** `{recovered}`\n
-  **New Cases :** `{new_cases}`
-  **New Deaths :** `{new_deaths}`
-  **Critical Cases :** `{critical}`
-  **Total Tests :** `{total_tests}`\n
-  Data provided by [Worldometer]({link})
+          [-h, hastebin] = use hastebin.\n
+          [-k, katbin] = use katbin.
 wait-paste: "`Pasting to {}...`"
 paste-succes: "**Pasted to {} successfully..!**"
 fail-paste: "`Failed to reach {}!`\nYou can use flags [-n, -h] to use other service"
