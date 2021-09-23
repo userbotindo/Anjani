@@ -525,7 +525,7 @@ class Federation(plugin.Plugin):
             text = ""
             for key, err_msg in failed.items():
                 text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
-            await ctx.respond(text, delete_after=20, mode="reply", reference=ctx.respondse)
+            await ctx.respond(text, delete_after=20, mode="reply", reference=ctx.response)
 
         # send message to federation log
         if log := data.get("log"):
