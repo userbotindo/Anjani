@@ -248,7 +248,7 @@ miscs-help: |
           [-k, katbin] = menggunakan katbin.
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
-fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
+fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -h atau -k untuk menggunakan layanan lain"
 #endregion
 #region mute
 muting-button: Membisukan
