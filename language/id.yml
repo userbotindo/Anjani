@@ -13,7 +13,7 @@ help-pm: |
   perintah yang tersedia:
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
-  × /setlang: Mengganti bahasa yang saya gunakan. 
+  × /setlang: Mengganti bahasa yang saya gunakan.
 start-chat: Memberi anda salam hangat & berharap hari anda menyenangkan!
 help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
 add-to-group-button: Tambahkan saya
@@ -32,12 +32,12 @@ markdown-helper: |
   Contoh: <code>[test](example.com)</code>
   - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
   Contoh: <code>[This is a button](buttonurl:google.com)</code>
-  
+
   Jika anda ingin beberapa tombol pada baris yang sama, gunakan :same, maka akan seperti berikut ini:
   <code>[one](buttonurl://example.com)</code>
   <code>[two](buttonurl://google.com:same)</code>
   Ini akan membuat dua tombol pada satu baris, bukan satu tombol per baris.
-  
+
   Ingatlah bahwa pesan anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
 #endregion
 #region admin
@@ -52,7 +52,7 @@ admins-help: |
   × /setgpic : Mengubah foto profile grup anda.
   × /zombies : Menghapus akun yang sudah terhapus namun masih ada di grup anda!
   × /promote <user_id/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
-  × /demote <user_id/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup. 
+  × /demote <user_id/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
 gpic-no-photo: Berikan saya sebuah foto!
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
@@ -95,10 +95,10 @@ federations-button: Federasi
 federations-help: |
   Manajemen grup itu menyenangkan, sampai anda mulai mendapatkan spammer, dan anda harus melarang mereka. Dan anda harus mulai melarang mereka lebih banyak, dan lebih banyak lagi, dan itu akan menyusahkan.
   Tapi ternyata anda memiliki beberapa grup, dan anda tidak ingin spammer ini ada di grup mana pun - bagaimana anda bisa menanganinya? Apakah anda harus memblokirnya secara manual, di semua grup anda?
-  
+
   Tidak lagi! Dengan federasi, anda dapat membuat larangan dalam satu grup dan kemudian orang tersebut akan dilarang di semua grup anda yang lain.
   anda bahkan dapat menunjuk admin federasi, sehingga admin tepercaya anda dapat memblokir orang tersebut ke semua grup yang ingin anda lindungi.
-  
+
   **Perintah yang tersedia:**
   × /newfed <name>: Buat federasi baru dengan nama yang anda ditentukan.
   × /delfed <fedID>: Menghapus federasi yang anda miliki dan informasi apa pun yang terkait dengannya (Ini tidak akan membatalkan pemblokiran pengguna yang diblokir).
@@ -107,7 +107,7 @@ federations-help: |
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
   × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
   × /myfeds: Daftar semua federasi dimana anda menjadi admin.
-  
+
   **Perintah yang tersedia untuk pemilik federasi:**
   × /fedpromote | /fpromote: Mengangkat seseorang untuk menjadi seorang Administrator federasi.
   × /feddemote | /fdemote:  Menurunkan seorang Administrator federasi di federasi anda.
@@ -115,7 +115,7 @@ federations-help: |
   × /fexport: Mengembalikan file candangan untuk memulihkan pengguna yang dilarang (Hanya melalui PM).
   × /setfedlog: Membuat grup atau channel saat ini sebagai log federasi. Semua peristiwa federasi akan dicatat di sini.
   × /unsetfedlog: Membatalkan log federation. Semua peristiwa federasi tidak akan dicatat di sini.
-  
+
   **Perintah yang tersedia untuk Administrator federasi:**
   × /fban: Melarang seorang pengguna di federasi saat ini.
   × /unfban: Membatalkan larang atau blokir seorang pengguna di federasi saat ini.
@@ -163,7 +163,7 @@ fed-info-text: |
   **Pemilik: **{}
   **Total adminstrator: ** `{}`
   **Total pengguna yang dilarang: ** `{}`
-  **Total grup yang terhubung federasi: ** `{}` 
+  **Total grup yang terhubung federasi: ** `{}`
 fed-admin-only: Hanya Administrator federasi yang dapat melakukan ini!
 fed-admin-text: |
   **{} admins:**
@@ -198,7 +198,7 @@ fed-unban-info: |
 fed-stat-banned: |
  Pengguna ini diblokir dalam federasi ini.
   **Alasan: ** {}
-  **Diblokir dalam federasi: ** {} 
+  **Diblokir dalam federasi: ** {}
 fed-stat-not-banned: Pengguna ini tidak diblokir dalam federasi itu!
 fed-stat-multi: Pengguna ini sudah diblokir dalam federasi ini.\n
 fed-stat-multi-info: " -  **{}**(`{}`)\n    **Alasan: **{}\n"
@@ -248,7 +248,7 @@ miscs-help: |
           [-k, katbin] = menggunakan katbin.
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
-fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -n atau -h untuk menggunakan layanan lain"
+fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -h atau -k untuk menggunakan layanan lain"
 #endregion
 #region mute
 muting-button: Membisukan
@@ -337,7 +337,7 @@ report-admin-format: |
 restriction-button: Pembatasan
 restriction-help: |
   Orang yang mengirim spam, mengolok-olok, atau mengganggu perlu dibatasi.
-  Dengan perintah ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar. 
+  Dengan perintah ini, administrator grup dapat dengan mudah membatasi anggota yang melanggar.
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
   × /kick <Melalui id atau username>: Mengeluarkan seorang anggota grup, (Melalui id, username atau balas pesan orang yang akan dikeluarkan)
@@ -362,7 +362,7 @@ rules-help: |
   × /setrules <aturan grup>: Menetapkan aturan dalam grup.
   × /clearrules: Menghapus aturan dalam grup.\n
   **Catatan**
- Untuk membuat tautan tampilan aturan khusus, yang anda butuhkan hanyalah id grup dan tempelkan ke tautan:
+  Untuk membuat tautan tampilan aturan khusus, yang anda butuhkan hanyalah id grup dan tempelkan ke tautan:
   `t.me/{username}?start=rules_<chat_id>`
 rules-blank-err: Aturan tidak boleh kosong!
 rules-set: "Aturan grup sudah ditetapkan!\nTautan untuk melihat aturan: `{}`"
@@ -381,7 +381,7 @@ banned-text: |
   Orang ini terdeteksi sebagai spambot dan sudah dikeluarkan!
 spamshield-set: "Grup #SPAM_SHIELD turned {}"
 spamshield-view: |
-  Spam shield setting: {} 
+  Spam shield setting: {}
   Spam shield adalah fitur yang digunakan untuk melindungi grup anda dari orang yang melakukan spam dan orang iseng.
 #endregion
 #region greetings
@@ -402,7 +402,7 @@ greetings-help: |
   Contoh: `/welcome noformat`
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
-  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help. 
+  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Mengubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
