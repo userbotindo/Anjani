@@ -23,11 +23,11 @@ back-button: ⬅️ Kembali
 markdown-helper: |
   Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
   <b>Markdown yang didukung:</b>
-  - <code>__italic__</code>: Buat dua garis bawah di antara kata, akan menghasilkan <i>italic</i> text.
-  - <code>**bold**</code>: Buat dua tanda bintang di antara kata, akan menghasilkan <b>bold</b> text
-  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks di antara kata, akan menghasilkan <code>monospace</code> text.
-  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes di antara kata, akan menghasilkan <del>strikethrough</del> text
-  - <code>--underline--</code>: Buat tanda penghubung di antara kata, akan menghasilkan  <u>underline</u> text
+  - <code>__italic__</code>: Buat dua garis bawah di antara kata, akan menghasilkan <i>italic</i> teks.
+  - <code>**bold**</code>: Buat dua tanda bintang di antara kata, akan menghasilkan <b>bold</b> teks.
+  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks di antara kata, akan menghasilkan <code>monospace</code> teks.
+  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes di antara kata, akan menghasilkan <del>strikethrough</del> teks.
+  - <code>--underline--</code>: Buat tanda penghubung di antara kata, akan menghasilkan <u>underline</u> teks.
   - <code>[sometext](someURL)</code>: Ini akan membuat tautan - pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
   Contoh: <code>[test](example.com)</code>
   - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
