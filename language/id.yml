@@ -57,7 +57,7 @@ gpic-no-photo: Berikan saya sebuah foto!
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
 zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
-promote-error-invalid: "**User id tidak sah**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id atau username yang benar`"
+promote-error-invalid: "**ID Pengguna tidak sah**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
 demote-success: "`Menurunkan sudah berhasil`"
 demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
