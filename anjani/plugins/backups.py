@@ -54,11 +54,9 @@ class Backups(plugin.Plugin):
 
             data.update(result)
 
-        if len(data.keys()) <= 1:
+        if len(data) <= 1:
             return await self.text(chat.id, "backup-null")
 
-        # Create the file and write the data
-        await file.touch()
         await file.write_text(json.dumps(data, indent=2))
 
         saved = ""
@@ -89,7 +87,11 @@ class Backups(plugin.Plugin):
         await ctx.respond(await self.text(chat.id, "restore-progress"))
 
         file = AsyncPath(await ctx.msg.reply_to_message.download())
-        data: MutableMapping[str, Any] = json.loads(await file.read_text())
+
+        try:
+            data: MutableMapping[str, Any] = json.loads(await file.read_text())
+        except json.JSONDecodeError:
+            return await self.text(chat.id, "invalid-backup-file")
 
         try:  # also check if the file isn't a valid backup file
             if data["chat_id"] != chat.id:
@@ -97,7 +99,7 @@ class Backups(plugin.Plugin):
         except KeyError:
             return await self.text(chat.id, "invalid-backup-file")
 
-        if len(data.keys()) == 1:
+        if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
         await self.bot.dispatch_event("plugin_restore", chat.id, data)
