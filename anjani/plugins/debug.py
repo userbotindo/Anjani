@@ -142,7 +142,7 @@ class Debug(plugin.Plugin):
 
                 return None
 
-            return f"""{prefix}**In:**
+        return f"""{prefix}**In:**
 ```{code}```
 
 **Out:**
