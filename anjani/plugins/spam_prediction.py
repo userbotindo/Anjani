@@ -18,10 +18,10 @@ import asyncio
 import pickle
 import re
 from hashlib import md5, sha256
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Optional
 
 from pyrogram import filters
-from pyrogram.errors import PeerIdInvalid
+from pyrogram.errors import ChatAdminRequired, MessageDeleteForbidden, UserAdminInvalid
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -41,7 +41,7 @@ except ImportError:
 
 from anjani import command, listener, plugin, util
 from anjani.filters import staff_only
-from anjani.util import run_sync
+from anjani.util import run_sync, tg
 from anjani.util.types import NDArray
 
 
@@ -50,6 +50,8 @@ class SpamPrediction(plugin.Plugin):
     disabled: ClassVar[bool] = not _run_predict
 
     db: util.db.AsyncCollection
+    user_db: util.db.AsyncCollection
+    setting_db: util.db.AsyncCollection
     model: Pipeline
 
     async def on_load(self) -> None:
@@ -61,6 +63,7 @@ class SpamPrediction(plugin.Plugin):
 
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
+        self.setting_db = self.bot.db.get_collection("GBAN_SETTINGS")
         await self.__load_model(token, url)
 
     async def __load_model(self, token: str, url: str) -> None:
@@ -169,6 +172,10 @@ class SpamPrediction(plugin.Plugin):
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
+        setting = await self.setting_db.find_one({"chat_id": message.chat.id})
+        if setting and not setting["setting"]:
+            return
+
         chat = message.chat
         user = message.from_user
         text = (
@@ -256,12 +263,30 @@ class SpamPrediction(plugin.Plugin):
                 }
             )
 
+        target = await message.chat.get_member(user)
+        if tg.is_staff_or_admin(target, self.bot.staff):
+            return
+
         if probability >= 0.9:
-            await message.reply_text(
-                f"❗️**SPAM ALERT**❗️\n"
-                f"**ID:** `{identifier}`\n"
+            alert = (
+                f"❗️**SPAM ALERT**❗️\n\n"
+                f"**User:** `{identifier}`\n"
                 f"**Message Hash:** `{content_hash}`\n"
-                f"**Spam Probability:** {proba_str}%",
+                f"**Spam Probability:** `{proba_str}%`"
+            )
+            try:
+                await message.delete()
+            except (MessageDeleteForbidden, ChatAdminRequired, UserAdminInvalid):
+                alert += "\n\nNot enough permission to delete message."
+                reply_id = message.message_id
+            else:
+                alert += "\n\nThe message has been deleted."
+                reply_id = None
+
+            await self.bot.client.send_message(
+                message.chat.id,
+                alert,
+                reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton("View Message", url=msg.link)]]
                 ),

@@ -29,6 +29,7 @@ from anjani import command, listener, plugin, util
 
 class Main(plugin.Plugin):
     """Bot main Commands"""
+
     name: ClassVar[str] = "Main"
 
     bot_name: str
@@ -38,8 +39,11 @@ class Main(plugin.Plugin):
         self.db = self.bot.db.get_collection("SESSION")
 
     async def on_start(self, _: int) -> None:
-        self.bot_name = (self.bot.user.first_name + self.bot.user.last_name if
-                         self.bot.user.last_name else self.bot.user.first_name)
+        self.bot_name = (
+            self.bot.user.first_name + self.bot.user.last_name
+            if self.bot.user.last_name
+            else self.bot.user.first_name
+        )
 
     async def on_stop(self) -> None:
         file = AsyncPath("anjani/anjani.session")
@@ -62,10 +66,8 @@ class Main(plugin.Plugin):
                     )
                 )
 
-        pairs = [plugins[i * 3 : (i + 1) * 3]
-                 for i in range((len(plugins) + 3 - 1) // 3)]
-        pairs.append([InlineKeyboardButton("✗ Close",
-                                           callback_data="help_close")])
+        pairs = [plugins[i * 3 : (i + 1) * 3] for i in range((len(plugins) + 3 - 1) // 3)]
+        pairs.append([InlineKeyboardButton("✗ Close", callback_data="help_close")])
 
         return pairs
 
@@ -92,12 +94,15 @@ class Main(plugin.Plugin):
             if not plug:
                 raise ValueError("Unable to find plugin name")
 
-            text_lang = await self.text(chat.id,
-                                        f"{plug.group(1)}-help",
-                                        username=self.bot.user.username)
-            text = (f"Here is the help for the **{match.capitalize()}**"
-                    f"plugin:\n\n{text_lang}"
+            text_lang = await self.text(
+                chat.id, f"{plug.group(1)}-help", username=self.bot.user.username
             )
+            text = (
+                f"Here is the help for the **{plug.group(1).capitalize()}** "
+                f"plugin:\n\n{text_lang}"
+            )
+            if "SpamPredict" in self.bot.plugins and plug.group(1) == "spamshield":
+                text += await self.text(chat.id, "spamprediction-help")
             try:
                 await query.edit_message_text(
                     text,
@@ -123,8 +128,10 @@ class Main(plugin.Plugin):
         if chat.type == "private":  # only send in PM's
             if ctx.input and ctx.input == "help":
                 keyboard = await self.help_builder(chat.id)
-                await ctx.respond(await self.text(chat.id, "help-pm", self.bot_name),
-                                  reply_markup=InlineKeyboardMarkup(keyboard))
+                await ctx.respond(
+                    await self.text(chat.id, "help-pm", self.bot_name),
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                )
                 return None
 
             regex = re.compile(r"rules_(.*)")
@@ -191,9 +198,8 @@ class Main(plugin.Plugin):
 
     async def cmd_markdownhelp(self, ctx: command.Context) -> None:
         """Send markdown helper."""
-        await ctx.respond(await self.text(ctx.chat.id,
-                                          "markdown-helper",
-                                          self.bot_name),
+        await ctx.respond(
+            await self.text(ctx.chat.id, "markdown-helper", self.bot_name),
             parse_mode="html",
             disable_web_page_preview=True,
         )

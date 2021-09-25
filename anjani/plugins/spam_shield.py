@@ -29,6 +29,7 @@ from anjani.filters import admin_only
 
 class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
+    helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
     federation_db: util.db.AsyncCollection

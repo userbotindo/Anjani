@@ -374,6 +374,18 @@ rules-view-caption: Click this button to view the chat rules!
 rules-view-pm: "The rules for **{}** are:\n\n"
 #endregion
 #region spam shield
+spamshield-button: Spam Shield
+spamshield-help: |
+  **Admin Commands:**
+  /spamshield <on/off/yes/no>: Will disable or enable the effect of Spam protection in your group.
+
+  Spam shield uses Combot Anti Spam, @Spamwatch API and Global bans to remove Spammers as much as possible from your chatroom!
+spamprediction-help: |
+  \n\n**Spam Prediction**
+
+  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
+
+  You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.
 banned-text: |
   #SPAM_SHIELD\n
   **Name:** {}
