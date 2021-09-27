@@ -259,10 +259,10 @@ muting-help: |
   × /mute <Melalui id pengguna atau username>: Membisukan seseorang di supergroup.
   × /mute <Melalui id pengguna atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
   × /unmute <Melalui id pengguna atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
-  Contoh untuk membisukan sementara seseorang :
+  Contoh untuk membisukan sementara seseorang:
   m = Menit, h = Jam and d = Hari.
   ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
-invalid-time-flag: Tidak sah atau benar tipe waktu. Tolong gunakan m,h, or d.
+invalid-time-flag: Tidak sah atau benar tipe waktu. Tolong gunakan m,h, atau d.
 no-mute-user: Berikan saya pengguna yang akan dibisukan!
 no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
 mute-success: Berhasil dibisukan **{}**!
@@ -343,13 +343,13 @@ restriction-help: |
   × /kick <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
   × /ban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
-no-kick-user: siapa yang harus saya keluarkan?
+no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
 no-ban-user: Siapa yang harus saya blokir?
 admin-ban: Saya tidak akan memblokir Administrator!
 ban-done: "**{}** Terblokir!"
-unban-no-user: berikan saya pengguna untuk diblokir.
+unban-no-user: Berikan saya pengguna untuk diblokir.
 unban-done: "blokir **{}** dihapus..."
 #endregion
 #region rules
@@ -376,7 +376,7 @@ spamshield-help: |
  **Hanya Administrator yang bisa menggunakan:**
   /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
   
-  Spam Shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus orang yang melakukan spam sebanyak mungkin dari ruang obrolan anda!
+  Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus orang yang melakukan spam sebanyak mungkin dari ruang obrolan anda!
 spamprediction-help: |
   \n\n**Prediksi Spam**
   
@@ -445,7 +445,7 @@ err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, atau IDnya tidak sah atau benar."
-err-api-down: Neko api sedang bermasalah, coba lagi nanti.
+err-api-down: Api sedang bermasalah, coba lagi nanti.
 err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
 err-invalid-pid: Identifier tidak valid!
 #endregion
