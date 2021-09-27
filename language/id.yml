@@ -376,7 +376,7 @@ spamshield-help: |
  **Hanya Administrator yang bisa menggunakan:**
   /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
   
-  Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus orang yang melakukan spam sebanyak mungkin dari ruang obrolan anda!
+  Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
 spamprediction-help: |
   \n\n**Prediksi Spam**
   
