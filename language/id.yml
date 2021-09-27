@@ -371,6 +371,18 @@ rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #endregion
 #region spam shield
+spamshield-button: Spam Shield
+spamshield-help: |
+ **Admin Commands:**
+  /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
+  
+  Spam Shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus orang yang melakukan spam sebanyak mungkin dari ruang obrolan anda!
+spamprediction-help: |
+  \n\n**Spam Prediction**
+  
+  Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
+  
+  Anda juga dapat membantu kami mendidik model kami dengan memberikan suara di @SpamPredictionLog. Anda akan mendapatkan poin reputasi dengan beberapa manfaat ke depannya 😉.
 banned-text: |
   #SPAM_SHIELD\n
   **Nama:** {}
