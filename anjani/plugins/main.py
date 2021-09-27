@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
 import re
 from typing import ClassVar, List, Optional
 
@@ -134,19 +133,10 @@ class Main(plugin.Plugin):
                 )
                 return None
 
-            regex = re.compile(r"rules_(.*)")
-            if ctx.input and regex.search(ctx.input):
-                rules_id = int(ctx.input.split("_")[1])
-                db = self.bot.db.get_collection("RULES")
-                content, chat = await asyncio.gather(
-                    db.find_one({"chat_id": rules_id}),
-                    self.bot.client.get_chat(rules_id),
-                )
-                text = await self.text(rules_id, "rules-view-pm", chat.title)
-                if not content:
-                    return await self.text(rules_id, "rules-none")
-
-                return text + content["rules"]
+            if ctx.input:
+                rules_re = re.compile(r"rules_(.*)")
+                if rules_re.search(ctx.input):
+                    return await self.bot.plugins["Rules"].start_rules(ctx)
 
             buttons = [
                 [

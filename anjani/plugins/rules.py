@@ -91,3 +91,15 @@ class Rules(plugin.Plugin):
             ),
         )
         return None
+
+    async def start_rules(self, ctx: command.Context) -> str:
+        rules_id = int(ctx.input.split("_")[1])
+        content, chat = await asyncio.gather(
+            self.db.find_one({"chat_id": rules_id}),
+            self.bot.client.get_chat(rules_id),
+        )
+        text = await self.text(rules_id, "rules-view-pm", chat.title)
+        if not content:
+            return await self.text(rules_id, "rules-none")
+
+        return text + content["rules"]
