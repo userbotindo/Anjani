@@ -262,7 +262,7 @@ muting-help: |
   Contoh untuk membisukan sementara seseorang:
   m = Menit, h = Jam and d = Hari.
   ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
-invalid-time-flag: Tidak sah atau benar tipe waktu. Tolong gunakan m,h, atau d.
+invalid-time-flag: Tidak sah atau tidak benar tipe waktu. Tolong gunakan m,h, atau d.
 no-mute-user: Berikan saya pengguna yang akan dibisukan!
 no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
 mute-success: Berhasil dibisukan **{}**!
@@ -309,7 +309,7 @@ purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
 reporting-button: Laporan
 reporting-help: |
   **Hanya Administrator yang bisa menggunakan:**
-  × /reports <yes/no/on/off>: aktifkan atau nonaktifkan laporan grup.
+  × /reports <yes/no/on/off>: Menghidupkan atau mematikan laporan grup.
     - Jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
     - Jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
   \n**Perintah pengguna:**
@@ -317,10 +317,10 @@ reporting-help: |
   × @admin: Sama seperti /report.
   \nSecara sederhana balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
   **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
-report-on: Pelaporan diaktifkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
-chat-report-on: Pelaporan diaktifkan! Administrator yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
-report-off: Pelaporan dinonaktifkan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
-chat-report-off: Pelaporan dinonaktifkan! Administrator tidak akan diberi tahu jika ada /report atau @admin!
+report-on: Pelaporan dihidupkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
+chat-report-on: Pelaporan dihidupkan! Administrator yang telah menghidupkan laporan akan diberi tahu saat /report atau @admin digunakan.
+report-off: Pelaporan dimatikan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
+chat-report-off: Pelaporan dimatikan! Administrator tidak akan diberi tahu jika ada /report atau @admin!
 report-setting: "Pengaturan laporan grup ini saat ini adalah: `{}`"
 chat-report-setting: "Pengaturan laporan anda saat ini adalah: `{}`"
 no-report-user: Siapa yang harus saya laporkan?
@@ -440,12 +440,12 @@ err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
 err-chat-private: Perintah ini khusus untuk PM!
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota grup!"
-err-invalid-option: Pilihan ini tidak valid!
+err-invalid-option: Pilihan ini tidak sah atau tidak benar!
 err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
-err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, atau IDnya tidak sah atau benar."
+err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, mungkin IDnya tidak sah atau tidak benar."
 err-api-down: Api sedang bermasalah, coba lagi nanti.
 err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
-err-invalid-pid: Identifier tidak valid!
+err-invalid-pid: Identifier tidak sah atau tidak benar!
 #endregion
