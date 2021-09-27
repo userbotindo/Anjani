@@ -282,7 +282,7 @@ notes-help: |
   × #<nama catatan>: Sama seperti /get. Contoh : #test
   × /notes: Daftar semua catatan pada grup ini.\n
   **Perintah Administrator:**
-  × /save <nama catatan> <isi catatan>: menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
+  × /save <nama catatan> <isi catatan>: Menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCek /markdownhelp untuk info format catatan lainnya silahkan dicek.
 notes-invalid-args : |
@@ -310,8 +310,8 @@ reporting-button: Laporan
 reporting-help: |
   **Hanya Administrator yang bisa menggunakan:**
   × /reports <yes/no/on/off>: aktifkan atau nonaktifkan laporan grup.
-    - jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
-    - jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
+    - Jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
+    - Jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
   \n**Perintah pengguna:**
   × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh Administrator.
   × @admin: Sama seperti /report.
@@ -348,9 +348,9 @@ admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
 no-ban-user: Siapa yang harus saya blokir?
 admin-ban: Saya tidak akan memblokir Administrator!
-ban-done: "**{}** Terblokir!"
+ban-done: "**{}** terblokir!"
 unban-no-user: Berikan saya pengguna untuk diblokir.
-unban-done: "blokir **{}** dihapus..."
+unban-done: "Blokir **{}** dihapus..."
 #endregion
 #region rules
 rules-button: Aturan
@@ -402,18 +402,18 @@ greetings-help: |
   **Hanya Administrator yang bisa menggunakan:**
   × /setwelcome <balas pesan>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
   × /resetwelcome: Mengubah pesan sambutan anda kepada pesan sambutan bawaan saya.
-  × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
-  × /welcome : Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
-  × /setgoodbye <balas pesan> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
-  × /resetgoodbye : Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
-  × /goodbye <on/off> :  Menyalakan / mematikan pesan selamat tinggal.
-  × /goodbye : Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini..\n
+  × /welcome <on/off>: Menyalakan atau mematikan pesan sambutan.
+  × /welcome: Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
+  × /setgoodbye <balas pesan>: Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
+  × /resetgoodbye: Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
+  × /goodbye <on/off>: Menyalakan atau mematikan pesan selamat tinggal.
+  × /goodbye: Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini.\n
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
-   **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir
+   **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir.
   Contoh: `/welcome noformat`
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
-  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
+  Untuk melihat perintah yang bisa anda gunakan. Silahkan ketik /help.
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Mengubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
