@@ -21,7 +21,12 @@ from hashlib import md5, sha256
 from typing import ClassVar, Optional
 
 from pyrogram import filters
-from pyrogram.errors import ChatAdminRequired, MessageDeleteForbidden, UserAdminInvalid
+from pyrogram.errors import (
+    ChatAdminRequired,
+    MessageDeleteForbidden,
+    MessageNotModified,
+    UserAdminInvalid,
+)
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -122,29 +127,27 @@ class SpamPrediction(plugin.Plugin):
             if method == "t":
                 # Check user in incorrect data
                 if author in users_on_incorrect:
-                    await self.db.update_one({"_id": content_hash}, {"$pull": {"ham": author}})
                     users_on_incorrect.remove(author)
                 if author in users_on_correct:
-                    await self.db.update_one({"_id": content_hash}, {"$pull": {"spam": author}})
                     users_on_correct.remove(author)
                 else:
-                    await self.db.update_one({"_id": content_hash}, {"$addToSet": {"spam": author}})
                     users_on_correct.append(author)
             elif method == "f":
                 # Check user in correct data
                 if author in users_on_correct:
-                    await self.db.update_one({"_id": content_hash}, {"$pull": {"spam": author}})
                     users_on_correct.remove(author)
                 if author in users_on_incorrect:
-                    await self.db.update_one({"_id": content_hash}, {"$pull": {"ham": author}})
                     users_on_incorrect.remove(author)
                 else:
-                    await self.db.update_one({"_id": content_hash}, {"$addToSet": {"ham": author}})
                     users_on_incorrect.append(author)
             else:
                 raise ValueError("Unknown method")
         else:
             return
+
+        await self.db.update_one(
+            {"_id": content_hash}, {"$set": {"spam": users_on_correct, "ham": users_on_incorrect}}
+        )
 
         total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
         button = [
@@ -164,9 +167,12 @@ class SpamPrediction(plugin.Plugin):
             button.append(old_btn[1])
 
         for i in data["msg_id"]:
-            await self.bot.client.edit_message_reply_markup(
-                -1001314588569, i, InlineKeyboardMarkup(button)
-            )
+            try:
+                await self.bot.client.edit_message_reply_markup(
+                    -1001314588569, i, InlineKeyboardMarkup(button)
+                )
+            except MessageNotModified:
+                pass
         await query.answer()
 
     @listener.filters(filters.group)
