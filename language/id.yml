@@ -373,12 +373,12 @@ rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #region spam shield
 spamshield-button: Spam Shield
 spamshield-help: |
- **Admin Commands:**
+ **Hanya Administrator yang bisa menggunakan:**
   /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
   
   Spam Shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus orang yang melakukan spam sebanyak mungkin dari ruang obrolan anda!
 spamprediction-help: |
-  \n\n**Spam Prediction**
+  \n\n**Prediksi Spam**
   
   Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
   
