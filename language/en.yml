@@ -448,7 +448,7 @@ err-invalid-username-id : "`Invalid username or userid!`"
 error-reply-to-message: Reply to a message!
 err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: "**PEER_ID_INVALID**\nLooks like I don't have an access to this user, or the ID isn't a valid one."
-err-api-down: Neko api down for now, try again later..
+err-api-down: Api down for now, try again later..
 err-group-creator-cmd: Only group creator can use this command!
 err-invalid-pid: Invalid identifier!
 #endregion

@@ -259,10 +259,10 @@ muting-help: |
   × /mute <Melalui id pengguna atau username>: Membisukan seseorang di supergroup.
   × /mute <Melalui id pengguna atau username> X<m|h|d>: Membisukan sementara seseorang untuk X time.
   × /unmute <Melalui id pengguna atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
-  Contoh untuk membisukan sementara seseorang :
+  Contoh untuk membisukan sementara seseorang:
   m = Menit, h = Jam and d = Hari.
   ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
-invalid-time-flag: Tidak sah atau benar tipe waktu. Tolong gunakan m,h, or d.
+invalid-time-flag: Tipe waktu tidak benar. Tolong gunakan m,h, atau d.
 no-mute-user: Berikan saya pengguna yang akan dibisukan!
 no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
 mute-success: Berhasil dibisukan **{}**!
@@ -282,7 +282,7 @@ notes-help: |
   × #<nama catatan>: Sama seperti /get. Contoh : #test
   × /notes: Daftar semua catatan pada grup ini.\n
   **Perintah Administrator:**
-  × /save <nama catatan> <isi catatan>: menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
+  × /save <nama catatan> <isi catatan>: Menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCek /markdownhelp untuk info format catatan lainnya silahkan dicek.
 notes-invalid-args : |
@@ -309,18 +309,18 @@ purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
 reporting-button: Laporan
 reporting-help: |
   **Hanya Administrator yang bisa menggunakan:**
-  × /reports <yes/no/on/off>: aktifkan atau nonaktifkan laporan grup.
-    - jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
-    - jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
+  × /reports <yes/no/on/off>: Menghidupkan atau mematikan laporan grup.
+    - Jika dijalankan di grup akan mengubah pengaturan grup dan akan menampilkan notifikasi.
+    - Jika dijalankan di PM akan mengubah pengaturan kamu dan akan menampilkan notifikasi.
   \n**Perintah pengguna:**
   × /report: Balas pesan untuk melaporkannya agar dapat ditinjau oleh Administrator.
   × @admin: Sama seperti /report.
   \nSecara sederhana balas pesan dengan @admin atau /report. Saya akan memberikan notifikasi kepada semua Administrator mengenai pesan yang kamu laporkan.
   **Catatan** /reports and @admin tidak akan direspon jika itu adalah pesan Administrator.
-report-on: Pelaporan diaktifkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
-chat-report-on: Pelaporan diaktifkan! Administrator yang telah mengaktifkan laporan akan diberi tahu saat /report atau @admin digunakan.
-report-off: Pelaporan dinonaktifkan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
-chat-report-off: Pelaporan dinonaktifkan! Administrator tidak akan diberi tahu jika ada /report atau @admin!
+report-on: Pelaporan dihidupkan! anda akan diberi tahu setiap kali laporan terjadi dalam grup.
+chat-report-on: Pelaporan dihidupkan! Administrator yang telah menghidupkan laporan akan diberi tahu saat /report atau @admin digunakan.
+report-off: Pelaporan dimatikan! anda tidak akan mendapatkan laporan dari grup dimana anda menjadi Administrator.
+chat-report-off: Pelaporan dimatikan! Administrator tidak akan diberi tahu jika ada /report atau @admin!
 report-setting: "Pengaturan laporan grup ini saat ini adalah: `{}`"
 chat-report-setting: "Pengaturan laporan anda saat ini adalah: `{}`"
 no-report-user: Siapa yang harus saya laporkan?
@@ -343,14 +343,14 @@ restriction-help: |
   × /kick <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
   × /ban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
-no-kick-user: siapa yang harus saya keluarkan?
+no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
 no-ban-user: Siapa yang harus saya blokir?
 admin-ban: Saya tidak akan memblokir Administrator!
-ban-done: "**{}** Terblokir!"
-unban-no-user: berikan saya pengguna untuk diblokir.
-unban-done: "blokir **{}** dihapus..."
+ban-done: "**{}** terblokir!"
+unban-no-user: Berikan saya pengguna untuk diblokir.
+unban-done: "Blokir **{}** dihapus..."
 #endregion
 #region rules
 rules-button: Aturan
@@ -371,6 +371,18 @@ rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #endregion
 #region spam shield
+spamshield-button: Spam Shield
+spamshield-help: |
+ **Hanya Administrator yang bisa menggunakan:**
+  /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
+  
+  Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
+spamprediction-help: |
+  \n\n**Prediksi Spam**
+  
+  Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
+  
+  Anda juga dapat membantu kami mendidik model kami dengan memberikan suara di @SpamPredictionLog. Anda akan mendapatkan poin reputasi dengan beberapa manfaat ke depannya 😉.
 banned-text: |
   #SPAM_SHIELD\n
   **Nama:** {}
@@ -390,18 +402,18 @@ greetings-help: |
   **Hanya Administrator yang bisa menggunakan:**
   × /setwelcome <balas pesan>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
   × /resetwelcome: Mengubah pesan sambutan anda kepada pesan sambutan bawaan saya.
-  × /welcome <on/off>: Menyalakan / mematikan pesan sambutan.
-  × /welcome : Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
-  × /setgoodbye <balas pesan> : Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
-  × /resetgoodbye : Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
-  × /goodbye <on/off> :  Menyalakan / mematikan pesan selamat tinggal.
-  × /goodbye : Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini..\n
+  × /welcome <on/off>: Menghidupkan atau mematikan pesan sambutan.
+  × /welcome: Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
+  × /setgoodbye <balas pesan>: Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
+  × /resetgoodbye: Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
+  × /goodbye <on/off>: Menghidupkan atau mematikan pesan selamat tinggal.
+  × /goodbye: Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini.\n
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
-   **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir
+   **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir.
   Contoh: `/welcome noformat`
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
-  Untuk melihat perintah yang bisa kamu gunakan. Silahkan ketik /help.
+  Untuk melihat perintah yang bisa anda gunakan. Silahkan ketik /help.
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Mengubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
@@ -428,12 +440,12 @@ err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
 err-chat-private: Perintah ini khusus untuk PM!
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota grup!"
-err-invalid-option: Pilihan ini tidak valid!
+err-invalid-option: Pilihan ini tidak sah atau tidak benar!
 err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
-err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, atau IDnya tidak sah atau benar."
-err-api-down: Neko api sedang bermasalah, coba lagi nanti.
+err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, mungkin IDnya tidak sah atau tidak benar."
+err-api-down: Api sedang bermasalah, coba lagi nanti.
 err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
-err-invalid-pid: Identifier tidak valid!
+err-invalid-pid: Identifier tidak sah atau tidak benar!
 #endregion
