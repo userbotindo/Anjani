@@ -262,7 +262,7 @@ muting-help: |
   Contoh untuk membisukan sementara seseorang:
   m = Menit, h = Jam and d = Hari.
   ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
-invalid-time-flag: Tidak sah atau tidak benar tipe waktu. Tolong gunakan m,h, atau d.
+invalid-time-flag: Tipe waktu tidak benar. Tolong gunakan m,h, atau d.
 no-mute-user: Berikan saya pengguna yang akan dibisukan!
 no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
 mute-success: Berhasil dibisukan **{}**!
