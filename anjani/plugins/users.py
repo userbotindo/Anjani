@@ -37,14 +37,7 @@ class Users(plugin.Plugin):
     async def on_load(self) -> None:
         self.chats_db = self.bot.db.get_collection("CHATS")
         self.users_db = self.bot.db.get_collection("USERS")
-        self.predict_loaded = False
-
-        async def c_pred():
-            await asyncio.sleep(2)  # wait for model download
-            if "SpamPredict" in self.bot.plugins:
-                self.predict_loaded = True
-
-        self.bot.loop.create_task(c_pred())
+        self.predict_loaded = await self.check_predict()
 
     def hash_id(self, id: int) -> str:
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003

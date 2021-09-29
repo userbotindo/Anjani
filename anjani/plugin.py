@@ -1,3 +1,4 @@
+import asyncio
 import codecs
 import inspect
 import logging
@@ -21,16 +22,10 @@ def loop_safe(func: Callable[..., str]):  # Let default typing choose the return
         text_name: str,
         *args: Any,
         noformat: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> str:
         return await util.run_sync(
-            func,
-            self,
-            chat_id,
-            text_name,
-            *args,
-            noformat=noformat,
-            **kwargs
+            func, self, chat_id, text_name, *args, noformat=noformat, **kwargs
         )
 
     return wrapper
@@ -54,12 +49,7 @@ class Plugin:
 
     @loop_safe
     def text(
-        self,
-        chat_id: int,
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any
+        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
     ) -> str:
         """Parse the string with user language setting.
 
@@ -78,13 +68,12 @@ class Plugin:
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
+
         def get_text(lang_code: str) -> str:
             try:
                 text = codecs.decode(
                     codecs.encode(
-                        self.bot.languages[lang_code][text_name],
-                        "latin-1",
-                        "backslashreplace"
+                        self.bot.languages[lang_code][text_name], "latin-1", "backslashreplace"
                     ),
                     "unicode-escape",
                 )
@@ -114,3 +103,10 @@ class Plugin:
 
     def __repr__(self):
         return "<" + self.format_desc(self.comment) + ">"
+
+    async def check_predict(self) -> bool:
+        async def _c_pred() -> bool:
+            await asyncio.sleep(3)  # wait for estimator download
+            return "SpamPredict" in self.bot.plugins
+
+        return await self.bot.loop.create_task(_c_pred())
