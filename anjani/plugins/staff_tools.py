@@ -47,6 +47,8 @@ class Staff(plugin.Plugin):
         text = ctx.input + "\n\n*This is a broadcast message."
         tasks: Set[asyncio.Task] = set()
         async for chat in self.db.find({}):
+            if chat.get("type") == "channel":
+                continue
             if len(tasks) % 25 == 0:
                 # sleep every 25 msg tasks to prevent flood limit.
                 await asyncio.sleep(1)
@@ -84,10 +86,12 @@ class Staff(plugin.Plugin):
             return "I left the group"
 
     @command.filters(filters.staff_only)
-    async def cmd_chatlist(self, ctx: command.Context) -> None:
+    async def cmd_chatlist(self, ctx: command.Context, get_all: Optional[bool] = False) -> None:
         """Send file of chat's I'm in"""
         chatfile = "List of chats.\n"
         async for chat in self.db.find({}):
+            if not get_all and chat.get("type") == "channel":
+                continue
             chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
 
         with BytesIO(str.encode(chatfile)) as output:
