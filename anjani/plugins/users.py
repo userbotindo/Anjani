@@ -17,10 +17,10 @@
 import asyncio
 import re
 from hashlib import md5
-from typing import ClassVar, List, Optional, Union
+from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 
 from aiopath import AsyncPath
-from pyrogram.errors import PeerIdInvalid
+from pyrogram.errors import BadRequest, PeerIdInvalid
 from pyrogram.types import Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
@@ -189,9 +189,19 @@ class Users(plugin.Plugin):
 
         return text
 
+    async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
+        text = f"**Old User Info**\n\n"
+        text += f"**ID:** `{data['_id']}`\n"
+        text += f"**Username:** @{data['username']}\n"
+        if self.predict_loaded:
+            text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
+            text += f"\n**Reputation: **`{data.get('reputation', 0)}`"
+        text += f"\nI've seen them on {len(data['chats'])} chats."
+        return text
+
     async def _chat_info(self, ctx: command.Context, chat: Union[Chat, ChatPreview]):
         """Chat Info"""
-        text = "**Chat info**\n\n"
+        text = "**Chat Info**\n\n"
         if isinstance(chat, ChatPreview):
             text += f"**Chat Type:** `{chat.type}`\n"
             text += f"**Title:** `{chat.title}`\n"
@@ -223,6 +233,14 @@ class Users(plugin.Plugin):
             return None
         return text
 
+    async def _old_chat_info(self, data: MutableMapping[str, Any]) -> str:
+        text = f"**Old Chat Info**\n\n"
+        text += f"**ID:** `{data['chat_id']}`\n"
+        text += f"**Chat Name:** {data['chat_name']}\n"
+        if self.predict_loaded:
+            text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
+        return text
+
     async def cmd_info(self, ctx: command.Context, args: Optional[str]):
         """Fetch a telegram peer data"""
         if not args:
@@ -236,16 +254,22 @@ class Users(plugin.Plugin):
         if self.predict_loaded:
             id_match = re.search(r"([a-fA-F\d]{32})", args)
         if id_match:
-            user = await self.users_db.find_one({"hash": id_match.group(0)})
-            if user:
-                user = await ctx.bot.client.get_users(user["_id"])
-                if isinstance(user, List):
-                    user = user[0]
-                return await self._user_info(ctx, user)
-            chat = await self.chats_db.find_one({"hash": id_match.group(0)})
-            if chat:
-                chat = await ctx.bot.client.get_chat(chat["chat_id"])
-                return await self._chat_info(ctx, chat)
+            user_data = await self.users_db.find_one({"hash": id_match.group(0)})
+            if user_data:
+                try:
+                    user = await ctx.bot.client.get_users(user_data["_id"])
+                    if isinstance(user, List):
+                        user = user[0]
+                    return await self._user_info(ctx, user)
+                except PeerIdInvalid:
+                    return await self._old_user_info(user_data)
+            chat_data = await self.chats_db.find_one({"hash": id_match.group(0)})
+            if chat_data:
+                try:
+                    chat = await ctx.bot.client.get_chat(chat_data["chat_id"])
+                    return await self._chat_info(ctx, chat)
+                except PeerIdInvalid:
+                    return await self._old_chat_info(chat_data)
             return await self.text(ctx.chat.id, "err-invalid-pid")
 
         try:
@@ -253,9 +277,18 @@ class Users(plugin.Plugin):
             if isinstance(user, List):
                 user = user[0]
             return await self._user_info(ctx, user)
-        except (IndexError, PeerIdInvalid):  # chat peer
+        except (IndexError, BadRequest):  # chat peer
             try:
+                args = int(args)  # type: ignore
                 chat = await ctx.bot.client.get_chat(args)
                 return await self._chat_info(ctx, chat)
-            except PeerIdInvalid:
-                return await self.text(ctx.chat.id, "err-peer-invalid")
+            except BadRequest:
+                user = await self.users_db.find_one({"_id": args})
+                if user:
+                    return await self._old_user_info(user)
+                chat = await self.chats_db.find_one({"chat_id": args})
+                if chat:
+                    return await self._old_chat_info(chat)
+            except ValueError:
+                pass
+        return await self.text(ctx.chat.id, "err-peer-invalid")

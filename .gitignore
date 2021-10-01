@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 *.log
 *.session
+*.session-journal
 downloads/
 
 # IDE specific files
