@@ -190,7 +190,7 @@ class Users(plugin.Plugin):
         return text
 
     async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
-        text = f"**Old User Info**\n\n"
+        text = "**Old User Info**\n\n"
         text += f"**ID:** `{data['_id']}`\n"
         text += f"**Username:** @{data['username']}\n"
         if self.predict_loaded:
@@ -234,7 +234,7 @@ class Users(plugin.Plugin):
         return text
 
     async def _old_chat_info(self, data: MutableMapping[str, Any]) -> str:
-        text = f"**Old Chat Info**\n\n"
+        text = "**Old Chat Info**\n\n"
         text += f"**ID:** `{data['chat_id']}`\n"
         text += f"**Chat Name:** {data['chat_name']}\n"
         if self.predict_loaded:
