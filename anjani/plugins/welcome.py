@@ -37,6 +37,8 @@ class Greeting(plugin.Plugin):
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
         reply_to = message.message_id
+        if message.left_chat_member and message.left_chat_member.id == self.bot.uid:
+            return
 
         # Clean service both for left member and new member if active
         if await self.clean_service(chat.id):
@@ -58,8 +60,6 @@ class Greeting(plugin.Plugin):
             return
 
         left_member = message.left_chat_member
-        if left_member.id == self.bot.uid:
-            return
         text = await self.left_message(chat.id)
         if not text:
             text = await self.text(chat.id, "default-goodbye", noformat=True)
