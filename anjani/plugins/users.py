@@ -21,6 +21,7 @@ from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 
 from aiopath import AsyncPath
 from pyrogram.errors import BadRequest, PeerIdInvalid
+from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
 from pyrogram.types import Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
@@ -268,7 +269,7 @@ class Users(plugin.Plugin):
                 try:
                     chat = await ctx.bot.client.get_chat(chat_data["chat_id"])
                     return await self._chat_info(ctx, chat)
-                except PeerIdInvalid:
+                except (PeerIdInvalid, ChannelInvalid):
                     return await self._old_chat_info(chat_data)
             return await self.text(ctx.chat.id, "err-invalid-pid")
 
