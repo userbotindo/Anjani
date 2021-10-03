@@ -83,7 +83,7 @@ class Users(plugin.Plugin):
         user = message.left_chat_member
         if user.id == self.bot.uid:
             await asyncio.gather(
-                self.chats_db.delete_one({"chat_id": chat.id}),
+                self.chats_db.update_one({"chat_id": chat.id}, {"$set": {"member": []}}),
                 self.users_db.update_many({"chats": chat.id}, {"$pull": {"chats": chat.id}}),
             )
         else:
