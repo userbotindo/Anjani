@@ -85,11 +85,14 @@ class Language(plugin.Plugin):
 
     async def switch_lang(self, chat_id: int, language: str) -> None:
         """Change chat language setting."""
-        await self.db.update_one(
-            {"chat_id": int(chat_id)},
-            {"$set": {"language": language}},
-            upsert=True,
-        )
+        if language == "en":
+            await self.db.delete_one({"chat_id": int(chat_id)})
+        else:
+            await self.db.update_one(
+                {"chat_id": int(chat_id)},
+                {"$set": {"language": language}},
+                upsert=True,
+            )
         self.bot.chats_languages[chat_id] = language
 
     @command.filters(aliases=["lang", "language"])
