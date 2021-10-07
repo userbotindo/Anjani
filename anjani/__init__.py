@@ -12,9 +12,6 @@ from pyrogram.session import Session
 from .core import Anjani
 from .util.config import TelegramConfig
 
-Session.notice_displayed = True
-aiorun.logger.disabled = True
-
 log = logging.getLogger("launch")
 
 
@@ -61,7 +58,14 @@ def setup_log() -> None:
     root.addHandler(stream)
     root.addHandler(logfile)
 
+    # Logging necessary for selected libs
+    aiorun.logger.disabled = True
+    logging.getLogger("pymongo").setLevel(logging.WARNING)
     logging.getLogger("pyrogram").setLevel(logging.ERROR)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    # Disable pyrogram notice
+    Session.notice_displayed = True
 
 
 def start() -> None:
