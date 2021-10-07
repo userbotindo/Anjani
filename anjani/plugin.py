@@ -103,10 +103,3 @@ class Plugin:
 
     def __repr__(self):
         return "<" + self.format_desc(self.comment) + ">"
-
-    async def check_predict(self) -> bool:
-        async def _c_pred() -> bool:
-            await asyncio.sleep(3)  # wait for estimator download
-            return "SpamPredict" in self.bot.plugins
-
-        return await self.bot.loop.create_task(_c_pred())
