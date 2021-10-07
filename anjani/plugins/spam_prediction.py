@@ -46,7 +46,6 @@ except ImportError:
 
 from anjani import command, listener, plugin, util
 from anjani.filters import staff_only
-from anjani.util import run_sync, tg
 from anjani.util.types import NDArray
 
 
@@ -81,9 +80,8 @@ class SpamPrediction(plugin.Plugin):
             },
         ) as res:
             if res.status == 200:
-                self.model = await run_sync(pickle.loads, await res.read())
+                self.model = await util.run_sync(pickle.loads, await res.read())
             else:
-                self.model = None  # type: ignore
                 self.log.warning("Failed to download prediction model!")
                 self.bot.unload_plugin(self)
 
@@ -98,11 +96,11 @@ class SpamPrediction(plugin.Plugin):
     def prob_to_string(value: float) -> str:
         return str(value * 10 ** 2)[0:7]
 
-    def _predict(self, text: str) -> NDArray[float]:
-        return self.model.predict_proba([text])
+    async def _predict(self, text: str) -> NDArray[float]:
+        return await util.run_sync(self.model.predict_proba, [text])
 
-    def _is_spam(self, text: str) -> Optional[bool]:
-        return self.model.predict([text])[0] == "spam"
+    async def _is_spam(self, text: str) -> bool:
+        return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
     @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
@@ -196,12 +194,9 @@ class SpamPrediction(plugin.Plugin):
         self.bot.loop.create_task(self.spam_check(message, text))
 
     async def spam_check(self, message: Message, text: str) -> None:
-        if not self.model:
-            return
-
         user = message.from_user.id
 
-        response = await run_sync(self._predict, text.strip())
+        response = await self._predict(text.strip())
         if response.size == 0:
             return
 
@@ -270,7 +265,7 @@ class SpamPrediction(plugin.Plugin):
             )
 
         target = await message.chat.get_member(user)
-        if tg.is_staff_or_admin(target, self.bot.staff):
+        if util.tg.is_staff_or_admin(target, self.bot.staff):
             return
 
         if probability >= 0.9:
@@ -324,7 +319,7 @@ class SpamPrediction(plugin.Plugin):
         identifier = self._build_hex(user_id)
 
         content_hash = self._build_hash(content)
-        pred = await run_sync(self._predict, content.strip())
+        pred = await self._predict(content.strip())
         if pred.size == 0:
             return "Prediction failed"
 
@@ -378,14 +373,13 @@ class SpamPrediction(plugin.Plugin):
             return None
 
         content = replied.text or replied.caption
-        pred = await util.run_sync(self._predict, content)
-        is_spam = await util.run_sync(self._is_spam, content)
+        pred = await self._predict(content)
         if pred.size == 0:
             return "Prediction failed"
 
         return (
             "**Result**\n\n"
-            f"**Is Spam:** {is_spam}\n"
+            f"**Is Spam:** {await self._is_spam(content)}\n"
             f"**Spam Prediction:** `{self.prob_to_string(pred[0][1])}`\n"
             f"**Ham Prediction:** `{self.prob_to_string(pred[0][0])}`"
         )
