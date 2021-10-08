@@ -338,6 +338,7 @@ class Federation(plugin.Plugin):
         if chat.type == "private":
             return await self.text(chat.id, "err-chat-groups")
 
+        invoker = ctx.msg.from_user
         if not user:
             if not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "fed-no-demote-user")
@@ -347,7 +348,7 @@ class Federation(plugin.Plugin):
         if not data:
             return await self.text(chat.id, "fed-no-fed-chat")
 
-        if user.id != data["owner"]:
+        if invoker.id != data["owner"]:
             return await self.text(chat.id, "fed-owner-only-demote")
         if user.id == data["owner"]:
             return await self.text(chat.id, "fed-already-owner")
