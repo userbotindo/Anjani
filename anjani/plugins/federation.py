@@ -450,6 +450,9 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "err-chat-groups")
 
         banner = ctx.msg.from_user
+        if not banner:
+            return await self.text(chat.id, "err-anonymous")
+
         data = await self.get_fed_bychat(chat.id)
         if not data:
             return await self.text(chat.id, "fed-no-fed-chat")
