@@ -51,13 +51,11 @@ class Misc(plugin.Plugin):
 
         return out_str
 
-    async def cmd_paste(
-        self, ctx: command.Context, service: Optional[str] = None
-    ) -> Optional[str]:
+    async def cmd_paste(self, ctx: command.Context, service: Optional[str] = None) -> Optional[str]:
         if not ctx.msg.reply_to_message:
             return None
         if not service:
-            service = "katbin"
+            service = "hastebin"
 
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
@@ -106,7 +104,9 @@ class Misc(plugin.Plugin):
                 except JSONDecodeError:
                     return await self.text(ctx.chat.id, "paste-fail", service)
 
-                text = urls[service] + result["paste_id"] if katbin else urls[service] + result["key"]
+                text = (
+                    urls[service] + result["paste_id"] if katbin else urls[service] + result["key"]
+                )
                 return await self.text(ctx.chat.id, "paste-succes", f"[{service}]({text})")
         except ClientConnectorError:
             return await self.text(ctx.chat.id, "paste-fail", service)
