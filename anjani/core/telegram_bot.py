@@ -30,6 +30,7 @@ class TelegramBot(MixinBase):
 
     loaded: bool
     staff: Set[int]
+    devs: Set[int]
     chats_languages: MutableMapping[int, str]
     languages: MutableMapping[str, MutableMapping[str, str]]
 
@@ -46,6 +47,7 @@ class TelegramBot(MixinBase):
 
         self.loaded = False
         self.staff = set()
+        self.devs = set()
         self.chats_languages = {}
         self.languages = {}
 
@@ -77,7 +79,7 @@ class TelegramBot(MixinBase):
             api_id=api_id,
             api_hash=api_hash,
             bot_token=bot_token,
-            workdir="anjani"
+            workdir="anjani",
         )
 
     async def start(self: "Anjani") -> None:
@@ -112,10 +114,13 @@ class TelegramBot(MixinBase):
         # noinspection PyTypeChecker
         self.uid = user.id
         self.staff.add(self.owner)
+        self.devs.add(self.owner)
 
         # Update staff from db
         db = self.db.get_collection("STAFF")
         async for doc in db.find():
+            if doc["rank"] == "dev":
+                self.devs.add(doc["_id"])
             self.staff.add(doc["_id"])
 
         # Update Language setting chat from db

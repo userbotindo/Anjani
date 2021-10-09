@@ -101,7 +101,7 @@ class Staff(plugin.Plugin):
                 caption="Here is the list of chats in my database.",
             )
 
-    @command.filters(filters.staff_only)
+    @command.filters(filters.dev_only)
     async def cmd_logs(self, ctx: command.Context) -> None:
         """Send bot log"""
         file = AsyncPath("Anjani.log")

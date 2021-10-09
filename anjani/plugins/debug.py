@@ -40,7 +40,7 @@ class Debug(plugin.Plugin):
 
         return f"Latency: {latency} ms"
 
-    @command.filters(filters.staff_only)
+    @command.filters(filters.dev_only)
     async def cmd_eval(self, ctx: command.Context) -> Optional[str]:
         code = ctx.input
         if not code:
