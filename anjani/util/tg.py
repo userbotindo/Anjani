@@ -8,13 +8,10 @@ from pyrogram.types import (
     ChatMember,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    Message
+    Message,
 )
 
-Button = Union[
-    Tuple[Tuple[str, str, bool]],
-    List[Tuple[str, str, bool]]
-]
+Button = Union[Tuple[Tuple[str, str, bool]], List[Tuple[str, str, bool]]]
 
 MESSAGE_CHAR_LIMIT = 4096
 TRUNCATION_SUFFIX = "... (truncated)"
@@ -23,6 +20,7 @@ TRUNCATION_SUFFIX = "... (truncated)"
 @unique
 class Types(IntEnum):
     """A Class representing message type"""
+
     TEXT = 0
     BUTTON_TEXT = 1
     DOCUMENT = 2
@@ -155,26 +153,30 @@ def truncate(text: str) -> str:
 
 
 def is_staff_or_admin(target: ChatMember, staff: Set[int]) -> bool:
-    return (
-        target.status in {"administrator", "creator"} or
-        target.user.id in staff
-    )
+    return target.status in {"administrator", "creator"} or target.user.id in staff
 
 
 # { Permission
-async def fetch_permissions(
-    client: Client, chat: int, user: int
-) -> Tuple[ChatMember, ChatMember]:
-    bot, member = await asyncio.gather(client.get_chat_member(chat, "me"),
-                                       client.get_chat_member(chat, user))
+async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
+    bot, member = await asyncio.gather(
+        client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
+    )
     return bot, member
+
+
 # }
 
 
 # { ChatAdmin
-async def get_chat_admins(client: Client, chat: int) -> AsyncGenerator[ChatMember, None]:
+async def get_chat_admins(
+    client: Client, chat: int, *, exclude_bot: bool = False
+) -> AsyncGenerator[ChatMember, None]:
     member: ChatMember
     async for member in client.iter_chat_members(chat, filter="administrators"):  # type: ignore
         if member.status in {"administrator", "creator"}:
+            if exclude_bot and member.user.is_bot:
+                continue
             yield member
+
+
 # }

@@ -52,9 +52,7 @@ class Reporting(plugin.Plugin):
         return {self.name: report}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @listener.filters(filters.regex(r"^(?i)@admin(s)?\b") & filters.group)
     async def on_message(self, message: Message) -> None:
@@ -85,7 +83,7 @@ class Reporting(plugin.Plugin):
             return
 
         reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
-        async for admin in util.tg.get_chat_admins(self.bot.client, chat.id):
+        async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):
                 reply_text += f"<a href='tg://user?id={admin.user.id}'>\u200B</a>"
 
@@ -131,13 +129,12 @@ class Reporting(plugin.Plugin):
                 return await self.text(
                     chat.id,
                     "report-setting" if private else "chat-report-setting",
-                    await self.is_active(chat.id, private)
+                    await self.is_active(chat.id, private),
                 )
 
             return await self.text(chat.id, "err-yes-no-args")
 
-        _, member = await util.tg.fetch_permissions(self.bot.client, chat.id,
-                                                    ctx.author.id)
+        _, member = await util.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
         if member.status not in {"administrator", "creator"}:
             return None
 
