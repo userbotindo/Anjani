@@ -170,7 +170,7 @@ class Federation(plugin.Plugin):
                         chat.id,
                         "fed-autoban",
                         user.mention,
-                        data["fed-name"],
+                        data["fed_name"],
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
                     ),
