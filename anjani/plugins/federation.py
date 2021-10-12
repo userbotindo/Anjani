@@ -159,7 +159,7 @@ class Federation(plugin.Plugin):
 
         user_data = data["banned"][str(user)]
         user_data["fed_name"] = data["name"]
-        return data
+        return user_data
 
     async def fban_handler(self, chat: Chat, user: User, data: MutableMapping[str, Any]) -> None:
         try:
