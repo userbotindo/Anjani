@@ -108,13 +108,13 @@ federations-help: |
   × /leavefed <fedID>: Leave current federation. (**Only chat owner can do this**)
   × /fedinfo: Get information about federation.
   × /fedstats | /fstats: Get an information about a user's ban in a federation.
-  × /myfeds: List all feds you're admin in.
+  × /myfeds | /myfed: List all feds you're admin in (PM Only).
 
   **Federation Owner Commands:**
   × /fedpromote | /fpromote: Promote a user to federation admin.
   × /feddemote | /fdemote: Demote a federation admin from your fed.
-  × /fbackup: Get a backup of banned user on federation in CSV (PM Only).
-  × /fexport: export a federation backup file to restore banned users (PM Only).
+  × /fedbackup: Get a backup of banned user on federation in CSV (PM Only).
+  × /fedrestore: export a federation backup file to restore banned users (PM Only).
   × /setfedlog: Sets the current chat as the federation log. All federation events will be logged here.
   × /unsetfedlog: Unset the federation log. Federation events will no longer be logged.
 

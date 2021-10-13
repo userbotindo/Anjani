@@ -106,13 +106,13 @@ federations-help: |
   × /leavefed <ID Federasi>: Tinggalkan federasi saat ini. (**Hanya pemilik grup yang dapat melakukan ini**)
   × /fedinfo: Menampilkan informasi tentang suatu federasi.
   × /fedstats | /fstats: Menampilkan informasi tentang larangan seorang pengguna di suatu federasi.
-  × /myfeds: Daftar semua federasi dimana anda menjadi Administrator.
+  × /myfeds | /myfed : Daftar semua federasi dimana anda menjadi Administrator (Hanya melalui PM).
 
   **Perintah yang tersedia untuk pemilik federasi:**
   × /fedpromote | /fpromote: Mengangkat seseorang untuk menjadi seorang Administrator federasi.
   × /feddemote | /fdemote:  Menurunkan seorang Administrator federasi di federasi anda.
-  × /fbackup: Mendapatkan file cadangan tentang pengguna yang dilarang dalam federasi dalam CSV (Hanya melalui PM).
-  × /fexport: Mengembalikan file candangan untuk memulihkan pengguna yang dilarang (Hanya melalui PM).
+  × /fedbackup: Mendapatkan file cadangan tentang pengguna yang dilarang dalam federasi dalam CSV (Hanya melalui PM).
+  × /fedrestore: Mengembalikan file candangan untuk memulihkan pengguna yang dilarang (Hanya melalui PM).
   × /setfedlog: Membuat grup atau channel saat ini sebagai log federasi. Semua peristiwa federasi akan dicatat di sini.
   × /unsetfedlog: Membatalkan log federation. Semua peristiwa federasi tidak akan dicatat di sini.
 
@@ -196,7 +196,7 @@ fed-unban-info: |
   **Pengguna: **{}
   **ID Pengguna: **`{}`
 fed-stat-banned: |
- Pengguna ini diblokir dalam federasi ini.
+  Pengguna ini diblokir dalam federasi ini.
   **Alasan: ** {}
   **Diblokir dalam federasi: ** {}
 fed-stat-not-banned: Pengguna ini tidak diblokir dalam federasi itu!
@@ -286,7 +286,7 @@ notes-help: |
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCek /markdownhelp untuk info format catatan lainnya silahkan dicek.
 notes-invalid-args : |
- Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
+  Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
   Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
 note-saved: "Pesan disimpan dengan nama `{}`."
 note-list: "**Daftar semua catatan pada grup ini {}:**\n"
@@ -375,13 +375,13 @@ spamshield-button: Spam Shield
 spamshield-help: |
  **Hanya Administrator yang bisa menggunakan:**
   /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
-  
+
   Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
 spamprediction-help: |
   \n\n**Prediksi Spam**
-  
+
   Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
-  
+
   Anda juga dapat membantu kami mendidik model kami dengan memberikan suara di @SpamPredictionLog. Anda akan mendapatkan poin reputasi dengan beberapa manfaat ke depannya 😉.
 banned-text: |
   #SPAM_SHIELD\n

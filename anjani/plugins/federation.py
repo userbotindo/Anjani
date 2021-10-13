@@ -672,7 +672,7 @@ class Federation(plugin.Plugin):
         return None
 
     @command.filters(filters.private)
-    async def cmd_fedexport(self, ctx: command.Context) -> Optional[str]:
+    async def cmd_fedrestore(self, ctx: command.Context) -> Optional[str]:
         """Restore a backup bans"""
         chat = ctx.chat
         user = ctx.msg.from_user
@@ -702,7 +702,7 @@ class Federation(plugin.Plugin):
         ret = await asyncio.gather(self.text(chat.id, "fed-restore-done"), file.unlink(), *tasks)
         return ret[0]
 
-    @command.filters(filters.private)
+    @command.filters(filters.private, aliases=["myfeds"])
     async def cmd_myfed(self, ctx: command.Context) -> str:
         """Get current users federation"""
         chat = ctx.chat
