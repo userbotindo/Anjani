@@ -28,18 +28,17 @@ class Restrictions(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     @command.filters(filters.can_restrict)
-    async def cmd_kick(self, ctx: command.Context, user: Optional[User] = None) -> str:
+    async def cmd_kick(
+        self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
+    ) -> str:
         """Kick chat member"""
         chat = ctx.chat
 
         if not user:
-            if ctx.input:
-                return await self.text(chat.id, "err-peer-invalid")
-
-            if not ctx.msg.reply_to_message:
+            if ctx.args and not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "no-kick-user")
-
             user = ctx.msg.reply_to_message.from_user
+            reason = ctx.input
 
         try:
             target = await chat.get_member(user.id)
@@ -49,25 +48,25 @@ class Restrictions(plugin.Plugin):
             return await self.text(chat.id, "err-not-participant")
 
         await chat.kick_member(user.id)
-        ret, _ = await asyncio.gather(
-            self.text(chat.id, "kick-done", user.first_name), chat.unban_member(user.id)
-        )
+        ret = await self.text(chat.id, "kick-done", user.first_name)
+        await chat.unban_member(user.id)
 
+        if reason:
+            ret += await self.text(chat.id, "kick-reason", reason)
         return ret
 
     @command.filters(filters.can_restrict)
-    async def cmd_ban(self, ctx: command.Context, user: Optional[User] = None) -> str:
+    async def cmd_ban(
+        self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
+    ) -> str:
         """Ban chat member"""
         chat = ctx.chat
 
         if not user:
-            if ctx.input:
-                return await self.text(chat.id, "err-peer-invalid")
-
-            if not ctx.msg.reply_to_message:
+            if ctx.args and not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "no-ban-user")
-
             user = ctx.msg.reply_to_message.from_user
+            reason = ctx.input
 
         try:
             target = await chat.get_member(user.id)
@@ -79,6 +78,8 @@ class Restrictions(plugin.Plugin):
         ret, _ = await asyncio.gather(
             self.text(chat.id, "ban-done", user.first_name), chat.kick_member(user.id)
         )
+        if reason:
+            ret += await self.text(chat.id, "ban-reason", reason)
 
         return ret
 
@@ -88,12 +89,8 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            if ctx.input:
-                return await self.text(chat.id, "err-peer-invalid")
-
-            if not ctx.msg.reply_to_message:
+            if ctx.args and not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "unban-no-user")
-
             user = ctx.msg.reply_to_message.from_user
 
         try:

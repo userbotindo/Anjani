@@ -346,9 +346,11 @@ restriction-help: |
 no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"
+kick-reason: "\nAlasan: {}"
 no-ban-user: Siapa yang harus saya blokir?
 admin-ban: Saya tidak akan memblokir Administrator!
 ban-done: "**{}** terblokir!"
+ban-reason: "\nAlasan: {}"
 unban-no-user: Berikan saya pengguna untuk diblokir.
 unban-done: "Blokir **{}** dihapus..."
 #endregion
