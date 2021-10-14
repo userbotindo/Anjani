@@ -167,10 +167,7 @@ class Users(plugin.Plugin):
         if user.status:
             text += f"**Last seen: ** `{user.status}`\n"
         if user.id in self.bot.staff:
-            if user.id == self.bot.owner:
-                text += "\nThis person is my **owner**!\nI would never do anything against him.\n"
-            else:
-                text += "\nThis person is one of my **Devs**!\nNearly as powerfull as my owner.\n"
+            text += "\nThis person is one of my **Staff**!\n"
         elif user.is_self:
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
 
@@ -179,7 +176,6 @@ class Users(plugin.Plugin):
             if self.predict_loaded:
                 text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
                 text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
-            text += f"\nI've seen them on {len(user_db['chats'])} chats."
 
         if user.photo:
             async with ctx.action("upload_photo"):
