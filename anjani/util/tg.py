@@ -1,7 +1,7 @@
 import asyncio
 import re
 from enum import IntEnum, unique
-from typing import AsyncGenerator, List, Optional, Set, Tuple, Union
+from typing import Any, AsyncGenerator, List, Optional, Set, Tuple, Union
 
 from pyrogram import Client
 from pyrogram.types import (
@@ -10,6 +10,8 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
+
+from .types import MemberPermissions
 
 MESSAGE_CHAR_LIMIT = 4096
 STAFF: Set[int] = set()
@@ -153,18 +155,21 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: ChatMember) -> bool:
+def is_staff_or_admin(target: Union[ChatMember, MemberPermissions]) -> bool:
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
 # { Permission
-Bot = ChatMember  # FUCK MYPY
-Member = ChatMember  # FUCK MYPY
+# Aliases
+Bot = MemberPermissions
+Member = MemberPermissions
+
+
 async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
-    return bot, member
+    return MemberPermissions(bot), MemberPermissions(member)
 # }
 
 
