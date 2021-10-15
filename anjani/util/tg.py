@@ -12,7 +12,7 @@ from pyrogram.types import (
 )
 
 MESSAGE_CHAR_LIMIT = 4096
-STAFF = set()
+STAFF: Set[int] = set()
 TRUNCATION_SUFFIX = "... (truncated)"
 
 Button = Union[Tuple[Tuple[str, str, bool]], List[Tuple[str, str, bool]]]
@@ -158,7 +158,9 @@ def is_staff_or_admin(target: ChatMember) -> bool:
 
 
 # { Permission
-async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[ChatMember, ChatMember]:
+Bot = ChatMember  # FUCK MYPY
+Member = ChatMember  # FUCK MYPY
+async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )

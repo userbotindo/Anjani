@@ -533,6 +533,8 @@ class Federation(plugin.Plugin):
         if log := data.get("log"):
             await self.bot.client.send_message(log, string, disable_web_page_preview=True)
 
+        return None
+
     async def cmd_unfban(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Unban a user on federation"""
         chat = ctx.chat

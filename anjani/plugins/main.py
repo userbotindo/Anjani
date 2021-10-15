@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from typing import ClassVar, List, Optional
+from typing import TYPE_CHECKING, ClassVar, List, Optional
 
 import bson
 from aiopath import AsyncPath
@@ -23,6 +23,9 @@ from pyrogram.errors import MessageNotModified
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani import command, filters, listener, plugin, util
+
+if TYPE_CHECKING:
+    from .rules import Rules
 
 
 class Main(plugin.Plugin):
@@ -135,7 +138,8 @@ class Main(plugin.Plugin):
             if ctx.input:
                 rules_re = re.compile(r"rules_(.*)")
                 if rules_re.search(ctx.input):
-                    return await self.bot.plugins["Rules"].start_rules(ctx)
+                    plug: "Rules" = self.bot.plugins["Rules"]  # type: ignore
+                    return await plug.start_rules(ctx)
 
             buttons = [
                 [

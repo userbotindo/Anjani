@@ -229,6 +229,6 @@ async def parse_arguments(
         elif param.kind == param.VAR_POSITIONAL:
             raise BadArgument(
                 "Unsuported Variable Positional Argument conversion "
-                f"Found '*{name}' on '{func.name}'"
+                f"Found '*{name}' on '{func.__name__}'"
             )
     return args, kwargs
