@@ -145,11 +145,11 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 # { staff_only
 def _staff_only(include_bot: bool = True, *, rank: Optional[str] = None) -> CustomFilter:
     async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
-        user = message.from_user
+        target = message.from_user
         if rank is None:
-            return user.id in flt.anjani.staff
+            return target.id in flt.anjani.staff
         if rank == "dev":
-            return user.id in flt.anjani.devs
+            return target.id in flt.anjani.devs
         return False
 
     return create(func, "staff_only", include_bot=include_bot)
@@ -163,8 +163,8 @@ dev_only = _staff_only(rank="dev")
 # { owner_only
 def _owner_only(include_bot: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
-        user = message.from_user
-        return user.id == flt.anjani.owner
+        target = message.from_user
+        return target.id == flt.anjani.owner
 
     return create(func, "owner_only", include_bot=include_bot)
 
@@ -178,48 +178,48 @@ async def _can_delete(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_delete_messages and member.can_delete_messages
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_delete_messages and member.can_delete_messages
 
 
 async def _can_change_info(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_change_info and member.can_change_info
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_change_info and member.can_change_info
 
 
 async def _can_invite(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_invite_users and member.can_invite_users
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_invite_users and member.can_invite_users
 
 
 async def _can_pin(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_pin_messages and member.can_pin_messages
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_pin_messages and member.can_pin_messages
 
 
 async def _can_promote(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_promote_members and member.can_promote_members
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_promote_members and member.can_promote_members
 
 
 async def _can_restrict(_: Filter, client: Client, message: Message) -> bool:
     if message.chat.type == "private":
         return False
 
-    bot, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return bot.can_restrict_members and member.can_restrict_members
+    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
+    return me.can_restrict_members and member.can_restrict_members
 
 
 can_delete = create(_can_delete, "can_delete")
@@ -233,13 +233,13 @@ can_restrict = create(_can_restrict, "can_restrict")
 
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
-    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
+    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
         if message.chat.type == "private":
             return False
 
-        user = message.from_user
-        bot, member = await fetch_permissions(client, message.chat.id, user.id)
-        return bot.status == "administrator" and is_staff_or_admin(member)
+        target = message.from_user
+        me, member = await fetch_permissions(client, message.chat.id, target.id)
+        return me.status == "administrator" and is_staff_or_admin(member)
 
     return create(func, "admin_only", include_bot=include_bot)
 
