@@ -20,7 +20,6 @@ import re
 from hashlib import md5, sha256
 from typing import ClassVar, Optional
 
-from pyrogram import filters
 from pyrogram.errors import (
     ChatAdminRequired,
     MessageDeleteForbidden,
@@ -44,8 +43,7 @@ except ImportError:
     _run_predict = False
 
 
-from anjani import command, listener, plugin, util
-from anjani.filters import staff_only
+from anjani import command, filters, listener, plugin, util
 from anjani.util.types import NDArray
 
 
@@ -293,7 +291,7 @@ class SpamPrediction(plugin.Plugin):
                 ),
             )
 
-    @command.filters(staff_only)
+    @command.filters(filters.staff_only)
     async def cmd_update_model(self, _: command.Context) -> str:
         token = self.bot.config.get("sp_token")
         url = self.bot.config.get("sp_url")
@@ -303,7 +301,7 @@ class SpamPrediction(plugin.Plugin):
         await self.__load_model(token, url)
         return "Done"
 
-    @command.filters(staff_only)
+    @command.filters(filters.staff_only)
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
         """Manual spam detection by bot staff"""
         user_id = None

@@ -17,7 +17,7 @@
 import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
-from pyrogram import emoji, filters
+from pyrogram import emoji
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -25,7 +25,7 @@ from pyrogram.types import (
     Message,
 )
 
-from anjani import command, listener, plugin, util
+from anjani import command, filters, listener, plugin, util
 
 LANG_FLAG = {"en": f"{emoji.FLAG_UNITED_STATES} English", "id": f"{emoji.FLAG_INDONESIA} Indonesia"}
 

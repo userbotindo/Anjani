@@ -19,9 +19,8 @@ from typing import ClassVar, Optional
 
 from aiohttp import ClientConnectorError
 from aiopath import AsyncPath
-from pyrogram import filters
 
-from anjani import command, plugin
+from anjani import command, filters, plugin
 
 
 class Misc(plugin.Plugin):

@@ -20,7 +20,6 @@ from typing import Any, Dict, List, MutableMapping, Optional
 from uuid import uuid4
 
 from aiopath import AsyncPath
-from pyrogram import filters
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
 from pyrogram.types import (
     CallbackQuery,
@@ -31,8 +30,7 @@ from pyrogram.types import (
     User,
 )
 
-from anjani import command, listener, plugin, util
-from anjani.filters import admin_only
+from anjani import command, filters, listener, plugin, util
 
 
 class Federation(plugin.Plugin):
@@ -232,7 +230,7 @@ class Federation(plugin.Plugin):
         )
         return None
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_joinfed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Join a federation in chats"""
         chat = ctx.chat
@@ -267,7 +265,7 @@ class Federation(plugin.Plugin):
 
         return ret
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_leavefed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Leave a federation in chats"""
         chat = ctx.chat

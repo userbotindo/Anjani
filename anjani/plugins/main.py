@@ -19,11 +19,10 @@ from typing import ClassVar, List, Optional
 
 import bson
 from aiopath import AsyncPath
-from pyrogram import filters
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani import command, listener, plugin, util
+from anjani import command, filters, listener, plugin, util
 
 
 class Main(plugin.Plugin):

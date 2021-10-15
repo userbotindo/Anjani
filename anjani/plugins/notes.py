@@ -17,11 +17,9 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
-from pyrogram import filters
 from pyrogram.types import Message
 
-from anjani import command, listener, plugin, util
-from anjani.filters import admin_only
+from anjani import command, filters, listener, plugin, util
 from anjani.util.tg import Types, build_button, get_message_info, revert_button
 
 
@@ -162,7 +160,7 @@ class Notes(plugin.Plugin):
         else:
             await self.get_note(ctx.msg, ctx.args[0])
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_save(self, ctx: command.Context) -> str:
         """Save notes."""
         chat = ctx.chat
@@ -204,7 +202,7 @@ class Notes(plugin.Plugin):
             notes += f"× `{key}`\n"
         return notes
 
-    @command.filters(admin_only, aliases=["clear"])
+    @command.filters(filters.admin_only, aliases=["clear"])
     async def cmd_delnote(self, ctx: command.Context) -> str:
         """Delete chat note."""
         chat = ctx.chat

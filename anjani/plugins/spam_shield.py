@@ -19,12 +19,10 @@ from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientResponseError
-from pyrogram import filters
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Message, User
 
-from anjani import command, listener, plugin, util
-from anjani.filters import admin_only
+from anjani import command, filters, listener, plugin, util
 
 
 class SpamShield(plugin.Plugin):
@@ -200,7 +198,7 @@ class SpamShield(plugin.Plugin):
             ),
         )
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_spamshield(self, ctx: command.Context, enable: Optional[bool] = None) -> str:
         """Set SpamShield setting"""
         chat = ctx.chat

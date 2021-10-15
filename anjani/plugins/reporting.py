@@ -17,11 +17,9 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
-from pyrogram import filters
 from pyrogram.types import Message
 
-from anjani import command, listener, plugin, util
-from anjani.filters import admin_only
+from anjani import command, filters, listener, plugin, util
 
 
 class Reporting(plugin.Plugin):
@@ -113,7 +111,7 @@ class Reporting(plugin.Plugin):
     async def cmd_report(self, ctx: command.Context) -> None:
         return await self.on_message(ctx.message)
 
-    @command.filters(admin_only)
+    @command.filters(filters.admin_only)
     async def cmd_reports(
         self, ctx: command.Context, setting: Optional[bool] = None
     ) -> Optional[str]:
