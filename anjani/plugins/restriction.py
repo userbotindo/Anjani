@@ -47,10 +47,11 @@ class Restrictions(plugin.Plugin):
         except UserNotParticipant:
             return await self.text(chat.id, "err-not-participant")
 
+        # ban and unban action = Kick member
         await chat.kick_member(user.id)
-        ret = await self.text(chat.id, "kick-done", user.first_name)
         await chat.unban_member(user.id)
 
+        ret = await self.text(chat.id, "kick-done", user.first_name)
         if reason:
             ret += await self.text(chat.id, "kick-reason", reason)
         return ret
