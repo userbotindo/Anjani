@@ -43,6 +43,9 @@ def filters(_filters: Optional[Filter] = None, *, aliases: Iterable[str] = []) -
     """Sets filters on a command function."""
 
     def filter_decorator(func: CommandFunc) -> CommandFunc:
+        if func.__name__.split("_", 1)[0] != "cmd":
+            raise RuntimeError("Only Command are able to use the command filters.")
+
         setattr(func, "_cmd_filters", _filters)
         setattr(func, "_cmd_aliases", aliases)
         return func
