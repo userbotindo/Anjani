@@ -42,7 +42,7 @@ class Restrictions(plugin.Plugin):
 
         try:
             target = await chat.get_member(user.id)
-            if util.tg.is_staff_or_admin(target, self.bot.staff):
+            if util.tg.is_staff_or_admin(target):
                 return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
             return await self.text(chat.id, "err-not-participant")
@@ -70,7 +70,7 @@ class Restrictions(plugin.Plugin):
 
         try:
             target = await chat.get_member(user.id)
-            if util.tg.is_staff_or_admin(target, self.bot.staff):
+            if util.tg.is_staff_or_admin(target):
                 return await self.text(chat.id, "admin-ban")
         except UserNotParticipant:
             return await self.text(chat.id, "err-not-participant")

@@ -19,9 +19,7 @@ from typing import ClassVar, Optional
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 from pyrogram.types import ChatMember, ChatPermissions, Message
 
-from anjani import command, filters, plugin
-from anjani.util.tg import is_staff_or_admin
-from anjani.util.time import extract_time
+from anjani import command, filters, plugin, util
 
 
 class Muting(plugin.Plugin):
@@ -60,11 +58,11 @@ class Muting(plugin.Plugin):
         user = member.user
         if user.id == self.bot.uid:
             return await self.text(chat_id, "self-muting")
-        if is_staff_or_admin(member, self.bot.staff):
+        if util.tg.is_staff_or_admin(member):
             return await self.text(chat_id, "cant-mute-admin")
 
         if flag:
-            until = extract_time(flag)
+            until = util.time.extract_time(flag)
             if not until:
                 return await self.text(chat_id, "invalid-time-flag")
         else:

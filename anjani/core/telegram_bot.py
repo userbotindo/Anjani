@@ -122,6 +122,8 @@ class TelegramBot(MixinBase):
             if doc["rank"] == "dev":
                 self.devs.add(doc["_id"])
             self.staff.add(doc["_id"])
+        # Update global staff variable
+        util.tg.STAFF.update(self.staff)
 
         # Update Language setting chat from db
         db = self.db.get_collection("LANGUAGE")

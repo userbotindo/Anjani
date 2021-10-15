@@ -94,7 +94,7 @@ class SpamShield(plugin.Plugin):
 
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
-            if not me.can_restrict_members or util.tg.is_staff_or_admin(target, self.bot.staff):
+            if not me.can_restrict_members or util.tg.is_staff_or_admin(target):
                 return
 
             await self.check(target.user, chat.id)

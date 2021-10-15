@@ -42,9 +42,7 @@ except ImportError:
 
     _run_predict = False
 
-
 from anjani import command, filters, listener, plugin, util
-from anjani.util.types import NDArray
 
 
 class SpamPrediction(plugin.Plugin):
@@ -94,7 +92,7 @@ class SpamPrediction(plugin.Plugin):
     def prob_to_string(value: float) -> str:
         return str(value * 10 ** 2)[0:7]
 
-    async def _predict(self, text: str) -> NDArray[float]:
+    async def _predict(self, text: str) -> util.types.NDArray[float]:
         return await util.run_sync(self.model.predict_proba, [text])
 
     async def _is_spam(self, text: str) -> bool:
@@ -263,7 +261,7 @@ class SpamPrediction(plugin.Plugin):
             )
 
         target = await message.chat.get_member(user)
-        if util.tg.is_staff_or_admin(target, self.bot.staff):
+        if util.tg.is_staff_or_admin(target):
             return
 
         if probability >= 0.9:

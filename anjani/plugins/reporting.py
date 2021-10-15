@@ -76,7 +76,7 @@ class Reporting(plugin.Plugin):
             return
 
         member = await chat.get_member(reported_user.id)
-        if util.tg.is_staff_or_admin(member, self.bot.staff):
+        if util.tg.is_staff_or_admin(member):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
 

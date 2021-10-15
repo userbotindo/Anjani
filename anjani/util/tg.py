@@ -11,10 +11,11 @@ from pyrogram.types import (
     Message,
 )
 
-Button = Union[Tuple[Tuple[str, str, bool]], List[Tuple[str, str, bool]]]
-
 MESSAGE_CHAR_LIMIT = 4096
+STAFF = set()
 TRUNCATION_SUFFIX = "... (truncated)"
+
+Button = Union[Tuple[Tuple[str, str, bool]], List[Tuple[str, str, bool]]]
 
 
 @unique
@@ -152,8 +153,8 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: ChatMember, staff: Set[int]) -> bool:
-    return target.status in {"administrator", "creator"} or target.user.id in staff
+def is_staff_or_admin(target: ChatMember) -> bool:
+    return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
 # { Permission
@@ -162,8 +163,6 @@ async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[ChatM
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
     return bot, member
-
-
 # }
 
 
@@ -177,6 +176,4 @@ async def get_chat_admins(
             if exclude_bot and member.user.is_bot:
                 continue
             yield member
-
-
 # }
