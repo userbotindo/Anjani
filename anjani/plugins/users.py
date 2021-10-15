@@ -172,10 +172,9 @@ class Users(plugin.Plugin):
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
 
         user_db = await self.users_db.find_one({"_id": user.id})
-        if user_db:
-            if self.predict_loaded:
-                text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
-                text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
+        if user_db and self.predict_loaded:
+            text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
+            text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
 
         if user.photo:
             async with ctx.action("upload_photo"):
