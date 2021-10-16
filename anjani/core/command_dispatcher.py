@@ -104,9 +104,12 @@ class CommandDispatcher(MixinBase):
 
                 # Check additional build-in filters
                 if cmd.filters:
-                    permitted = await cmd.filters(client, message)
-                    if not permitted:
-                        return False
+                    if inspect.iscoroutinefunction(cmd.filters.__call__):
+                        if not await cmd.filters(client, message):
+                            return False
+                    else:
+                        if not await util.run_sync(cmd.filters, client, message):
+                            return False
 
                 message.command = parts
                 return True
