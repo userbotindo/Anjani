@@ -142,6 +142,33 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
     )()
 
 
+# { permission
+def _create_filter_permission(name: str) -> Filter:
+    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
+        if message.chat.type == "private":
+            return False
+
+        bot_perm, member_perm = await fetch_permissions(
+            client, message.chat.id, message.from_user.id
+        )
+        try:
+            return getattr(bot_perm, name) and getattr(member_perm, name)
+        except AttributeError:
+            flt.anjani.log.error(f"{name} is not a valid permission")
+            return False
+
+    return create(func, name, include_bot=True)
+
+
+can_change_info = _create_filter_permission("can_change_info")
+can_delete = _create_filter_permission("can_delete_messages")
+can_invite = _create_filter_permission("can_invite_users")
+can_pin = _create_filter_permission("can_pin_messages")
+can_promote = _create_filter_permission("can_promote_members")
+can_restrict = _create_filter_permission("can_restrict_members")
+# }
+
+
 # { staff_only
 def _staff_only(include_bot: bool = True, *, rank: Optional[str] = None) -> CustomFilter:
     async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
@@ -170,64 +197,6 @@ def _owner_only(include_bot: bool = True) -> CustomFilter:
 
 
 owner_only = _owner_only()
-# }
-
-
-# { permission
-async def _can_delete(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_delete_messages and member.can_delete_messages
-
-
-async def _can_change_info(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_change_info and member.can_change_info
-
-
-async def _can_invite(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_invite_users and member.can_invite_users
-
-
-async def _can_pin(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_pin_messages and member.can_pin_messages
-
-
-async def _can_promote(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_promote_members and member.can_promote_members
-
-
-async def _can_restrict(_: Filter, client: Client, message: Message) -> bool:
-    if message.chat.type == "private":
-        return False
-
-    me, member = await fetch_permissions(client, message.chat.id, message.from_user.id)
-    return me.can_restrict_members and member.can_restrict_members
-
-
-can_delete = create(_can_delete, "can_delete")
-can_change_info = create(_can_change_info, "can_change_info")
-can_invite = create(_can_invite, "can_invite")
-can_pin = create(_can_pin, "can_pin")
-can_promote = create(_can_promote, "can_promote")
-can_restrict = create(_can_restrict, "can_restrict")
 # }
 
 
