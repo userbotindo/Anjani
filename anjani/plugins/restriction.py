@@ -33,11 +33,16 @@ class Restrictions(plugin.Plugin):
     ) -> str:
         """Kick chat member"""
         chat = ctx.chat
+        reply_msg = ctx.msg.reply_to_message
 
         if not user:
-            if ctx.args and not ctx.msg.reply_to_message:
+            if ctx.args and not reply_msg:
+                return await self.text(chat.id, "err-peer-invalid")
+
+            if not reply_msg:
                 return await self.text(chat.id, "no-kick-user")
-            user = ctx.msg.reply_to_message.from_user
+
+            user = reply_msg.from_user
             reason = ctx.input
 
         try:
@@ -62,11 +67,16 @@ class Restrictions(plugin.Plugin):
     ) -> str:
         """Ban chat member"""
         chat = ctx.chat
+        reply_msg = ctx.msg.reply_to_message
 
         if not user:
-            if ctx.args and not ctx.msg.reply_to_message:
+            if ctx.args and not reply_msg:
+                return await self.text(chat.id, "err-peer-invalid")
+
+            if not reply_msg:
                 return await self.text(chat.id, "no-ban-user")
-            user = ctx.msg.reply_to_message.from_user
+
+            user = reply_msg.from_user
             reason = ctx.input
 
         try:
@@ -90,8 +100,12 @@ class Restrictions(plugin.Plugin):
         chat = ctx.chat
 
         if not user:
-            if ctx.args and not ctx.msg.reply_to_message:
+            if ctx.input:
+                return await self.text(chat.id, "err-peer-invalid")
+
+            if not ctx.msg.reply_to_message:
                 return await self.text(chat.id, "unban-no-user")
+
             user = ctx.msg.reply_to_message.from_user
 
         try:
