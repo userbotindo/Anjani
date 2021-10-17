@@ -20,6 +20,7 @@ import re
 from hashlib import md5, sha256
 from typing import ClassVar, Optional
 
+from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
     MessageDeleteForbidden,
@@ -250,15 +251,18 @@ class SpamPrediction(plugin.Plugin):
         if data:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
         else:
-            await self.db.insert_one(
-                {
-                    "_id": content_hash,
-                    "text": text,
-                    "spam": [],
-                    "ham": [],
-                    "msg_id": [msg.message_id],
-                }
-            )
+            try:
+                await self.db.insert_one(
+                    {
+                        "_id": content_hash,
+                        "text": text,
+                        "spam": [],
+                        "ham": [],
+                        "msg_id": [msg.message_id],
+                    }
+                )
+            except DuplicateKeyError:
+                pass
 
         target = await message.chat.get_member(user)
         if util.tg.is_staff_or_admin(target):
