@@ -207,8 +207,8 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             return False
 
         target = message.from_user
-        me, member = await fetch_permissions(client, message.chat.id, target.id)
-        return me.status == "administrator" and is_staff_or_admin(member)
+        bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
+        return bot_perm.status == "administrator" and is_staff_or_admin(member_perm)
 
     return create(func, "admin_only", include_bot=include_bot)
 
