@@ -450,5 +450,5 @@ err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke 
 err-api-down: Api sedang bermasalah, coba lagi nanti.
 err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
 err-invalid-pid: Identifier tidak sah atau tidak benar!
-err-anonymous: Anda sedang dalam mode anonim...
+err-anonymous: Anda sedang dalam mode anonim...\n__Matikan dulu mode tersebut.__
 #endregion

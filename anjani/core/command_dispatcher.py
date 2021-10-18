@@ -81,8 +81,15 @@ class CommandDispatcher(MixinBase):
             self.unregister_command(cmd)
 
     def command_predicate(self: "Anjani") -> Filter:
-        async def func(flt: Filter, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
+        async def func(_: Filter, client: Client, message: Message) -> bool:
             if message.via_bot:
+                return False
+
+            # Ignore command from anonymous administrator
+            chat, user = message.chat, message.from_user
+            if not user and not chat.type == "private":
+                self.loop.create_task(util.tg.reply_and_delete(
+                    message, await util.tg.get_text(self, chat.id, "err-anonymous"), 5))
                 return False
 
             if message.text is not None and message.text.startswith("/"):

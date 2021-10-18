@@ -18,6 +18,7 @@ from typing import (
 from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
 from pyrogram import Client
+from pyrogram.errors import MessageDeleteForbidden
 from pyrogram.types import (
     ChatMember,
     InlineKeyboardButton,
@@ -201,6 +202,23 @@ async def get_chat_admins(
             if exclude_bot and member.user.is_bot:
                 continue
             yield member
+# }
+
+
+# { Non-Context reply then delete
+async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None:
+    if del_in < 1:
+        raise ValueError("Delay must be greater than 0")
+
+    to_del, _ = await asyncio.gather(
+        message.reply(text, quote=True), asyncio.sleep(del_in)
+    )
+    try:
+        await asyncio.gather(message.delete(), to_del.delete())
+    except MessageDeleteForbidden:
+        pass
+
+    return
 # }
 
 

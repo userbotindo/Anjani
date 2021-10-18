@@ -143,13 +143,14 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 
 
 # { permission
-def _create_filter_permission(name: str) -> Filter:
+def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        if message.chat.type == "private":
+        target, priv = message.from_user, message.chat.type == "private"
+        if priv:
             return False
 
         bot_perm, member_perm = await fetch_permissions(
-            client, message.chat.id, message.from_user.id
+            client, message.chat.id, target.id
         )
         try:
             return getattr(bot_perm, name) and getattr(member_perm, name)
@@ -157,7 +158,7 @@ def _create_filter_permission(name: str) -> Filter:
             flt.anjani.log.error(f"{name} is not a valid permission")
             return False
 
-    return create(func, name, include_bot=True)
+    return create(func, name, include_bot=include_bot)
 
 
 can_change_info = _create_filter_permission("can_change_info")
@@ -175,8 +176,10 @@ def _staff_only(include_bot: bool = True, *, rank: Optional[str] = None) -> Cust
         target = message.from_user
         if rank is None:
             return target.id in flt.anjani.staff
+
         if rank == "dev":
             return target.id in flt.anjani.devs
+
         return False
 
     return create(func, "staff_only", include_bot=include_bot)
@@ -202,11 +205,11 @@ owner_only = _owner_only()
 
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
-    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:  # skipcq: PYL-W0613
-        if message.chat.type == "private":
+    async def func(_: CustomFilter, client: Client, message: Message) -> bool:
+        target, priv = message.from_user, message.chat.type == "private"
+        if priv:
             return False
 
-        target = message.from_user
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         return bot_perm.status == "administrator" and is_staff_or_admin(member_perm)
 
