@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, ClassVar, List, Optional
 
 import bson
 from aiopath import AsyncPath
-from pyrogram.errors import MessageNotModified
+from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from anjani import command, filters, listener, plugin, util
@@ -89,7 +89,10 @@ class Main(plugin.Plugin):
             except MessageNotModified:
                 pass
         elif match == "close":
-            await query.message.delete()
+            try:
+                await query.message.delete()
+            except MessageDeleteForbidden:
+                await query.answer("I can't delete the message")
         elif match:
             plug = re.compile(r"plugin\((\w+)\)").match(match)
             if not plug:
