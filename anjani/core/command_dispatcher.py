@@ -85,13 +85,6 @@ class CommandDispatcher(MixinBase):
             if message.via_bot:
                 return False
 
-            # Ignore command from anonymous administrator
-            chat, user = message.chat, message.from_user
-            if not user and not chat.type == "private":
-                self.loop.create_task(util.tg.reply_and_delete(
-                    message, await util.tg.get_text(self, chat.id, "err-anonymous"), 5))
-                return False
-
             if message.text is not None and message.text.startswith("/"):
                 parts = message.text.split()
                 parts[0] = parts[0][1:]
