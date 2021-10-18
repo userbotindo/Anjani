@@ -20,8 +20,15 @@ def filters(_filters: Filter) -> Decorator:
     """Sets filters on the given listener function."""
 
     def filters_decorator(func: ListenerFunc) -> ListenerFunc:
-        if func.__name__.split("_", 1)[0] != "on":
+        prefix = func.__name__.split("_", 1)
+        if prefix[0] != "on":
             raise RuntimeError("Only Listener are able to use the listener filters.")
+
+        try:
+            if prefix[1] in {"load", "start", "started", "stop", "stopped"}:
+                raise RuntimeError("Built-in Listener cannot use listener filters.")
+        except IndexError:
+            pass
 
         setattr(func, "_listener_filters", _filters)
         return func
