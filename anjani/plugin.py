@@ -1,34 +1,13 @@
-import asyncio
-import codecs
 import inspect
 import logging
 import os.path
-from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Optional
+from typing_extensions import final
 
 from anjani import util
 
 if TYPE_CHECKING:
     from .core import Anjani
-
-
-def loop_safe(func: Callable[..., str]):  # Let default typing choose the return type
-    """ Decorator for text methods """
-
-    @wraps(func)
-    async def wrapper(
-        self: "Plugin",
-        chat_id: int,
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any,
-    ) -> str:
-        return await util.run_sync(
-            func, self, chat_id, text_name, *args, noformat=noformat, **kwargs
-        )
-
-    return wrapper
 
 
 class Plugin:
@@ -47,10 +26,19 @@ class Plugin:
         self.log = logging.getLogger(type(self).name.lower().replace(" ", "_"))
         self.comment = None
 
-    @loop_safe
-    def text(
-        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
-    ) -> str:
+    # {
+    # get_text and text can be declare as ClassVar but we don't do it
+    # because we want to keep the documentation of the methods.
+
+    @final
+    def get_text(
+        self,
+        chat_id: int,
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any
+    ) -> Coroutine[Any, Any, str]:
         """Parse the string with user language setting.
 
         Parameters:
@@ -68,33 +56,37 @@ class Plugin:
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
+        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat, **kwargs)
 
-        def get_text(lang_code: str) -> str:
-            try:
-                text = codecs.decode(
-                    codecs.encode(
-                        self.bot.languages[lang_code][text_name], "latin-1", "backslashreplace"
-                    ),
-                    "unicode-escape",
-                )
-            except KeyError:
-                if lang_code == "en":
-                    return (
-                        f"**NO LANGUAGE STRING FOR '{text_name}' in '{lang_code}'**\n"
-                        "__Please forward this to__ @userbotindo"
-                    )
+    # Convenient alias get_text method
+    @final
+    def text(
+        self,
+        chat_id: int,
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any
+    ) -> Coroutine[Any, Any, str]:
+        """Parse the string with user language setting.
 
-                self.bot.log.warning("NO LANGUAGE STRING FOR '%s' in '%s'", text_name, lang_code)
-                return get_text("en")
-            else:
-                try:
-                    return text if noformat else text.format(*args, **kwargs)
-                except (IndexError, KeyError):
-                    self.bot.log.error("Failed to format '%s' string on '%s'", text_name, lang_code)
-                    raise
-
-        data = self.bot.chats_languages.get(chat_id, "en")
-        return get_text(data)
+        Parameters:
+            chat_id (`int`):
+                Id of the sender(PM's) or chat_id to fetch the user language setting.
+            text_name (`str`):
+                String name to parse. The string is parsed from YAML documents.
+            *args (`any`, *Optional*):
+                One or more values that should be formatted and inserted in the string.
+                The value should be in order based on the language string placeholder.
+            noformat (`bool`, *Optional*):
+                If exist and True, the text returned will not be formated.
+                Default to False.
+            **kwargs (`any`, *Optional*):
+                One or more keyword values that should be formatted and inserted in the string.
+                based on the keyword on the language strings.
+        """
+        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat, **kwargs)
+    # }
 
     @classmethod
     def format_desc(cls, comment: Optional[str] = None):
