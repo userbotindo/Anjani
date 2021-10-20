@@ -164,7 +164,12 @@ class Notes(plugin.Plugin):
     async def cmd_save(self, ctx: command.Context) -> str:
         """Save notes."""
         chat = ctx.chat
-        if len(ctx.args) < 2 and not ctx.msg.reply_to_message:
+        if (
+            len(ctx.args) < 2
+            and not ctx.msg.reply_to_message
+            or ctx.msg.reply_to_message
+            and len(ctx.args) < 1
+        ):
             return await self.text(chat.id, "notes-invalid-args")
 
         name = ctx.args[0]
