@@ -45,7 +45,10 @@ class Users(plugin.Plugin):
     def hash_id(self, id: int) -> str:
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
 
-    async def build_channel_task(self, channel: Chat) -> Optional[asyncio.Task]:
+    async def build_channel_task(self, channel: Chat) -> asyncio.Task[Any]:
+        async def _do_nothing() -> None:
+            return
+
         if channel.type == "channel":
             data = await self.chats_db.find_one({"chat_id": channel.id})
             content = {"chat_name": channel.title, "type": channel.type}
@@ -54,7 +57,7 @@ class Users(plugin.Plugin):
             return self.bot.loop.create_task(
                 self.chats_db.update_one({"chat_id": channel.id}, {"$set": content}, upsert=True)
             )
-        return None
+        return self.bot.loop.create_task(_do_nothing())
 
     async def build_user_task(self, user: User) -> asyncio.Task:
         data = await self.users_db.find_one({"_id": user.id})
@@ -159,7 +162,10 @@ class Users(plugin.Plugin):
             text += f"**Last Name: **{user.last_name}\n"
         if user.username:
             text += f"**Username: **@{user.username}\n"
-        text += f"**Permanent user link: **{user.mention}\n"
+        try:
+            text += f"**Permanent user link: **{user.mention(user.first_name, style='md')}\n"
+        except AttributeError:
+            text += f"**Permanent user link: **{user.mention('Here', style='md')}\n"
         text += (
             "**Number of profile pics: **"
             f"`{await self.bot.client.get_profile_photos_count(user.id)}`\n"
@@ -246,6 +252,9 @@ class Users(plugin.Plugin):
                 return await self._user_info(ctx, ctx.msg.reply_to_message.from_user)
 
             if not ctx.msg.reply_to_message:
+                if not ctx.author:
+                    return await self.get_text(ctx.chat.id, "err-anonymous")
+
                 return await self._user_info(ctx, ctx.author)
 
             return
