@@ -17,7 +17,7 @@
 from json import JSONDecodeError
 from typing import ClassVar, Optional
 
-from aiohttp import ClientConnectorError
+from aiohttp import ClientConnectorError, ContentTypeError
 from aiopath import AsyncPath
 
 from anjani import command, filters, plugin
@@ -100,7 +100,7 @@ class Misc(plugin.Plugin):
             async with self.bot.http.post(uri, data=data if hastebin else None, **json) as resp:
                 try:
                     result = await resp.json()
-                except JSONDecodeError:
+                except (JSONDecodeError, ContentTypeError):
                     return await self.text(ctx.chat.id, "paste-fail", service)
 
                 text = (
