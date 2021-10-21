@@ -101,14 +101,14 @@ class Misc(plugin.Plugin):
                 try:
                     result = await resp.json()
                 except (JSONDecodeError, ContentTypeError):
-                    return await self.text(ctx.chat.id, "paste-fail", service)
+                    return await self.text(ctx.chat.id, "fail-paste", service)
 
                 text = (
                     urls[service] + result["paste_id"] if katbin else urls[service] + result["key"]
                 )
                 return await self.text(ctx.chat.id, "paste-succes", f"[{service}]({text})")
         except ClientConnectorError:
-            return await self.text(ctx.chat.id, "paste-fail", service)
+            return await self.text(ctx.chat.id, "fail-paste", service)
 
     @command.filters(filters.private)
     async def cmd_source(self, ctx: command.Context) -> None:
