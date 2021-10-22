@@ -250,7 +250,7 @@ miscs-help: |
           [-k, katbin] = use katbin.
 wait-paste: "`Pasting to {}...`"
 paste-succes: "**Pasted to {} successfully..!**"
-fail-paste: "`Failed to reach {}!`\nYou can use flags [-h, -k] to use other service"
+fail-paste: "`Failed to reach {}!`\nYou can use flags [-h, -k] to use other service."
 #endregion
 #region mute
 muting-button: Muting
