@@ -373,20 +373,20 @@ rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #endregion
 #region spam prediction
-spampredict-button: Spam Prediction
+spampredict-button: Spam Prediksi
 spampredict-help: |
-  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
-  You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.\n
-  **Admin Commands:**
-  /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in yout group.\n
-  If enabled, the bot will automaticaly delete and log the message to @SpamPredictionLog.
-spampredict-set: "Chat spam prediction turned {}."
+  Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
+  Anda juga dapat membantu kami mendidik model kami dengan memberikan suara di @SpamPredictionLog. Anda akan mendapatkan poin reputasi dengan beberapa manfaat ke depannya 😉.\n
+  **Hanya Administrator yang bisa menggunakan:**
+  /spampredict <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.\n
+  Jika dinyalakan, bot akan otomatis menghapus dan mencatat pesan ke @SpamPredictionLog.
+spampredict-set: "Chat spam prediksi berubah ke {}."
 spampredict-view: |
   Spam Prediction Setting: **{}**.
-  When enabled will automaticaly delete the message that are detected as a spam.
+  Jika dinyalakan akan otomatis menghapus pesan yang terdeteksi sebagai suatu spam.
 spampredict-unauthorized: |
-  Your reputation point is not enough to use this command! ({}/100)
-  To get a reputation point cast a vote on @SpamPredictionLog."
+  Poin reputasi anda tidak cukup untuk menggunakan perintah ini! ({}/100)
+  Untuk mendapatkan poin reputasi silahkan berikan suara di @SpamPredictionLog.
 #endregion
 #region spam shield
 spamshield-button: Spam Shield
