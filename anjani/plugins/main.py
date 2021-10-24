@@ -66,6 +66,7 @@ class Main(plugin.Plugin):
                         callback_data=f"help_plugin({plug.name.lower()})",
                     )
                 )
+        plugins.sort(key=lambda kb: kb.text)
 
         pairs = [plugins[i * 3 : (i + 1) * 3] for i in range((len(plugins) + 3 - 1) // 3)]
         pairs.append([InlineKeyboardButton("✗ Close", callback_data="help_close")])
