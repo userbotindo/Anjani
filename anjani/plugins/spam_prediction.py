@@ -48,6 +48,7 @@ from anjani import command, filters, listener, plugin, util
 
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
+    helpable: ClassVar[bool] = True
     disabled: ClassVar[bool] = not _run_predict
 
     db: util.db.AsyncCollection
@@ -64,7 +65,7 @@ class SpamPrediction(plugin.Plugin):
 
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
-        self.setting_db = self.bot.db.get_collection("GBAN_SETTINGS")
+        self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
         await self.__load_model(token, url)
 
     async def __load_model(self, token: str, url: str) -> None:
@@ -174,7 +175,7 @@ class SpamPrediction(plugin.Plugin):
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
         setting = await self.setting_db.find_one({"chat_id": message.chat.id})
-        if setting and not setting["setting"]:
+        if setting and not setting.get("setting"):
             return
 
         chat = message.chat
@@ -362,11 +363,7 @@ class SpamPrediction(plugin.Plugin):
         if not user or user["reputation"] < 100:
             if not user:
                 return None
-            return (
-                "Your reputation point is not enough to use this command!"
-                f"\n**Needed point:** 100\n**Current point:** {user['reputation']}"
-                "\n\nTo get a reputation point cast a vote on @SpamPredictionLog."
-            )
+            return await self.text(ctx.chat.id, "spampredict-unauthorized", user["reputation"])
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond("Reply to a message!", delete_after=5)
@@ -383,3 +380,30 @@ class SpamPrediction(plugin.Plugin):
             f"**Spam Prediction:** `{self.prob_to_string(pred[0][1])}`\n"
             f"**Ham Prediction:** `{self.prob_to_string(pred[0][0])}`"
         )
+
+    async def setting(self, chat_id: int, setting: bool) -> None:
+        """Turn on/off spam prediction in chats"""
+        await self.setting_db.update_one(
+            {"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
+        )
+
+    async def is_active(self, chat_id: int) -> bool:
+        """Return SpamShield setting"""
+        data = await self.setting_db.find_one({"chat_id": chat_id})
+        return data["setting"] if data else True
+
+    @command.filters(filters.admin_only, aliases=["spampredict", "spam_predict"])
+    async def cmd_spam_prediction(self, ctx: command.Context, enable: Optional[bool] = None) -> str:
+        """Set spam prediction setting"""
+        chat = ctx.chat
+        if not ctx.input:
+            return await self.text(chat.id, "spampredict-view", await self.is_active(chat.id))
+
+        if enable is None:
+            return await self.text(chat.id, "err-invalid-option")
+
+        ret, _ = await asyncio.gather(
+            self.text(chat.id, "spampredict-set", "on" if enable else "off"),
+            self.setting(chat.id, enable),
+        )
+        return ret

@@ -237,7 +237,7 @@ language-invalid: Mohon maaf kode bahasa tidak cocok.\nKode bahasa yang tersedia
 #region misc
 miscs-button: Lainnya
 miscs-help: |
- Berisi perintah kecil dan sederhana yang mungkin tidak cocok di mana pun.\n
+  Berisi perintah kecil dan sederhana yang mungkin tidak cocok di mana pun.\n
   **Perintah:**
   ×  /id : Menampilkan ID pengguna, ID pesan, ID grup dan banyak lagi.
   ×  /info: Menampilkan informasi tentang seorang pengguna.
@@ -372,19 +372,28 @@ rules-none: Grup ini belum menetapkan aturan!
 rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 #endregion
+#region spam prediction
+spampredict-button: Spam Prediction
+spampredict-help: |
+  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
+  You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.\n
+  **Admin Commands:**
+  /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in yout group.\n
+  If enabled, the bot will automaticaly delete and log the message to @SpamPredictionLog.
+spampredict-set: "Chat spam prediction turned {}."
+spampredict-view: |
+  Spam Prediction Setting: **{}**.
+  When enabled will automaticaly delete the message that are detected as a spam.
+spampredict-unauthorized: |
+  Your reputation point is not enough to use this command! ({}/100)
+  To get a reputation point cast a vote on @SpamPredictionLog."
+#endregion
 #region spam shield
 spamshield-button: Spam Shield
 spamshield-help: |
  **Hanya Administrator yang bisa menggunakan:**
-  /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.
-
+  /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.\n
   Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
-spamprediction-help: |
-  \n\n**Prediksi Spam**
-
-  Sebagai tambahan, saat ini kami sedang mengembangkan perlindungan spam menggunakan machine learning. Bot akan mendeteksi dan menghapus pesan spam dari grup anda.
-
-  Anda juga dapat membantu kami mendidik model kami dengan memberikan suara di @SpamPredictionLog. Anda akan mendapatkan poin reputasi dengan beberapa manfaat ke depannya 😉.
 banned-text: |
   #SPAM_SHIELD\n
   **Nama:** {}

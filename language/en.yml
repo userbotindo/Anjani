@@ -375,19 +375,28 @@ rules-none: This group have no rules set yet!
 rules-view-caption: Click this button to view the chat rules!
 rules-view-pm: "The rules for **{}** are:\n\n"
 #endregion
+#region spam prediction
+spampredict-button: Spam Prediction
+spampredict-help: |
+  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
+  You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.\n
+  **Admin Commands:**
+  /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in yout group.\n
+  If enabled, the bot will automaticaly delete and log the message to @SpamPredictionLog.
+spampredict-set: "Chat spam prediction turned {}."
+spampredict-view: |
+  Spam Prediction Setting: **{}**.
+  When enabled will automaticaly delete the message that are detected as a spam.
+spampredict-unauthorized: |
+  Your reputation point is not enough to use this command! ({}/100)
+  To get a reputation point cast a vote on @SpamPredictionLog."
+#endregion
 #region spam shield
 spamshield-button: Spam Shield
 spamshield-help: |
   **Admin Commands:**
-  /spamshield <on/off/yes/no>: Will disable or enable the effect of Spam protection in your group.
-
+  /spamshield <on/off/yes/no>: Will disable or enable the effect of Spam protection in your group.\n
   Spam shield uses Combot Anti Spam, @Spamwatch API and Global bans to remove Spammers as much as possible from your chatroom!
-spamprediction-help: |
-  \n\n**Spam Prediction**
-
-  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
-
-  You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.
 banned-text: |
   #SPAM_SHIELD\n
   **Name:** {}
@@ -395,9 +404,9 @@ banned-text: |
   **Reason**: {}
   **Client:** {}
   This Person has been detected as spambot and has been removed!
-spamshield-set: "Chat #SPAM_SHIELD turned {}"
+spamshield-set: "Chat #SPAM_SHIELD turned {}."
 spamshield-view: |
-  Spam shield setting: {}.
+  Spam shield setting: **{}**.
   Spam shield is a usefull plugin to help protect your group from spammers and trollers.
 #endregion
 #region greetings
