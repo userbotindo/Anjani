@@ -50,7 +50,6 @@ from pyrogram.filters import (
     supergroup_chat_created,
     text,
     user,
-    web_page,
     venue,
     via_bot,
     video,
@@ -59,6 +58,7 @@ from pyrogram.filters import (
     voice_chat_ended,
     voice_chat_members_invited,
     voice_chat_started,
+    web_page,
 )
 from pyrogram.types import Message
 
@@ -132,7 +132,7 @@ __all__ = [
     "voice",
     "voice_chat_ended",
     "voice_chat_members_invited",
-    "voice_chat_started"
+    "voice_chat_started",
 ]
 
 
@@ -146,12 +146,10 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat.type == "private"
-        if priv:
+        if priv or not target:
             return False
 
-        bot_perm, member_perm = await fetch_permissions(
-            client, message.chat.id, target.id
-        )
+        bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         try:
             return getattr(bot_perm, name) and getattr(member_perm, name)
         except AttributeError:
@@ -174,12 +172,16 @@ can_restrict = _create_filter_permission("can_restrict_members")
 def _staff_only(include_bot: bool = True, *, rank: Optional[str] = None) -> CustomFilter:
     async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
         target = message.from_user
+        if not target:  # Sanity check for anonymous admin
+            return False
+
         if rank is None:
             return target.id in flt.anjani.staff
 
         if rank == "dev":
             return target.id in flt.anjani.devs
 
+        flt.anjani.log.error(f"Invalid rank: {rank}")
         return False
 
     return create(func, "staff_only", include_bot=include_bot)
@@ -194,6 +196,9 @@ dev_only = _staff_only(rank="dev")
 def _owner_only(include_bot: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, _: Client, message: Message) -> bool:
         target = message.from_user
+        if not target:  # Sanity check for anonymous admin
+            return False
+
         return target.id == flt.anjani.owner
 
     return create(func, "owner_only", include_bot=include_bot)
@@ -209,6 +214,9 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
         target, priv = message.from_user, message.chat.type == "private"
         if priv:
             return False
+
+        if message.sender_chat:  # Anonymous Admin
+            return True
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         return bot_perm.status == "administrator" and is_staff_or_admin(member_perm)
