@@ -54,6 +54,9 @@ class Restrictions(plugin.Plugin):
 
         # ban and unban action = Kick member
         await chat.kick_member(user.id)
+        
+        #  Make little delay  
+        await asyncio.sleep(1)
         await chat.unban_member(user.id)
 
         ret = await self.text(chat.id, "kick-done", user.first_name)
