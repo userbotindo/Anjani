@@ -8,8 +8,8 @@ start-pm: |
   Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
-  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda!\n Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa \
-  hal-hal yang dapat saya lakukan...
+  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda!\n 
+  Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa hal-hal yang dapat saya lakukan...
   perintah yang tersedia:
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
