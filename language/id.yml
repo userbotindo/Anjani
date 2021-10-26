@@ -433,7 +433,7 @@ reset-welcome: Berhasil mengubah pesan sambutan ke pesan sambutan bawaan saya!
 view-welcome: |
   **Grup ini memiliki pengaturan: **
   `Menyambut pengguna` = `{}`
-  `Pembersihan Pesan layanan` = `{}`
+  `Pembersihan pesan layanan` = `{}`
   Dan pesan sambutan dari grup ini adalah:
 default-goodbye: "{first} dia baru saja keluar!"
 goodbye-set: Selamat tinggal menjadi {} saat ada anggota yang keluar.
@@ -442,7 +442,7 @@ reset-goodbye: Berhasil mengubah pesan selamat tinggal ke pesan selamat tinggal 
 view-goodbye: |
   **Grup ini memiliki pengaturan:**
   `Ucapan selamat tinggal untuk anggota yang keluar` = `{}`
-  `Pembersihan Pesan layanan` = `{}`
+  `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
 #region common-error
