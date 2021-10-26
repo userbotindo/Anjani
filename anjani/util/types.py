@@ -6,6 +6,10 @@ from pyrogram.types import ChatMember
 if TYPE_CHECKING:
     from anjani.core import Anjani
 
+Bot = TypeVar("Bot", bound="Anjani", covariant=True)
+ChatId = TypeVar("ChatId", bound=int, covariant=True)
+TextName = TypeVar("TextName", bound=str, covariant=True)
+NoFormat = TypeVar("NoFormat", bound=bool, covariant=True)
 TypeData = TypeVar("TypeData", covariant=True)
 
 

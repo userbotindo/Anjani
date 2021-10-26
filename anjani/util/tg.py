@@ -5,7 +5,6 @@ from enum import IntEnum, unique
 from functools import wraps
 from typing import (
     TYPE_CHECKING,
-    Annotated,
     Any,
     AsyncGenerator,
     Callable,
@@ -31,8 +30,8 @@ from pyrogram.types import (
 )
 from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
+from anjani.util import types
 from anjani.util.async_helper import run_sync
-from anjani.util.types import MemberPermissions
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
@@ -179,21 +178,21 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: Union[ChatMember, MemberPermissions]) -> bool:
+def is_staff_or_admin(target: Union[ChatMember, types.MemberPermissions]) -> bool:
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
 # { Permission
 # Aliases
-Bot = MemberPermissions
-Member = MemberPermissions
+Bot = types.MemberPermissions
+Member = types.MemberPermissions
 
 
 async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
-    return MemberPermissions(bot), MemberPermissions(member)
+    return types.MemberPermissions(bot), types.MemberPermissions(member)
 
 
 # }
@@ -241,15 +240,8 @@ async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None
 # { GetText Language
 def __loop_safe(
     func: Callable[
-        [
-            Annotated["Anjani", "bot"],
-            Annotated[int, "chat_id"],
-            Annotated[str, "text_name"],
-            Annotated[ParamSpecArgs, Any],
-            Annotated[bool, "noformat"],
-            Annotated[ParamSpecKwargs, Any],
-        ],
-        str,
+        [types.Bot, types.ChatId, types.TextName, ParamSpecArgs, types.NoFormat, ParamSpecKwargs],
+        str
     ]
 ):  # Special: let default typing choose the return type
     """Decorator for get_text functions"""
