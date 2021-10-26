@@ -13,18 +13,23 @@ from typing import (
     Optional,
     Set,
     Tuple,
-    Union
+    Union,
 )
-from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
 from pyrogram import Client
-from pyrogram.errors import ChatForbidden, ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
+from pyrogram.errors import (
+    ChannelPrivate,
+    ChatForbidden,
+    ChatWriteForbidden,
+    MessageDeleteForbidden,
+)
 from pyrogram.types import (
     ChatMember,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
 )
+from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
 from anjani.util.async_helper import run_sync
 from anjani.util.types import MemberPermissions
@@ -189,6 +194,8 @@ async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, 
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
     return MemberPermissions(bot), MemberPermissions(member)
+
+
 # }
 
 
@@ -202,6 +209,8 @@ async def get_chat_admins(
             if exclude_bot and member.user.is_bot:
                 continue
             yield member
+
+
 # }
 
 
@@ -212,7 +221,8 @@ async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None
 
     try:
         to_del, _ = await asyncio.gather(
-            message.reply(text, quote=True), asyncio.sleep(del_in), 
+            message.reply(text, quote=True),
+            asyncio.sleep(del_in),
         )
     except (ChatForbidden, ChannelPrivate, ChatWriteForbidden):
         return
@@ -223,6 +233,8 @@ async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None
         pass
 
     return
+
+
 # }
 
 
@@ -235,9 +247,9 @@ def __loop_safe(
             Annotated[str, "text_name"],
             Annotated[ParamSpecArgs, Any],
             Annotated[bool, "noformat"],
-            Annotated[ParamSpecKwargs, Any]
+            Annotated[ParamSpecKwargs, Any],
         ],
-        str
+        str,
     ]
 ):  # Special: let default typing choose the return type
     """Decorator for get_text functions"""
@@ -270,28 +282,19 @@ def __loop_safe(
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return await run_sync(
-            func, bot, chat_id, text_name, *args, noformat=noformat, **kwargs
-        )
+        return await run_sync(func, bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
 
     return wrapper
 
 
 @__loop_safe
 def get_text(
-    bot: "Anjani",
-    chat_id: int,
-    text_name: str,
-    *args: Any,
-    noformat: bool = False,
-    **kwargs: Any
+    bot: "Anjani", chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
 ) -> str:
     def _get_text(lang: str) -> str:
         try:
             text = codecs.decode(
-                codecs.encode(
-                    bot.languages[lang][text_name], "latin-1", "backslashreplace"
-                ),
+                codecs.encode(bot.languages[lang][text_name], "latin-1", "backslashreplace"),
                 "unicode-escape",
             )
         except KeyError:
@@ -311,4 +314,6 @@ def get_text(
                 raise
 
     return _get_text(bot.chats_languages.get(chat_id, "en"))
+
+
 # }

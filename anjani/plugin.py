@@ -1,7 +1,8 @@
 import inspect
 import logging
 import os.path
-from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Optional
+
 from typing_extensions import final
 
 from anjani import util
@@ -32,12 +33,7 @@ class Plugin:
 
     @final
     def get_text(
-        self,
-        chat_id: int,
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any
+        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
     ) -> Coroutine[Any, Any, str]:
         """Parse the string with user language setting.
 
@@ -56,17 +52,12 @@ class Plugin:
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat, **kwargs)
+        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
 
     # Convenient alias get_text method
     @final
     def text(
-        self,
-        chat_id: int,
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any
+        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
     ) -> Coroutine[Any, Any, str]:
         """Parse the string with user language setting.
 
@@ -85,7 +76,8 @@ class Plugin:
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat, **kwargs)
+        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
+
     # }
 
     @classmethod
