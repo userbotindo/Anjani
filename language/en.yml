@@ -463,4 +463,6 @@ err-api-down: Api down for now, try again later..
 err-group-creator-cmd: Only group creator can use this command!
 err-invalid-pid: Invalid identifier!
 err-anonymous: You are on anonymous mode...\n\n__Disable it first.__
+err-not-admin: You are not an Administrator of this group...
+err-perm: You and I need permission of __{}__, to be able to use the command.
 #endregion

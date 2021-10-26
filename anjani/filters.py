@@ -62,7 +62,7 @@ from pyrogram.filters import (
 )
 from pyrogram.types import Message
 
-from anjani.util.tg import fetch_permissions, is_staff_or_admin
+from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
 from anjani.util.types import CustomFilter
 
 FilterFunc = Callable[[CustomFilter, Client, Message], Coroutine[Any, Any, bool]]
@@ -151,10 +151,16 @@ def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         try:
-            return getattr(bot_perm, name) and getattr(member_perm, name)
+            if getattr(bot_perm, name) and getattr(member_perm, name):
+                return True
         except AttributeError:
             flt.anjani.log.error(f"{name} is not a valid permission")
             return False
+
+        flt.anjani.loop.create_task(
+            reply_and_delete(message, await get_text(flt.anjani, message.chat.id, "err-perm", name), 5
+        ))
+        return False
 
     return create(func, name, include_bot=include_bot)
 
@@ -210,7 +216,7 @@ owner_only = _owner_only()
 
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
-    async def func(_: CustomFilter, client: Client, message: Message) -> bool:
+    async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat.type == "private"
         if priv:
             return False
@@ -219,7 +225,13 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             return True
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
-        return bot_perm.status == "administrator" and is_staff_or_admin(member_perm)
+        if bot_perm.status == "administrator" and member_perm.status in {"administrator", "creator"}:
+            return True
+
+        flt.anjani.loop.create_task(
+            reply_and_delete(message, await get_text(flt.anjani, message.chat.id, "err-not-admin"), 5
+        ))
+        return False
 
     return create(func, "admin_only", include_bot=include_bot)
 
