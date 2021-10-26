@@ -30,7 +30,7 @@ from pyrogram.types import (
 )
 from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
-from anjani.util import types as t
+from anjani.util import types as _types
 from anjani.util.async_helper import run_sync
 
 if TYPE_CHECKING:
@@ -178,21 +178,21 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: Union[ChatMember, t.MemberPermissions]) -> bool:
+def is_staff_or_admin(target: Union[ChatMember, _types.MemberPermissions]) -> bool:
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
 # { Permission
 # Aliases
-Bot = t.MemberPermissions
-Member = t.MemberPermissions
+Bot = _types.MemberPermissions
+Member = _types.MemberPermissions
 
 
 async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
-    return t.MemberPermissions(bot), t.MemberPermissions(member)
+    return _types.MemberPermissions(bot), _types.MemberPermissions(member)
 
 
 # }
@@ -240,7 +240,7 @@ async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None
 # { GetText Language
 def __loop_safe(
     func: Callable[
-        [t.Bot, t.ChatId, t.TextName, ParamSpecArgs, t.NoFormat, ParamSpecKwargs],
+        [_types.Bot, _types.ChatId, _types.TextName, ParamSpecArgs, _types.NoFormat, ParamSpecKwargs],
         str
     ]
 ):  # Special: let default typing choose the return type
