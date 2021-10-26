@@ -14,13 +14,70 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from json import JSONDecodeError
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
-from aiohttp import ClientConnectorError, ContentTypeError
+from aiohttp import ClientConnectorError, ClientSession, ContentTypeError
 from aiopath import AsyncPath
 
 from anjani import command, filters, plugin
+
+
+class Paste:
+
+    __token: Optional[str]
+
+    def __init__(self, session: ClientSession, name: str, url: str):
+        self.__session = session
+        self.__name = name
+        self.__url = url
+
+        self.__token = None
+        self.url_map = {
+            "-h": "https://hastebin.com/",
+            "-k": "https://katb.in/",
+            "-s": "https://spaceb.in/",
+            "hastebin": "https://hastebin.com/",
+            "katbin": "https://katb.in/",
+            "spacebin": "https://spaceb.in/",
+        }
+
+    async def __aenter__(self) -> "Paste":
+        return self
+
+    async def __aexit__(self, _: Any, __: Any, ___: Any) -> None:
+        ...
+
+    async def go(self, content: Any) -> str:
+        if self.__name == "katbin":
+            regex = re.compile(r'name="_csrf_token".+value="(.+)"')
+            async with self.__session.get(self.__url) as r:
+                if r.status == 200:
+                    async for data in r.content.iter_any():
+                        token = regex.search(data.decode("utf-8"))
+                        if not token:
+                            continue
+
+                        self.__token = token.group(1)
+                        break
+            if self.__token:
+                content["_csrf_token"] = self.__token
+        
+        async with self.__session.post(self.__url, data=content) as r:
+            if self.__name == "katbin":
+                return str(r.url)
+            if self.__name == "spacebin":
+                regex = re.compile(r'"id":\s?"(.+?)"')
+                async for content_id in r.content.iter_any():
+                    uid = regex.search(content_id.decode("utf-8"))
+                    if not uid:
+                        continue
+
+                    return self.url_map[self.__name] + uid.group(1)
+
+            content_data = await r.json()
+            return self.url_map[self.__name] + content_data["key"]
 
 
 class Misc(plugin.Plugin):
@@ -56,6 +113,7 @@ class Misc(plugin.Plugin):
         if not service:
             service = "hastebin"
 
+        data: Any
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
         if reply_msg.document:
@@ -67,17 +125,13 @@ class Misc(plugin.Plugin):
         else:
             return None
 
-        urls = {
-            "-h": "https://hastebin.com/",
-            "-k": "https://katb.in/",
-            "hastebin": "https://hastebin.com/",
-            "katbin": "https://katb.in/",
-        }
         uris = {
             "-h": "https://hastebin.com/documents",
-            "-k": "https://api.katb.in/api/paste",
+            "-k": "https://katb.in/",
+            "-s": "https://spaceb.in/api/v1/documents/",
             "hastebin": "https://hastebin.com/documents",
-            "katbin": "https://api.katb.in/api/paste",
+            "katbin": "https://katb.in/",
+            "spacebin": "https://spaceb.in/api/v1/documents/",
         }
         try:
             uri = uris[service]
@@ -86,28 +140,23 @@ class Misc(plugin.Plugin):
         else:
             hastebin = "hastebin" in uri
             katbin = "katb" in uri
+            spacebin = "spaceb" in uri
 
-        if hastebin:
-            service = "hastebin"
-            json = {}
-        else:
-            service = "katbin"
-            json = {"json": {"content": data}}
+        service = "hastebin" if hastebin else "katbin" if katbin else "spacebin"
+        if katbin:
+            data = {"paste[content]": data}
+
+        if spacebin:
+            data = {"content": data, "extension": "txt"}
 
         await ctx.respond(await self.text(chat.id, "wait-paste", service))
 
         try:
-            async with self.bot.http.post(uri, data=data if hastebin else None, **json) as resp:
-                try:
-                    result = await resp.json()
-                except (JSONDecodeError, ContentTypeError):
-                    return await self.text(ctx.chat.id, "fail-paste", service)
-
-                text = (
-                    urls[service] + result["paste_id"] if katbin else urls[service] + result["key"]
+            async with Paste(self.bot.http, service, uri) as paste:
+                return await self.text(
+                    ctx.chat.id, "paste-succes", f"[{service}]({await paste.go(data)})"
                 )
-                return await self.text(ctx.chat.id, "paste-succes", f"[{service}]({text})")
-        except ClientConnectorError:
+        except (JSONDecodeError, ContentTypeError, ClientConnectorError):
             return await self.text(ctx.chat.id, "fail-paste", service)
 
     @command.filters(filters.private)

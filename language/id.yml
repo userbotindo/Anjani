@@ -245,7 +245,8 @@ miscs-help: |
   ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
       flags:
           [-h, hastebin] = menggunakan hastebin.\n
-          [-k, katbin] = menggunakan katbin.
+          [-k, katbin] = menggunakan katbin. \n
+          [-s, spacebin] = menggunakan spacebin.
 wait-paste: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
 fail-paste: "`Gagal untuk menyalin ke {}!`\nGunakan flag -h atau -k untuk menggunakan layanan lain."
