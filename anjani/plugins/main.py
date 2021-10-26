@@ -106,8 +106,6 @@ class Main(plugin.Plugin):
                 f"Here is the help for the **{plug.group(1).capitalize()}** "
                 f"plugin:\n\n{text_lang}"
             )
-            if "SpamPredict" in self.bot.plugins and plug.group(1) == "spamshield":
-                text += await self.text(chat.id, "spamprediction-help")
             try:
                 await query.edit_message_text(
                     text,
