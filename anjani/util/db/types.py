@@ -10,15 +10,12 @@ from pymongo.read_preferences import (
 )
 
 JavaScriptCode = TypeVar("JavaScriptCode", bound=str)
-ReadPreferences = TypeVar(
-    "ReadPreferences",
-    bound=Union[
-        Primary,
-        PrimaryPreferred,
-        Secondary,
-        SecondaryPreferred,
-        Nearest
-    ]
-)
-Request = TypeVar("Request", bound=Union[DeleteOne, InsertOne, ReplaceOne])
+ReadPreferences = Union[
+    Primary,
+    PrimaryPreferred,
+    Secondary,
+    SecondaryPreferred,
+    Nearest
+]
+Request = Union[DeleteOne, InsertOne, ReplaceOne]
 Results = TypeVar("Results")
