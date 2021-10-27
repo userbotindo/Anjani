@@ -5,7 +5,7 @@ from typing import Any, ClassVar, IO, MutableMapping
 from aiopath import PureAsyncPosixPath
 from pyrogram.types import CallbackQuery, Message
 
-from anjani import command, plugin, util
+from anjani import command, filters, listener, plugin, util
 
 
 class ExamplePlugin(plugin.Plugin):
@@ -18,6 +18,8 @@ class ExamplePlugin(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("example")
 
+    # Filter Listener only on group chats
+    @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
         self.log.info(f"Received message: {message.text}")
         await self.db.update_one(
@@ -98,6 +100,9 @@ class ExamplePlugin(plugin.Plugin):
 
         return cat_stream
 
+    # Filter Command only on private
+    # And create alias command /get_cat
+    @command.filters(filters.private, aliases=["get_cat"])
     async def cmd_cat(self, ctx: command.Context) -> None:
         await ctx.respond("Fetching cat...")
         cat_stream = await self.get_cat()
