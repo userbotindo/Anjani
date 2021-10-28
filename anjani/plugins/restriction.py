@@ -125,8 +125,8 @@ class Restrictions(plugin.Plugin):
         user = ctx.author
         
         try:
-            await chat.kick_member(user.id, until_date=int(time() + 30))
-            await self.text(chat.id, "kickme")
+            await asyncio.gather(await chat.kick_member(user.id, until_date=int(time() + 30)),
+                                 await self.text(chat.id, "kickme"))
         except UserAdminInvalid:
             return await self.text(chat.id, "kickme-user-admin")
         except ChatAdminRequired:
