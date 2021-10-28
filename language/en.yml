@@ -347,10 +347,15 @@ restriction-help: |
   × /ban <userhandle> [reason]: Bans a user. (via handle, or reply)
   × /unban <userhandle>: Unbans a user. (via handle, or reply)
   \nhandle can be a user_id's or username
+  × /kickme If you boring in the group let's talk bot to kick yourself.
+
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
 kick-done: "**{}** Kicked!"
 kick-reason: "\nReason: {}"
+kickme: "Ok.. `maybe this world is too cruel for you`"
+kickme-user-admin: "Talking about destiny is difficult, that word suits you.. 🤣"
+kickme-need-perm: I really want to do that, but I can't 🥲
 no-ban-user: who should i ban?
 admin-ban: I'm not gonna ban an admin, don't make fun of yourself!
 ban-done: "Banned **{}**!"
@@ -466,4 +471,5 @@ err-invalid-pid: Invalid identifier!
 err-anonymous: You are on anonymous mode...\n\n__Disable it first.__
 err-not-admin: You are not an Administrator of this group...
 err-perm: You and I need permission of __{}__, to be able to use the command.
+err-unexpected: "An unexpected error occurred.! \n\n *Error:*`{}` "
 #endregion
