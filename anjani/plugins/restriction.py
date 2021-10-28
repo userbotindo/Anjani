@@ -16,8 +16,9 @@
 
 import asyncio
 from typing import ClassVar, Optional
+from time import time
 
-from pyrogram.errors import PeerIdInvalid, UserNotParticipant
+from pyrogram.errors import PeerIdInvalid, UserNotParticipant, UserAdminInvalid, ChatAdminRequired
 from pyrogram.types import User
 
 from anjani import command, filters, plugin, util
@@ -117,3 +118,19 @@ class Restrictions(plugin.Plugin):
             return await self.text(chat.id, "err-peer-invalid")
 
         return await self.text(chat.id, "unban-done", user.first_name)
+
+    async def cmd_kickme(self, ctx: command.Context) -> str:
+        """Kickme: Kick yourself from the group"""
+        chat = ctx.chat
+        user = ctx.author
+        bot = self.bot.client
+        
+        try:
+            await bot.kick_chat_member(chat.id, user.id, until_date=int(time() + 30))
+            await self.text(chat.id, "kickme")
+        except UserAdminInvalid:
+            return await self.text(chat.id, "kickme-user-admin")
+        except ChatAdminRequired:
+            return await self.text(chat.id, "kickme-need-perm")
+        except Exception as Err:
+            return await self.text(chat.id, "err-unexpected", Err)
