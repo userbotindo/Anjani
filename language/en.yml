@@ -346,9 +346,8 @@ restriction-help: |
   × /kick <userhandle> [reason]: Kicks a user, (via handle, or reply)
   × /ban <userhandle> [reason]: Bans a user. (via handle, or reply)
   × /unban <userhandle>: Unbans a user. (via handle, or reply)
+  × /kickme: If you're bored in the group? let the bot kick yourself.
   \nhandle can be a user_id's or username
-  × /kickme If you boring in the group let's talk bot to kick yourself.
-
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
 kick-done: "**{}** Kicked!"

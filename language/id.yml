@@ -8,7 +8,7 @@ start-pm: |
   Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
-  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda!\n 
+  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda!\n
   Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa hal-hal yang dapat saya lakukan...
   perintah yang tersedia:
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
@@ -344,7 +344,7 @@ restriction-help: |
   × /kick <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
   × /ban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
-  × /kickme Gunakan perintah ini, jika anda ingin ditendang dari grup!!
+  × /kickme: Gunakan perintah ini, jika anda ingin ditendang dari grup!!
 
 no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
@@ -352,7 +352,7 @@ kick-done: "**{}** Dikeluarkan!"
 kick-reason: "\nAlasan: {}"
 kickme: Baiklah.. anda merasa dunia ini terlalu kejam bukan!!
 kickme-user-admin: "Sebuah kutukan diberikan untukmu, Mohon tetap lah tenang disini 🤣"
-kickme-need-perm: Saya sangat ingin menendang mu sejujurnya, Tapi saya tidak bisa 
+kickme-need-perm: Saya sangat ingin menendang mu sejujurnya, Tapi saya tidak bisa
 no-ban-user: Siapa yang harus saya blokir?
 admin-ban: Saya tidak akan memblokir Administrator!
 ban-done: "**{}** terblokir!"
