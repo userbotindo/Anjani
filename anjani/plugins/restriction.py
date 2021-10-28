@@ -123,14 +123,13 @@ class Restrictions(plugin.Plugin):
         """Kickme: Kick yourself from the group"""
         chat = ctx.chat
         user = ctx.author
-        bot = self.bot.client
         
         try:
-            await bot.kick_chat_member(chat.id, user.id, until_date=int(time() + 30))
+            await chat.kick_member(user.id, until_date=int(time() + 30))
             await self.text(chat.id, "kickme")
         except UserAdminInvalid:
             return await self.text(chat.id, "kickme-user-admin")
         except ChatAdminRequired:
             return await self.text(chat.id, "kickme-need-perm")
-        except Exception as Err:
+        except Exception as Err:  # skipcq: PYL-W0703
             return await self.text(chat.id, "err-unexpected", Err)
