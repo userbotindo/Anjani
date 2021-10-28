@@ -468,5 +468,5 @@ err-invalid-pid: Identifier tidak sah atau tidak benar!
 err-anonymous: Anda sedang dalam mode anonim...\n__Matikan dulu mode tersebut.__
 err-not-admin: Anda bukan Administartor group ini...
 err-perm: Saya dan Anda butuh izin __{}__, untuk menggunakan perintah ini.
-err-unexpected: "Telah terjadi kesalahan yang tak terduga!\n\n*Error:*`{}` "
+err-unexpected: "Telah terjadi kesalahan yang tak terduga!\n\n**Error:** `{}` "
 #endregion
