@@ -81,9 +81,9 @@ class Plugin:
     # }
 
     @classmethod
-    def format_desc(cls, comment: Optional[str] = None):
+    def format_desc(cls, comment: Optional[str] = None) -> str:
         _comment = comment + " " if comment else ""
         return f"{_comment}plugin '{cls.name}' ({cls.__name__}) from '{os.path.relpath(inspect.getfile(cls))}'"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<" + self.format_desc(self.comment) + ">"

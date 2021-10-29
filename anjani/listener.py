@@ -49,3 +49,6 @@ class Listener:
 
     def __lt__(self, other: "Listener") -> bool:
         return self.priority < other.priority
+
+    def __repr__(self) -> str:
+        return f"<listener plugin '{self.event}' from '{self.plugin.name}'>"

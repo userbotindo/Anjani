@@ -59,6 +59,9 @@ class Command:
         self.filters = cmdFilter
         self.aliases = aliases
 
+    def __repr__(self) -> str:
+        return f"<command plugin '{self.name}' from '{self.plugin.name}'>"
+
 
 # Command invocation context
 class Context:
