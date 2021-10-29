@@ -13,7 +13,7 @@ from typing import (
 )
 
 import pyrogram
-from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
+from pyrogram.filters import Filter
 
 from anjani.action import BotAction
 from anjani.util.types import CustomFilter
@@ -27,25 +27,10 @@ CommandFunc = Union[
 Decorator = Callable[[CommandFunc], CommandFunc]
 
 
-def check_filters(_filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
-    """ Recursively check filters to set :obj:`~Anjani` into :obj:`~CustomFilter` if needed """
-    if isinstance(_filters, (AndFilter, OrFilter, InvertFilter)):
-        check_filters(_filters.base, anjani)
-    if isinstance(_filters, (AndFilter, OrFilter)):
-        check_filters(_filters.other, anjani)
-
-    # Only accepts CustomFilter instance
-    if getattr(_filters, "include_bot", False) and isinstance(_filters, CustomFilter):
-        _filters.anjani = anjani
-
-
 def filters(_filters: Optional[Filter] = None, *, aliases: Iterable[str] = []) -> Decorator:
     """Sets filters on a command function."""
 
     def filter_decorator(func: CommandFunc) -> CommandFunc:
-        if func.__name__.split("_", 1)[0] != "cmd":
-            raise RuntimeError("Only Command are able to use the command filters.")
-
         setattr(func, "_cmd_filters", _filters)
         setattr(func, "_cmd_aliases", aliases)
         return func
@@ -55,20 +40,25 @@ def filters(_filters: Optional[Filter] = None, *, aliases: Iterable[str] = []) -
 
 class Command:
     name: str
-    filters: Optional[Union[Filter, CustomFilter]]
     plugin: Any
-    aliases: Iterable[str]
     func: Union[CommandFunc, CommandFunc]
+    filters: Optional[Union[Filter, CustomFilter]]
+    aliases: Iterable[str]
 
-    def __init__(self, name: str, plugin: Any, func: CommandFunc) -> None:
+    def __init__(
+        self,
+        name: str,
+        plugin: Any,
+        func: CommandFunc,
+        *,
+        cmdFilter: Optional[Union[Filter, CustomFilter]],
+        aliases: Iterable[str],
+    ) -> None:
         self.name = name
-        self.filters = getattr(func, "_cmd_filters", None)
-        self.aliases = getattr(func, "_cmd_aliases", [])
         self.plugin = plugin
         self.func = func
-
-        if self.filters:
-            check_filters(self.filters, self.plugin.bot)
+        self.filters = cmdFilter
+        self.aliases = aliases
 
 
 # Command invocation context
