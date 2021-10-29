@@ -21,6 +21,7 @@ import re
 import sys
 import traceback
 from datetime import datetime
+from html import escape
 from typing import Any, ClassVar, Optional, Tuple
 
 import pyrogram
@@ -142,10 +143,12 @@ class Debug(plugin.Plugin):
 
                 return None
 
-        return f"""{prefix}**In:**
+        return escape(
+            f"""{prefix}**In:**
 ```{code}```
 
 **Out:**
 ```{out}```
 
 Time: {el_str}"""
+        )
