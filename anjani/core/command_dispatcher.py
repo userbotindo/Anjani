@@ -1,5 +1,5 @@
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping
+from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
 from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
@@ -7,7 +7,6 @@ from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
-from anjani.util.converter import parse_arguments
 
 from .anjani_mixin_base import MixinBase
 
@@ -27,9 +26,22 @@ class CommandDispatcher(MixinBase):
         super().__init__(**kwargs)
 
     def register_command(
-        self: "Anjani", plug: plugin.Plugin, name: str, func: command.CommandFunc
+        self: "Anjani",
+        plug: plugin.Plugin,
+        name: str,
+        func: command.CommandFunc,
+        *,
+        filters: Optional[Union[util.types.CustomFilter, Filter]] = None,
+        aliases: Iterable[str] = [],
     ) -> None:
-        cmd = command.Command(name, plug, func)
+        if getattr(func, "_listener_filters", None):
+            self.log.warning("@listener.filters decorator only for ListenerFunc. Filters will be ignored...")
+
+        if filters:
+            self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, name)
+            util.misc.check_filters(filters, self)
+
+        cmd = command.Command(name, plug, func, cmdFilter=filters, aliases=aliases)
 
         if name in self.commands:
             orig = self.commands[name]
@@ -58,7 +70,11 @@ class CommandDispatcher(MixinBase):
             done = False
 
             try:
-                self.register_command(plug, name, func)
+                self.register_command(
+                    plug, name, func,
+                    filters=getattr(func, "_cmd_filters", None),
+                    aliases=getattr(func, "_cmd_aliases", [])
+                )
                 done = True
             finally:
                 if not done:
@@ -102,7 +118,7 @@ class CommandDispatcher(MixinBase):
                 except KeyError:
                     return False
 
-                # Check additional build-in filters
+                # Check additional built-in filters
                 if cmd.filters:
                     if inspect.iscoroutinefunction(cmd.filters.__call__):
                         if not await cmd.filters(client, message):
@@ -134,10 +150,10 @@ class CommandDispatcher(MixinBase):
 
             # Parse and convert handler required parameters
             signature = inspect.signature(cmd.func)
-            args = []  # type: List[Any]
-            kwargs = {}  # type: Dict[Any, Any]
+            args = []  # type: list[Any]
+            kwargs = {}  # type: MutableMapping[str, Any]
             if len(signature.parameters) > 1:
-                args, kwargs = await parse_arguments(signature, ctx, cmd.func)
+                args, kwargs = await util.converter.parse_arguments(signature, ctx, cmd.func)
 
             # Invoke command function
             try:

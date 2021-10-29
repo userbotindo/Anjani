@@ -39,10 +39,21 @@ class EventDispatcher(MixinBase):
         plug: plugin.Plugin,
         event: str,
         func: ListenerFunc,
+        *,
         priority: int = 100,
-        filters: Filter = None
+        filters: Optional[Filter] = None
     ) -> None:
-        listener = Listener(event, func, plug, priority, filters)
+        if event in {"load", "start", "started", "stop", "stopped"} and filters is not None:
+            self.log.warning(f"Built-in Listener can't be use with filters. Removing...")
+            filters = None
+
+        if getattr(func, "_cmd_filters", None):
+            self.log.warning("@command.filters decorator only for CommandFunc. Filters will be ignored...")
+
+        if filters:
+            self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, event)
+
+        listener = Listener(event, func, plug, priority, listenerFilter=filters)
 
         if event in self.listeners:
             bisect.insort(self.listeners[event], listener)
