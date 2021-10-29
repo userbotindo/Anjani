@@ -32,7 +32,6 @@ class Users(plugin.Plugin):
 
     chats_db: util.db.AsyncCollection
     users_db: util.db.AsyncCollection
-    lock: asyncio.locks.Lock
     predict_loaded: bool
 
     async def on_load(self) -> None:

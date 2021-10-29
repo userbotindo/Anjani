@@ -128,8 +128,6 @@ class ChatMemberConverter(EntityConverter):
             raise ConversionError(self, err) from err
 
     async def __call__(self, ctx: Context, arg: str) -> Optional[types.ChatMember]:
-        type(arg)
-        arg = str(arg)
         if arg.isdigit() or arg.startswith("@"):
             return await self.get_member(ctx.bot.client, ctx.chat.id, arg)
         res = self.parse_entities(ctx.msg, arg)
