@@ -39,7 +39,6 @@ class Listener:
         func: ListenerFunc,
         plugin: Any,
         prio: int,
-        *,
         listenerFilter: Optional[Filter] = None
     ) -> None:
         self.event = event

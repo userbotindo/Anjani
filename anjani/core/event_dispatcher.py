@@ -53,7 +53,7 @@ class EventDispatcher(MixinBase):
         if filters:
             self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, event)
 
-        listener = Listener(event, func, plug, priority, listenerFilter=filters)
+        listener = Listener(event, func, plug, priority, filters)
 
         if event in self.listeners:
             bisect.insort(self.listeners[event], listener)

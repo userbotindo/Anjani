@@ -41,7 +41,7 @@ class CommandDispatcher(MixinBase):
             self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, name)
             util.misc.check_filters(filters, self)
 
-        cmd = command.Command(name, plug, func, cmdFilter=filters, aliases=aliases)
+        cmd = command.Command(name, plug, func, filters, aliases)
 
         if name in self.commands:
             orig = self.commands[name]

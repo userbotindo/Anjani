@@ -50,7 +50,6 @@ class Command:
         name: str,
         plugin: Any,
         func: CommandFunc,
-        *,
         cmdFilter: Optional[Union[Filter, CustomFilter]],
         aliases: Iterable[str],
     ) -> None:
