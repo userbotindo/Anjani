@@ -18,7 +18,7 @@ import asyncio
 import pickle
 import re
 from hashlib import md5, sha256
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, MutableMapping, Optional
 
 from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
@@ -67,6 +67,21 @@ class SpamPrediction(plugin.Plugin):
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
         await self.__load_model(token, url)
+
+    async def on_chat_migrate(self, message: Message) -> None:
+        await self.db.update_one(
+            {"chat_id": message.migrate_from_chat_id},
+            {"$set": {"chat_id": message.chat.id}},
+        )
+
+    async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
+        setting = await self.setting_db.find_one({"chat_id": chat_id})
+        return {self.name: setting} if setting else {}
+
+    async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
+        await self.setting_db.update_one(
+            {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
+        )
 
     async def __load_model(self, token: str, url: str) -> None:
         self.log.info("Downloading spam prediction model!")
