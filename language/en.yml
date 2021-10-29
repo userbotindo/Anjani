@@ -228,7 +228,7 @@ language-help: |
   - 🇺🇸 English.
   - 🇮🇩 Indonesia.\n
   Commands:
-  ×  /setlang | /lang | /language : set your prefered language.\n
+  ×  /setlang | /lang | /language : set your preferred language.\n
   **Note**
   You can use this command on group chats to change the language setting on that chat.\n
 current-language: "**{}** current language is **{}**\nSelect language bellow to change"
@@ -383,7 +383,7 @@ rules-view-pm: "The rules for **{}** are:\n\n"
 #region spam prediction
 spampredict-button: Spam Prediction
 spampredict-help: |
-  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam message from your chats.
+  For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam messages from your chats.
   You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.\n
   **Admin Commands:**
   /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in your group.\n
