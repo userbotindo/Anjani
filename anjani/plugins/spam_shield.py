@@ -60,6 +60,7 @@ class SpamShield(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
+    @listener.priority(90)
     async def on_chat_action(self, message: Message) -> None:
         """Checker service for new member"""
         chat = message.chat
@@ -138,20 +139,7 @@ class SpamShield(plugin.Plugin):
         async with self.bot.http.get(f"https://api.cas.chat/check?user_id={user.id}") as res:
             data = await res.json()
             if data["ok"]:
-                fullname = user.first_name + user.last_name if user.last_name else user.first_name
                 reason = f"https://cas.chat/query?u={user.id}"
-                await self.federation_db.update_one(
-                    {"_id": "AnjaniSpamShield"},
-                    {
-                        "$set": {
-                            f"banned.{user.id}": {
-                                "name": fullname,
-                                "reason": "Automated fban " + reason,
-                                "time": datetime.now(),
-                            }
-                        }
-                    },
-                )
                 return reason
 
             return None
@@ -160,6 +148,11 @@ class SpamShield(plugin.Plugin):
         """Return SpamShield setting"""
         data = await self.db.find_one({"chat_id": chat_id})
         return data["setting"] if data else True
+
+    async def is_banned(self, user_id: int) -> bool:
+        """Check if user already banned"""
+        data = await self.federation_db.find_one({"_id": "AnjaniSpamShield"})
+        return str(user_id) in data["banned"] if data else False
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off SpamShield in chats"""
@@ -172,6 +165,8 @@ class SpamShield(plugin.Plugin):
             return
 
         userlink = f"[{user.first_name}](tg://user?id={user.id})"
+        fullname = user.first_name + user.last_name if user.last_name else user.first_name
+        chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
         reason = ""
         banner = ""
         if cas:
@@ -185,13 +180,19 @@ class SpamShield(plugin.Plugin):
                 banner += " & [Spam Watch](t.me/SpamWatch)"
                 reason += " & " + sw["reason"]
 
-        if chat.username:
-            chat_link = f"[{chat.id}](https://t.me/{chat.username})"
-        else:
-            chat_link = chat.id
         await asyncio.gather(
             self.bot.log_stat("banned"),
             chat.kick_member(user.id),
+            self.federation_db.update_one(
+                {"_id": "AnjaniSpamShield"},
+                {"$set": {
+                    f"banned.{user.id}": {
+                        "name": fullname,
+                        "reason": "Automated fban " + reason,
+                        "time": datetime.now(),
+                    }
+                }},
+            ),
             self.bot.client.send_message(
                 chat.id,
                 text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
