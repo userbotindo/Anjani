@@ -86,10 +86,7 @@ class SpamShield(plugin.Plugin):
             if message.text
             else (message.caption.strip() if message.media and message.caption else None)
         )
-        if not chat or message.left_chat_member or not user or not text:
-            return
-
-        if not await self.is_active(chat.id):
+        if not chat or not user or not text or not await self.is_active(chat.id):
             return
 
         try:
@@ -142,14 +139,14 @@ class SpamShield(plugin.Plugin):
             data = await res.json()
             if data["ok"]:
                 fullname = user.first_name + user.last_name if user.last_name else user.first_name
-                reason = f"Automated fban https://cas.chat/query?u={user.id}"
+                reason = f"https://cas.chat/query?u={user.id}"
                 await self.federation_db.update_one(
                     {"_id": "AnjaniSpamShield"},
                     {
                         "$set": {
                             f"banned.{user.id}": {
                                 "name": fullname,
-                                "reason": reason,
+                                "reason": "Automated fban " + reason,
                                 "time": datetime.now(),
                             }
                         }
@@ -179,7 +176,7 @@ class SpamShield(plugin.Plugin):
         banner = ""
         if cas:
             banner = "[Combot Anti Spam](t.me/combot)"
-            reason = f"[link]({cas})"
+            reason = f"[Link]({cas})"
         if sw:
             if not banner:
                 banner = "[Spam Watch](t.me/SpamWatch)"
