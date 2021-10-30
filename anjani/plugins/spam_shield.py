@@ -20,7 +20,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientResponseError
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
-from pyrogram.types import Message, User
+from pyrogram.types import Chat, Message, User
 
 from anjani import command, filters, listener, plugin, util
 
@@ -72,7 +72,7 @@ class SpamShield(plugin.Plugin):
                 return
 
             for member in message.new_chat_members:
-                await self.check(member, chat.id)
+                await self.check(member, chat)
         except ChannelPrivate:
             return
 
@@ -97,7 +97,7 @@ class SpamShield(plugin.Plugin):
             if not me.can_restrict_members or util.tg.is_staff_or_admin(target):
                 return
 
-            await self.check(target.user, chat.id)
+            await self.check(target.user, chat)
         except (ChannelPrivate, UserNotParticipant):
             return
 
@@ -168,10 +168,10 @@ class SpamShield(plugin.Plugin):
         """Turn on/off SpamShield in chats"""
         await self.db.update_one({"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True)
 
-    async def check(self, user: User, chat_id: int) -> None:
+    async def check(self, user: User, chat: Chat) -> None:
         """Shield checker action."""
         cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
-        if not cas or not sw:
+        if not cas and not sw:
             return
 
         userlink = f"[{user.first_name}](tg://user?id={user.id})"
@@ -188,12 +188,27 @@ class SpamShield(plugin.Plugin):
                 banner += " & [Spam Watch](t.me/SpamWatch)"
                 reason += " & " + sw["reason"]
 
+        if chat.username:
+            chat_link = f"[{chat.id}](https://t.me/{chat.username})"
+        else:
+            chat_link = chat.id
         await asyncio.gather(
-            self.bot.client.kick_chat_member(chat_id, user.id),
+            chat.kick_member(user.id),
             self.bot.client.send_message(
-                chat_id,
-                text=await self.text(chat_id, "banned-text", userlink, user.id, reason, banner),
+                chat.id,
+                text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
                 parse_mode="markdown",
+                disable_web_page_preview=True,
+            ),
+            self.bot.client.send_message(
+                int(self.bot.config.log_channel),
+                text=(
+                    "#LOG #SPAM_SHIELD\n"
+                    f"**User**: {user.mention}\n"
+                    f"**Banned On**: {chat_link}\n"
+                    f"**ID**: {user.id}\n"
+                    f"**Reason**: {reason}"
+                ),
                 disable_web_page_preview=True,
             ),
         )
