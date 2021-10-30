@@ -190,6 +190,7 @@ class SpamShield(plugin.Plugin):
         else:
             chat_link = chat.id
         await asyncio.gather(
+            self.bot.log_stat("banned"),
             chat.kick_member(user.id),
             self.bot.client.send_message(
                 chat.id,

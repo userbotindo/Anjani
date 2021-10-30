@@ -213,6 +213,7 @@ class SpamPrediction(plugin.Plugin):
         if response.size == 0:
             return
 
+        await self.bot.log_stat("predicted")
         probability = response[0][1]
         if probability <= 0.5:
             return
@@ -285,6 +286,7 @@ class SpamPrediction(plugin.Plugin):
             return
 
         if probability >= 0.9:
+            await self.bot.log_stat("spam_detected")
             alert = (
                 f"❗️**SPAM ALERT**❗️\n\n"
                 f"**User:** `{identifier}`\n"
@@ -297,6 +299,7 @@ class SpamPrediction(plugin.Plugin):
                 alert += "\n\nNot enough permission to delete message."
                 reply_id = message.message_id
             else:
+                await self.bot.log_stat("spam_deleted")
                 alert += "\n\nThe message has been deleted."
                 reply_id = None
 
@@ -345,7 +348,7 @@ class SpamPrediction(plugin.Plugin):
             text += f"**Identifier:** `{identifier}`\n"
 
         text += f"**Message Hash:** `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
-        _, msg = await asyncio.gather(
+        _, msg, __, ___ = await asyncio.gather(
             self.db.update_one(
                 {"_id": content_hash},
                 {
@@ -362,6 +365,8 @@ class SpamPrediction(plugin.Plugin):
                 text=text,
                 disable_web_page_preview=True,
             ),
+            self.bot.log_stat("spam_detected"),
+            self.bot.log_stat("predicted"),
         )
         await ctx.respond(
             "Message logged as spam!",
@@ -389,6 +394,7 @@ class SpamPrediction(plugin.Plugin):
         if pred.size == 0:
             return "Prediction failed"
 
+        await self.bot.log_stat("predicted")
         return (
             "**Result**\n\n"
             f"**Is Spam:** {await self._is_spam(content)}\n"

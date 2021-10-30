@@ -141,4 +141,8 @@ class EventDispatcher(MixinBase):
 
         if get_tasks:
             return tasks
+
         return None
+
+    async def log_stat(self: "Anjani", stat: str) -> None:
+        await self.dispatch_event("stat_listen", stat, wait=False)
