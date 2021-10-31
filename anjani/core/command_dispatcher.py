@@ -172,7 +172,18 @@ class CommandDispatcher(MixinBase):
                 constructor_invoke = CommandInvokeError(
                     f"raised from {type(e).__name__}: {str(e)}"
                 ).with_traceback(e.__traceback__)
-                cmd.plugin.log.error("Error in command '%s'", cmd.name, exc_info=constructor_invoke)
+                chat = ctx.chat
+                user = ctx.msg.from_user
+                cmd.plugin.log.error(
+                    "Error in command '%s'\n"
+                    "  Data:\n"
+                    "    • Chat    -> %s (%d)\n"
+                    "    • Invoker -> %s (%d)\n"
+                    "    • Input   -> %s\n",
+                    cmd.name, chat.title if chat else None, chat.id if chat else None,
+                    user.first_name if user else None, user.id if user else None, ctx.input,
+                    exc_info=constructor_invoke
+                )
 
             await self.dispatch_event("command", cmd, message)
         except Exception as e:  # skipcq: PYL-W0703
@@ -180,4 +191,15 @@ class CommandDispatcher(MixinBase):
                 f"raised from {type(e).__name__}: {str(e)}"
             ).with_traceback(e.__traceback__)
             if cmd is not None:
-                cmd.plugin.log.error("Error in command handler", exc_info=constructor_handler)
+                chat = message.chat
+                user = message.from_user
+                cmd.plugin.log.error(
+                    "Error in command handler\n"
+                    "  Data:\n"
+                    "    • Chat    -> %s (%d)\n"
+                    "    • Invoker -> %s (%d)\n"
+                    "    • Input   -> %s\n",
+                    cmd.name, chat.title if chat else None, chat.id if chat else None,
+                    user.first_name if user else None, user.id if user else None, message.command,
+                    exc_info=constructor_handler
+                )
