@@ -52,8 +52,8 @@ class PluginStats(plugin.Plugin):
         if not await self.get("start_time_usec"):
             await self.put("start_time_usec", time_us)
 
-    async def on_stat_listen(self, key: str) -> None:
-        await self.inc(key, 1)
+    async def on_stat_listen(self, key: str, value: int) -> None:
+        await self.inc(key, value)
 
     async def on_message(self, message: Message) -> None:
         stat = "sent" if message.outgoing else "received"
@@ -93,6 +93,7 @@ class PluginStats(plugin.Plugin):
 
         uptime = util.time.usec() - start_time
         resp = await asyncio.gather(
+            self.get("downtime"),
             self.get("received"),
             self.get("processed"),
             self.get("predicted"),
@@ -103,9 +104,14 @@ class PluginStats(plugin.Plugin):
         for index, stat in enumerate(resp):
             if stat is None:
                 resp[index] = 0
-        recv, processed, predicted, spam_detected, spam_deleted, banned = resp
+        downtime, recv, processed, predicted, spam_detected, spam_deleted, banned = resp
+        msg_missed = recv * (downtime / uptime)
+        ban_missed = banned * (downtime / uptime)
         text = f"""<b><i>Stats since last reset</i></b>\n
-<b>Total time elapsed</b>: <b>{util.time.format_duration_us(uptime)}</b>
+<b>Total up-time elapsed</b>: <b>{util.time.format_duration_us(uptime)}</b>
+<b>Total down-time elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
+  • <i>Missed message(s)</i>: <b>{round(msg_missed)}</b>
+  • <i>Missed auto-ban</i>: <b>{round(ban_missed)}</b>
 <b>Messages received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
   • <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
   • <b>{_calc_pct(spam_detected, predicted)}%</b> were detected as spam
@@ -114,5 +120,6 @@ class PluginStats(plugin.Plugin):
   • <b>{_calc_pct(processed, recv)}%</b> from received messages
 <b>Auto banned users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
 """
-        await ctx.respond(text, parse_mode="html")
-        return None
+        async with ctx.action():
+            await ctx.respond(text, parse_mode="html")
+            return None

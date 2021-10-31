@@ -144,5 +144,5 @@ class EventDispatcher(MixinBase):
 
         return None
 
-    async def log_stat(self: "Anjani", stat: str) -> None:
-        await self.dispatch_event("stat_listen", stat, wait=False)
+    async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
+        await self.dispatch_event("stat_listen", stat, value, wait=False)

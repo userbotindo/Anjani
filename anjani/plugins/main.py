@@ -14,13 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import re
-from typing import TYPE_CHECKING, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import bson
 from aiopath import AsyncPath
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from anjani import command, filters, listener, plugin, util
 
@@ -46,6 +47,36 @@ class Main(plugin.Plugin):
             else self.bot.user.first_name
         )
 
+        restart = await self.db.find_one({"_id": 5})
+        if restart is not None:
+            rs_time: Optional[int] = restart.get("time")
+            rs_chat_id: Optional[int] = restart.get("status_chat_id")
+            rs_message_id: Optional[int] = restart.get("status_message_id")
+
+            # Delete data first in case message editing fails
+            await self.db.delete_one({"_id": 5})
+
+            # Bail out if we're missing necessary values
+            if rs_chat_id is None or rs_message_id is None or rs_time is None:
+                return
+
+            duration = util.time.usec() - rs_time
+            duration_str = util.time.format_duration_us(duration)
+            __, status_msg = await asyncio.gather(
+                self.bot.log_stat("downtime", value=duration),
+                self.bot.client.get_messages(rs_chat_id, rs_message_id),
+            )
+            if isinstance(status_msg, List):
+                status_msg = status_msg[0]
+
+            self.bot.log.info(f"Bot downtime {duration_str}")
+            await self.sendToLogChannel(
+                f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.message_id
+            )
+            await status_msg.delete()
+        else:
+            await self.sendToLogChannel("Starting system...")
+
     async def on_stop(self) -> None:
         file = AsyncPath("anjani/anjani.session")
         if not await file.exists():
@@ -54,6 +85,31 @@ class Main(plugin.Plugin):
         await self.db.update_one(
             {"_id": 2}, {"$set": {"session": bson.Binary(await file.read_bytes())}}, upsert=True
         )
+
+        status_msg = await self.sendToLogChannel("Shutdowning system...")
+        self.bot.log.info("Preparing to shutdown...")
+        if not status_msg:
+            return
+
+        await self.db.find_one_and_update(
+            {"_id": 5},
+            {
+                "$set": {
+                    "status_chat_id": status_msg.chat.id,
+                    "status_message_id": status_msg.message_id,
+                    "time": util.time.usec(),
+                }
+            },
+            upsert=True
+        )
+
+    async def sendToLogChannel(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
+        try:
+            return await self.bot.client.send_message(
+                int(self.bot.config.log_channel), text, *args, **kwargs
+            )
+        except AttributeError:
+            pass
 
     async def help_builder(self, chat_id: int) -> List[List[InlineKeyboardButton]]:
         """Build the help button"""
