@@ -158,7 +158,10 @@ class Users(plugin.Plugin):
         text += f"**DC ID: **`{user.dc_id if user.dc_id else 'N/A'}`\n"
         text += f"**First Name: **{user.first_name}\n"
         if user.last_name:
-            text += f"**Last Name: **{user.last_name}\n"
+            text += f"**Last Name: **`{user.last_name}`\n"
+
+        if user.is_scam:
+            text += f"**Warning this user is Scammer:** `{user.is_scam}`\n"
         if user.username:
             text += f"**Username: **@{user.username}\n"
         try:
