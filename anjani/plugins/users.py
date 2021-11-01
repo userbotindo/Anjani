@@ -160,8 +160,6 @@ class Users(plugin.Plugin):
         if user.last_name:
             text += f"**Last Name: **`{user.last_name}`\n"
 
-        if user.is_scam:
-            text += f"**Warning this user is Scammer:** `{user.is_scam}`\n"
         if user.username:
             text += f"**Username: **@{user.username}\n"
         try:
@@ -178,6 +176,9 @@ class Users(plugin.Plugin):
             text += "\nThis person is one of my **Staff**!\n"
         elif user.is_self:
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
+
+        if user.is_scam:
+            text += f"**\n⚠️Warning this user is flagged as a scammer by Telegram⚠️**\n"
 
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:
