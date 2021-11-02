@@ -163,6 +163,10 @@ class EventDispatcher(MixinBase):
 
         try:
             while True:
+                # TO-DO
+                # 1. Change qts to 0, because we want to get all missed events
+                #    so we have a proper loop going on until DifferenceEmpty
+                # 2. __state proper handling
                 diff = await self.client.send(
                     functions.updates.GetDifference(pts=pts, date=date, qts=-1)
                 )
@@ -173,8 +177,8 @@ class EventDispatcher(MixinBase):
                         state: Any = diff.intermediate_state
 
                     pts, date = state.pts, state.date
-                    users = {u.id: u for u in diff.users}  # type: ignore
-                    chats = {c.id: c for c in diff.chats}  # type: ignore
+                    users = {u.id: u for u in diff.users}
+                    chats = {c.id: c for c in diff.chats}
 
                     if diff.new_messages:
                         for message in diff.new_messages:
