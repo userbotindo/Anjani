@@ -154,18 +154,38 @@ class SpamShield(plugin.Plugin):
         data = await self.federation_db.find_one({"_id": "AnjaniSpamShield"})
         return str(user_id) in data["banned"] if data else False
 
+    async def ban(self, chat: Chat, user: User, reason: str) -> None:
+        fullname = user.first_name + user.last_name if user.last_name else user.first_name
+        await asyncio.gather(
+            chat.kick_member(user.id),
+            self.federation_db.update_one(
+                {"_id": "AnjaniSpamShield"},
+                {
+                    "$set": {
+                        f"banned.{user.id}": {
+                            "name": fullname,
+                            "reason": "Automated fban " + reason,
+                            "time": datetime.now(),
+                        }
+                    }
+                },
+            ),
+        )
+
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off SpamShield in chats"""
         await self.db.update_one({"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True)
 
     async def check(self, user: User, chat: Chat) -> None:
         """Shield checker action."""
+        if user.is_scam:
+            return await self.ban(chat, user, "Marked scammer by Telegram")
+
         cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
         if not cas and not sw:
             return
 
         userlink = f"[{user.first_name}](tg://user?id={user.id})"
-        fullname = user.first_name + user.last_name if user.last_name else user.first_name
         chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
         reason = ""
         banner = ""
@@ -182,17 +202,7 @@ class SpamShield(plugin.Plugin):
 
         await asyncio.gather(
             self.bot.log_stat("banned"),
-            chat.kick_member(user.id),
-            self.federation_db.update_one(
-                {"_id": "AnjaniSpamShield"},
-                {"$set": {
-                    f"banned.{user.id}": {
-                        "name": fullname,
-                        "reason": "Automated fban " + reason,
-                        "time": datetime.now(),
-                    }
-                }},
-            ),
+            self.ban(chat, user, reason),
             self.bot.client.send_message(
                 chat.id,
                 text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
