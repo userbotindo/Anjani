@@ -180,16 +180,14 @@ class EventDispatcher(MixinBase):
                     users = {u.id: u for u in diff.users}
                     chats = {c.id: c for c in diff.chats}
 
-                    if diff.new_messages:
-                        for message in diff.new_messages:
-                            self.client.dispatcher.updates_queue.put_nowait((
-                                raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
-                                users, chats,
-                            ))
+                    for message in diff.new_messages:
+                        self.client.dispatcher.updates_queue.put_nowait((
+                            raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
+                            users, chats,
+                        ))
 
-                    if diff.other_updates:
-                        for update in diff.other_updates:
-                            self.client.dispatcher.updates_queue.put_nowait((update, users, chats))
+                    for update in diff.other_updates:
+                        self.client.dispatcher.updates_queue.put_nowait((update, users, chats))
                 else:
                     if isinstance(diff, raw.types.updates.DifferenceEmpty):
                         date = diff.date
