@@ -2,7 +2,9 @@ import asyncio
 import bisect
 from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Set
 
+from pyrogram import raw
 from pyrogram.filters import Filter
+from pyrogram.raw import functions
 from pyrogram.types import (
     CallbackQuery,
     InlineQuery,
@@ -26,6 +28,9 @@ EventType = (
 class EventDispatcher(MixinBase):
     # Initialized during instantiation
     listeners: MutableMapping[str, MutableSequence[Listener]]
+
+    # Initialized runtime
+    __state: tuple[int, int]
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         # Initialize listener map
@@ -143,6 +148,56 @@ class EventDispatcher(MixinBase):
             return tasks
 
         return None
+
+    async def dispatch_missed_events(self: "Anjani") -> None:
+        if not self.loaded or self._TelegramBot__running:
+            return
+
+        data = await self.db.get_collection("SESSION").find_one({"_id": 2})
+        if not data:
+            return
+
+        pts, date = data.get("pts"), data.get("date")
+        if not pts or not date:
+            return
+
+        try:
+            while True:
+                diff = await self.client.send(
+                    functions.updates.GetDifference(pts=pts, date=date, qts=-1)
+                )
+                if isinstance(diff, (raw.types.updates.Difference, raw.types.updates.DifferenceSlice)):
+                    if isinstance(diff, raw.types.updates.Difference):
+                        state: Any = diff.state
+                    else:
+                        state: Any = diff.intermediate_state
+
+                    pts, date = state.pts, state.date
+                    users = {u.id: u for u in diff.users}  # type: ignore
+                    chats = {c.id: c for c in diff.chats}  # type: ignore
+
+                    if diff.new_messages:
+                        for message in diff.new_messages:
+                            self.client.dispatcher.updates_queue.put_nowait((
+                                raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
+                                users, chats,
+                            ))
+
+                    if diff.other_updates:
+                        for update in diff.other_updates:
+                            self.client.dispatcher.updates_queue.put_nowait((update, users, chats))
+                else:
+                    if isinstance(diff, raw.types.updates.DifferenceEmpty):
+                        date = diff.date
+                        self.log.debug(date)
+                    elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                        pts = diff.pts
+                        self.log.debug(pts)
+                    break
+        except (ConnectionError, OSError, asyncio.CancelledError):
+            pass
+        finally:
+            self.__state = (pts, date)
 
     async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
         await self.dispatch_event("stat_listen", stat, value, wait=False)

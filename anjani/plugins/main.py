@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import bson
 from aiopath import AsyncPath
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
+from pyrogram.raw.functions.updates import GetState
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from anjani import command, filters, listener, plugin, util
@@ -82,8 +83,19 @@ class Main(plugin.Plugin):
         if not await file.exists():
             return
 
+        data = await self.bot.client.send(GetState())
         await self.db.update_one(
-            {"_id": 2}, {"$set": {"session": bson.Binary(await file.read_bytes())}}, upsert=True
+            {"_id": 2},
+            {
+                "$set": {
+                    "session": bson.Binary(await file.read_bytes()),
+                    "date": data.date,
+                    "pts": data.pts,
+                    "qts": data.qts,
+                    "seq": data.seq,
+                }
+            },
+            upsert=True,
         )
 
         status_msg = await self.sendToLogChannel("Shutdowning system...")

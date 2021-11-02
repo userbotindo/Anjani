@@ -141,6 +141,10 @@ class TelegramBot(MixinBase):
 
         self.log.info("Bot is ready")
 
+        self.log.info("Catching up on missed events")
+        await self.dispatch_missed_events()
+        self.log.info("Finished catching up")
+
         # Dispatch final late start event
         await self.dispatch_event("started")
 
