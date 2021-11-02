@@ -178,11 +178,8 @@ class SpamShield(plugin.Plugin):
 
     async def check(self, user: User, chat: Chat) -> None:
         """Shield checker action."""
-        if user.is_scam:
-            return await self.ban(chat, user, "Marked scammer by Telegram")
-
         cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
-        if not cas and not sw:
+        if not cas and not sw and not user.is_scam:
             return
 
         userlink = f"[{user.first_name}](tg://user?id={user.id})"
@@ -199,6 +196,9 @@ class SpamShield(plugin.Plugin):
             else:
                 banner += " & [Spam Watch](t.me/SpamWatch)"
                 reason += " & " + sw["reason"]
+        if user.is_scam:  # overwrite banner and reason if user is flagged by telegram
+            banner = "Telegram Server"
+            reason = "Flagged as a scammer."
 
         await asyncio.gather(
             self.bot.log_stat("banned"),
