@@ -100,18 +100,16 @@ class PluginStats(plugin.Plugin):
             self.get("spam_detected"),
             self.get("spam_deleted"),
             self.get("banned"),
+            self.get("missed_events")
         )
         for index, stat in enumerate(resp):
             if stat is None:
                 resp[index] = 0
-        downtime, recv, processed, predicted, spam_detected, spam_deleted, banned = resp
-        msg_missed = recv * (downtime / uptime)
-        ban_missed = banned * (downtime / uptime)
+        downtime, recv, processed, predicted, spam_detected, spam_deleted, banned, missed_events = resp
         text = f"""<b><i>Stats since last reset</i></b>\n
-<b>Total up-time elapsed</b>: <b>{util.time.format_duration_us(uptime)}</b>
-<b>Total down-time elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
-  • <i>Missed message(s)</i>: <b>{round(msg_missed)}</b>
-  • <i>Missed auto-ban</i>: <b>{round(ban_missed)}</b>
+<b>Total Uptime elapsed</b>: <b>{util.time.format_duration_us(uptime)}</b>
+<b>Total Downtime elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
+  • <i>Missed events</i>: <b>{round(missed_events)}</b>
 <b>Messages received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
   • <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
   • <b>{_calc_pct(spam_detected, predicted)}%</b> were detected as spam

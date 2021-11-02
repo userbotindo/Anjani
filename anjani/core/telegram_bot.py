@@ -66,8 +66,7 @@ class TelegramBot(MixinBase):
             self.owner = 0
 
         # Load session from database
-        db = self.db.get_collection("SESSION")
-        data = await db.find_one({"_id": 2})
+        data = await self.db.get_collection("SESSION").find_one({"_id": 2})
         file = AsyncPath("anjani/anjani.session")
         if data and not await file.exists():
             self.log.info("Loading session from database")
@@ -117,8 +116,7 @@ class TelegramBot(MixinBase):
         self.devs.add(self.owner)
 
         # Update staff from db
-        db = self.db.get_collection("STAFF")
-        async for doc in db.find():
+        async for doc in self.db.get_collection("STAFF").find():
             if doc["rank"] == "dev":
                 self.devs.add(doc["_id"])
             self.staff.add(doc["_id"])
@@ -126,8 +124,7 @@ class TelegramBot(MixinBase):
         util.tg.STAFF.update(self.staff)
 
         # Update Language setting chat from db
-        db = self.db.get_collection("LANGUAGE")
-        async for data in db.find():
+        async for data in self.db.get_collection("LANGUAGE").find():
             self.chats_languages[data["chat_id"]] = data["language"]
         # Load text from language file
         async for language_file in getLangFile():

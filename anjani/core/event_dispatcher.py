@@ -186,6 +186,8 @@ class EventDispatcher(MixinBase):
                     if diff.other_updates:
                         for update in diff.other_updates:
                             self.client.dispatcher.updates_queue.put_nowait((update, users, chats))
+
+                    await self.log_stat("missed_events", value=len(diff.new_messages) + len(diff.other_updates))
                 else:
                     if isinstance(diff, raw.types.updates.DifferenceEmpty):
                         date = diff.date
