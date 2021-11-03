@@ -185,7 +185,7 @@ class CommandDispatcher(MixinBase):
                     exc_info=constructor_invoke
                 )
 
-            await self.dispatch_event("command", cmd, message)
+            await self.dispatch_event("command", ctx, cmd)
         except Exception as e:  # skipcq: PYL-W0703
             constructor_handler = CommandHandlerError(
                 f"raised from {type(e).__name__}: {str(e)}"

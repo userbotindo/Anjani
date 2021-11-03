@@ -191,10 +191,12 @@ class EventDispatcher(MixinBase):
                 else:
                     if isinstance(diff, raw.types.updates.DifferenceEmpty):
                         date = diff.date
-                        self.log.debug(date)
+                        break
                     elif isinstance(diff, raw.types.updates.DifferenceTooLong):
                         pts = diff.pts
                         self.log.debug(pts)
+                        continue
+
                     break
         except (ConnectionError, OSError, asyncio.CancelledError):
             pass
