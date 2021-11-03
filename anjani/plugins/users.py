@@ -106,7 +106,7 @@ class Users(plugin.Plugin):
             return
 
         tasks = []
-        set_content = {"username": user.username}
+        set_content = {"username": user.username, "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
 
         if chat.type == "private":
