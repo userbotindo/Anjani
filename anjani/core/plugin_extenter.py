@@ -62,7 +62,7 @@ class PluginExtender(MixinBase):
         self._load_all_from_metaplug(custom_plugins.subplugins, comment="custom")
         self.log.info("All plugins loaded.")
 
-    def unload_all_pluginss(self: "Anjani") -> None:
+    def unload_all_plugins(self: "Anjani") -> None:
         self.log.info("Unloading plugins...")
 
         # Can't modify while iterating, so collect a list first
