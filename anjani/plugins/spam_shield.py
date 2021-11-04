@@ -52,10 +52,7 @@ class SpamShield(plugin.Plugin):
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
         setting = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
-        if not setting:
-            return {}
-
-        return {self.name: setting}
+        return {self.name: setting} if setting else {}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)

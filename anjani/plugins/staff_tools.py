@@ -75,7 +75,7 @@ class Staff(plugin.Plugin):
     @command.filters(filters.staff_only)
     async def cmd_leavechat(self, ctx: command.Context) -> str:
         """leave the given chat_id"""
-        if not ctx.args or ctx.input:
+        if not ctx.args or not ctx.input:
             return "Give me the chat id!"
 
         try:

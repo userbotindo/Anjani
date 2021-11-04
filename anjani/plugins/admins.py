@@ -91,15 +91,14 @@ class Admins(plugin.Plugin):
         admins = ""
 
         async for admin in util.tg.get_chat_admins(ctx.bot.client, chat.id):
-            name = (
-                (admin.user.first_name + " " + admin.user.last_name)
-                 if admin.user.last_name
-                 else admin.user.first_name
-            )
             if admin.status == "creator":
-                admins += f"• [{name}](tg://user?id={admin.user.id}) (**Creator**)\n"
+                admins += f"• {util.tg.mention(admin.user)} (**Creator**)\n"
+            elif admin.user.id == self.bot.uid:
+                admins += f"• {util.tg.mention(admin.user)} (**Me**)\n"
+            elif admin.user.id == ctx.author.id:
+                admins += f"• {util.tg.mention(admin.user)} (**You**)\n"
             else:
-                admins += f"• [{name}](tg://user?id={admin.user.id})\n"
+                admins += f"• {util.tg.mention(admin.user)}\n"
 
         return admins
 
