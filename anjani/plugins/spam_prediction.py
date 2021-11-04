@@ -23,6 +23,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
+    FloodWait,
     MessageDeleteForbidden,
     MessageNotModified,
     UserAdminInvalid,
@@ -173,17 +174,24 @@ class SpamPrediction(plugin.Plugin):
                 ),
             ],
         ]
-        old_btn = query.message.reply_markup.inline_keyboard
-        if len(old_btn) > 1:
-            button.append(old_btn[1])
+
+        if isinstance(query.message.reply_markup, InlineKeyboardMarkup):
+            old_btn = query.message.reply_markup.inline_keyboard
+            if len(old_btn) > 1:
+                button.append(old_btn[1])
 
         for i in data["msg_id"]:
             try:
                 await self.bot.client.edit_message_reply_markup(
                     -1001314588569, i, InlineKeyboardMarkup(button)
                 )
-            except MessageNotModified:
-                pass
+            except (FloodWait, MessageNotModified):
+                await query.answer(
+                    "You already voted this content, "
+                    "this happened because there are multiple same of contents exists.",
+                    show_alert=True
+                )
+
         await query.answer()
 
     @listener.filters(filters.group)
