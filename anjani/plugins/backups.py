@@ -102,6 +102,14 @@ class Backups(plugin.Plugin):
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
-        await self.bot.dispatch_event("plugin_restore", chat.id, data)
+        tasks = await self.bot.dispatch_event(
+            "plugin_restore", chat.id, data, wait=False, get_tasks=True
+        )
+        for task in tasks or []:
+            try:
+                await task
+            except KeyError:
+                continue
+
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
         return None
