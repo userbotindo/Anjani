@@ -1,5 +1,6 @@
 import asyncio
 import bisect
+from hashlib import sha256
 from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Set
 
 from pyrogram import raw
@@ -153,7 +154,9 @@ class EventDispatcher(MixinBase):
         if not self.loaded or self._TelegramBot__running:
             return
 
-        data = await self.db.get_collection("SESSION").find_one({"_id": 2})
+        data = await self.db.get_collection("SESSION").find_one(
+            {"_id": sha256(self.config["api_id"].encode()).hexdigest()}
+        )
         if not data:
             return
 

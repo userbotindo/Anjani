@@ -16,6 +16,7 @@
 
 import asyncio
 import re
+from hashlib import sha256
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import bson
@@ -85,7 +86,7 @@ class Main(plugin.Plugin):
 
         data = await self.bot.client.send(GetState())
         await self.db.update_one(
-            {"_id": 2},
+            {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
             {
                 "$set": {
                     "session": bson.Binary(await file.read_bytes()),

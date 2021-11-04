@@ -1,6 +1,7 @@
 import asyncio
 import signal
 from functools import partial
+from hashlib import sha256
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt
@@ -66,7 +67,9 @@ class TelegramBot(MixinBase):
             self.owner = 0
 
         # Load session from database
-        data = await self.db.get_collection("SESSION").find_one({"_id": 2})
+        data = await self.db.get_collection("SESSION").find_one(
+            {"_id": sha256(str(api_id).encode()).hexdigest()}
+        )
         file = AsyncPath("anjani/anjani.session")
         if data and not await file.exists():
             self.log.info("Loading session from database")
