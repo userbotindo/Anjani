@@ -35,7 +35,10 @@ class Restrictions(plugin.Plugin):
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
         data = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
-        return {self.name: data["warn_list"]} if data else {} 
+        try:
+            return {self.name: data["warn_list"]} if data else {}
+        except KeyError:
+            return {} 
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one(
