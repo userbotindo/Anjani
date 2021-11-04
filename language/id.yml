@@ -359,6 +359,25 @@ ban-done: "**{}** terblokir!"
 ban-reason: "\nAlasan: {}"
 unban-no-user: Berikan saya pengguna untuk diblokir.
 unban-done: "Blokir **{}** dihapus..."
+warn-keyboard-text: Hapus peringatan.
+warn-keyboard-not-admins: Kamu tidak berhak melakukan hal tersebut.
+warn-keyboard-removed: Peringatan ini sudah dihapus.
+warn-keyboard-user-max: Pengguna sudah melampaui batas peringatan.
+warn-removed: |
+  Admin {} telah menghapus peringatan untuk {}.
+warn-user-max: Mencapai maksimum peringatan, {} telah dikeluarkan dari group.
+warn-message: |
+  Pengguna {} telah diperingatkan '{}/{}'.\n\nAlasan: __{}__
+warn-message-list: "Pengguna {} mempunyai '{}/{}' peringatan.\nAlasannya:\n{}"
+warn-no-user: Berikan saya pengguna untuk diperingatkan.
+warn-default-reason: Tidak diberikan alasan.
+warn-no-data: Pengguna {} bersih dari peringatan.
+warn-limit-no-input: Berikan saya batas peringatan setelah perintah.
+warn-limit-invalid-input: Kesalahan input, hanya masukkan nomor dan lebih dari 0.
+warn-limit-done: Batas peringatan telah diubah menjadi '{}'.
+rmwarn-no-user: Siapa yang harus saya hapus peringatannya?
+rmwarn-done: Pengguna {} telah dihapus peringatan terakhirnya.
+rmwarn-admin: Seorang administrator tidak seharusnya mempunyai peringatan 🤨
 #endregion
 #region rules
 rules-button: Aturan

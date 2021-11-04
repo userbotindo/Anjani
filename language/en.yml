@@ -361,6 +361,25 @@ ban-done: "Banned **{}**!"
 ban-reason: "\nReason: {}"
 unban-no-user: give me a user to unban
 unban-done: "**{}** Unbanned!"
+warn-keyboard-text: Remove warn.
+warn-keyboard-not-admins: You are not allowed to do that.
+warn-keyboard-removed: This warn is already removed.
+warn-keyboard-user-max: User already exceed the warn threshold.
+warn-removed: |
+  Admin {} removed this warn for {}.
+warn-user-max: Max warn exceed, {} has been kicked from group.
+warn-message: |
+  User {} has been warned '{}/{}'.\n\nReason: __{}__
+warn-message-list: "User {} have '{}/{}' warns.\nThe reasons are:\n{}"
+warn-no-user: Give me a user to warn.
+warn-default-reason: No reason given.
+warn-no-data: User {} is clean from any warn.
+warn-limit-no-input: Please provide limit after the command text.
+warn-limit-invalid-input: Invalid input, only accept number and greater than 0.
+warn-limit-done: Warn threshold changed to '{}'.
+rmwarn-no-user: Who should i remove the warn?
+rmwarn-done: User {} latest warn has been removed.
+rmwarn-admin: An administrator shouldn't be have warns 🤨
 #endregion
 #region rules
 rules-button: Rules
