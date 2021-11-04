@@ -81,11 +81,16 @@ class Reporting(plugin.Plugin):
             return
 
         reply_text = await self.text(chat.id, "report-notif", util.tg.mention(reported_user))
+        slots = 4096 - len(reply_text)
         async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):
-                reply_text += f"<a href='tg://user?id={admin.user.id}'>\u200B</a>"
+                reply_text += f"[\u200b](tg://user?id={admin.user.id})"
 
-        await message.reply_text(reply_text, parse_mode="html")
+            slots -= 1
+            if slots == 0:
+                break
+
+        await message.reply_text(reply_text)
 
     async def setting(self, chat_id: int, is_private: bool, setting: bool) -> None:
         if is_private:
