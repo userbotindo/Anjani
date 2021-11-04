@@ -11,11 +11,13 @@ from typing import (
     Sequence,
     Union,
 )
+from typing_extensions import final
 
 import pyrogram
 from pyrogram.filters import Filter
 
 from anjani.action import BotAction
+from anjani.util.tg import get_text
 from anjani.util.types import CustomFilter
 
 if TYPE_CHECKING:
@@ -264,3 +266,26 @@ class Context:
                 *"choose_contact"* for contacts, *"playing"* for games, *"speaking"* for speaking in group calls.
         """
         return BotAction(self, action)
+
+    @final
+    def get_text(
+        self, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
+    ) -> Coroutine[Any, Any, str]:
+        """Bound method *get_text* of :obj:`~Anjani.plugin.Plugin`.
+
+        Parse the string with user language setting.
+
+        Parameters:
+            text_name (`str`):
+                String name to parse. The string is parsed from YAML documents.
+            *args (`any`, *Optional*):
+                One or more values that should be formatted and inserted in the string.
+                The value should be in order based on the language string placeholder.
+            noformat (`bool`, *Optional*):
+                If exist and True, the text returned will not be formated.
+                Default to False.
+            **kwargs (`any`, *Optional*):
+                One or more keyword values that should be formatted and inserted in the string.
+                based on the keyword on the language strings.
+        """
+        return get_text(self.bot, self.chat.id, text_name, *args, noformat=noformat, **kwargs)
