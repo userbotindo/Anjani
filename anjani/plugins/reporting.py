@@ -80,7 +80,7 @@ class Reporting(plugin.Plugin):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
 
-        reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
+        reply_text = await self.text(chat.id, "report-notif", util.tg.mention(reported_user))
         async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):
                 reply_text += f"<a href='tg://user?id={admin.user.id}'>\u200B</a>"

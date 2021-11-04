@@ -162,10 +162,7 @@ class Users(plugin.Plugin):
 
         if user.username:
             text += f"**Username: **@{user.username}\n"
-        try:
-            text += f"**Permanent user link: **{user.mention(user.first_name, style='md')}\n"
-        except AttributeError:
-            text += f"**Permanent user link: **{user.mention('Here', style='md')}\n"
+        text += f"**Permanent user link: **{util.tg.mention(user)}\n"
         text += (
             "**Number of profile pics: **"
             f"`{await self.bot.client.get_profile_photos_count(user.id)}`\n"

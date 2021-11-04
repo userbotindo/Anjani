@@ -167,7 +167,7 @@ class Federation(plugin.Plugin):
                     await self.text(
                         chat.id,
                         "fed-autoban",
-                        user.mention,
+                        util.tg.mention(user),
                         data["fed_name"],
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
@@ -323,7 +323,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Promotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {user.mention}\n"
+                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -362,7 +362,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Demotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {user.mention}\n"
+                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -396,7 +396,7 @@ class Federation(plugin.Plugin):
             "fed-info-text",
             data["_id"],
             data["name"],
-            owner.mention,
+            util.tg.mention(owner),
             len(data.get("admins", [])),
             len(data.get("banned", [])),
             len(data.get("chats", [])),
@@ -425,7 +425,7 @@ class Federation(plugin.Plugin):
         if isinstance(owner, List):
             owner = owner[0]
 
-        text = await self.text(chat.id, "fed-admin-text", data["name"], owner.mention)
+        text = await self.text(chat.id, "fed-admin-text", data["name"], util.tg.mention(owner))
         if len(data.get("admins", [])) != 0:
             text += "\nAdmins:\n"
             admins = []
@@ -434,7 +434,7 @@ class Federation(plugin.Plugin):
 
             admins = await self.bot.client.get_users(admins)
             for admin in admins:
-                text += f" • {admin.mention}\n"
+                text += f" • {util.tg.mention(admin)}\n"
         else:
             text += "\n" + await self.text(chat.id, "fed-no-admin")
 
@@ -491,8 +491,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-info-update",
                 data["name"],
-                banner.mention,
-                user.mention,
+                util.tg.mention(banner),
+                util.tg.mention(user),
                 user.id,
                 data["banned"][str(user.id)]["reason"],
                 reason,
@@ -502,8 +502,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-info",
                 data["name"],
-                banner.mention,
-                user.mention,
+                util.tg.mention(banner),
+                util.tg.mention(user),
                 user.id,
                 reason,
             )
@@ -558,9 +558,13 @@ class Federation(plugin.Plugin):
             return await self.text(chat.id, "fed-user-not-banned")
 
         await self.unfban_user(data["_id"], user.id)
-
         text = await self.text(
-            chat.id, "fed-unban-info", data["name"], banner.mention, user.mention, user.id
+            chat.id,
+            "fed-unban-info",
+            data["name"],
+            util.tg.mention(banner),
+            util.tg.mention(user),
+            user.id
         )
         for chat in data["chats"]:
             try:

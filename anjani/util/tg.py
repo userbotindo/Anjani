@@ -1,5 +1,6 @@
 import asyncio
 import codecs
+import html
 import re
 from enum import IntEnum, unique
 from functools import wraps
@@ -27,6 +28,7 @@ from pyrogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    User,
 )
 from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
@@ -180,6 +182,16 @@ def truncate(text: str) -> str:
 
 def is_staff_or_admin(target: Union[ChatMember, _types.MemberPermissions]) -> bool:
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
+
+
+def mention(user: User) -> str:
+    pattern = re.compile(r"<[a-z/][\s\S]*>")
+    link = "[{name}](tg://user?id={id})"
+    return (
+        link.format(name=html.escape(user.first_name), id=user.id)
+        if pattern.search(user.first_name) else
+        link.format(name=user.first_name, id=user.id)
+    )
 
 
 # { Permission

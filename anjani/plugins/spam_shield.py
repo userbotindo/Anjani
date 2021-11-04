@@ -182,7 +182,7 @@ class SpamShield(plugin.Plugin):
         if not cas and not sw and not user.is_scam:
             return
 
-        userlink = f"[{user.first_name}](tg://user?id={user.id})"
+        userlink = util.tg.mention(user)
         chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
         reason = ""
         banner = ""
@@ -213,7 +213,7 @@ class SpamShield(plugin.Plugin):
                 int(self.bot.config.log_channel),
                 text=(
                     "#LOG #SPAM_SHIELD\n"
-                    f"**User**: {user.mention}\n"
+                    f"**User**: {userlink}\n"
                     f"**Banned On**: {chat_link}\n"
                     f"**ID**: {user.id}\n"
                     f"**Reason**: {reason}"
