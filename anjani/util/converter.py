@@ -3,7 +3,6 @@ from functools import partial
 from types import FunctionType
 from typing import (
     Any,
-    Callable,
     Dict,
     List,
     MutableMapping,
@@ -186,6 +185,7 @@ async def transform(ctx: Context, param: inspect.Parameter, arg: str) -> Any:
     else:
         if module is not None and module.startswith("pyrogram."):
             converter = CONVERTER_MAP.get(converter, converter)
+
     if inspect.isclass(converter) and issubclass(converter, Converter):
         try:
             return await converter()(ctx, arg)
@@ -198,7 +198,10 @@ async def transform(ctx: Context, param: inspect.Parameter, arg: str) -> Any:
         except BadBoolArgument as err:
             return _get_default(param, err)
 
-    return converter(arg)
+    try:
+        return converter(arg)
+    except ValueError as err:
+        return _get_default(param, err)
 
 
 async def parse_arguments(
