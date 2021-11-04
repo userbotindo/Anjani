@@ -343,11 +343,17 @@ restriction-help: |
   People spamming, trolling or interfering need to be restricted.
   With this plugin group admins can easily restrict violating members.\n
   **Admin Only:**
-  × /kick <userhandle> [reason]: Kicks a user, (via handle, or reply)
+  × /kick <userhandle> [reason]: Kicks a user. (via handle, or reply)
   × /ban <userhandle> [reason]: Bans a user. (via handle, or reply)
   × /unban <userhandle>: Unbans a user. (via handle, or reply)
   × /kickme: If you're bored in the group? let the bot kick yourself.
-  \nhandle can be a user_id's or username
+  × /warn <userhandle> [reason]: Warn a user. (via handle, or reply)
+  × /warnlimit <limit>: Set the warn threshold.
+  × /rmwarn <userhandle>: Remove latest warn user. (via handle, or reply)
+
+  **User command:**
+  × /warns: Check a user warn data. (can reply)
+  
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
 kick-done: "**{}** Kicked!"

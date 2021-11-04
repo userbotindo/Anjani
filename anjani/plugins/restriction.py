@@ -19,7 +19,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 
 import bson
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
-from pyrogram.types import CallbackQuery, Chat, InlineKeyboardButton, InlineKeyboardMarkup, User
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, User
 
 from anjani import command, filters, listener, plugin, util
 

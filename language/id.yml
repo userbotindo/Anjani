@@ -341,10 +341,16 @@ restriction-help: |
   Dengan perintah ini, Administrator grup dapat dengan mudah membatasi anggota yang melanggar.
   Berikut ini adalah daftar perintah yang dapat kamu gunakan.\n
   **Hanya Administrator yang bisa menggunakan:**
-  × /kick <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
-  × /ban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
+  × /kick <Melalui id pengguna atau username> [alasan]: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
+  × /ban <Melalui id pengguna atau username> [alasan]: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
   × /kickme: Gunakan perintah ini, jika anda ingin ditendang dari grup!!
+  × /warn <Melalui id pengguna atau username> [alasan]: Peringati pengguna. (Melalui id pengguna, username atau balas pesan orang yang akan diperingati)
+  × /warnlimit <batas>: Setel batas peringatan.
+  × /rmwarn <Melalui id pengguna atau username>: Hapus peringatan terakhir pengguna. (Melalui id pengguna, username atau balas pesan orang yang akan dihapus peringatan terakhirnya)
+
+  **Perintah pengguna:**
+  × /warns: Periksa data peringatan pengguna. (bisa balas pesan orang yang akan diperiksa)
 
 no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
