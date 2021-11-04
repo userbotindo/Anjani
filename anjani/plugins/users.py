@@ -56,6 +56,7 @@ class Users(plugin.Plugin):
             return self.bot.loop.create_task(
                 self.chats_db.update_one({"chat_id": channel.id}, {"$set": content}, upsert=True)
             )
+
         return self.bot.loop.create_task(_do_nothing())
 
     async def build_user_task(self, user: User) -> asyncio.Task:
@@ -151,7 +152,7 @@ class Users(plugin.Plugin):
             *tasks,
         )
 
-    async def _user_info(self, ctx: command.Context, user: User):
+    async def _user_info(self, ctx: command.Context, user: User) -> Optional[str]:
         """User Info"""
         text = f"**{'Bot' if user.is_bot else 'User'} Info**\n\n"
         text += f"**ID:** `{user.id}`\n"
@@ -203,7 +204,9 @@ class Users(plugin.Plugin):
         text += f"\nI've seen them on {len(data['chats'])} chats."
         return text
 
-    async def _chat_info(self, ctx: command.Context, chat: Union[Chat, ChatPreview]):
+    async def _chat_info(
+        self, ctx: command.Context, chat: Union[Chat, ChatPreview]
+    ) -> Optional[str]:
         """Chat Info"""
         text = "**Chat Info**\n\n"
         if isinstance(chat, ChatPreview):
@@ -235,6 +238,7 @@ class Users(plugin.Plugin):
                 )
                 await file.unlink()
             return None
+
         return text
 
     async def _old_chat_info(self, data: MutableMapping[str, Any]) -> str:
@@ -245,7 +249,7 @@ class Users(plugin.Plugin):
             text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
         return text
 
-    async def cmd_info(self, ctx: command.Context, args: Optional[str] = None):
+    async def cmd_info(self, ctx: command.Context, args: Optional[str] = None) -> Optional[str]:
         """Fetch a telegram peer data"""
         if not args:
             if ctx.msg.reply_to_message:
@@ -308,5 +312,7 @@ class Users(plugin.Plugin):
                     chat = await self.chats_db.find_one({"chat_id": uid})
                     if chat:
                         return await self._old_chat_info(chat)
+        except KeyError:  # Rare case username expired, so make it recursively
+            return await self.cmd_info(ctx, args)
 
         return await self.text(ctx.chat.id, "err-peer-invalid")
