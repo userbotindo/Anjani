@@ -18,7 +18,7 @@ import asyncio
 from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional
 
-from aiohttp import ClientResponseError
+from aiohttp import ClientOSError, ClientResponseError
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -136,13 +136,25 @@ class SpamShield(plugin.Plugin):
 
     async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""
-        async with self.bot.http.get(f"https://api.cas.chat/check?user_id={user.id}") as res:
-            data = await res.json()
-            if data["ok"]:
-                reason = f"https://cas.chat/query?u={user.id}"
-                return reason
+        retry = 0
+        while True:
+            try:
+                async with self.bot.http.get(
+                    f"https://api.cas.chat/check?user_id={user.id}"
+                ) as res:
+                    data = await res.json()
+                    if data["ok"]:
+                        reason = f"https://cas.chat/query?u={user.id}"
+                        return reason
 
-            return None
+                    return None
+            except ClientOSError:
+                if retry == 10:
+                    raise
+
+                retry += 1
+                self.log.debug(f"Retrying CAS check for {user.id}")
+                continue
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
