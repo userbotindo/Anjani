@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
 from datetime import datetime
 from typing import ClassVar, Optional
 
@@ -30,10 +29,13 @@ class Purges(plugin.Plugin):
     @command.filters(filters.can_delete)
     async def cmd_del(self, ctx: command.Context) -> Optional[str]:
         """Delete replied message"""
-        if not ctx.msg.reply_to_message:
+        reply_msg = ctx.msg.reply_to_message
+        if not reply_msg:
             return await self.text(ctx.chat.id, "error-reply-to-message")
 
-        await asyncio.gather(ctx.msg.reply_to_message.delete(), ctx.msg.delete())
+        await self.bot.client.delete_messages(
+            ctx.chat.id, [reply_msg.message_id, ctx.msg.message_id]
+        )
         return None
 
     @command.filters(filters.can_delete, aliases=["prune"])
