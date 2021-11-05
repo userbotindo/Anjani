@@ -100,7 +100,6 @@ class Users(plugin.Plugin):
 
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Hanle user that sent a callback query"""
-        print(query)
         user = query.from_user
         set_content = {"username": user.username, "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
