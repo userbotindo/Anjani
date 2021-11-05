@@ -297,6 +297,7 @@ no-notes: "`No notes saved in this chat!`"
 notes-del-noargs: Sent me a note names to delete
 notes-not-exist: No such notes exist in this chat!
 notes-deleted: "Note `{}` deleted."
+notes-expired: FileID expired, this happened because the file gets removed(cycling) by Telegram.
 #endregion
 #region purge
 purges-button: Purges

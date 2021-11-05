@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
+from pyrogram.errors import MediaEmpty
 from pyrogram.types import Message
 
 from anjani import command, filters, listener, plugin, util
@@ -118,34 +119,40 @@ class Notes(plugin.Plugin):
 
         types: int = note["type"]
         await self.bot.client.send_chat_action(chat.id, self.ACTION[types])
-        if types in {Types.TEXT, Types.BUTTON_TEXT}:
-            text = note["text"] + btn_text
-            if not text or text == "\n\n":
-                text = name
-            await self.SEND[types](
-                chat.id,
-                text,
-                disable_web_page_preview=True,
-                reply_to_message_id=reply_to,
-                reply_markup=keyb,
-                parse_mode=parse_mode,
+        try:
+            if types in {Types.TEXT, Types.BUTTON_TEXT}:
+                text = note["text"] + btn_text
+                if not text or text == "\n\n":
+                    text = name
+                await self.SEND[types](
+                    chat.id,
+                    text,
+                    disable_web_page_preview=True,
+                    reply_to_message_id=reply_to,
+                    reply_markup=keyb,
+                    parse_mode=parse_mode,
+                )
+            elif types in {Types.STICKER, Types.ANIMATION}:
+                await self.SEND[types](
+                    chat.id,
+                    note["content"],
+                    reply_to_message_id=reply_to,
+                )
+            else:
+                await self.SEND[types](
+                    chat.id,
+                    str(note["content"]),
+                    caption=note["text"] + btn_text,
+                    reply_to_message_id=reply_to,
+                    reply_markup=keyb,
+                    parse_mode=parse_mode,
+                )
+            await self.bot.client.send_chat_action(chat.id, "cancel")
+        except MediaEmpty:
+            await self.bot.client.send_chat_action(chat.id, "cancel")
+            await self.bot.client.send_message(
+                chat.id, await self.get_text(chat.id, "notes-expired")
             )
-        elif types in {Types.STICKER, Types.ANIMATION}:
-            await self.SEND[types](
-                chat.id,
-                note["content"],
-                reply_to_message_id=reply_to,
-            )
-        else:
-            await self.SEND[types](
-                chat.id,
-                str(note["content"]),
-                caption=note["text"] + btn_text,
-                reply_to_message_id=reply_to,
-                reply_markup=keyb,
-                parse_mode=parse_mode,
-            )
-        await self.bot.client.send_chat_action(chat.id, "cancel")
 
     async def cmd_get(self, ctx: command.Context) -> None:
         """Notes command trigger."""

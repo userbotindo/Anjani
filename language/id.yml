@@ -295,6 +295,7 @@ no-notes: "`Tidak ada catatan pada grup ini!`"
 notes-del-noargs: Berikan saya nama catatan yang akan dihapus!
 notes-not-exist: Tidak ada catatan itu pada grup ini!
 notes-deleted: "Catatan `{}` dihapus!."
+notes-expired: FileID kadaluarsa, ini bisa saja terjadi ketika dihapus(siklus pembersihan) oleh Telegram.
 #endregion
 #region purge
 purges-button: Pembersihan
