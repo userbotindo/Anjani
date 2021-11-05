@@ -106,12 +106,12 @@ class PluginStats(plugin.Plugin):
                 resp[index] = 0
         downtime, recv, processed, predicted, spam_detected, spam_deleted, banned = resp
         text = f"""<b><i>Stats since last reset</i></b>\n
-<b>Total Uptime elapsed</b>: <b>{util.time.format_duration_us(uptime)}</b>
+<b>Total Uptime elapsed</b>: <b>{util.time.format_duration_us(uptime - downtime)}</b>
 <b>Total Downtime elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
 <b>Messages received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
   • <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
-  • <b>{_calc_pct(spam_detected, predicted)}%</b> were detected as spam
-  • <b>{_calc_pct(spam_deleted, spam_detected)}%</b> were deleted from spam
+  • <b>{spam_detected}</b> messages were detected as spam - <b>{_calc_pct(spam_detected, predicted)}%</b> of predicted messages
+  • <b>{spam_deleted}</b> messages were deleted from spam - <b>{_calc_pct(spam_deleted, spam_detected)}%</b> of detected messages
 <b>Commands processed</b>: <b>{processed}</b> (<b><i>{_calc_ph(processed, uptime)}/h</i></b>)
   • <b>{_calc_pct(processed, recv)}%</b> from received messages
 <b>Auto banned users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
