@@ -16,9 +16,10 @@
 
 import asyncio
 from datetime import datetime
+from json import JSONDecodeError
 from typing import Any, ClassVar, MutableMapping, Optional
 
-from aiohttp import ClientOSError, ClientResponseError
+from aiohttp import ClientOSError, ClientResponseError, ContentTypeError
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -145,13 +146,20 @@ class SpamShield(plugin.Plugin):
                         return reason
 
                     return None
+            except (ContentTypeError, JSONDecodeError):
+                if retry == 5:
+                    raise
+
+                retry += 1
+                await asyncio.sleep(1)
+                self.log.debug("Invalid data received from CAS server, retrying...")
             except ClientOSError:
                 if retry == 10:
                     raise
 
                 retry += 1
+                await asyncio.sleep(0.5)
                 self.log.debug(f"Retrying CAS check for {user.id}")
-                continue
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
