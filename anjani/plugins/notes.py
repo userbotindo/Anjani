@@ -17,7 +17,7 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
-from pyrogram.errors import MediaEmpty
+from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 
 from anjani import command, filters, listener, plugin, util
@@ -147,12 +147,14 @@ class Notes(plugin.Plugin):
                     reply_markup=keyb,
                     parse_mode=parse_mode,
                 )
-            await self.bot.client.send_chat_action(chat.id, "cancel")
         except MediaEmpty:
-            await self.bot.client.send_chat_action(chat.id, "cancel")
             await self.bot.client.send_message(
                 chat.id, await self.get_text(chat.id, "notes-expired")
             )
+        except MessageEmpty:
+            pass
+        finally:
+            await self.bot.client.send_chat_action(chat.id, "cancel")
 
     async def cmd_get(self, ctx: command.Context) -> None:
         """Notes command trigger."""
@@ -178,7 +180,7 @@ class Notes(plugin.Plugin):
 
         name = ctx.args[0]
         text, types, content, buttons = get_message_info(ctx.msg)
-        ret = await asyncio.gather(
+        _, ret = await asyncio.gather(
             self.db.update_one(
                 {"chat_id": chat.id},
                 {
@@ -196,7 +198,7 @@ class Notes(plugin.Plugin):
             ),
             self.text(chat.id, "note-saved", name),
         )
-        return ret[1]
+        return ret
 
     async def cmd_notes(self, ctx: command.Context) -> str:
         """View chat notes."""
@@ -230,8 +232,8 @@ class Notes(plugin.Plugin):
         except KeyError:
             return await self.text(chat.id, "notes-not-exist")
 
-        ret = await asyncio.gather(
+        _, ret = await asyncio.gather(
             self.db.update_one({"chat_id": chat.id}, {"$unset": {f"notes.{name}": ""}}),
             self.text(chat.id, "notes-deleted", name),
         )
-        return ret[1]
+        return ret
