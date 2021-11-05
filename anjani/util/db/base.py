@@ -1,3 +1,19 @@
+"""Anjani database core"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import TYPE_CHECKING, Any, Union
 
 from bson import CodecOptions
@@ -27,7 +43,7 @@ class AsyncBase:
         Database,
         MongoClient,
         RawBatchCursor,
-        RawBatchCommandCursor
+        RawBatchCommandCursor,
     ]
 
     def __init__(
@@ -41,15 +57,17 @@ class AsyncBase:
             Database,
             MongoClient,
             RawBatchCursor,
-            RawBatchCommandCursor
-        ]
+            RawBatchCommandCursor,
+        ],
     ) -> None:
         self.dispatch = dispatch
 
     def __eq__(self, other: Any) -> bool:
-        if (isinstance(other, self.__class__) and
-                hasattr(self, "dispatch") and
-                hasattr(self, "dispatch")):
+        if (
+            isinstance(other, self.__class__)
+            and hasattr(self, "dispatch")
+            and hasattr(self, "dispatch")
+        ):
             return self.dispatch == other.dispatch
 
         return NotImplemented

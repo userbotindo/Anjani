@@ -1,3 +1,19 @@
+"""Anjani event dispatcher"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import asyncio
 import bisect
 from hashlib import sha256
@@ -6,15 +22,12 @@ from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional
 from pyrogram import raw
 from pyrogram.filters import Filter
 from pyrogram.raw import functions
-from pyrogram.types import (
-    CallbackQuery,
-    InlineQuery,
-    Message,
-)
+from pyrogram.types import CallbackQuery, InlineQuery, Message
 
-from .anjani_mixin_base import MixinBase
 from anjani import plugin, util
 from anjani.listener import Listener, ListenerFunc
+
+from .anjani_mixin_base import MixinBase
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -47,14 +60,16 @@ class EventDispatcher(MixinBase):
         func: ListenerFunc,
         *,
         priority: int = 100,
-        filters: Optional[Filter] = None
+        filters: Optional[Filter] = None,
     ) -> None:
         if event in {"load", "start", "started", "stop", "stopped"} and filters is not None:
             self.log.warning(f"Built-in Listener can't be use with filters. Removing...")
             filters = None
 
         if getattr(func, "_cmd_filters", None):
-            self.log.warning("@command.filters decorator only for CommandFunc. Filters will be ignored...")
+            self.log.warning(
+                "@command.filters decorator only for CommandFunc. Filters will be ignored..."
+            )
 
         if filters:
             self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, event)
@@ -81,9 +96,11 @@ class EventDispatcher(MixinBase):
             done = True
             try:
                 self.register_listener(
-                    plug, event, func,
+                    plug,
+                    event,
+                    func,
                     priority=getattr(func, "_listener_priority", 100),
-                    filters=getattr(func, "_listener_filters", None)
+                    filters=getattr(func, "_listener_filters", None),
                 )
                 done = True
             finally:
@@ -102,7 +119,7 @@ class EventDispatcher(MixinBase):
         *args: Any,
         wait: bool = True,
         get_tasks: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Optional[Set[asyncio.Task[Any]]]:
         tasks = set()
 
@@ -173,7 +190,9 @@ class EventDispatcher(MixinBase):
                 diff = await self.client.send(
                     functions.updates.GetDifference(pts=pts, date=date, qts=-1)
                 )
-                if isinstance(diff, (raw.types.updates.Difference, raw.types.updates.DifferenceSlice)):
+                if isinstance(
+                    diff, (raw.types.updates.Difference, raw.types.updates.DifferenceSlice)
+                ):
                     if isinstance(diff, raw.types.updates.Difference):
                         state: Any = diff.state
                     else:
@@ -184,10 +203,13 @@ class EventDispatcher(MixinBase):
                     chats = {c.id: c for c in diff.chats}
 
                     for message in diff.new_messages:
-                        self.client.dispatcher.updates_queue.put_nowait((
-                            raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
-                            users, chats,
-                        ))
+                        self.client.dispatcher.updates_queue.put_nowait(
+                            (
+                                raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
+                                users,
+                                chats,
+                            )
+                        )
 
                     for update in diff.other_updates:
                         self.client.dispatcher.updates_queue.put_nowait((update, users, chats))

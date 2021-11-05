@@ -1,3 +1,19 @@
+"""Anjani database collection"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import Any, List, MutableMapping, Optional, Tuple, Union
 
 from bson import CodecOptions
@@ -13,9 +29,11 @@ from pymongo.results import (
     DeleteResult,
     InsertManyResult,
     InsertOneResult,
-    UpdateResult
+    UpdateResult,
 )
 from pymongo.write_concern import WriteConcern
+
+from anjani import util
 
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
@@ -24,13 +42,11 @@ from .command_cursor import AsyncLatentCommandCursor
 from .cursor import AsyncCursor, AsyncRawBatchCursor, Cursor
 from .types import JavaScriptCode, ReadPreferences, Request
 
-from anjani import util
-
 
 class AsyncCollection(AsyncBaseProperty):
     """AsyncIO :obj:`~Collection`
 
-       *DEPRECATED* methods are removed in this class.
+    *DEPRECATED* methods are removed in this class.
     """
 
     dispatch: Collection
@@ -48,7 +64,7 @@ class AsyncCollection(AsyncBaseProperty):
                 self.codec_options,
                 self.read_preference,
                 self.write_concern,
-                self.read_concern
+                self.read_concern,
             )
         )
 
@@ -57,14 +73,14 @@ class AsyncCollection(AsyncBaseProperty):
         pipeline: List[MutableMapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
             self,
             self.dispatch.aggregate,
             pipeline,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     def aggregate_raw_batches(
@@ -72,14 +88,14 @@ class AsyncCollection(AsyncBaseProperty):
         pipeline: List[MutableMapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
             self,
             self.dispatch.aggregate_raw_batches,
             pipeline,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def bulk_write(
@@ -88,14 +104,14 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         ordered: bool = True,
         bypass_document_validation: bool = False,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> BulkWriteResult:
         return await util.run_sync(
             self.dispatch.bulk_write,
             request,
             ordered=ordered,
             bypass_document_validation=bypass_document_validation,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def count_documents(
@@ -103,37 +119,31 @@ class AsyncCollection(AsyncBaseProperty):
         query: MutableMapping[str, Any],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> int:
         return await util.run_sync(
             self.dispatch.count_documents,
             query,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
-    async def create_index(
-        self, keys: Union[str, List[Tuple[str, Any]]], **kwargs: Any
-    ) -> str:
-        return await util.run_sync(
-            self.dispatch.create_index,
-            keys,
-            **kwargs
-        )
+    async def create_index(self, keys: Union[str, List[Tuple[str, Any]]], **kwargs: Any) -> str:
+        return await util.run_sync(self.dispatch.create_index, keys, **kwargs)
 
     async def create_indexes(
         self,
         indexes: List[IndexModel],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[str]:
         return await util.run_sync(
             self.dispatch.create_indexes,
             indexes,
             session=session.dispatch if session else session,
-            **kwargs
-        ) 
+            **kwargs,
+        )
 
     async def delete_many(
         self,
@@ -141,14 +151,14 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> DeleteResult:
         return await util.run_sync(
             self.dispatch.delete_many,
             query,
             collation=collation,
             hint=hint,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def delete_one(
@@ -157,14 +167,14 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> DeleteResult:
         return await util.run_sync(
             self.dispatch.delete_one,
             query,
             collation=collation,
             hint=hint,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def distinct(
@@ -173,39 +183,36 @@ class AsyncCollection(AsyncBaseProperty):
         query: Optional[MutableMapping[str, Any]] = None,
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[str]:
         return await util.run_sync(
             self.dispatch.distinct,
             key,
             filter=query,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def drop(self, session: Optional[AsyncClientSession] = None) -> None:
-        await util.run_sync(
-            self.dispatch.drop,
-            session=session.dispatch if session else session
-        )
+        await util.run_sync(self.dispatch.drop, session=session.dispatch if session else session)
 
     async def drop_index(
         self,
         index_or_name: Union[str, IndexModel],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
-        await util.run_sync(self.dispatch.drop_index,
-                            index_or_name,
-                            session=session.dispatch if session else session,
-                            **kwargs)
+        await util.run_sync(
+            self.dispatch.drop_index,
+            index_or_name,
+            session=session.dispatch if session else session,
+            **kwargs,
+        )
 
     async def drop_indexes(self, session: Optional[AsyncClientSession] = None, **kwargs) -> None:
         await util.run_sync(
-            self.dispatch.drop_indexes,
-            session=session.dispatch if session else session,
-            **kwargs
+            self.dispatch.drop_indexes, session=session.dispatch if session else session, **kwargs
         )
 
     async def estimated_document_count(self, **kwargs: Any) -> int:
@@ -215,14 +222,9 @@ class AsyncCollection(AsyncBaseProperty):
         return AsyncCursor(Cursor(self, *args, **kwargs), self)
 
     async def find_one(
-        self,
-        query: Optional[MutableMapping[str, Any]],
-        *args: Any,
-        **kwargs: Any
+        self, query: Optional[MutableMapping[str, Any]], *args: Any, **kwargs: Any
     ) -> Optional[MutableMapping[str, Any]]:
-        return await util.run_sync(
-            self.dispatch.find_one, query, *args, **kwargs
-        )
+        return await util.run_sync(self.dispatch.find_one, query, *args, **kwargs)
 
     async def find_one_and_delete(
         self,
@@ -232,7 +234,7 @@ class AsyncCollection(AsyncBaseProperty):
         sort: Optional[List[Tuple[str, Any]]] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_delete,
@@ -241,7 +243,7 @@ class AsyncCollection(AsyncBaseProperty):
             sort=sort,
             hint=hint,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def find_one_and_replace(
@@ -255,7 +257,7 @@ class AsyncCollection(AsyncBaseProperty):
         return_document: bool = False,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_replace,
@@ -267,7 +269,7 @@ class AsyncCollection(AsyncBaseProperty):
             return_document=return_document,
             hint=hint,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def find_one_and_update(
@@ -282,7 +284,7 @@ class AsyncCollection(AsyncBaseProperty):
         array_filters: Optional[List[MutableMapping[str, Any]]] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.find_one_and_update,
@@ -295,7 +297,7 @@ class AsyncCollection(AsyncBaseProperty):
             array_filters=array_filters,
             hint=hint,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     def find_raw_batches(self, *args: Any, **kwargs: Any) -> AsyncRawBatchCursor:
@@ -311,8 +313,7 @@ class AsyncCollection(AsyncBaseProperty):
         self, session: Optional[AsyncClientSession] = None
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self.dispatch.index_information,
-            session=session.dispatch if session else session
+            self.dispatch.index_information, session=session.dispatch if session else session
         )
 
     async def inline_map_reduce(
@@ -322,7 +323,7 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         full_response: bool = False,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.inline_map_reduce,
@@ -330,7 +331,7 @@ class AsyncCollection(AsyncBaseProperty):
             reduce,
             full_response=full_response,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def insert_many(
@@ -339,14 +340,14 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         ordered: bool = True,
         bypass_document_validation: bool = False,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> InsertManyResult:
         return await util.run_sync(
             self.dispatch.insert_many,
             documents,
             ordered=ordered,
             bypass_document_validation=bypass_document_validation,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def insert_one(
@@ -354,22 +355,20 @@ class AsyncCollection(AsyncBaseProperty):
         document: MutableMapping[str, Any],
         *,
         bypass_document_validation: bool = False,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> InsertOneResult:
         return await util.run_sync(
             self.dispatch.insert_one,
             document,
             bypass_document_validation=bypass_document_validation,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     def list_indexes(
         self, session: Optional[AsyncClientSession] = None
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
-            self,
-            self.dispatch.list_indexes,
-            session=session.dispatch if session else session
+            self, self.dispatch.list_indexes, session=session.dispatch if session else session
         )
 
     async def map_reduce(
@@ -380,7 +379,7 @@ class AsyncCollection(AsyncBaseProperty):
         *,
         full_response: bool = False,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.map_reduce,
@@ -389,29 +388,24 @@ class AsyncCollection(AsyncBaseProperty):
             out,
             full_response=full_response,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def options(
         self, session: Optional[AsyncClientSession] = None
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
-            self.dispatch.options,
-            session=session.dispatch if session else session
+            self.dispatch.options, session=session.dispatch if session else session
         )
 
     async def rename(
-        self,
-        new_name: str,
-        *,
-        session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        self, new_name: str, *, session: Optional[AsyncClientSession] = None, **kwargs: Any
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.rename,
             new_name,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def replace_one(
@@ -423,7 +417,7 @@ class AsyncCollection(AsyncBaseProperty):
         bypass_document_validation: bool = False,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.replace_one,
@@ -433,7 +427,7 @@ class AsyncCollection(AsyncBaseProperty):
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def update_many(
@@ -446,7 +440,7 @@ class AsyncCollection(AsyncBaseProperty):
         bypass_document_validation: bool = False,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.update_many,
@@ -457,7 +451,7 @@ class AsyncCollection(AsyncBaseProperty):
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     async def update_one(
@@ -470,7 +464,7 @@ class AsyncCollection(AsyncBaseProperty):
         bypass_document_validation: bool = False,
         collation: Optional[Collation] = None,
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
         return await util.run_sync(
             self.dispatch.update_one,
@@ -481,7 +475,7 @@ class AsyncCollection(AsyncBaseProperty):
             bypass_document_validation=bypass_document_validation,
             collation=collation,
             hint=hint,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     def watch(
@@ -495,7 +489,7 @@ class AsyncCollection(AsyncBaseProperty):
         collation: Optional[Collation] = None,
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
-        start_after: Optional[Any] = None
+        start_after: Optional[Any] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -507,7 +501,7 @@ class AsyncCollection(AsyncBaseProperty):
             collation,
             start_at_operation_time,
             session,
-            start_after
+            start_after,
         )
 
     def with_options(
@@ -516,13 +510,13 @@ class AsyncCollection(AsyncBaseProperty):
         codec_options: Optional[CodecOptions] = None,
         read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
-        read_concern: Optional[ReadConcern] = None
+        read_concern: Optional[ReadConcern] = None,
     ) -> "AsyncCollection":
         self.dispatch = self.dispatch.with_options(
             codec_options=codec_options,
             read_preference=read_preference,
             write_concern=write_concern,
-            read_concern=read_concern
+            read_concern=read_concern,
         )
 
         return self

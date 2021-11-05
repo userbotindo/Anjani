@@ -1,3 +1,19 @@
+"""Anjani base command"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import asyncio
 from typing import (
     IO,
@@ -11,10 +27,10 @@ from typing import (
     Sequence,
     Union,
 )
-from typing_extensions import final
 
 import pyrogram
 from pyrogram.filters import Filter
+from typing_extensions import final
 
 from anjani.action import BotAction
 from anjani.util.tg import get_text
@@ -100,8 +116,8 @@ class Context:
         username = self.bot.user.username
         slices = self.cmd_len + 1 + len(username)
         if username in self.msg.text:
-            self.input = self.msg.text[slices :]
-            self.input_raw = self.msg.text.markdown[slices :]
+            self.input = self.msg.text[slices:]
+            self.input_raw = self.msg.text.markdown[slices:]
         else:
             self.input = self.msg.text[self.cmd_len :]
             self.input_raw = self.msg.text.markdown[self.cmd_len :]

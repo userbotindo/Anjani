@@ -1,3 +1,19 @@
+"""Anjani custom types"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import TYPE_CHECKING, Any, Iterable, Protocol, TypeVar
 
 from pyrogram.filters import Filter
@@ -54,11 +70,17 @@ class MemberPermissions:
 
 
 class NDArray(Protocol[TypeData]):
-    def __getitem__(self, key: int) -> Any: ...  # skipcq: PTC-W0049
+    def __getitem__(self, key: int) -> Any:
+        ...  # skipcq: PTC-W0049
+
     @property
-    def size(self) -> int: ...  # skipcq: PTC-W0049
+    def size(self) -> int:
+        ...  # skipcq: PTC-W0049
 
 
 class Pipeline(Protocol):
-    def predict(self, X: Iterable[Any], **predict_params: Any) -> NDArray[Any]: ...  # skipcq: PTC-W0049
-    def predict_proba(self, X: Iterable[Any]) -> NDArray[Any]: ...  # skipcq: PTC-W0049
+    def predict(self, X: Iterable[Any], **predict_params: Any) -> NDArray[Any]:
+        ...  # skipcq: PTC-W0049
+
+    def predict_proba(self, X: Iterable[Any]) -> NDArray[Any]:
+        ...  # skipcq: PTC-W0049

@@ -1,6 +1,22 @@
+"""Anjani example-plugin"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import asyncio
 import io
-from typing import Any, ClassVar, IO, MutableMapping
+from typing import IO, Any, ClassVar, MutableMapping
 
 from aiopath import PureAsyncPosixPath
 from pyrogram.types import CallbackQuery, Message
@@ -60,9 +76,7 @@ class ExamplePlugin(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         """Dispatched when /restore command is Called"""
         self.log.info("Restoring data plugin: %s", self.name)
-        await self.db.update_one({"chat_id": chat_id},
-                                 {"$set": data[self.name]},
-                                 upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     async def cmd_test(self, ctx: command.Context) -> str:
         await ctx.respond("Processing...")

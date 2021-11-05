@@ -1,3 +1,19 @@
+"""Anjani database commmand cursor"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import asyncio
 from collections import deque
 from functools import partial
@@ -11,15 +27,15 @@ from typing import (
     MutableMapping,
     Optional,
     Tuple,
-    Union
+    Union,
 )
 
 from pymongo.command_cursor import CommandCursor as _CommandCursor
 
+from anjani import util
+
 from .client_session import AsyncClientSession
 from .cursor_base import AsyncCursorBase
-
-from anjani import util
 
 if TYPE_CHECKING:
     from .collection import AsyncCollection
@@ -55,7 +71,6 @@ class CommandCursor(_CommandCursor):
             explicit_session=explicit_session,
         )
 
-
     async def _AsyncCommandCursor__die(self, synchronous: bool = False) -> None:
         await util.run_sync(self.__die, synchronous=synchronous)
 
@@ -79,7 +94,7 @@ class RawBatchCommandCursor(CommandCursor):
 class AsyncCommandCursor(AsyncCursorBase):
     """AsyncIO :obj:`~CommandCursor`
 
-       *DEPRECATED* methods are removed in this class.
+    *DEPRECATED* methods are removed in this class.
     """
 
     dispatch: CommandCursor
@@ -96,6 +111,7 @@ class AsyncCommandCursor(AsyncCursorBase):
 
 class _LatentCursor:
     """Base class for LatentCursor AsyncIOMongoDB instance"""
+
     # ClassVar
     alive: ClassVar[bool] = True
     _CommandCursor__data: ClassVar[Deque[Any]] = deque()
@@ -142,7 +158,7 @@ class _LatentCursor:
 
 class AsyncLatentCommandCursor(AsyncCommandCursor):
     """Temporary Cursor for initializing in aggregate,
-       and will be overwrite by :obj:`~asyncio.Future`"""
+    and will be overwrite by :obj:`~asyncio.Future`"""
 
     dispatch: Union[CommandCursor, RawBatchCommandCursor]
 
@@ -151,7 +167,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         collection: "AsyncCollection",
         start: Callable[..., Union[CommandCursor, RawBatchCommandCursor]],
         *args: Any,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         self.start = start
         self.args = args
@@ -167,12 +183,9 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         if not self.started:
             self.started = True
             original_future = self.loop.create_future()
-            future = self.loop.create_task(
-                util.run_sync(self.start, *self.args, **self.kwargs))
+            future = self.loop.create_task(util.run_sync(self.start, *self.args, **self.kwargs))
             future.add_done_callback(
-                partial(self.loop.call_soon_threadsafe,
-                        self._on_started,
-                        original_future)
+                partial(self.loop.call_soon_threadsafe, self._on_started, original_future)
             )
 
             return original_future
@@ -182,7 +195,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
     def _on_started(
         self,
         original_future: asyncio.Future[int],
-        future: asyncio.Future[Union[CommandCursor, RawBatchCommandCursor]]
+        future: asyncio.Future[Union[CommandCursor, RawBatchCommandCursor]],
     ) -> None:
         try:
             self.dispatch = future.result()
@@ -196,7 +209,9 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
 
             if self.dispatch._CommandCursor__data or not self.dispatch.alive:  # skipcq: PYL-W0212
                 # _get_more is complete.
-                original_future.set_result(len(self.dispatch._CommandCursor__data))  # skipcq: PYL-W0212
+                original_future.set_result(
+                    len(self.dispatch._CommandCursor__data)
+                )  # skipcq: PYL-W0212
             else:
                 # Send a getMore.
                 fut = super()._get_more()

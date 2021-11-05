@@ -1,16 +1,40 @@
+"""Anjani database session"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, MutableMapping, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Callable,
+    Coroutine,
+    MutableMapping,
+    Optional,
+)
 
 from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.monotonic import time as monotonic_time
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
+from anjani import util
+
 from .base import AsyncBase
 from .errors import OperationFailure, PyMongoError
 from .types import ReadPreferences, Results
-
-from anjani import util
 
 if TYPE_CHECKING:
     from .client import AsyncClient
@@ -19,7 +43,7 @@ if TYPE_CHECKING:
 class AsyncClientSession(AsyncBase):
     """AsyncIO :obj:`~ClientSession`
 
-       *DEPRECATED* methods are removed in this class.
+    *DEPRECATED* methods are removed in this class.
     """
 
     _client: "AsyncClient"
@@ -57,14 +81,14 @@ class AsyncClientSession(AsyncBase):
         read_concern: Optional[ReadConcern] = None,
         write_concern: Optional[WriteConcern] = None,
         read_preference: Optional[ReadPreferences] = None,
-        max_commit_time_ms: Optional[int] = None
+        max_commit_time_ms: Optional[int] = None,
     ) -> AsyncGenerator["AsyncClientSession", None]:
         await util.run_sync(
             self.dispatch.start_transaction,
             read_concern=read_concern,
             write_concern=write_concern,
             read_preference=read_preference,
-            max_commit_time_ms=max_commit_time_ms
+            max_commit_time_ms=max_commit_time_ms,
         )
         try:
             yield self
@@ -82,7 +106,7 @@ class AsyncClientSession(AsyncBase):
         read_concern: Optional[ReadConcern] = None,
         write_concern: Optional[WriteConcern] = None,
         read_preference: Optional[ReadPreferences] = None,
-        max_commit_time_ms: Optional[int] = None
+        max_commit_time_ms: Optional[int] = None,
     ) -> Results:
         # 99% Of this code from motor's lib
 
@@ -98,16 +122,18 @@ class AsyncClientSession(AsyncBase):
                 read_concern=read_concern,
                 write_concern=write_concern,
                 read_preference=read_preference,
-                max_commit_time_ms=max_commit_time_ms
+                max_commit_time_ms=max_commit_time_ms,
             ):
                 try:
                     ret = await callback(self)
                 except Exception as exc:
                     if self.in_transaction:
                         await self.abort_transaction()
-                    if (isinstance(exc, PyMongoError) and
-                            exc.has_error_label("TransientTransactionError")
-                            and _within_time_limit(start_time)):
+                    if (
+                        isinstance(exc, PyMongoError)
+                        and exc.has_error_label("TransientTransactionError")
+                        and _within_time_limit(start_time)
+                    ):
                         # Retry the entire transaction.
                         continue
                     raise
@@ -120,14 +146,17 @@ class AsyncClientSession(AsyncBase):
                 try:
                     await self.commit_transaction()
                 except PyMongoError as exc:
-                    if (exc.has_error_label("UnknownTransactionCommitResult")
-                            and _within_time_limit(start_time)
-                            and not _max_time_expired_error(exc)):
+                    if (
+                        exc.has_error_label("UnknownTransactionCommitResult")
+                        and _within_time_limit(start_time)
+                        and not _max_time_expired_error(exc)
+                    ):
                         # Retry the commit.
                         continue
 
-                    if (exc.has_error_label("TransientTransactionError") and
-                            _within_time_limit(start_time)):
+                    if exc.has_error_label("TransientTransactionError") and _within_time_limit(
+                        start_time
+                    ):
                         # Retry the entire transaction.
                         break
                     raise

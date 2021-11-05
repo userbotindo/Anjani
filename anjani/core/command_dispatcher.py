@@ -1,3 +1,19 @@
+"""Anjani command dispatcher"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
@@ -35,7 +51,9 @@ class CommandDispatcher(MixinBase):
         aliases: Iterable[str] = [],
     ) -> None:
         if getattr(func, "_listener_filters", None):
-            self.log.warning("@listener.filters decorator only for ListenerFunc. Filters will be ignored...")
+            self.log.warning(
+                "@listener.filters decorator only for ListenerFunc. Filters will be ignored..."
+            )
 
         if filters:
             self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, name)
@@ -71,9 +89,11 @@ class CommandDispatcher(MixinBase):
 
             try:
                 self.register_command(
-                    plug, name, func,
+                    plug,
+                    name,
+                    func,
                     filters=getattr(func, "_cmd_filters", None),
-                    aliases=getattr(func, "_cmd_aliases", [])
+                    aliases=getattr(func, "_cmd_aliases", []),
                 )
                 done = True
             finally:
@@ -166,7 +186,7 @@ class CommandDispatcher(MixinBase):
             except errors.MessageNotModified:
                 cmd.plugin.log.warning(
                     "Command '%s' triggered a message edit with no changes; make sure there is only a single bot instance running",
-                    cmd.name
+                    cmd.name,
                 )
             except Exception as e:  # skipcq: PYL-W0703
                 constructor_invoke = CommandInvokeError(
@@ -180,9 +200,13 @@ class CommandDispatcher(MixinBase):
                     "    • Chat    -> %s (%d)\n"
                     "    • Invoker -> %s (%d)\n"
                     "    • Input   -> %s\n",
-                    cmd.name, chat.title if chat else None, chat.id if chat else None,
-                    user.first_name if user else None, user.id if user else None, ctx.input,
-                    exc_info=constructor_invoke
+                    cmd.name,
+                    chat.title if chat else None,
+                    chat.id if chat else None,
+                    user.first_name if user else None,
+                    user.id if user else None,
+                    ctx.input,
+                    exc_info=constructor_invoke,
                 )
 
             await self.dispatch_event("command", ctx, cmd)
@@ -199,7 +223,11 @@ class CommandDispatcher(MixinBase):
                     "    • Chat    -> %s (%d)\n"
                     "    • Invoker -> %s (%d)\n"
                     "    • Input   -> %s\n",
-                    cmd.name, chat.title if chat else None, chat.id if chat else None,
-                    user.first_name if user else None, user.id if user else None, message.command,
-                    exc_info=constructor_handler
+                    cmd.name,
+                    chat.title if chat else None,
+                    chat.id if chat else None,
+                    user.first_name if user else None,
+                    user.id if user else None,
+                    message.command,
+                    exc_info=constructor_handler,
                 )

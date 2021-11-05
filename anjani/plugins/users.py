@@ -22,7 +22,7 @@ from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 from aiopath import AsyncPath
 from pyrogram.errors import BadRequest, PeerIdInvalid
 from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
-from pyrogram.types import Chat, ChatPreview, Message, User
+from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
 
@@ -97,6 +97,19 @@ class Users(plugin.Plugin):
                 self.users_db.update_one({"_id": user.id}, {"$pull": {"chats": chat.id}}),
                 self.chats_db.update_one({"chat_id": chat.id}, {"$pull": {"member": user.id}}),
             )
+
+    async def on_callback_query(self, query: CallbackQuery) -> None:
+        """Hanle user that sent a callback query"""
+        print(query)
+        user = query.from_user
+        set_content = {"username": user.username, "name": user.first_name}
+        user_data = await self.users_db.find_one({"_id": user.id})
+
+        if self.predict_loaded:
+            if not user_data or "hash" not in user_data:
+                set_content["hash"] = self.hash_id(user.id)
+
+        await self.users_db.update_one({"_id": user.id}, {"$set": set_content})
 
     async def on_message(self, message: Message) -> None:
         """Incoming message handler."""

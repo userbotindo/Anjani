@@ -1,13 +1,29 @@
+"""Anjani database stream"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Union
 
 from bson.timestamp import Timestamp
 from pymongo.change_stream import ChangeStream
 from pymongo.collation import Collation
 
+from anjani import util
+
 from .base import AsyncBase
 from .client_session import AsyncClientSession
-
-from anjani import util
 
 if TYPE_CHECKING:
     from .client import AsyncClient
@@ -18,7 +34,7 @@ if TYPE_CHECKING:
 class AsyncChangeStream(AsyncBase):
     """AsyncIO :obj:`~ChangeStream`
 
-       *DEPRECATED* methods are removed in this class.
+    *DEPRECATED* methods are removed in this class.
     """
 
     _target: Union["AsyncClient", "AsyncDatabase", "AsyncCollection"]
@@ -36,7 +52,7 @@ class AsyncChangeStream(AsyncBase):
         collation: Optional[Collation],
         start_at_operation_time: Optional[Timestamp],
         session: Optional[AsyncClientSession],
-        start_after: Optional[Any]
+        start_after: Optional[Any],
     ) -> None:
         self._target = target
         self._options: MutableMapping[str, Any] = {
@@ -48,7 +64,7 @@ class AsyncChangeStream(AsyncBase):
             "collation": collation,
             "start_at_operation_time": start_at_operation_time,
             "session": session.dispatch if session else session,
-            "start_after": start_after
+            "start_after": start_after,
         }
 
         super().__init__(None)  # type: ignore
@@ -77,8 +93,7 @@ class AsyncChangeStream(AsyncBase):
 
     async def _init(self) -> ChangeStream:
         if not self.dispatch:
-            self.dispatch = await util.run_sync(
-                self._target.dispatch.watch, **self._options)
+            self.dispatch = await util.run_sync(self._target.dispatch.watch, **self._options)
 
         return self.dispatch
 

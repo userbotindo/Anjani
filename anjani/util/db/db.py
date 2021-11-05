@@ -1,12 +1,30 @@
+"""Anjani base database"""
+# Copyright (C) 2020 - 2021  UserbotIndo Team, <https://github.com/userbotindo.git>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Union
 
-from bson import DBRef, CodecOptions
+from bson import CodecOptions, DBRef
 from bson.son import SON
 from bson.timestamp import Timestamp
 from pymongo.collation import Collation
 from pymongo.database import Database
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
+
+from anjani import util
 
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
@@ -15,8 +33,6 @@ from .collection import AsyncCollection, Collection
 from .command_cursor import AsyncCommandCursor, AsyncLatentCommandCursor, CommandCursor
 from .types import ReadPreferences
 
-from anjani import util
-
 if TYPE_CHECKING:
     from .client import AsyncClient
 
@@ -24,7 +40,7 @@ if TYPE_CHECKING:
 class AsyncDatabase(AsyncBaseProperty):
     """AsyncIO :obj:`~Database`
 
-       *DEPRECATED* methods are removed in this class.
+    *DEPRECATED* methods are removed in this class.
     """
 
     _client: "AsyncClient"
@@ -45,14 +61,14 @@ class AsyncDatabase(AsyncBaseProperty):
         pipeline: List[MutableMapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
             self["$cmd.aggregate"],
             self.dispatch.aggregate,
             pipeline,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def command(
@@ -65,7 +81,7 @@ class AsyncDatabase(AsyncBaseProperty):
         read_preference: Optional[ReadPreferences] = None,
         codec_options: Optional[CodecOptions] = None,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> MutableMapping[str, Any]:
         return await util.run_sync(
             self.dispatch.command,
@@ -76,7 +92,7 @@ class AsyncDatabase(AsyncBaseProperty):
             read_preference=read_preference,
             codec_options=codec_options,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def close(self) -> None:
@@ -91,7 +107,7 @@ class AsyncDatabase(AsyncBaseProperty):
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None,
         session: Optional[AsyncClientSession] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncCollection:
         return AsyncCollection(
             await util.run_sync(
@@ -102,7 +118,7 @@ class AsyncDatabase(AsyncBaseProperty):
                 write_concern=write_concern,
                 read_concern=read_concern,
                 session=session.dispatch if session else session,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -113,13 +129,13 @@ class AsyncDatabase(AsyncBaseProperty):
             self.dispatch.dereference,
             dbref,
             session=session.dispatch if session else session,
-            **kwargs
+            **kwargs,
         )
 
     async def drop_collection(
         self,
         name_or_collection: Union[str, AsyncCollection],
-        session: Optional[AsyncClientSession] = None
+        session: Optional[AsyncClientSession] = None,
     ) -> MutableMapping[str, Any]:
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
@@ -127,7 +143,7 @@ class AsyncDatabase(AsyncBaseProperty):
         return await util.run_sync(
             self.dispatch.drop_collection,
             name_or_collection,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
 
     def get_collection(
@@ -137,7 +153,7 @@ class AsyncDatabase(AsyncBaseProperty):
         codec_options: Optional[CodecOptions] = None,
         read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
-        read_concern: Optional[ReadConcern] = None
+        read_concern: Optional[ReadConcern] = None,
     ) -> AsyncCollection:
         return AsyncCollection(
             self.dispatch.get_collection(
@@ -145,7 +161,7 @@ class AsyncDatabase(AsyncBaseProperty):
                 codec_options=codec_options,
                 read_preference=read_preference,
                 write_concern=write_concern,
-                read_concern=read_concern
+                read_concern=read_concern,
             )
         )
 
@@ -154,13 +170,13 @@ class AsyncDatabase(AsyncBaseProperty):
         *,
         session: Optional[AsyncClientSession] = None,
         query: Optional[MutableMapping[str, Any]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[str]:
         return await util.run_sync(
             self.dispatch.list_collection_names,
             session=session.dispatch if session else session,
             filter=query,
-            **kwargs
+            **kwargs,
         )
 
     async def list_collections(
@@ -168,7 +184,7 @@ class AsyncDatabase(AsyncBaseProperty):
         *,
         session: Optional[AsyncClientSession] = None,
         query: Optional[MutableMapping[str, Any]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncCommandCursor:
         cmd = SON([("listCollections", 1)])
         cmd.update(query, **kwargs)
@@ -176,7 +192,7 @@ class AsyncDatabase(AsyncBaseProperty):
         res: MutableMapping[str, Any] = await util.run_sync(
             self.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
-            session=session.dispatch if session else session
+            session=session.dispatch if session else session,
         )
         return AsyncCommandCursor(CommandCursor(self["$cmd"], res["cursor"], None))
 
@@ -187,7 +203,7 @@ class AsyncDatabase(AsyncBaseProperty):
         scandata: bool = False,
         full: bool = False,
         session: Optional[AsyncClientSession] = None,
-        background: Optional[bool] = None
+        background: Optional[bool] = None,
     ) -> MutableMapping[str, Any]:
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
@@ -198,7 +214,7 @@ class AsyncDatabase(AsyncBaseProperty):
             scandata=scandata,
             full=full,
             session=session.dispatch if session else session,
-            background=background
+            background=background,
         )
 
     def watch(
@@ -212,7 +228,7 @@ class AsyncDatabase(AsyncBaseProperty):
         collation: Optional[Collation] = None,
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
-        start_after: Optional[Any] = None
+        start_after: Optional[Any] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -224,7 +240,7 @@ class AsyncDatabase(AsyncBaseProperty):
             collation,
             start_at_operation_time,
             session,
-            start_after
+            start_after,
         )
 
     def with_options(
@@ -233,13 +249,13 @@ class AsyncDatabase(AsyncBaseProperty):
         codec_options: Optional[CodecOptions] = None,
         read_preference: Optional[ReadPreferences] = None,
         write_concern: Optional[WriteConcern] = None,
-        read_concern: Optional[ReadConcern] = None
+        read_concern: Optional[ReadConcern] = None,
     ) -> "AsyncDatabase":
         self.dispatch = self.dispatch.with_options(
             codec_options=codec_options,
             read_preference=read_preference,
             write_concern=write_concern,
-            read_concern=read_concern
+            read_concern=read_concern,
         )
 
         return self
