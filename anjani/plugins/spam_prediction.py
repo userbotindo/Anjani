@@ -26,6 +26,7 @@ from pyrogram.errors import (
     FloodWait,
     MessageDeleteForbidden,
     MessageNotModified,
+    QueryIdInvalid,
     UserAdminInvalid,
 )
 from pyrogram.types import (
@@ -181,18 +182,30 @@ class SpamPrediction(plugin.Plugin):
                 button.append(old_btn[1])
 
         for i in data["msg_id"]:
-            try:
-                await self.bot.client.edit_message_reply_markup(
-                    -1001314588569, i, InlineKeyboardMarkup(button)
-                )
-            except (FloodWait, MessageNotModified):
-                await query.answer(
-                    "You already voted this content, "
-                    "this happened because there are multiple same of contents exists.",
-                    show_alert=True,
-                )
+            while True:
+                try:
+                    await self.bot.client.edit_message_reply_markup(
+                        -1001314588569, i, InlineKeyboardMarkup(button)
+                    )
+                except MessageNotModified:
+                    await query.answer(
+                        "You already voted this content, "
+                        "this happened because there are multiple same of contents exists.",
+                        show_alert=True,
+                    )
+                except FloodWait as flood:
+                    await query.answer(
+                        f"Please wait i'm updating the content for you.",
+                        show_alert=True,
+                    )
+                    continue
 
-        await query.answer()
+                break
+
+        try:
+            await query.answer()
+        except QueryIdInvalid:
+            pass
 
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
