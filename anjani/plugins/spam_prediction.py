@@ -198,6 +198,7 @@ class SpamPrediction(plugin.Plugin):
                         f"Please wait i'm updating the content for you.",
                         show_alert=True,
                     )
+                    await asyncio.sleep(flood.x)
                     continue
 
                 break
