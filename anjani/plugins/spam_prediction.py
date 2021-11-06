@@ -189,7 +189,7 @@ class SpamPrediction(plugin.Plugin):
                 await query.answer(
                     "You already voted this content, "
                     "this happened because there are multiple same of contents exists.",
-                    show_alert=True
+                    show_alert=True,
                 )
 
         await query.answer()
@@ -266,12 +266,19 @@ class SpamPrediction(plugin.Plugin):
             else:
                 keyb.append([raw_btn])
 
-        msg = await self.bot.client.send_message(
-            chat_id=-1001314588569,
-            text=notice,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(keyb),
-        )
+        while True:
+            try:
+                msg = await self.bot.client.send_message(
+                    chat_id=-1001314588569,
+                    text=notice,
+                    disable_web_page_preview=True,
+                    reply_markup=InlineKeyboardMarkup(keyb),
+                )
+            except FloodWait as flood:
+                await asyncio.sleep(flood.x)
+                continue
+
+            break
 
         if data:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
