@@ -213,7 +213,7 @@ class Users(plugin.Plugin):
         if self.predict_loaded:
             text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
             text += f"\n**Reputation: **`{data.get('reputation', 0)}`"
-        text += f"\nI've seen them on {len(data['chats'])} chats."
+        text += f"\nI've seen them on {len(data.get('chats', []))} chats."
         return text
 
     async def _chat_info(
