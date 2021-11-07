@@ -308,6 +308,7 @@ class SpamPrediction(plugin.Plugin):
                         "text": text,
                         "spam": [],
                         "ham": [],
+                        "proba":  probability,
                         "msg_id": [msg.message_id],
                     }
                 )
