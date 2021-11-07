@@ -202,6 +202,7 @@ class SpamPrediction(plugin.Plugin):
                         await asyncio.sleep(flood.x)
                         continue
 
+                    await asyncio.sleep(0.1)
                     break
             except QueryIdInvalid:
                 self.log.debug("Can't edit message, invalid query id '%s'", query.id)
@@ -229,8 +230,8 @@ class SpamPrediction(plugin.Plugin):
         if not chat or message.left_chat_member or not user or not text:
             return
 
-        # Always check the spam probability but run it in the background
-        self.bot.loop.create_task(self.spam_check(message, text))
+        # Always check the spam probability
+        await self.spam_check(message, text)
 
     async def spam_check(self, message: Message, text: str) -> None:
         user = message.from_user.id
@@ -296,6 +297,7 @@ class SpamPrediction(plugin.Plugin):
                 await asyncio.sleep(flood.x)
                 continue
 
+            await asyncio.sleep(0.1)
             break
 
         if data:
@@ -308,7 +310,7 @@ class SpamPrediction(plugin.Plugin):
                         "text": text,
                         "spam": [],
                         "ham": [],
-                        "proba":  probability,
+                        "proba": probability,
                         "msg_id": [msg.message_id],
                     }
                 )
