@@ -208,11 +208,12 @@ class Users(plugin.Plugin):
 
     async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
         text = "**Old User Info**\n\n"
-        text += f"**ID:** `{data['_id']}`\n"
-        text += f"**Username:** @{data['username']}\n"
+        text += f"**ID**: `{data['_id']}`\n"
+        text += f"**Name**: {data['name']}\n"
+        text += f"**Username**: @{data['username']}\n"
         if self.predict_loaded:
-            text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
-            text += f"\n**Reputation: **`{data.get('reputation', 0)}`"
+            text += f"\n**Identifier**: `{data.get('hash', 'unknown')}`"
+            text += f"\n**Reputation**: `{data.get('reputation', 0)}`"
         text += f"\nI've seen them on {len(data.get('chats', []))} chats."
         return text
 
