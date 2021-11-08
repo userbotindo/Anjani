@@ -171,7 +171,8 @@ class EventDispatcher(MixinBase):
         if not self.loaded or self._TelegramBot__running:
             return
 
-        data = await self.db.get_collection("SESSION").find_one(
+        collection = self.db.get_collection("SESSION")
+        data = await collection.find_one(
             {"_id": sha256(self.config["api_id"].encode()).hexdigest()}
         )
         if not data:
@@ -227,6 +228,9 @@ class EventDispatcher(MixinBase):
             pass
         finally:
             self.__state = (pts, date)
+            # Delete after we finished to avoid sending the same pts and date
+            # If GetState() doesn't execute on stop event
+            await collection.delete_one({"_id": sha256(self.config["api_id"].encode()).hexdigest()})
 
     async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
         await self.dispatch_event("stat_listen", stat, value, wait=False)
