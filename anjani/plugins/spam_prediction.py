@@ -312,6 +312,7 @@ class SpamPrediction(plugin.Plugin):
                         "ham": [],
                         "proba": probability,
                         "msg_id": [msg.message_id],
+                        "date": util.time.sec(),
                     }
                 )
             except DuplicateKeyError:
