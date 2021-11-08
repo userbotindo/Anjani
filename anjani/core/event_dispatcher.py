@@ -182,6 +182,30 @@ class EventDispatcher(MixinBase):
         if not pts or not date:
             return
 
+        async def send_missed_message(
+            messages: list[raw.base.Message],
+            users: MutableMapping[int, Any],
+            chats: MutableMapping[int, Any],
+        ) -> None:
+            for message in messages:
+                self.log.debug("Sending missed message with data '%s'", message)
+                await self.client.dispatcher.updates_queue.put(
+                    (
+                        raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
+                        users,
+                        chats,
+                    )
+                )
+
+        async def send_missed_update(
+            updates: list[raw.base.Update],
+            users: MutableMapping[int, Any],
+            chats: MutableMapping[int, Any],
+        ) -> None:
+            for update in updates:
+                self.log.debug("Sending missed update with data '%s'", update)
+                await self.client.dispatcher.updates_queue.put((update, users, chats))
+
         try:
             while True:
                 # TO-DO
@@ -203,19 +227,15 @@ class EventDispatcher(MixinBase):
                     users = {u.id: u for u in diff.users}
                     chats = {c.id: c for c in diff.chats}
 
-                    for message in diff.new_messages:
-                        self.client.dispatcher.updates_queue.put_nowait(
-                            (
-                                raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
-                                users,
-                                chats,
-                            )
+                    await asyncio.wait(
+                        (
+                            send_missed_message(diff.new_messages, users, chats),
+                            send_missed_update(diff.other_updates, users, chats),
                         )
-
-                    for update in diff.other_updates:
-                        self.client.dispatcher.updates_queue.put_nowait((update, users, chats))
+                    )
                 else:
                     if isinstance(diff, raw.types.updates.DifferenceEmpty):
+                        self.log.info("Missed events exhausted, you are up to date.")
                         date = diff.date
                         break
                     elif isinstance(diff, raw.types.updates.DifferenceTooLong):
@@ -228,9 +248,12 @@ class EventDispatcher(MixinBase):
             pass
         finally:
             self.__state = (pts, date)
-            # Delete after we finished to avoid sending the same pts and date
-            # If GetState() doesn't execute on stop event
-            await collection.delete_one({"_id": sha256(self.config["api_id"].encode()).hexdigest()})
+            # Unset after we finished to avoid sending the same pts and date,
+            # If GetState() doesn't executed on stop event
+            await collection.update_one(
+                {"_id": sha256(self.config["api_id"].encode()).hexdigest()},
+                {"$unset": {"pts": "", "date": "", "qts": "", "seq": ""}},
+            )
 
     async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
         await self.dispatch_event("stat_listen", stat, value, wait=False)
