@@ -300,25 +300,20 @@ class SpamPrediction(plugin.Plugin):
             await asyncio.sleep(0.1)
             break
 
-        if data:
+        try:
+            await self.db.insert_one(
+                {
+                    "_id": content_hash,
+                    "text": text,
+                    "spam": [],
+                    "ham": [],
+                    "proba": probability,
+                    "msg_id": [msg.message_id],
+                    "date": util.time.sec(),
+                }
+            )
+        except DuplicateKeyError:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
-        else:
-            try:
-                await self.db.insert_one(
-                    {
-                        "_id": content_hash,
-                        "text": text,
-                        "spam": [],
-                        "ham": [],
-                        "proba": probability,
-                        "msg_id": [msg.message_id],
-                        "date": util.time.sec(),
-                    }
-                )
-            except DuplicateKeyError:
-                await self.db.update_one(
-                    {"_id": content_hash}, {"$push": {"msg_id": msg.message_id}}
-                )
 
         target = await message.chat.get_member(user)
         if util.tg.is_staff_or_admin(target):
