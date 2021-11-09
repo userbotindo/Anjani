@@ -29,6 +29,7 @@ from pyrogram.errors import (
     QueryIdInvalid,
     UserAdminInvalid,
 )
+from pyrogram.errors.exceptions.bad_request_400 import MessageIdInvalid
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -188,6 +189,8 @@ class SpamPrediction(plugin.Plugin):
                         await self.bot.client.edit_message_reply_markup(
                             -1001314588569, i, InlineKeyboardMarkup(button)
                         )
+                    except MessageIdInvalid:
+                        pass
                     except MessageNotModified:
                         await query.answer(
                             "You already voted this content, "
