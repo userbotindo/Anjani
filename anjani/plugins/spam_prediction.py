@@ -63,8 +63,7 @@ class SpamPrediction(plugin.Plugin):
         token = self.bot.config.get("sp_token")
         url = self.bot.config.get("sp_url")
         if not (token and url):
-            self.bot.unload_plugin(self)
-            return
+            return self.bot.unload_plugin(self)
 
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
@@ -133,8 +132,7 @@ class SpamPrediction(plugin.Plugin):
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             data = await self.db.find_one({"_id": content_hash})
             if not data:
-                await query.answer("The voting poll for this message has ended!")
-                return
+                return await query.answer("The voting poll for this message has ended!")
 
             users_on_correct = data["spam"]
             users_on_incorrect = data["ham"]
@@ -214,7 +212,7 @@ class SpamPrediction(plugin.Plugin):
                             f"Please wait i'm updating the content for you.",
                             show_alert=True,
                         )
-                        await asyncio.sleep(flood.x)
+                        await asyncio.sleep(flood.x)  # type: ignore
                         continue
 
                     await asyncio.sleep(0.1)
@@ -255,13 +253,11 @@ class SpamPrediction(plugin.Plugin):
         if response.size == 0:
             return
 
-        await self.bot.log_stat("predicted")
         probability = response[0][1]
         if probability <= 0.5:
             return
 
         content_hash = self._build_hash(text)
-
         identifier = self._build_hex(user)
         proba_str = self.prob_to_string(probability)
 
@@ -274,8 +270,10 @@ class SpamPrediction(plugin.Plugin):
             notice += f"**Channel ID:** `{self._build_hex(ch.id)}`\n"
         notice += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
-        data = await self.db.find_one({"_id": content_hash})
         l_spam, l_ham = 0, 0
+        _, data = await asyncio.gather(
+            self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
+        )
         if data:
             l_spam = len(data["spam"])
             l_ham = len(data["ham"])
@@ -291,6 +289,7 @@ class SpamPrediction(plugin.Plugin):
             keyb.append(
                 [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")]
             )
+
         if message.forward_from_chat and message.forward_from_chat.username:
             raw_btn = InlineKeyboardButton(
                 text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
@@ -309,7 +308,7 @@ class SpamPrediction(plugin.Plugin):
                     reply_markup=InlineKeyboardMarkup(keyb),
                 )
             except FloodWait as flood:
-                await asyncio.sleep(flood.x)
+                await asyncio.sleep(flood.x)  # type: ignore
                 continue
 
             await asyncio.sleep(0.1)
@@ -433,7 +432,9 @@ class SpamPrediction(plugin.Plugin):
         if not user or user["reputation"] < 100:
             if not user:
                 return None
+
             return await self.text(ctx.chat.id, "spampredict-unauthorized", user["reputation"])
+
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond("Reply to a message!", delete_after=5)
