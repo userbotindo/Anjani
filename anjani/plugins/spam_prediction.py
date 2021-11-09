@@ -301,17 +301,18 @@ class SpamPrediction(plugin.Plugin):
             break
 
         try:
-            await self.db.insert_one(
-                {
-                    "_id": content_hash,
-                    "text": text,
-                    "spam": [],
-                    "ham": [],
-                    "proba": probability,
-                    "msg_id": [msg.message_id],
-                    "date": util.time.sec(),
-                }
-            )
+            async with asyncio.Lock():
+                await self.db.insert_one(
+                    {
+                        "_id": content_hash,
+                        "text": text,
+                        "spam": [],
+                        "ham": [],
+                        "proba": probability,
+                        "msg_id": [msg.message_id],
+                        "date": util.time.sec(),
+                    }
+                )
         except DuplicateKeyError:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
 
