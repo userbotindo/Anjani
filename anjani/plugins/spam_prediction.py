@@ -126,8 +126,7 @@ class SpamPrediction(plugin.Plugin):
         author = query.from_user.id
 
         if not content:
-            self.log.warning("Can't get hash from 'MessageID: %d'", message.message_id)
-            return
+            return self.log.warning("Can't get hash from 'MessageID: %d'", message.message_id)
 
         content_hash = content[0]
 
@@ -136,24 +135,37 @@ class SpamPrediction(plugin.Plugin):
             if not data:
                 await query.answer("The voting poll for this message has ended!")
                 return
+
             users_on_correct = data["spam"]
             users_on_incorrect = data["ham"]
             if method == "t":
-                # Check user in incorrect data
-                if author in users_on_incorrect:
-                    users_on_incorrect.remove(author)
-                if author in users_on_correct:
-                    users_on_correct.remove(author)
-                else:
-                    users_on_correct.append(author)
+                try:
+                    # Check user in incorrect data
+                    if author in users_on_incorrect:
+                        users_on_incorrect.remove(author)
+                    if author in users_on_correct:
+                        users_on_correct.remove(author)
+                    else:
+                        users_on_correct.append(author)
+                except TypeError:
+                    return await query.answer(
+                        "You can't vote this anymore, because this was marked as a spam by our staff",
+                        show_alert=True,
+                    )
             elif method == "f":
-                # Check user in correct data
-                if author in users_on_correct:
-                    users_on_correct.remove(author)
-                if author in users_on_incorrect:
-                    users_on_incorrect.remove(author)
-                else:
-                    users_on_incorrect.append(author)
+                try:
+                    # Check user in correct data
+                    if author in users_on_correct:
+                        users_on_correct.remove(author)
+                    if author in users_on_incorrect:
+                        users_on_incorrect.remove(author)
+                    else:
+                        users_on_incorrect.append(author)
+                except TypeError:
+                    return await query.answer(
+                        "You can't vote this anymore, because this was marked as a spam by our staff",
+                        show_alert=True,
+                    )
             else:
                 raise ValueError("Unknown method")
         else:
