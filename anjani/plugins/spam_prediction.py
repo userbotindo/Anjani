@@ -316,7 +316,9 @@ class SpamPrediction(plugin.Plugin):
                     }
                 )
             except DuplicateKeyError:
-                pass
+                await self.db.update_one(
+                    {"_id": content_hash}, {"$push": {"msg_id": msg.message_id}}
+                )
 
         target = await message.chat.get_member(user)
         if util.tg.is_staff_or_admin(target):
