@@ -63,21 +63,18 @@ class Paste:
                         break
             if self.__token:
                 content["_csrf_token"] = self.__token
-        
+
         async with self.__session.post(self.__url, data=content) as r:
             if self.__name == "katbin":
                 return str(r.url)
-            if self.__name == "spacebin":
-                regex = re.compile(r'"id":\s?"(.+?)"')
-                async for content_id in r.content.iter_any():
-                    uid = regex.search(content_id.decode("utf-8"))
-                    if not uid:
-                        continue
-
-                    return self.url_map[self.__name] + uid.group(1)
 
             content_data = await r.json()
-            return self.url_map[self.__name] + content_data["key"]
+            url = self.url_map[self.__name]
+            return (
+                url + content_data["key"]
+                if self.__name == "hastebin"
+                else url + content_data["payload"]["id"]
+            )
 
 
 class Misc(plugin.Plugin):
