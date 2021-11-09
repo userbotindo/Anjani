@@ -182,7 +182,10 @@ class CommandDispatcher(MixinBase):
                 # Response shortcut
                 if ret is not None:
                     async with ctx.action("typing"):
-                        await ctx.respond(ret)
+                        await ctx.respond(
+                            ret,
+                            disable_web_page_preview=True,
+                        )
             except errors.MessageNotModified:
                 cmd.plugin.log.warning(
                     "Command '%s' triggered a message edit with no changes; make sure there is only a single bot instance running",
