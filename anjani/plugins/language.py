@@ -18,6 +18,7 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from pyrogram import emoji
+from pyrogram.errors import MessageNotModified
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -76,9 +77,15 @@ class Language(plugin.Plugin):
             return
 
         await self.switch_lang(chat.id, lang_match)
-        await query.edit_message_text(
-            text=await self.text(chat.id, "language-set-succes", lang),
-        )
+        try:
+            await query.edit_message_text(
+                text=await self.text(chat.id, "language-set-succes", lang),
+            )
+        except MessageNotModified:
+            await query.answer(
+                await self.text(chat.id, "language-set-succes", lang), show_alert=True
+            )
+            await query.message.delete()
 
     async def switch_lang(self, chat_id: int, language: str) -> None:
         """Change chat language setting."""
