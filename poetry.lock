@@ -217,7 +217,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "colorlog"
-version = "6.5.0"
+version = "6.6.0"
 description = "Add colours to the output of Python's logging module."
 category = "main"
 optional = false
@@ -639,7 +639,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8, <3.10"
-content-hash = "e5fd0c7a4f1ee4accc28c849a60e016eb1bd61901250369308e57a38433ee873"
+content-hash = "d5f7c431eb65945ebdfd834220daa96d30ad3db6d8be4bbf1aa025b89064af3b"
 
 [metadata.files]
 aiofile = [
@@ -788,8 +788,8 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 colorlog = [
-    {file = "colorlog-6.5.0-py2.py3-none-any.whl", hash = "sha256:d334b1b8dae5989b786232f05586a7a0111feb24ff9cfc8310c3347a91388717"},
-    {file = "colorlog-6.5.0.tar.gz", hash = "sha256:cf62a8e389d5660d0d22be17937b25b9abef9497ddc940197d1773aa1f604339"},
+    {file = "colorlog-6.6.0-py2.py3-none-any.whl", hash = "sha256:351c51e866c86c3217f08e4b067a7974a678be78f07f85fc2d55b8babde6d94e"},
+    {file = "colorlog-6.6.0.tar.gz", hash = "sha256:344f73204009e4c83c5b6beb00b3c45dc70fcdae3c80db919e0a4171d006fde8"},
 ]
 distlib = [
     {file = "distlib-0.3.2-py2.py3-none-any.whl", hash = "sha256:23e223426b28491b1ced97dc3bbe183027419dfc7982b4fa2f05d5f3ff10711c"},
