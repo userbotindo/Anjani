@@ -28,7 +28,7 @@ anjani = "anjani:start"
 [tool.poetry.dependencies]
 python = "^3.8, <3.10"
 PyYAML = "^6.0"
-aiohttp = "^3.8.0"
+aiohttp = "^3.8.1"
 aiorun = "^2021.10.1"
 colorlog = "^6.6.0"
 dnspython = "^2.1.0"
