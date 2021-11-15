@@ -11,4 +11,3 @@ PyYAML==6.0
 scikit-learn==1.0.1
 tgcrypto==1.2.2
 toml==0.10.2
-uvloop==0.16.0
