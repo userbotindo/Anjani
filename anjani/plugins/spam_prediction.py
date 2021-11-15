@@ -120,7 +120,15 @@ class SpamPrediction(plugin.Plugin):
 
     async def runOcr(self, message: Message) -> None:
         """Read image text"""
-        image = AsyncPath(await message.download())
+        try:
+            image = AsyncPath(await message.download())
+        except TypeError:
+            return self.log.debug(
+                "Failed to download image from MessageID %s in Chat %s",
+                message.message_id,
+                message.chat.id,
+            )
+
         try:
             stdout, stderr, exitCode = await util.system.run_command(
                 *["tesseract", image, "stdout"]
