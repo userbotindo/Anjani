@@ -20,8 +20,7 @@ from hashlib import md5
 from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 
 from aiopath import AsyncPath
-from pyrogram.errors import BadRequest, PeerIdInvalid
-from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
+from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
@@ -175,6 +174,7 @@ class Users(plugin.Plugin):
 
         if user.username:
             text += f"**Username: **@{user.username}\n"
+
         text += f"**Permanent user link: **{util.tg.mention(user)}\n"
         text += (
             "**Number of profile pics: **"
@@ -182,6 +182,7 @@ class Users(plugin.Plugin):
         )
         if user.status:
             text += f"**Last seen: ** `{user.status}`\n"
+
         if user.id in self.bot.staff:
             text += "\nThis person is one of my **Staff**!\n"
         elif user.is_self:
@@ -209,8 +210,10 @@ class Users(plugin.Plugin):
     async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
         text = "**Old User Info**\n\n"
         text += f"**ID**: `{data['_id']}`\n"
-        text += f"**Name**: {data['name']}\n"
-        text += f"**Username**: @{data['username']}\n"
+        if data.get("name"):
+            text += f"**Name**: {data['name']}\n"
+        if data.get("username"):
+            text += f"**Username**: @{data['username']}\n"
         if self.predict_loaded:
             text += f"\n**Identifier**: `{data.get('hash', 'unknown')}`"
             text += f"\n**Reputation**: `{data.get('reputation', 0)}`"
