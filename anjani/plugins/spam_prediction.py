@@ -20,16 +20,17 @@ import re
 from hashlib import md5, sha256
 from typing import Any, ClassVar, MutableMapping, Optional
 
+from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
     MessageDeleteForbidden,
+    MessageIdInvalid,
     MessageNotModified,
     QueryIdInvalid,
     UserAdminInvalid,
 )
-from pyrogram.errors.exceptions.bad_request_400 import MessageIdInvalid
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -116,6 +117,27 @@ class SpamPrediction(plugin.Plugin):
 
     async def _is_spam(self, text: str) -> bool:
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
+
+    async def runOcr(self, message: Message) -> None:
+        """Read image text"""
+        image = AsyncPath(await message.download())
+        try:
+            stdout, stderr, exitCode = await util.system.run_command(
+                *["tesseract", image, "stdout"]
+            )
+        except Exception as e:  # skipcq: PYL-W0703
+            return self.log.error("Unexpected error occured when running OCR", exc_info=e)
+        finally:
+            await image.unlink()
+
+        if exitCode != 0:
+            return self.log.warning("tesseract returned code not 0, %s", stderr)
+
+        # Pass here so if caption of photo exists it still check the spam probability
+        try:
+            return await self.spam_check(message, stdout.strip())
+        except Exception as e:  # skipcq: PYL-W0703
+            self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
 
     @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
@@ -240,11 +262,15 @@ class SpamPrediction(plugin.Plugin):
             if message.text
             else (message.caption.strip() if message.media and message.caption else None)
         )
+        if message.photo:
+            # Don't await here, because reading image could be long
+            self.bot.loop.create_task(self.runOcr(message))
+
         if not chat or message.left_chat_member or not user or not text:
             return
 
         # Always check the spam probability
-        await self.spam_check(message, text)
+        return await self.spam_check(message, text)
 
     async def spam_check(self, message: Message, text: str) -> None:
         user = message.from_user.id

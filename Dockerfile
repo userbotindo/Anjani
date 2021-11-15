@@ -9,7 +9,12 @@ RUN apt-get -qq install -y --no-install-recommends \
     wget \
     curl \
     git \
-    gnupg2
+    gnupg2 \
+    imagemagick \
+    apt-transport-https \
+    libjpeg-turbo-progs \
+    libpng-dev \
+    libwebp-dev
 
 # Copy directory and install dependencies
 COPY . /anjani
@@ -22,5 +27,11 @@ ENV PATH="${PATH}:/root/.local/bin:$PATH"
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-dev -E all
 
+# Setup for tesseract
+RUN echo "deb https://notesalexp.org/tesseract-ocr-dev/buster/ buster main" >> /etc/apt/sources.list && \
+    wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add - && \
+    apt-get -qq update && \
+    apt-get -qq install -y tesseract-ocr
+
 # command to run on container start
-CMD ["python3","-m","anjani"]
+CMD ["python3", "-m", "anjani"]
