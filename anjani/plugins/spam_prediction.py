@@ -144,7 +144,7 @@ class SpamPrediction(plugin.Plugin):
 
         # Pass here so if caption of photo exists it still check the spam probability
         try:
-            return await self.spam_check(message, stdout.strip())
+            return await self.spam_check(message, stdout.strip(), from_ocr=True)
         except Exception as e:  # skipcq: PYL-W0703
             self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
 
@@ -156,49 +156,48 @@ class SpamPrediction(plugin.Plugin):
         author = query.from_user.id
 
         if not content:
-            return self.log.warning("Can't get hash from 'MessageID: %d'", message.message_id)
+            return await query.answer("Can't get hash from MessageID: '{message.message_id}'")
 
         content_hash = content[0]
 
-        if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
-            data = await self.db.find_one({"_id": content_hash})
-            if not data:
-                return await query.answer("The voting poll for this message has ended!")
+        data = await self.db.find_one({"_id": content_hash})
+        if not data:
+            return await query.answer("The voting poll for this message has ended!")
 
-            users_on_correct = data["spam"]
-            users_on_incorrect = data["ham"]
-            if method == "t":
-                try:
-                    # Check user in incorrect data
-                    if author in users_on_incorrect:
-                        users_on_incorrect.remove(author)
-                    if author in users_on_correct:
-                        users_on_correct.remove(author)
-                    else:
-                        users_on_correct.append(author)
-                except TypeError:
-                    return await query.answer(
-                        "You can't vote this anymore, because this was marked as a spam by our staff",
-                        show_alert=True,
-                    )
-            elif method == "f":
-                try:
-                    # Check user in correct data
-                    if author in users_on_correct:
-                        users_on_correct.remove(author)
-                    if author in users_on_incorrect:
-                        users_on_incorrect.remove(author)
-                    else:
-                        users_on_incorrect.append(author)
-                except TypeError:
-                    return await query.answer(
-                        "You can't vote this anymore, because this was marked as a spam by our staff",
-                        show_alert=True,
-                    )
-            else:
-                raise ValueError("Unknown method")
+        users_on_correct = data["spam"]
+        users_on_incorrect = data["ham"]
+        if method == "t":
+            try:
+                # Check user in incorrect data
+                if author in users_on_incorrect:
+                    users_on_incorrect.remove(author)
+
+                if author in users_on_correct:
+                    users_on_correct.remove(author)
+                else:
+                    users_on_correct.append(author)
+            except TypeError:
+                return await query.answer(
+                    "You can't vote this anymore, because this was marked as a spam by our staff",
+                    show_alert=True,
+                )
+        elif method == "f":
+            try:
+                # Check user in correct data
+                if author in users_on_correct:
+                    users_on_correct.remove(author)
+
+                if author in users_on_incorrect:
+                    users_on_incorrect.remove(author)
+                else:
+                    users_on_incorrect.append(author)
+            except TypeError:
+                return await query.answer(
+                    "You can't vote this anymore, because this was marked as a spam by our staff",
+                    show_alert=True,
+                )
         else:
-            return
+            return await query.answer("Invalid keyboard method!", show_alert=True)
 
         await self.db.update_one(
             {"_id": content_hash}, {"$set": {"spam": users_on_correct, "ham": users_on_incorrect}}
@@ -280,7 +279,7 @@ class SpamPrediction(plugin.Plugin):
         # Always check the spam probability
         return await self.spam_check(message, text)
 
-    async def spam_check(self, message: Message, text: str) -> None:
+    async def spam_check(self, message: Message, text: str, *, from_ocr: bool = True) -> None:
         user = message.from_user.id
 
         response = await self._predict(text.strip())
@@ -298,11 +297,19 @@ class SpamPrediction(plugin.Plugin):
         notice = (
             "#SPAM_PREDICTION\n\n"
             f"**Prediction Result**: {proba_str}\n"
-            f"**Identifier:** `{identifier}`\n"
+            f"**Identifier**: `{identifier}`\n"
         )
         if ch := message.forward_from_chat:
-            notice += f"**Channel ID:** `{self._build_hex(ch.id)}`\n"
-        notice += f"**Message Hash:** `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+            notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
+
+        if from_ocr:
+            notice += (
+                f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+            )
+        else:
+            notice += (
+                f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+            )
 
         l_spam, l_ham = 0, 0
         _, data = await asyncio.gather(
@@ -369,13 +376,22 @@ class SpamPrediction(plugin.Plugin):
             return
 
         if probability >= 0.9:
+            if from_ocr:
+                alert = (
+                    f"❗️**PHOTO SPAM ALERT**❗️\n\n"
+                    f"**User**: `{identifier}`\n"
+                    f"**Photo Text Hash**: `{content_hash}`\n"
+                    f"**Spam Probability**: `{proba_str}%`"
+                )
+            else:
+                alert = (
+                    f"❗️**MESSAGE SPAM ALERT**❗️\n\n"
+                    f"**User**: `{identifier}`\n"
+                    f"**Message Text Hash**: `{content_hash}`\n"
+                    f"**Spam Probability**: `{proba_str}%`"
+                )
+
             await self.bot.log_stat("spam_detected")
-            alert = (
-                f"❗️**SPAM ALERT**❗️\n\n"
-                f"**User:** `{identifier}`\n"
-                f"**Message Hash:** `{content_hash}`\n"
-                f"**Spam Probability:** `{proba_str}%`"
-            )
             try:
                 await message.delete()
             except (MessageDeleteForbidden, ChatAdminRequired, UserAdminInvalid):
@@ -396,14 +412,14 @@ class SpamPrediction(plugin.Plugin):
             )
 
     @command.filters(filters.staff_only)
-    async def cmd_update_model(self, _: command.Context) -> str:
+    async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
         token = self.bot.config.get("sp_token")
         url = self.bot.config.get("sp_url")
         if not (token and url):
             return "No token provided!"
 
         await self.__load_model(token, url)
-        return "Done"
+        await ctx.respond("Done", delete_after=5)
 
     @command.filters(filters.staff_only)
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
@@ -426,11 +442,11 @@ class SpamPrediction(plugin.Plugin):
             return "Prediction failed"
 
         proba = pred[0][1]
-        text = f"#SPAM\n\n**CPU Prediction:** `{self.prob_to_string(proba)}`\n"
+        text = f"#SPAM\n\n**CPU Prediction**: `{self.prob_to_string(proba)}`\n"
         if identifier:
-            text += f"**Identifier:** `{identifier}`\n"
+            text += f"**Identifier**: `{identifier}`\n"
 
-        text += f"**Message Hash:** `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
+        text += f"**Message Hash**: `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
         _, msg, __, ___ = await asyncio.gather(
             self.db.update_one(
                 {"_id": content_hash},
@@ -482,9 +498,9 @@ class SpamPrediction(plugin.Plugin):
         await self.bot.log_stat("predicted")
         return (
             "**Result**\n\n"
-            f"**Is Spam:** {await self._is_spam(content)}\n"
-            f"**Spam Prediction:** `{self.prob_to_string(pred[0][1])}`\n"
-            f"**Ham Prediction:** `{self.prob_to_string(pred[0][0])}`"
+            f"**Is Spam**: {await self._is_spam(content)}\n"
+            f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
+            f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`"
         )
 
     async def setting(self, chat_id: int, setting: bool) -> None:
