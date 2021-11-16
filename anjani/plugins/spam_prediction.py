@@ -448,8 +448,12 @@ class SpamPrediction(plugin.Plugin):
                 user_id = reply_msg.from_user.id
         else:
             content = ctx.input
-            if not content:
-                return "Give me a text or reply to a message / forwarded message"
+
+        if reply_msg.photo:
+            content = await self.runOcr(reply_msg)
+
+        if not content:
+            return "Give me a text or reply to a message / forwarded message"
 
         identifier = self._build_hex(user_id)
 
