@@ -17,6 +17,7 @@
 import asyncio
 import pickle
 import re
+from functools import partial
 from hashlib import md5, sha256
 from typing import Any, ClassVar, MutableMapping, Optional
 
@@ -102,6 +103,22 @@ class SpamPrediction(plugin.Plugin):
                 self.log.warning("Failed to download prediction model!")
                 self.bot.unload_plugin(self)
 
+    def _check_spam_results_ocr(
+        self, message: Message, future: asyncio.Future[Optional[str]]
+    ) -> None:
+        def done(fut: asyncio.Future[None]) -> None:
+            try:
+                fut.result()
+            except Exception as e:  # skipcq: PYL-W0703
+                self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
+
+        text = future.result()
+        if not text:
+            return
+
+        f = self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True))
+        f.add_done_callback(done)
+
     @staticmethod
     def _build_hash(content: str) -> str:
         return sha256(content.strip().encode()).hexdigest()
@@ -119,7 +136,7 @@ class SpamPrediction(plugin.Plugin):
     async def _is_spam(self, text: str) -> bool:
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
-    async def runOcr(self, message: Message) -> None:
+    async def runOcr(self, message: Message) -> Optional[str]:
         """Read image text"""
         try:
             image = AsyncPath(await message.download())
@@ -142,11 +159,7 @@ class SpamPrediction(plugin.Plugin):
         if exitCode != 0:
             return self.log.warning("tesseract returned code not 0, %s", stderr)
 
-        # Pass here so if caption of photo exists it still check the spam probability
-        try:
-            return await self.spam_check(message, stdout.strip(), from_ocr=True)
-        except Exception as e:  # skipcq: PYL-W0703
-            self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
+        return stdout.strip()
 
     @listener.filters(filters.regex(r"spam_check_(t|f)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
@@ -271,7 +284,10 @@ class SpamPrediction(plugin.Plugin):
             else (message.caption.strip() if message.media and message.caption else None)
         )
         if message.photo:
-            await self.runOcr(message)
+            future = self.bot.loop.create_task(self.runOcr(message))
+            future.add_done_callback(
+                partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
+            )
 
         if not chat or message.left_chat_member or not user or not text:
             return
@@ -425,10 +441,11 @@ class SpamPrediction(plugin.Plugin):
     async def cmd_spam(self, ctx: command.Context) -> Optional[str]:
         """Manual spam detection by bot staff"""
         user_id = None
-        if ctx.msg.reply_to_message:
-            content = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
-            if ctx.msg.reply_to_message.from_user.id != ctx.author.id:
-                user_id = ctx.msg.reply_to_message.from_user.id
+        reply_msg = ctx.msg.reply_to_message
+        if reply_msg:
+            content = reply_msg.text or reply_msg.caption
+            if reply_msg.from_user.id != ctx.author.id:
+                user_id = reply_msg.from_user.id
         else:
             content = ctx.input
             if not content:
@@ -478,30 +495,44 @@ class SpamPrediction(plugin.Plugin):
     @command.filters(aliases=["prediction"])
     async def cmd_predict(self, ctx: command.Context) -> Optional[str]:
         """Look a prediction for a replied message"""
+        chat = ctx.chat
         user = await self.user_db.find_one({"_id": ctx.author.id})
-        if not user or user["reputation"] < 100:
-            if not user:
-                return None
+        if not user:
+            return None
 
-            return await self.text(ctx.chat.id, "spampredict-unauthorized", user["reputation"])
+        if user["reputation"] < 100:
+            return await self.text(chat.id, "spampredict-unauthorized", user["reputation"])
 
         replied = ctx.msg.reply_to_message
         if not replied:
-            await ctx.respond("Reply to a message!", delete_after=5)
+            await ctx.respond(
+                await self.get_text(chat.id, "error-reply-to-message"), delete_after=5
+            )
             return None
 
-        content = replied.text or replied.caption
+        if replied.photo:
+            content = await self.runOcr(replied)
+        else:
+            content = replied.text or replied.caption
+
+        if not content:
+            return await self.get_text(chat.id, "spampredict-empty")
+
         pred = await self._predict(content)
         if pred.size == 0:
-            return "Prediction failed"
+            return await self.get_text(chat.id, "spampredict-failed")
 
-        await self.bot.log_stat("predicted")
-        return (
-            "**Result**\n\n"
-            f"**Is Spam**: {await self._is_spam(content)}\n"
-            f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
-            f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`"
+        await asyncio.gather(
+            self.bot.log_stat("predicted"),
+            ctx.respond(
+                "**Result**\n\n"
+                f"**Is Spam**: {await self._is_spam(content)}\n"
+                f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
+                f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`",
+                reply_to_message_id=replied.message_id,
+            ),
         )
+        return None
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off spam prediction in chats"""

@@ -416,9 +416,11 @@ spampredict-set: "Chat spam prediksi berubah ke {}."
 spampredict-view: |
   Spam Prediction Setting: **{}**.
   Jika dinyalakan akan otomatis menghapus pesan yang terdeteksi sebagai suatu spam.
+spampredict-empty: pesan/photo teks atau keterangan media kosong untuk diprediksi...
 spampredict-unauthorized: |
   Poin reputasi anda tidak cukup untuk menggunakan perintah ini! ({}/100)
   Untuk mendapatkan poin reputasi silahkan berikan suara di @SpamPredictionLog.
+spampredict-failed: Prediksi gagal...
 #endregion
 #region spam shield
 spamshield-button: Spam Shield

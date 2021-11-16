@@ -354,7 +354,6 @@ restriction-help: |
 
   **User command:**
   × /warns: Check a user warn data. (can reply)
-  
 no-kick-user: who should i kick?
 admin-kick: Yeahh... let's start kicking admins?
 kick-done: "**{}** Kicked!"
@@ -418,9 +417,11 @@ spampredict-set: "Chat spam prediction turned {}."
 spampredict-view: |
   Spam Prediction Setting: **{}**.
   When enabled will automaticaly delete the message that are detected as a spam.
+spampredict-empty: message/photo text nor caption is empty to predict...
 spampredict-unauthorized: |
   Your reputation point is not enough to use this command! ({}/100)
   To get a reputation point cast a vote on @SpamPredictionLog.
+spampredict-failed: Prediction failed...
 #endregion
 #region spam shield
 spamshield-button: Spam Shield
