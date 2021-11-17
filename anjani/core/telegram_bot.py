@@ -312,6 +312,9 @@ class TelegramBot(MixinBase):
                 await response.delete()
                 return await reply(msg, text=text or response.text, **kwargs)
 
+            if "reply_to_message_id" in kwargs:
+                del kwargs["reply_to_message_id"]
+
             return await response.edit(text, **kwargs)
 
         raise ValueError(f"Unknown response mode {mode}")
