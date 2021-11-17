@@ -35,10 +35,10 @@ class Paste:
 
         self.__token = None
         self.url_map = {
-            "-h": "https://hastebin.com/",
+            "-h": "https://www.toptal.com/developers/hastebin/",
             "-k": "https://katb.in/",
             "-s": "https://spaceb.in/",
-            "hastebin": "https://hastebin.com/",
+            "hastebin": "https://www.toptal.com/developers/hastebin/",
             "katbin": "https://katb.in/",
             "spacebin": "https://spaceb.in/",
         }
@@ -107,12 +107,14 @@ class Misc(plugin.Plugin):
     async def cmd_paste(self, ctx: command.Context, service: Optional[str] = None) -> Optional[str]:
         if not ctx.msg.reply_to_message:
             return None
-        if not service:
-            service = "hastebin"
 
-        data: Any
+        if not service:
+            service = "spacebin"
+
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
+
+        data: Any
         if reply_msg.document:
             file = AsyncPath(await reply_msg.download())
             data = await file.read_text()
@@ -123,38 +125,39 @@ class Misc(plugin.Plugin):
             return None
 
         uris = {
-            "-h": "https://hastebin.com/documents",
+            "-h": "https://www.toptal.com/developers/hastebin/documents",
             "-k": "https://katb.in/",
             "-s": "https://spaceb.in/api/v1/documents/",
-            "hastebin": "https://hastebin.com/documents",
+            "hastebin": "https://www.toptal.com/developers/hastebin/documents",
             "katbin": "https://katb.in/",
             "spacebin": "https://spaceb.in/api/v1/documents/",
         }
         try:
             uri = uris[service]
         except KeyError:
-            return None
-        else:
-            hastebin = "hastebin" in uri
-            katbin = "katb" in uri
-            spacebin = "spaceb" in uri
+            return await self.get_text(chat.id, "paste-invalid", service)
 
-        service = "hastebin" if hastebin else "katbin" if katbin else "spacebin"
-        if katbin:
+        if service in {"-h", "hastebin"}:
+            service = "hastebin"
+            data = data.encode("utf-8")
+        elif service in {"-k", "katbin"}:
+            service = "katbin"
             data = {"paste[content]": data}
-
-        if spacebin:
+        elif service in {"-s", "spacebin"}:
+            service = "spacebin"
             data = {"content": data, "extension": "txt"}
+        else:
+            return await self.get_text(chat.id, "paste-invalid", service)
 
-        await ctx.respond(await self.text(chat.id, "wait-paste", service))
+        await ctx.respond(await self.text(chat.id, "paste-wait", service))
 
         try:
             async with Paste(self.bot.http, service, uri) as paste:
                 return await self.text(
                     ctx.chat.id, "paste-succes", f"[{service}]({await paste.go(data)})"
                 )
-        except (JSONDecodeError, ContentTypeError, ClientConnectorError):
-            return await self.text(ctx.chat.id, "fail-paste", service)
+        except (JSONDecodeError, ContentTypeError, ClientConnectorError, KeyError):
+            return await self.text(ctx.chat.id, "paste-fail", service)
 
     @command.filters(filters.private)
     async def cmd_source(self, ctx: command.Context) -> None:
