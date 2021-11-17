@@ -427,6 +427,51 @@ class SpamPrediction(plugin.Plugin):
                 ),
             )
 
+    async def mark_spam_ocr(
+        self, content: str, user_id: Optional[int], chat_id: int, message_id: int
+    ) -> bool:
+        identifier = self._build_hex(user_id)
+        content_hash = self._build_hash(content)
+        pred = await self._predict(content.strip())
+        if pred.size == 0:
+            return False
+
+        proba = pred[0][1]
+        text = f"#SPAM\n\n**CPU Prediction**: `{self.prob_to_string(proba)}`\n"
+        if identifier:
+            text += f"**Identifier**: `{identifier}`\n"
+
+        text += f"**Photo Text Hash**: `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
+        res = await asyncio.gather(
+            self.bot.client.send_message(
+                chat_id=-1001314588569,
+                text=text,
+                disable_web_page_preview=True,
+            ),
+            self.db.update_one(
+                {"_id": content_hash},
+                {
+                    "$set": {
+                        "text": content.strip(),
+                        "spam": 1,
+                        "ham": 0,
+                    }
+                },
+                upsert=True,
+            ),
+            self.bot.log_stat("spam_detected"),
+            self.bot.log_stat("predicted"),
+        )
+        await self.bot.client.send_message(
+            chat_id,
+            "Message photo logged as spam!",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("View Message", url=res[0].link)]]
+            ),
+            reply_to_message_id=message_id,
+        )
+        return True
+
     @command.filters(filters.staff_only)
     async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
         token = self.bot.config.get("sp_token")
@@ -450,7 +495,16 @@ class SpamPrediction(plugin.Plugin):
             content = ctx.input
 
         if reply_msg.photo:
-            content = await self.runOcr(reply_msg)
+            ocr_result = await self.runOcr(reply_msg)
+            if ocr_result:
+                try:
+                    await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.message_id)
+                except Exception as e:  # skipcq: PYL-W0703
+                    self.log.error("Failed to marked OCR results as spam", exc_info=e)
+
+                # Return early if content is empty, so error message not shown
+                if not content:
+                    return None
 
         if not content:
             return "Give me a text or reply to a message / forwarded message"
@@ -514,10 +568,30 @@ class SpamPrediction(plugin.Plugin):
             )
             return None
 
+        content = replied.text or replied.caption
+
+        photoPrediction = None
         if replied.photo:
-            content = await self.runOcr(replied)
-        else:
-            content = replied.text or replied.caption
+            await ctx.respond(await self.get_text(chat.id, "spampredict-photo"))
+            ocr_result = await self.runOcr(replied)
+            if ocr_result:
+                ocr_prediction = await self._predict(ocr_result)
+                if ocr_prediction.size != 0:
+                    photoPrediction = (
+                        "**Result Photo Text**\n\n"
+                        f"**Is Spam**: {await self._is_spam(ocr_result)}\n"
+                        f"**Spam Prediction**: `{self.prob_to_string(ocr_prediction[0][1])}`\n"
+                        f"**Ham Prediction**: `{self.prob_to_string(ocr_prediction[0][0])}`\n\n"
+                    )
+                    # Return early if content is empty, so error message not shown
+                    if not content:
+                        await asyncio.gather(
+                            self.bot.log_stat("predicted"),
+                            ctx.respond(photoPrediction),
+                        )
+                        return None
+            else:
+                photoPrediction = "__Failed to read text from photo__\n\n"
 
         if not content:
             return await self.get_text(chat.id, "spampredict-empty")
@@ -526,14 +600,18 @@ class SpamPrediction(plugin.Plugin):
         if pred.size == 0:
             return await self.get_text(chat.id, "spampredict-failed")
 
+        textPrediction = (
+            f"**Is Spam**: {await self._is_spam(content)}\n"
+            f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
+            f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`"
+        )
         await asyncio.gather(
             self.bot.log_stat("predicted"),
             ctx.respond(
-                "**Result**\n\n"
-                f"**Is Spam**: {await self._is_spam(content)}\n"
-                f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
-                f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`",
-                reply_to_message_id=replied.message_id,
+                photoPrediction + "**Result Caption Text**\n\n" + textPrediction
+                if photoPrediction
+                else "**Result**\n\n" + textPrediction,
+                reply_to_message_id=None if replied.photo else replied.message_id,
             ),
         )
         return None

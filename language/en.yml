@@ -418,6 +418,7 @@ spampredict-view: |
   Spam Prediction Setting: **{}**.
   When enabled will automaticaly delete the message that are detected as a spam.
 spampredict-empty: message/photo text nor caption is empty to predict...
+spampredict-photo: "Reading photo text with ocr...\nThis might take a while."
 spampredict-unauthorized: |
   Your reputation point is not enough to use this command! ({}/100)
   To get a reputation point cast a vote on @SpamPredictionLog.
