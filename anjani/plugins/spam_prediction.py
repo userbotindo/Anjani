@@ -295,7 +295,7 @@ class SpamPrediction(plugin.Plugin):
         # Always check the spam probability
         return await self.spam_check(message, text)
 
-    async def spam_check(self, message: Message, text: str, *, from_ocr: bool = True) -> None:
+    async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
         user = message.from_user.id
 
         response = await self._predict(text.strip())
