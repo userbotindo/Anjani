@@ -572,7 +572,11 @@ class SpamPrediction(plugin.Plugin):
 
         photoPrediction = None
         if replied.photo:
-            await ctx.respond(await self.get_text(chat.id, "spampredict-photo"))
+            await ctx.respond(
+                await self.get_text(chat.id, "spampredict-photo"),
+                reply_to_message_id=replied.message_id,
+            )
+
             ocr_result = await self.runOcr(replied)
             if ocr_result:
                 ocr_prediction = await self._predict(ocr_result)
