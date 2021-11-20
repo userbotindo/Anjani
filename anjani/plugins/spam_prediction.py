@@ -294,7 +294,10 @@ class SpamPrediction(plugin.Plugin):
         return await self.spam_check(message, text)
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
-        user = message.from_user.id
+        try:
+            user = message.from_user.id
+        except AttributeError:
+            user = None
 
         response = await self._predict(text.strip())
         if response.size == 0:
@@ -384,6 +387,10 @@ class SpamPrediction(plugin.Plugin):
                 )
         except DuplicateKeyError:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
+
+        # Empty user big chances are anonymous admins
+        if user is None or message.sender_chat:
+            return
 
         target = await message.chat.get_member(user)
         if util.tg.is_staff_or_admin(target):
