@@ -61,10 +61,10 @@ def setup_log() -> None:
     if log_color:
         formatter = colorlog.ColoredFormatter(
             "  %(log_color)s%(levelname)-8s%(reset)s  |  "
-            "%(name)-11s  |  %(log_color)s%(message)s%(reset)s"
+            "%(name)-15s  |  %(log_color)s%(message)s%(reset)s"
         )
     else:
-        formatter = logging.Formatter("  %(levelname)-8s  |  %(name)-11s  |  %(message)s")
+        formatter = logging.Formatter("  %(levelname)-8s  |  %(name)-15s  |  %(message)s")
     stream = logging.StreamHandler()
     stream.setLevel(level)
     stream.setFormatter(formatter)
