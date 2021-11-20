@@ -513,10 +513,10 @@ class Federation(plugin.Plugin):
             try:
                 await self.bot.client.kick_chat_member(chat, user.id)
             except BadRequest as br:
-                self.log.error(f"Failed to fban {user.username} due to {br.MESSAGE}")
+                self.log.warning(f"Failed to fban {user.username} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE
             except Forbidden as err:
-                self.log.error(f"Can't to fban {user.username} caused by {err.MESSAGE}")
+                self.log.warning(f"Can't to fban {user.username} caused by {err.MESSAGE}")
                 failed[chat] = err.MESSAGE
                 # don't remove the chat for now
                 # await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
@@ -564,7 +564,7 @@ class Federation(plugin.Plugin):
             data["name"],
             util.tg.mention(banner),
             util.tg.mention(user),
-            user.id
+            user.id,
         )
         for chat in data["chats"]:
             try:
