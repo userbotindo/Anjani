@@ -338,6 +338,7 @@ report-admin-format: |
   **Report from: {chat}**
   × **Report by: ** {by_user} ``{by_user_id}``
   × **Reported user: ** {reported_mention} ``{reported_id}``
+user-not-in-chat: The user you trying to report is not in this group anymore.
 #endregion
 #region restrictions
 restriction-button: Restrictions

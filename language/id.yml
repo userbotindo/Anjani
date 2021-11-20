@@ -335,6 +335,7 @@ report-admin-format: |
   **Laporan dari: {chat}**
   × **Dilaporkan oleh: ** {by_user} ``{by_user_id}``
   × **Pengguna yang dilaporkan: ** {reported_mention} ``{reported_id}``
+user-not-in-chat: Pengguna yang kamu laporkan sudah tidak ada dalam grup ini lagi.
 #endregion
 #region restrictions
 restriction-button: Pembatasan

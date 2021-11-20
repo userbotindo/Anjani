@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
+from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
 
 from anjani import command, filters, listener, plugin, util
@@ -52,10 +53,15 @@ class Reporting(plugin.Plugin):
     @listener.filters(filters.regex(r"^(?i)@admin(s)?\b") & filters.group)
     async def on_message(self, message: Message) -> None:
         chat = message.chat
+        user = message.from_user
         if not await self.is_active(chat.id, is_private=False):
             return
 
-        invoker = await chat.get_member(message.from_user.id)
+        # Anonymous admins, so ignore it
+        if not user:
+            return
+
+        invoker = await chat.get_member(user.id)
         if invoker.status in {"creator", "administrator"}:
             return  # ignore command from admins
 
@@ -72,7 +78,12 @@ class Reporting(plugin.Plugin):
             await message.reply_text(await self.text(chat.id, "cant-self-report"))
             return
 
-        member = await chat.get_member(reported_user.id)
+        try:
+            member = await chat.get_member(reported_user.id)
+        except UserNotParticipant:
+            await message.reply_text(await self.text(chat.id, "user-not-in-chat"))
+            return
+
         if util.tg.is_staff_or_admin(member):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
