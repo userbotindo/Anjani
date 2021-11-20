@@ -459,9 +459,11 @@ class Federation(plugin.Plugin):
         if not self.is_fed_admin(data, banner.id):
             return await self.text(chat.id, "fed-admin-only")
 
+        reply_msg = ctx.msg.reply_to_message
         if not user:
-            if ctx.args and not ctx.msg.reply_to_message:
+            if ctx.args and not reply_msg or (reply_msg and reply_msg.sender_chat):
                 return await self.text(chat.id, "fed-no-ban-user")
+
             user = ctx.msg.reply_to_message.from_user
             reason = ctx.input
 
