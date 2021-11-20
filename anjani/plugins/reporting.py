@@ -70,6 +70,8 @@ class Reporting(plugin.Plugin):
             return
 
         reported_user = message.reply_to_message.from_user
+        if not reported_user:  # Do nothing here, big chances are anonymous admins
+            return
 
         if reported_user.id == self.bot.uid:
             await message.reply_text(await self.text(chat.id, "cant-report-me"))
