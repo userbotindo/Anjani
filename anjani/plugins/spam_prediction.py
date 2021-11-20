@@ -30,7 +30,6 @@ from pyrogram.errors import (
     MessageIdInvalid,
     MessageNotModified,
     QueryIdInvalid,
-    UnknownError,
     UserAdminInvalid,
 )
 from pyrogram.types import (
@@ -140,24 +139,23 @@ class SpamPrediction(plugin.Plugin):
         """Read image text"""
         try:
             image = AsyncPath(await message.download())
-        except (TypeError, UnknownError):
+        except Exception as e:  # skipcq: PYL-W0703
             return self.log.debug(
                 "Failed to download image from MessageID %s in Chat %s",
                 message.message_id,
                 message.chat.id,
+                exc_info=e,
             )
 
         try:
-            stdout, stderr, exitCode = await util.system.run_command(
-                "tesseract", str(image), "stdout"
-            )
+            stdout, _, exitCode = await util.system.run_command("tesseract", str(image), "stdout")
         except Exception as e:  # skipcq: PYL-W0703
             return self.log.error("Unexpected error occured when running OCR", exc_info=e)
         finally:
             await image.unlink()
 
         if exitCode != 0:
-            return self.log.warning("tesseract returned code not 0, %s", stderr)
+            return self.log.warning("tesseract returned code '{exitCode}', %s", stdout)
 
         return stdout.strip()
 
