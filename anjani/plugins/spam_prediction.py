@@ -140,7 +140,7 @@ class SpamPrediction(plugin.Plugin):
         try:
             image = AsyncPath(await message.download())
         except Exception as e:  # skipcq: PYL-W0703
-            return self.log.debug(
+            return self.log.warning(
                 "Failed to download image from MessageID %s in Chat %s",
                 message.message_id,
                 message.chat.id,
@@ -155,7 +155,7 @@ class SpamPrediction(plugin.Plugin):
             await image.unlink()
 
         if exitCode != 0:
-            return self.log.warning("tesseract returned code '{exitCode}', %s", stdout)
+            return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
 
         return stdout.strip()
 
