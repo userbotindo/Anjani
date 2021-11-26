@@ -144,7 +144,6 @@ class SpamPrediction(plugin.Plugin):
                 "Failed to download image from MessageID %s in Chat %s",
                 message.message_id,
                 message.chat.id,
-                exc_info=e,
             )
 
         try:
