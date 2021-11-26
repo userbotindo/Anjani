@@ -139,7 +139,7 @@ class SpamPrediction(plugin.Plugin):
         """Read image text"""
         try:
             image = AsyncPath(await message.download())
-        except Exception as e:  # skipcq: PYL-W0703
+        except Exception:  # skipcq: PYL-W0703
             return self.log.warning(
                 "Failed to download image from MessageID %s in Chat %s",
                 message.message_id,
@@ -249,7 +249,7 @@ class SpamPrediction(plugin.Plugin):
                         )
                     except FloodWait as flood:
                         await query.answer(
-                            f"Please wait i'm updating the content for you.",
+                            "Please wait i'm updating the content for you.",
                             show_alert=True,
                         )
                         await asyncio.sleep(flood.x)  # type: ignore
