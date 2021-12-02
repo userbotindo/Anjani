@@ -69,7 +69,7 @@ class Muting(plugin.Plugin):
             return await self.text(chat_id, "self-muting")
         if is_member and util.tg.is_staff_or_admin(member):
             return await self.text(chat_id, "cant-mute-admin")
-        elif util.tg.is_staff(user.id):
+        if util.tg.is_staff(user.id):
             return await self.text(chat_id, "cant-mute-admin")
 
         if flag:

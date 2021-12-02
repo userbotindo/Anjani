@@ -271,8 +271,7 @@ class Restrictions(plugin.Plugin):
         chat_data = await self.db.find_one({"chat_id": chat.id})
         if not chat_data:
             return await ctx.get_text("warn-no-data", util.tg.mention(user))
-        else:
-            threshold = chat_data.get("warn_threshold", 3)
+        threshold = chat_data.get("warn_threshold", 3)
 
         try:
             warns_list = chat_data["warn_list"][str(user.id)]
