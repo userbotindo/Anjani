@@ -22,6 +22,9 @@ on:
 
 jobs:
   analyze:
+    # check if actor is not dependabot
+    # if so, skip analysis
+    if: github.actor != 'dependabot[bot]'
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
