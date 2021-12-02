@@ -763,7 +763,7 @@ class Federation(plugin.Plugin):
                 return await self.text(chat.id, "user-no-feds")
 
             ret, _ = await asyncio.gather(
-                self.text(chat.id, "fed-log-set-group", data["name"]),
+                self.text(chat.id, "fed-log-set-group", name=data["name"]),
                 self.db.update_one({"_id": data["_id"]}, {"$set": {"log": chat.id}}),
             )
             return ret
