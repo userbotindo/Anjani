@@ -19,7 +19,12 @@ from typing import Any, ClassVar, MutableMapping, Optional
 
 import bson
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, User
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    User,
+)
 
 from anjani import command, filters, listener, plugin, util
 
@@ -38,7 +43,7 @@ class Restrictions(plugin.Plugin):
         try:
             return {self.name: data["warn_list"]} if data else {}
         except KeyError:
-            return {} 
+            return {}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one(
@@ -79,10 +84,12 @@ class Restrictions(plugin.Plugin):
             ),
             query.message.edit(
                 await self.get_text(
-                    chat.id, "warn-removed",
-                    util.tg.mention(query.from_user), util.tg.mention(target),
+                    chat.id,
+                    "warn-removed",
+                    util.tg.mention(query.from_user),
+                    util.tg.mention(target),
                 )
-            )
+            ),
         )
 
     async def kick(self, user: int, chat: int) -> None:
@@ -113,7 +120,8 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff_or_admin(target):
                 return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
-            return await self.text(chat.id, "err-not-participant")
+            if util.tg.is_staff(user.id):
+                return await self.text(chat.id, "admin-kick")
 
         await self.kick(user.id, chat.id)
 
@@ -145,7 +153,9 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff_or_admin(target):
                 return await self.text(chat.id, "admin-ban")
         except UserNotParticipant:
-            return await self.text(chat.id, "err-not-participant")
+            # Not a participant in the chat (replying from channel discussion)
+            if util.tg.is_staff(user.id):
+                return await self.text(chat.id, "admin-ban")
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "ban-done", user.first_name), chat.kick_member(user.id)
@@ -198,7 +208,7 @@ class Restrictions(plugin.Plugin):
         target = await chat.get_member(user.id)
         if target.status in {"administrator", "creator"}:
             return await ctx.get_text("rmwarn-admin")
-        
+
         threshold = 3
         warns: Optional[int] = None
         chat_data = await self.db.find_one({"chat_id": chat.id})
@@ -215,15 +225,13 @@ class Restrictions(plugin.Plugin):
             [
                 InlineKeyboardButton(
                     await ctx.get_text("warn-keyboard-text"),
-                    callback_data=f"rm_warn_{user.id}_{uid}"
+                    callback_data=f"rm_warn_{user.id}_{uid}",
                 )
             ]
         ]
         await asyncio.gather(
             self.db.update_one(
-                {"chat_id": chat.id},
-                {"$set": {f"warn_list.{user.id}.{uid}": reason}},
-                upsert=True
+                {"chat_id": chat.id}, {"$set": {f"warn_list.{user.id}.{uid}": reason}}, upsert=True
             ),
             ctx.respond(
                 await self.get_text(
@@ -235,13 +243,12 @@ class Restrictions(plugin.Plugin):
                     reason,
                 ),
                 reply_markup=InlineKeyboardMarkup(keyboard),
-            )
+            ),
         )
 
         if warns is not None and warns + 1 >= threshold:
             ret, _ = await asyncio.gather(
-                ctx.get_text("warn-user-max", util.tg.mention(user)),
-                chat.kick_member(user.id)
+                ctx.get_text("warn-user-max", util.tg.mention(user)), chat.kick_member(user.id)
             )
             return ret
 
@@ -282,7 +289,7 @@ class Restrictions(plugin.Plugin):
             util.tg.mention(user),
             warns,
             threshold,
-            "\n".join(f"  • __{reason}__" for reason in warns_list.values())
+            "\n".join(f"  • __{reason}__" for reason in warns_list.values()),
         )
 
     @command.filters(filters.admin_only, aliases={"warnlim"})
@@ -305,9 +312,7 @@ class Restrictions(plugin.Plugin):
         return ret
 
     @command.filters(filters.can_restrict, aliases={"removewarn"})
-    async def cmd_rmwarn(
-        self, ctx: command.Context, user: Optional[User] = None
-    ) -> Optional[str]:
+    async def cmd_rmwarn(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Remove a warn"""
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
@@ -338,14 +343,10 @@ class Restrictions(plugin.Plugin):
             return await ctx.get_text("warn-no-data", util.tg.mention(user))
 
         ret, _ = await asyncio.gather(
-            self.get_text(
-                chat.id,
-                "rmwarn-done",
-                util.tg.mention(user)
-            ),
+            self.get_text(chat.id, "rmwarn-done", util.tg.mention(user)),
             self.db.update_one(
                 {"chat_id": chat.id},
                 {"$unset": {f"warn_list.{user.id}.{list(warns_list.keys())[-1]}": ""}},
-            )
+            ),
         )
         return ret

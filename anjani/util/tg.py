@@ -200,6 +200,10 @@ def is_staff_or_admin(target: Union[ChatMember, _types.MemberPermissions]) -> bo
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
+def is_staff(target_id: int) -> bool:
+    return target_id in STAFF
+
+
 def mention(user: User) -> str:
     pattern = re.compile(r"<[a-z/][\s\S]*>")
     link = "[{name}](tg://user?id={id})"
