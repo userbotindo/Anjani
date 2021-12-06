@@ -18,6 +18,7 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
 import bson
+import time
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
@@ -93,9 +94,8 @@ class Restrictions(plugin.Plugin):
         )
 
     async def kick(self, user: int, chat: int) -> None:
-        await self.bot.client.kick_chat_member(chat, user)
-        await asyncio.sleep(1)
-        await self.bot.client.unban_chat_member(chat, user)
+        await self.bot.client.kick_chat_member(chat, user,
+                                               until_date=int(time.time() + 30))
 
     @command.filters(filters.can_restrict)
     async def cmd_kick(
