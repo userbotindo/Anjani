@@ -53,7 +53,7 @@ class Restrictions(plugin.Plugin):
 
     @listener.filters(filters.regex(r"^rm_warn_(\d+)_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
-        """ Remove warn callback data. """
+        """Remove warn callback data"""
         chat = query.message.chat
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
@@ -188,7 +188,7 @@ class Restrictions(plugin.Plugin):
     async def cmd_warn(
         self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
     ) -> Optional[str]:
-        """ Warn command chat member. """
+        """Warn command chat member"""
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
         if not user:
