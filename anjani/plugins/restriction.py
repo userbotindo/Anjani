@@ -18,6 +18,7 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
 import bson
+import time
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
@@ -52,6 +53,7 @@ class Restrictions(plugin.Plugin):
 
     @listener.filters(filters.regex(r"^rm_warn_(\d+)_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> None:
+        """Remove warn callback data"""
         chat = query.message.chat
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
@@ -92,11 +94,6 @@ class Restrictions(plugin.Plugin):
             ),
         )
 
-    async def kick(self, user: int, chat: int) -> None:
-        await self.bot.client.kick_chat_member(chat, user)
-        await asyncio.sleep(1)
-        await self.bot.client.unban_chat_member(chat, user)
-
     @command.filters(filters.can_restrict)
     async def cmd_kick(
         self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
@@ -123,7 +120,8 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff(user.id):
                 return await self.text(chat.id, "admin-kick")
 
-        await self.kick(user.id, chat.id)
+        await self.bot.client.kick_chat_member(chat.id, user.id,
+                                               until_date=int(time.time() + 30))
 
         ret = await self.text(chat.id, "kick-done", user.first_name)
         if reason:
@@ -190,6 +188,7 @@ class Restrictions(plugin.Plugin):
     async def cmd_warn(
         self, ctx: command.Context, user: Optional[User] = None, *, reason: str = ""
     ) -> Optional[str]:
+        """Warn command chat member"""
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
         if not user:
