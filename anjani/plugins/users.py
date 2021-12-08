@@ -103,9 +103,8 @@ class Users(plugin.Plugin):
         set_content = {"username": user.username, "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
 
-        if self.predict_loaded:
-            if not user_data or "hash" not in user_data:
-                set_content["hash"] = self.hash_id(user.id)
+        if self.predict_loaded and (not user_data or "hash" not in user_data):
+            set_content["hash"] = self.hash_id(user.id)
 
         await self.users_db.update_one({"_id": user.id}, {"$set": set_content})
 
@@ -189,7 +188,7 @@ class Users(plugin.Plugin):
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
 
         if user.is_scam:
-            text += f"**\n⚠️Warning this user is flagged as a scammer by Telegram⚠️**\n"
+            text += "**\n⚠️Warning this user is flagged as a scammer by Telegram⚠️**\n"
 
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:

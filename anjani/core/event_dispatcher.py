@@ -63,7 +63,7 @@ class EventDispatcher(MixinBase):
         filters: Optional[Filter] = None,
     ) -> None:
         if event in {"load", "start", "started", "stop", "stopped"} and filters is not None:
-            self.log.warning(f"Built-in Listener can't be use with filters. Removing...")
+            self.log.warning("Built-in Listener can't be use with filters. Removing...")
             filters = None
 
         if getattr(func, "_cmd_filters", None):
@@ -233,16 +233,15 @@ class EventDispatcher(MixinBase):
                             send_missed_update(diff.other_updates, users, chats),
                         )
                     )
+                elif isinstance(diff, raw.types.updates.DifferenceEmpty):
+                    self.log.info("Missed event exhausted, you are up to date.")
+                    date = diff.date
+                    break
+                elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                    pts = diff.pts
+                    self.log.debug(pts)
+                    continue
                 else:
-                    if isinstance(diff, raw.types.updates.DifferenceEmpty):
-                        self.log.info("Missed events exhausted, you are up to date.")
-                        date = diff.date
-                        break
-                    elif isinstance(diff, raw.types.updates.DifferenceTooLong):
-                        pts = diff.pts
-                        self.log.debug(pts)
-                        continue
-
                     break
         except (ConnectionError, OSError, asyncio.CancelledError):
             pass
