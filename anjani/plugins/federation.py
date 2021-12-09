@@ -24,6 +24,7 @@ from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
 from pyrogram.types import (
     CallbackQuery,
     Chat,
+    ChatMemberUpdated,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -64,6 +65,26 @@ class Federation(plugin.Plugin):
             banned = await self.is_fbanned(chat.id, new_member.id)
             if banned:
                 await self.fban_handler(message.chat, new_member, banned)
+
+    async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
+        if not (update.old_chat_member and update.new_chat_member):
+            return
+        if update.old_chat_member.user.id != self.bot.uid:
+            return
+
+        if (
+            update.old_chat_member.can_restrict_members
+            and not update.new_chat_member.can_restrict_members
+        ):
+            chat = update.chat
+            fed_data = await self.get_fed_bychat(chat.id)
+            if not fed_data:
+                return
+            ret, _ = await asyncio.gather(
+                self.text(chat.id, "fed-autoleave", fed_data["name"], fed_data["_id"]),
+                self.db.update_one({"_id": fed_data["_id"]}, {"$pull": {"chats": chat.id}}),
+            )
+            await self.bot.client.send_message(chat.id, ret)
 
     @listener.filters(filters.regex(r"(rm|log)fed_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> Any:
@@ -230,7 +251,7 @@ class Federation(plugin.Plugin):
         )
         return None
 
-    @command.filters(filters.admin_only)
+    @command.filters(filters.admin_only & filters.can_restrict)
     async def cmd_joinfed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
         """Join a federation in chats"""
         chat = ctx.chat
@@ -518,25 +539,28 @@ class Federation(plugin.Plugin):
             try:
                 await self.bot.client.kick_chat_member(chat, user.id)
             except BadRequest as br:
-                self.log.warning(f"Failed to fban {user.username} due to {br.MESSAGE}")
+                self.log.warning(f"Failed to fban {user.username} on {chat} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE
             except Forbidden as err:
-                self.log.warning(f"Can't to fban {user.username} caused by {err.MESSAGE}")
+                self.log.warning(f"Can't to fban {user.username} on {chat} caused by {err.MESSAGE}")
                 failed[chat] = err.MESSAGE
-                # don't remove the chat for now
-                # await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
 
         await ctx.respond(string)
 
+        text = ""
         if failed:
-            text = ""
             for key, err_msg in failed.items():
                 text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
-            await ctx.respond(text, delete_after=20, mode="reply", reference=ctx.response)
+                # Remove the chat federation
+                await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
+            text += f"**Those chat has leaved the federation {data['name']}!**"
+            await ctx.respond(text, mode="reply", reference=ctx.response)
 
         # send message to federation log
         if log := data.get("log"):
             await self.bot.client.send_message(log, string, disable_web_page_preview=True)
+            if failed:
+                await self.bot.client.send_message(log, text)
 
         return None
 

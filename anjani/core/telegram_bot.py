@@ -24,7 +24,12 @@ import pyrogram.filters as flt
 from aiopath import AsyncPath
 from pyrogram import Client
 from pyrogram.filters import Filter
-from pyrogram.handlers import CallbackQueryHandler, InlineQueryHandler, MessageHandler
+from pyrogram.handlers import (
+    CallbackQueryHandler,
+    ChatMemberUpdatedHandler,
+    InlineQueryHandler,
+    MessageHandler,
+)
 from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
@@ -37,7 +42,9 @@ if TYPE_CHECKING:
     from .anjani_bot import Anjani
 
 EventType = Union[CallbackQuery, InlineQuery, Message]
-TgEventHandler = Union[CallbackQueryHandler, InlineQueryHandler, MessageHandler]
+TgEventHandler = Union[
+    CallbackQueryHandler, InlineQueryHandler, MessageHandler, ChatMemberUpdatedHandler
+]
 
 
 class TelegramBot(MixinBase):
@@ -234,6 +241,7 @@ class TelegramBot(MixinBase):
         self.update_plugin_event(
             "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
         )
+        self.update_plugin_event("chat_member_update", ChatMemberUpdatedHandler)
         self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
         self.update_plugin_event("inline_query", InlineQueryHandler)
         self.update_plugin_event(
