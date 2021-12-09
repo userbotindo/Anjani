@@ -268,7 +268,10 @@ class Users(plugin.Plugin):
         """Fetch a telegram peer data"""
         if not args:
             if ctx.msg.reply_to_message:
-                return await self._user_info(ctx, ctx.msg.reply_to_message.from_user)
+                if ctx.msg.reply_to_message.from_user:
+                    return await self._user_info(ctx, ctx.msg.reply_to_message.from_user)
+                if ctx.msg.reply_to_message.sender_chat:
+                    return await self._chat_info(ctx, ctx.msg.reply_to_message.sender_chat)
 
             if not ctx.msg.reply_to_message:
                 if not ctx.author:
