@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import asynccontextmanager
+from time import monotonic as monotonic_time
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -26,7 +27,6 @@ from typing import (
 )
 
 from pymongo.client_session import ClientSession, SessionOptions
-from pymongo.monotonic import time as monotonic_time
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
@@ -111,12 +111,12 @@ class AsyncClientSession(AsyncBase):
         # 99% Of this code from motor's lib
 
         def _within_time_limit(s: float) -> bool:
-            return monotonic_time.time() - s < 120
+            return monotonic_time() - s < 120
 
         def _max_time_expired_error(exc: PyMongoError) -> bool:
             return isinstance(exc, OperationFailure) and exc.code == 50
 
-        start_time = monotonic_time.time()
+        start_time = monotonic_time()
         while True:
             async with self.start_transaction(
                 read_concern=read_concern,

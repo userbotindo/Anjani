@@ -17,7 +17,6 @@
 from typing import Any, List, MutableMapping, Optional, Tuple, Union
 
 from bson import CodecOptions
-from bson.son import SON
 from bson.timestamp import Timestamp
 from pymongo import IndexModel
 from pymongo.collation import Collation
@@ -40,7 +39,7 @@ from .change_stream import AsyncChangeStream
 from .client_session import AsyncClientSession
 from .command_cursor import AsyncLatentCommandCursor
 from .cursor import AsyncCursor, AsyncRawBatchCursor, Cursor
-from .types import JavaScriptCode, ReadPreferences, Request
+from .types import ReadPreferences, Request
 
 
 class AsyncCollection(AsyncBaseProperty):
@@ -67,6 +66,9 @@ class AsyncCollection(AsyncBaseProperty):
                 self.read_concern,
             )
         )
+
+    def __hash__(self) -> int:
+        return hash((self.database, self.name))
 
     def aggregate(
         self,
@@ -316,24 +318,6 @@ class AsyncCollection(AsyncBaseProperty):
             self.dispatch.index_information, session=session.dispatch if session else session
         )
 
-    async def inline_map_reduce(
-        self,
-        mapping: JavaScriptCode,
-        reduce: JavaScriptCode,
-        *,
-        full_response: bool = False,
-        session: Optional[AsyncClientSession] = None,
-        **kwargs: Any,
-    ) -> MutableMapping[str, Any]:
-        return await util.run_sync(
-            self.dispatch.inline_map_reduce,
-            mapping,
-            reduce,
-            full_response=full_response,
-            session=session.dispatch if session else session,
-            **kwargs,
-        )
-
     async def insert_many(
         self,
         documents: List[MutableMapping[str, Any]],
@@ -369,26 +353,6 @@ class AsyncCollection(AsyncBaseProperty):
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
             self, self.dispatch.list_indexes, session=session.dispatch if session else session
-        )
-
-    async def map_reduce(
-        self,
-        mapping: JavaScriptCode,
-        reduce: JavaScriptCode,
-        out: Union[str, MutableMapping[str, Any], SON],
-        *,
-        full_response: bool = False,
-        session: Optional[AsyncClientSession] = None,
-        **kwargs: Any,
-    ) -> MutableMapping[str, Any]:
-        return await util.run_sync(
-            self.dispatch.map_reduce,
-            mapping,
-            reduce,
-            out,
-            full_response=full_response,
-            session=session.dispatch if session else session,
-            **kwargs,
         )
 
     async def options(

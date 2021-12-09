@@ -56,6 +56,9 @@ class AsyncDatabase(AsyncBaseProperty):
     def __getitem__(self, name) -> AsyncCollection:
         return AsyncCollection(Collection(self.dispatch, name))
 
+    def __hash__(self) -> int:
+        return hash((self.client, self.name))
+
     def aggregate(
         self,
         pipeline: List[MutableMapping[str, Any]],

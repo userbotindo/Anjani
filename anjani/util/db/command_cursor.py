@@ -210,8 +210,8 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
             if self.dispatch._CommandCursor__data or not self.dispatch.alive:  # skipcq: PYL-W0212
                 # _get_more is complete.
                 original_future.set_result(
-                    len(self.dispatch._CommandCursor__data)
-                )  # skipcq: PYL-W0212
+                    len(self.dispatch._CommandCursor__data)  # skipcq: PYL-W0212
+                )
             else:
                 # Send a getMore.
                 fut = super()._get_more()

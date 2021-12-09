@@ -111,8 +111,6 @@ class AsyncCursorBase(AsyncBase):
             # Return early if the task was cancelled.
             if future.done():
                 return
-            collection = self.collection
-            fix_outgoing = collection.database._fix_outgoing  # skipcq: PYL-W0212
 
             if length is None:
                 n = result
@@ -121,7 +119,7 @@ class AsyncCursorBase(AsyncBase):
 
             i = 0
             while i < n:
-                the_list.append(fix_outgoing(self._data().popleft(), collection))
+                the_list.append(self._data().popleft())
                 i += 1
 
             reached_length = length is not None and len(the_list) >= length
