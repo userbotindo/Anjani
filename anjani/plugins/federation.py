@@ -66,10 +66,10 @@ class Federation(plugin.Plugin):
             if banned:
                 await self.fban_handler(message.chat, new_member, banned)
 
-    async def on_chat_member_update(self, update: ChatMemberUpdated) -> Optional[str]:
-        if update.old_chat_member.user.id != self.bot.uid:
-            return
+    async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
         if not (update.old_chat_member and update.new_chat_member):
+            return
+        if update.old_chat_member.user.id != self.bot.uid:
             return
 
         if (
@@ -539,25 +539,28 @@ class Federation(plugin.Plugin):
             try:
                 await self.bot.client.kick_chat_member(chat, user.id)
             except BadRequest as br:
-                self.log.warning(f"Failed to fban {user.username} due to {br.MESSAGE}")
+                self.log.warning(f"Failed to fban {user.username} on {chat} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE
             except Forbidden as err:
-                self.log.warning(f"Can't to fban {user.username} caused by {err.MESSAGE}")
+                self.log.warning(f"Can't to fban {user.username} on {chat} caused by {err.MESSAGE}")
                 failed[chat] = err.MESSAGE
-                # don't remove the chat for now
-                # await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
 
         await ctx.respond(string)
 
+        text = ""
         if failed:
-            text = ""
             for key, err_msg in failed.items():
                 text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
-            await ctx.respond(text, delete_after=20, mode="reply", reference=ctx.response)
+                # Remove the chat federation
+                await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
+            text += f"**Those chat has leaved the federation {data['name']}!**"
+            await ctx.respond(text, mode="reply", reference=ctx.response)
 
         # send message to federation log
         if log := data.get("log"):
             await self.bot.client.send_message(log, string, disable_web_page_preview=True)
+            if failed:
+                await self.bot.client.send_message(log, text)
 
         return None
 
