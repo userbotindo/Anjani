@@ -47,7 +47,7 @@ class Muting(plugin.Plugin):
         if member is None:
             if ctx.args and not ctx.args[0].endswith(("s", "m", "h")):
                 return await self.text(chat_id, "no-mute-user")
-            if ctx.msg.reply_to_message:
+            if ctx.msg.reply_to_message and ctx.msg.reply_to_message.from_user:
                 try:
                     member = await self.bot.client.get_chat_member(
                         chat_id, ctx.msg.reply_to_message.from_user.id
@@ -91,7 +91,7 @@ class Muting(plugin.Plugin):
         if member is None:
             if ctx.args:
                 return await self.text(chat_id, "err-peer-invalid")
-            if ctx.msg.reply_to_message:
+            if ctx.msg.reply_to_message and ctx.msg.reply_to_message.from_user:
                 member = await self.bot.client.get_chat_member(
                     chat_id, ctx.msg.reply_to_message.from_user.id
                 )
