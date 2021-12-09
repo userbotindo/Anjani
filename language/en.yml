@@ -218,6 +218,7 @@ fed-log-set-chnl: "This channel has been set as the fed log for **{}**\nall fed 
 fed-invalid-identity: The user who clicked confirmation button was not the fed creator.\nOnly the federation creator can set the fed log.
 fed-log-unset: Federation log of **{}** is unset.
 fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
+fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
 #endregion
 #region language
 language-button: Language

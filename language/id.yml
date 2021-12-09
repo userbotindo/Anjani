@@ -216,6 +216,7 @@ fed-log-set-chnl: "Saluran ini telah ditetapkan sebagai catatan federasi untuk *
 fed-invalid-identity: Pengguna yang mengklik tombol konfirmasi bukanlah pemilik federasi.\nHanya pemilik federasi yang dapat menetapkan catatan federasi.
 fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
 fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Reason:** {}\n**Banned on:** {}"
+fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
 #endregion
 #region language
 language-button: Bahasa
