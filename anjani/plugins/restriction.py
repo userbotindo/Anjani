@@ -115,8 +115,7 @@ class Restrictions(plugin.Plugin):
 
         try:
             if isinstance(target, User):
-                target = await chat.get_member(target.id)
-                if util.tg.is_staff_or_admin(target):
+                if util.tg.is_staff_or_admin(await chat.get_member(target.id)):
                     return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
             if util.tg.is_staff(target.id):
@@ -131,33 +130,34 @@ class Restrictions(plugin.Plugin):
 
     @command.filters(filters.can_restrict)
     async def cmd_ban(
-        self, ctx: command.Context, user: Union[User, Chat] = None, *, reason: str = ""
+        self, ctx: command.Context, target: Union[User, Chat] = None, *, reason: str = ""
     ) -> str:
         """Ban chat member"""
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
 
-        if not user:
+        if not target:
             if ctx.args and not reply_msg:
                 return await self.text(chat.id, "err-peer-invalid")
 
             if not reply_msg or not (reply_msg.from_user or reply_msg.sender_chat):
                 return await self.text(chat.id, "no-ban-user")
 
-            user = reply_msg.from_user or reply_msg.sender_chat
+            target = reply_msg.from_user or reply_msg.sender_chat
             reason = ctx.input
 
         try:
-            target = await chat.get_member(user.id)
-            if util.tg.is_staff_or_admin(target):
-                return await self.text(chat.id, "admin-ban")
+            if isinstance(target, User):
+                if util.tg.is_staff_or_admin(await chat.get_member(target.id)):
+                    return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
             # Not a participant in the chat (replying from channel discussion)
-            if util.tg.is_staff(user.id):
+            if util.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-ban")
 
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "ban-done", user.first_name), chat.kick_member(user.id)
+            self.text(chat.id, "ban-done", target.first_name or target.title),
+            chat.kick_member(target.id),
         )
         if reason:
             ret += await self.text(chat.id, "ban-reason", reason)
