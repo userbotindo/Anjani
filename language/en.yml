@@ -404,9 +404,10 @@ rules-help: |
 rules-blank-err: Rules can't be blank!
 rules-set: "Chat rules have been set!\nLink to view rules: `{}`"
 rules-clear: Successfully cleared chat rules!
-rules-none: This group have no rules set yet!
+rules-none: Failed to get chat rules! No records found.
 rules-view-caption: Click this button to view the chat rules!
 rules-view-pm: "The rules for **{}** are:\n\n"
+rules-invalid-button: "Invalid chat_id: \"{}\". (__Invalid Syntax__)"
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediction

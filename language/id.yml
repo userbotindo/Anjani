@@ -403,9 +403,10 @@ rules-help: |
 rules-blank-err: Aturan tidak boleh kosong!
 rules-set: "Aturan grup sudah ditetapkan!\nTautan untuk melihat aturan: `{}`"
 rules-clear: Berhasil menghapus aturan dalam grup!
-rules-none: Grup ini belum menetapkan aturan!
+rules-none: Gagal mendapatkan aturan obrolan! Tidak ada catatan yang ditemukan.
 rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
+rules-invalid-button: "Chat_id tidak valid: \"{}\". (__Invalid Syntax__)"
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediksi

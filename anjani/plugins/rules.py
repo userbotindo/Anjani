@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
+from pyrogram.errors import PeerIdInvalid
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from anjani import command, filters, plugin, util
@@ -90,13 +91,20 @@ class Rules(plugin.Plugin):
         return None
 
     async def start_rules(self, ctx: command.Context) -> str:
-        rules_id = int(ctx.input.split("_")[1])
-        content, chat = await asyncio.gather(
-            self.db.find_one({"chat_id": rules_id}),
-            self.bot.client.get_chat(rules_id),
-        )
-        text = await self.text(rules_id, "rules-view-pm", chat.title)
+        try:
+            rules_id = int(ctx.input.split("_")[1])
+        except ValueError:
+            return await self.text(ctx.chat.id, "rules-invalid-button", ctx.input.split("_")[1])
+        try:
+            content, chat = await asyncio.gather(
+                self.db.find_one({"chat_id": rules_id}),
+                self.bot.client.get_chat(rules_id),
+            )
+        except PeerIdInvalid:
+            content, chat = None, None
+
         if not content:
             return await self.text(rules_id, "rules-none")
+        text = await self.text(rules_id, "rules-view-pm", chat.title)
 
         return text + content["rules"]
