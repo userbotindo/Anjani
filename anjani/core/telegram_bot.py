@@ -132,9 +132,12 @@ class TelegramBot(MixinBase):
             raise
 
         # Get info
-        user = await self.client.get_me()
+        async with asyncio.Lock():  # Lock to avoid race condition with command_dispatcher
+            user = await self.client.get_me()
+
         if not isinstance(user, User):
             raise TypeError("Missing full self user information")
+
         self.user = user
         # noinspection PyTypeChecker
         self.uid = user.id
@@ -145,13 +148,16 @@ class TelegramBot(MixinBase):
         async for doc in self.db.get_collection("STAFF").find():
             if doc["rank"] == "dev":
                 self.devs.add(doc["_id"])
+
             self.staff.add(doc["_id"])
+
         # Update global staff variable
         util.tg.STAFF.update(self.staff)
 
         # Update Language setting chat from db
         async for data in self.db.get_collection("LANGUAGE").find():
             self.chats_languages[data["chat_id"]] = data["language"]
+
         # Load text from language file
         async for language_file in getLangFile():
             self.languages[language_file.stem] = await util.run_sync(
