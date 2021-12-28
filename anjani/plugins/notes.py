@@ -75,7 +75,7 @@ class Notes(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
-    @listener.filters(filters.regex(r"^#[^\s]+"))
+    @listener.filters(filters.regex(r"^#[\w\-]+(?!\n)$"))
     async def on_message(self, message: Message) -> None:
         """Notes hashtag trigger."""
         entity = message.entities
