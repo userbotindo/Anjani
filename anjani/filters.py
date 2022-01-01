@@ -246,6 +246,7 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             curr_chat = await client.get_chat(message.chat.id)
             if curr_chat.linked_chat and message.sender_chat.id == curr_chat.linked_chat.id and not message.forward_from_chat:  # Linked Channel Owner
                 return True
+            return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         if bot_perm.status == "administrator" and member_perm.status in {
