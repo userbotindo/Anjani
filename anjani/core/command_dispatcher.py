@@ -121,6 +121,13 @@ class CommandDispatcher(MixinBase):
             if message.via_bot:
                 return False
 
+            if (message.chat and message.chat.type == "channel") or (
+                message.sender_chat
+                and message.forward_from_chat
+                and message.forward_from_chat.id == message.sender_chat.id
+            ):
+                return False  # ignore channel broadcasts
+
             if message.text is not None and message.text.startswith("/"):
                 parts = message.text.split()
                 parts[0] = parts[0][1:]
