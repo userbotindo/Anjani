@@ -21,6 +21,7 @@ from uuid import uuid4
 
 from aiopath import AsyncPath
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
+from pyrogram.raw.base import reply_markup
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -118,13 +119,18 @@ class Federation(plugin.Plugin):
 
     async def on_message(self, message: Message) -> None:
         chat = message.chat
+        if not chat:
+            return
+        if chat.type == "channel" and message.text and message.text.startswith("/setfedlog"):
+            return await self.channel_setlog(message)
+
         user = message.from_user
         if not user:
             return
 
         banned = await self.is_fbanned(chat.id, user.id)
         if banned:
-            await self.fban_handler(message.chat, user, banned)
+            await self.fban_handler(chat, user, banned)
 
     @staticmethod
     def is_fed_admin(data: MutableMapping[str, Any], user: int) -> bool:
@@ -759,6 +765,33 @@ class Federation(plugin.Plugin):
 
         return await self.text(chat.id, "fed-myfeds-no-admin")
 
+    def generate_log_btn(self, data: MutableMapping[str, Any]) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Click to confirm identity",
+                        callback_data=f"logfed_{data['owner']}_{data['_id']}",
+                    )
+                ],
+            ]
+        )
+
+    async def channel_setlog(self, message: Message):
+        fid = message.text.split(" ")
+        if not fid or len(fid) < 2:
+            await message.reply_text(await self.text(message.chat.id, "fed-set-log-args"))
+            return
+        data = await self.get_fed(fid[1])
+        if not data:
+            await message.reply_text(await self.text(message.chat.id, "fed-not-found"))
+            return
+        await message.reply_text(
+            await self.text(message.chat.id, "fed-check-identity"),
+            reply_markup=self.generate_log_btn(data),
+        )
+
+    @command.filters(filters.admin_only)
     async def cmd_setfedlog(self, ctx: command.Context, fid: Optional[str] = None) -> Optional[str]:
         chat = ctx.chat
         if chat.type == "channel":
@@ -767,20 +800,11 @@ class Federation(plugin.Plugin):
 
             data = await self.get_fed(fid)
             if not data:
-                return await self.text(chat.id, "Fed not found!")
+                return await self.text(chat.id, "fed-not-found")
 
             await ctx.respond(
                 await self.text(chat.id, "fed-check-identity"),
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="Click to confirm identity",
-                                callback_data=f"logfed_{data['owner']}_{data['_id']}",
-                            )
-                        ],
-                    ]
-                ),
+                reply_markup=self.generate_log_btn(data),
             )
             return None
 
