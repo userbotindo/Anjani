@@ -121,7 +121,7 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-kick")
 
-        await self.bot.client.kick_chat_member(chat.id, target.id, until_date=int(time.time() + 30))
+        await self.bot.client.ban_chat_member(chat.id, target.id, until_date=int(time.time() + 30))
 
         ret = await self.text(chat.id, "kick-done", target.first_name or target.title)
         if reason:
@@ -157,7 +157,7 @@ class Restrictions(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "ban-done", target.first_name or target.title),
-            chat.kick_member(target.id),
+            chat.ban_member(target.id),
         )
         if reason:
             ret += await self.text(chat.id, "ban-reason", reason)
@@ -248,7 +248,7 @@ class Restrictions(plugin.Plugin):
 
         if warns is not None and warns + 1 >= threshold:
             ret, _ = await asyncio.gather(
-                ctx.get_text("warn-user-max", util.tg.mention(user)), chat.kick_member(user.id)
+                ctx.get_text("warn-user-max", util.tg.mention(user)), chat.ban_member(user.id)
             )
             return ret
 

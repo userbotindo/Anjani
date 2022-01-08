@@ -174,7 +174,7 @@ class SpamShield(plugin.Plugin):
     async def ban(self, chat: Chat, user: User, reason: str) -> None:
         fullname = user.first_name + user.last_name if user.last_name else user.first_name
         await asyncio.gather(
-            chat.kick_member(user.id),
+            chat.ban_member(user.id),
             self.federation_db.update_one(
                 {"_id": "AnjaniSpamShield"},
                 {

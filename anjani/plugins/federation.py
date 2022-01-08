@@ -200,7 +200,7 @@ class Federation(plugin.Plugin):
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
                     ),
                 ),
-                self.bot.client.kick_chat_member(chat.id, user.id),
+                self.bot.client.ban_chat_member(chat.id, user.id),
             )
         except ChatAdminRequired:
             self.log.debug(f"Can't ban user {user.username} on {chat.title}")
@@ -543,7 +543,7 @@ class Federation(plugin.Plugin):
         failed: Dict[int, str] = {}
         for chat in data["chats"]:
             try:
-                await self.bot.client.kick_chat_member(chat, user.id)
+                await self.bot.client.ban_chat_member(chat, user.id)
             except BadRequest as br:
                 self.log.warning(f"Failed to fban {user.username} on {chat} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE

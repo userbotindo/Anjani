@@ -113,7 +113,7 @@ class Admins(plugin.Plugin):
             if member.user.is_deleted:
                 zombie += 1
                 try:
-                    await self.bot.client.kick_chat_member(chat.id, member.user.id)
+                    await self.bot.client.ban_chat_member(chat.id, member.user.id)
                 except UserAdminInvalid:
                     zombie -= 1
                 except FloodWait as flood:
