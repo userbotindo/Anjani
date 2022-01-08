@@ -21,7 +21,6 @@ from uuid import uuid4
 
 from aiopath import AsyncPath
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
-from pyrogram.raw.base import reply_markup
 from pyrogram.types import (
     CallbackQuery,
     Chat,

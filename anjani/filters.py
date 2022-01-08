@@ -17,7 +17,7 @@
 from typing import Any, Callable, Coroutine, Optional
 
 from pyrogram import Client
-from pyrogram.filters import (
+from pyrogram.filters import (  # skipcq: PY-W2000
     Filter,
     animation,
     audio,
@@ -240,11 +240,15 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             return False
 
         if message.sender_chat:
-            if message.sender_chat.id == message.chat.id: # Anonymous Admin
+            if message.sender_chat.id == message.chat.id:  # Anonymous Admin
                 return True
 
             curr_chat = await client.get_chat(message.chat.id)
-            if curr_chat.linked_chat and message.sender_chat.id == curr_chat.linked_chat.id and not message.forward_from_chat:  # Linked Channel Owner
+            if (
+                curr_chat.linked_chat
+                and message.sender_chat.id == curr_chat.linked_chat.id
+                and not message.forward_from_chat
+            ):  # Linked Channel Owner
                 return True
             return False
 

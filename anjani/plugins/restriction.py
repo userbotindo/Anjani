@@ -114,9 +114,10 @@ class Restrictions(plugin.Plugin):
             reason = ctx.input
 
         try:
-            if isinstance(target, User):
-                if util.tg.is_staff_or_admin(await chat.get_member(target.id)):
-                    return await self.text(chat.id, "admin-kick")
+            if isinstance(target, User) and util.tg.is_staff_or_admin(
+                await chat.get_member(target.id)
+            ):
+                return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
             if util.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-kick")
@@ -147,9 +148,10 @@ class Restrictions(plugin.Plugin):
             reason = ctx.input
 
         try:
-            if isinstance(target, User):
-                if util.tg.is_staff_or_admin(await chat.get_member(target.id)):
-                    return await self.text(chat.id, "admin-kick")
+            if isinstance(target, User) and util.tg.is_staff_or_admin(
+                await chat.get_member(target.id)
+            ):
+                return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
             # Not a participant in the chat (replying from channel discussion)
             if util.tg.is_staff(target.id):
