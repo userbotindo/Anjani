@@ -126,6 +126,8 @@ class SpamPrediction(plugin.Plugin):
         return sha256(content.strip().encode()).hexdigest()
 
     def _build_hex(self, id: Optional[int]) -> str:
+        if not id:
+            id = self.bot.uid
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
 
     @staticmethod
@@ -496,12 +498,14 @@ class SpamPrediction(plugin.Plugin):
         reply_msg = ctx.msg.reply_to_message
         if reply_msg:
             content = reply_msg.text or reply_msg.caption
-            if reply_msg.from_user.id != ctx.author.id:
+            if reply_msg.from_user and reply_msg.from_user.id != ctx.author.id:
                 user_id = reply_msg.from_user.id
+            elif reply_msg.forward_from:
+                user_id = reply_msg.forward_from.id
         else:
             content = ctx.input
 
-        if reply_msg.photo:
+        if reply_msg and reply_msg.photo:
             ocr_result = await self.runOcr(reply_msg)
             if ocr_result:
                 try:
@@ -517,7 +521,6 @@ class SpamPrediction(plugin.Plugin):
             return "Give me a text or reply to a message / forwarded message"
 
         identifier = self._build_hex(user_id)
-
         content_hash = self._build_hash(content)
         pred = await self._predict(content.strip())
         if pred.size == 0:
