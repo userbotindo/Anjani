@@ -618,7 +618,7 @@ class Federation(plugin.Plugin):
         if len(ctx.args) > 1:  # <user_id> <fed_id>
             try:
                 user_id = int(ctx.args[0])
-            except TypeError:
+            except (ValueError, TypeError):
                 return await self.text(chat.id, "fed-invalid-user-id")
 
             data = await self.get_fed(ctx.args[1])

@@ -140,7 +140,7 @@ fed-delete-canceled: Penghapus federasi dibatalkan
 fed-delete-done: Saya sudah menghapus federasi kamu!\nSemua grup yang terhubung dengan **{}** sekarang tanpa federasi.
 fed-cant-two-feds: Anda tidak dapat bergabung dengan dua federasi dalam satu grup!
 fed-invalid-id: Tolong masukkan ID federasi yang sah dan benar
-fed-invalid-user-id: Harap masukkan ID pengguna yang sah dan benar
+fed-invalid-user-id: "Harap masukkan ID pengguna yang sah dan benar\nContoh: `/fstats <user_id> <fed_id>`"
 fed-already-connected: Grup ini sudah terhubung ke federasi itu!
 fed-chat-joined-info: Grup ini sekarang bergabung dalam **{}** Federation!
 fed-not-connected: Grup ini tidak terhubung ke federasi itu!
