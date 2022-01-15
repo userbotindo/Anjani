@@ -102,7 +102,9 @@ class Greeting(plugin.Plugin):
                         reply_to_message_id=reply_to,
                     )
                 else:
-                    if await self.fed.is_active(chat.id) and await self.fed.is_banned(new_member.id):
+                    if await self.fed.is_active(chat.id) and await self.fed.is_banned(
+                        new_member.id
+                    ):
                         continue
 
                     text, button = await self.welc_message(chat.id)
@@ -265,6 +267,11 @@ class Greeting(plugin.Plugin):
             return await self.text(chat.id, "error-reply-to-message")
 
         reply_msg = ctx.msg.reply_to_message
+        try:  # Try to build a text first to check message validity
+            self._build_text(reply_msg.text, ctx.author, chat)
+        except KeyError as e:
+            return await self.text(chat.id, "err-msg-format-parsing", err=e)
+
         ret, _ = await asyncio.gather(
             self.text(chat.id, "cust-welcome-set"), self.set_custom_welcome(chat.id, reply_msg.text)
         )

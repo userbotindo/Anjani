@@ -502,5 +502,6 @@ err-invalid-pid: Invalid identifier!
 err-anonymous: You are on anonymous mode...\n\n__Disable it first.__
 err-not-admin: You are not an Administrator of this group...
 err-perm: You and I need permission of __{}__, to be able to use the command.
-err-unexpected: "An unexpected error occurred.! \n\n**Error:** `{}` "
+err-unexpected: "An unexpected error occurred.! \n\n**Error:** `{}`"
+err-msg-format-parsing: "**Message format parsing error!**\n**Error on key:** `{err}`."
 #endregion
