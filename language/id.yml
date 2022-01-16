@@ -39,6 +39,21 @@ markdown-helper: |
   Ini akan membuat dua tombol pada satu baris, bukan satu tombol per baris.
 
   Ingatlah bahwa pesan anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
+filling-format-helper: |
+  Anda dapat menyesuaikan konten teks dengan konteks acara juga. Misalnya, Anda ingin melakukan mention pengguna yang bergabung dengan obrolan.
+
+  Format pengisian yang didukung:
+  - `{first}`: Nama depan pengguna.
+  - `{last}`: Nama belakang pengguna.
+  - `{fullname}`: Nama lengkap pengguna.
+  - `{username}`: Nama pengguna pengguna. Melakukan mention jika pengguna tidak memiliki username.
+  - `{mention}`: Menyebut pengguna.
+  - `{id}`: Id pengguna.
+  - `{chatname}`: Nama obrolan saat ini.
+  - `{count}`: Menghitung anggota chat.
+
+  Contoh
+  -> `Hei {first}, apa kabar? Selamat datang di {chatname}`
 #endregion
 #region admin
 admins-button: Administrator
@@ -287,7 +302,7 @@ notes-help: |
   **Perintah Administrator:**
   × /save <nama catatan> <isi catatan>: Menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
-  \nCek /markdownhelp untuk info format catatan lainnya silahkan dicek.
+  \nCek /markdownhelp untuk detail pemformatan.
 notes-invalid-args : |
   Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
   Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
@@ -461,6 +476,8 @@ greetings-help: |
   × /cleanservice <on/off>: Menghapus pesan 'pengguna bergabung' secara otomatis.
    **Catatan**:\nUntuk mendapatkan pesan tanpa format tambahkan "noformat" di akhir.
   Contoh: `/welcome noformat`
+
+  Cek /markdownhelp dan /fillinghelp untuk detail pemformatan.
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
   Untuk melihat perintah yang bisa anda gunakan. Silahkan ketik /help.

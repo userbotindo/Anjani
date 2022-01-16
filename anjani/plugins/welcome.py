@@ -159,7 +159,7 @@ class Greeting(plugin.Plugin):
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
-            username=f"@{user.username}" if user.username else escape(first_name),
+            username=f"@{user.username}" if user.username else util.tg.mention(user),
             mention=util.tg.mention(user),
             count=chat.members_count,
             chatname=escape(chat.title),

@@ -39,6 +39,21 @@ markdown-helper: |
   This will create two buttons on a single line, instead of one button per line.
 
   Keep in mind that your message <b>MUST</b> contain some text other than just a button!
+filling-format-helper: |
+  You can customize the content of a text with the event context as well. For example, you want to mention user who joined the chat.
+
+  Supported filling format:
+  - `{first}`: The users first name.
+  - `{last}`: The users last name.
+  - `{fullname}`: The users full name.
+  - `{username}`: The users username. Mention if user doesn't have a username.
+  - `{mention}`: Mentions the user.
+  - `{id}`: The users id.
+  - `{chatname}`: The current chat name.
+  - `{count}`: The count the chat members.
+
+  Example
+  -> `Hey {first}, how are you? Welcome to {chatname}`
 #endregion
 #region admin
 admins-button: Admins
@@ -462,6 +477,8 @@ greetings-help: |
   × /cleanservice <on/off> : Clean 'user is joined' service messages automatically.\n
   **Notes**:\nto get the message with no-format add "noformat" at the end
   Example: `/welcome noformat`
+
+  Check /markdownhelp and /fillinghelp for formatting details.
 bot-added: |
   Hi... Thanks for inviting me.
   To see available commands type /help.

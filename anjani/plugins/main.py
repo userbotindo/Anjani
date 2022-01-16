@@ -23,7 +23,12 @@ import bson
 from aiopath import AsyncPath
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.raw.functions.updates import GetState
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from anjani import command, filters, listener, plugin, util
 
@@ -113,7 +118,7 @@ class Main(plugin.Plugin):
                     "time": util.time.usec(),
                 }
             },
-            upsert=True
+            upsert=True,
         )
 
     async def sendToLogChannel(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
@@ -265,5 +270,14 @@ class Main(plugin.Plugin):
         await ctx.respond(
             await self.text(ctx.chat.id, "markdown-helper", self.bot_name),
             parse_mode="html",
+            disable_web_page_preview=True,
+        )
+
+    @command.filters(aliases=["fillinghelp"])
+    async def cmd_formathelp(self, ctx: command.Context) -> None:
+        """Send markdown help."""
+        await ctx.respond(
+            await self.text(ctx.chat.id, "filling-format-helper", noformat=True),
+            parse_mode="markdown",
             disable_web_page_preview=True,
         )
