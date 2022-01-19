@@ -207,6 +207,7 @@ class Greeting(plugin.Plugin):
     async def set_custom_welcome(self, chat_id: int, text: Str) -> None:
         """Set custom welcome"""
         msg, button = util.tg.parse_button(text.markdown)
+        # print(msg)
         await self.db.update_one(
             {"chat_id": chat_id},
             {"$set": {"custom_welcome": msg, "button": button}},

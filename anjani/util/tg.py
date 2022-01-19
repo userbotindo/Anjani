@@ -127,14 +127,14 @@ def parse_button(text: str) -> Tuple[str, Button]:
 
     parser_data += text[prev:]
     # Remove any markdown button left over if any
-    t = parser_data.rstrip().split()
-    if t:
-        pattern = re.compile(r"[_-`*~]+")
-        anyMarkdownLeft = pattern.search(t[-1])
-        if anyMarkdownLeft:
-            toRemove = anyMarkdownLeft[0][0]
-            t[-1] = t[-1].replace(toRemove, "")
-            return " ".join(t), buttons
+    # t = parser_data.rstrip().split()
+    # if t:
+    #     pattern = re.compile(r"[_-`*~]+")
+    #     anyMarkdownLeft = pattern.search(t[-1])
+    #     if anyMarkdownLeft:
+    #         toRemove = anyMarkdownLeft[0][0]
+    #         t[-1] = t[-1].replace(toRemove, "")
+    #         return " ".join(t), buttons
 
     return parser_data.rstrip(), buttons
 
