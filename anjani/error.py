@@ -26,9 +26,11 @@ __all__ = [
     "BackupError",
     "BadArgument",
     "BadBoolArgument",
+    "BadResult",
     "CommandHandlerError",
     "CommandInvokeError",
     "ConversionError",
+    "EventDispatchError",
     "ExistingCommandError",
     "ExistingPluginError",
     "PluginLoadError",
@@ -41,6 +43,10 @@ class AnjaniException(Exception):
 
 class BackupError(AnjaniException):
     """Unexpected backup data type"""
+
+
+class EventDispatchError(AnjaniException):
+    """Exception raised when a dispatcher raised an exception"""
 
 
 class CommandHandlerError(AnjaniException):

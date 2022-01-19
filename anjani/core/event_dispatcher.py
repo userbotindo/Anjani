@@ -25,6 +25,7 @@ from pyrogram.raw import functions
 from pyrogram.types import CallbackQuery, InlineQuery, Message
 
 from anjani import plugin, util
+from anjani.error import EventDispatchError
 from anjani.listener import Listener, ListenerFunc
 
 from .anjani_mixin_base import MixinBase
@@ -161,6 +162,18 @@ class EventDispatcher(MixinBase):
         self.log.debug("Dispatching event '%s' with data %s", event, args)
         if wait:
             await asyncio.wait(tasks)
+            for task in tasks:
+                err = task.exception()  # Handle the future exception
+                if err:
+                    dispatcher_error = EventDispatchError(
+                        f"raised from {type(err).__name__}: {str(err)}"
+                    ).with_traceback(err.__traceback__)
+                    self.log.error(
+                        "Error dispatching event '%s'",
+                        event,
+                        exc_info=dispatcher_error,
+                    )
+                    return None
 
         if get_tasks:
             return tasks
