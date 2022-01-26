@@ -65,7 +65,7 @@ class Message(M):
         entities: List[MessageEntity] = [],
         disable_web_page_preview: bool = None,
         reply_markup: Optional[InlineKeyboardMarkup] = None,
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -77,7 +77,7 @@ class Message(M):
         entities: List[MessageEntity] = [],
         disable_web_page_preview: bool = None,
         reply_markup: Optional[InlineKeyboardMarkup] = None,
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -94,7 +94,7 @@ class Message(M):
         reply_markup: Union[
             InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
         ] = None,
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -111,7 +111,7 @@ class Message(M):
         reply_markup: Union[
             InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
         ] = None,
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -134,7 +134,7 @@ class Message(M):
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -157,7 +157,7 @@ class Message(M):
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -177,7 +177,7 @@ class Message(M):
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -197,7 +197,7 @@ class Message(M):
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
     @abstractmethod
@@ -222,7 +222,7 @@ class Message(M):
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
-    ) -> "Message":
+    ) -> "Message":  # skipcq: PYL-W0221
         ...
 
 
