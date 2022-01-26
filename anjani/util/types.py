@@ -14,10 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, TypeVar
+from abc import abstractmethod
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    BinaryIO,
+    Callable,
+    Coroutine,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from pyrogram.filters import Filter
-from pyrogram.types import ChatMember
+from pyrogram.types import ChatMember, ForceReply, InlineKeyboardMarkup
+from pyrogram.types import Message as M
+from pyrogram.types import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
@@ -32,6 +49,180 @@ TypeData = TypeVar("TypeData", covariant=True)
 class CustomFilter(Filter):  # skipcq: PYL-W0223
     anjani: "Anjani"
     include_bot: bool
+
+
+class Message(M):
+    command: List[str]
+    text: str
+
+    @abstractmethod
+    async def edit(
+        self,
+        text: str,
+        *,
+        parse_mode: Any = object,
+        entities: List[MessageEntity] = [],
+        disable_web_page_preview: bool = None,
+        reply_markup: Optional[InlineKeyboardMarkup] = None,
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def edit_text(
+        self,
+        text: str,
+        *,
+        parse_mode: Any = object,
+        entities: List[MessageEntity] = [],
+        disable_web_page_preview: bool = None,
+        reply_markup: Optional[InlineKeyboardMarkup] = None,
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply(
+        self,
+        text: str,
+        *,
+        quote: bool = False,
+        parse_mode: Any = object,
+        entities: List[MessageEntity] = [],
+        disable_web_page_preview: bool = False,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_text(
+        self,
+        text: str,
+        *,
+        quote: bool = False,
+        parse_mode: Any = object,
+        entities: List[MessageEntity] = [],
+        disable_web_page_preview: bool = False,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_animation(
+        self,
+        animation: Union[IO[bytes], BinaryIO, str],
+        *,
+        quote: bool = False,
+        caption: str = "",
+        parse_mode: Any = object,
+        caption_entities: List[MessageEntity] = [],
+        duration: int = 0,
+        width: int = 0,
+        height: int = 0,
+        thumb: Optional[str] = None,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+        progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
+        progress_args: Tuple[Any, ...] = (),
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_audio(
+        self,
+        audio: Union[IO[bytes], BinaryIO, str],
+        *,
+        quote: bool = False,
+        caption: str = "",
+        parse_mode: Any = object,
+        caption_entities: List[MessageEntity] = [],
+        duration: int = 0,
+        performer: Optional[str] = None,
+        title: Optional[str] = None,
+        thumb: Optional[str] = None,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+        progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
+        progress_args: Tuple[Any, ...] = (),
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_document(
+        self,
+        document: Union[IO[bytes], BinaryIO, str],
+        *,
+        quote: bool = False,
+        thumb: Optional[str] = None,
+        caption: str = "",
+        parse_mode: Any = object,
+        caption_entities: List[MessageEntity] = [],
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+        progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
+        progress_args: Tuple[Any, ...] = (),
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_photo(
+        self,
+        photo: Union[IO[bytes], BinaryIO, str],
+        *,
+        quote: bool = False,
+        caption: str = "",
+        parse_mode: Any = object,
+        caption_entities: List[MessageEntity] = [],
+        ttl_seconds: Optional[int] = None,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+        progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
+        progress_args: Tuple[Any, ...] = (),
+    ) -> "Message":
+        ...
+
+    @abstractmethod
+    async def reply_video(
+        self,
+        video: Union[IO[bytes], BinaryIO, str],
+        *,
+        quote: bool = False,
+        caption: str = "",
+        parse_mode: Any = object,
+        caption_entities: List[MessageEntity] = [],
+        ttl_seconds: Optional[int] = None,
+        duration: int = 0,
+        width: int = 0,
+        height: int = 0,
+        thumb: Optional[str] = None,
+        supports_streaming: bool = True,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[int] = None,
+        reply_markup: Union[
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+        ] = None,
+        progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
+        progress_args: Tuple[Any, ...] = (),
+    ) -> "Message":
+        ...
 
 
 class MemberPermissions:

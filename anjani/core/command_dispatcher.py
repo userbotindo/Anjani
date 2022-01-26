@@ -19,10 +19,10 @@ from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
 from pyrogram import Client, errors
 from pyrogram.filters import Filter, create
-from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
+from anjani.util.types import Message
 
 from .anjani_mixin_base import MixinBase
 
@@ -135,7 +135,7 @@ class CommandDispatcher(MixinBase):
                 # Check if bot command contains a valid username
                 # eg: /ping@dAnjani_bot will return True
                 # If current bot instance is dAnjani_bot else False
-                if self.user.username in parts[0]:
+                if self.user.username and self.user.username in parts[0]:
                     # Remove username from command
                     parts[0] = parts[0].replace(f"@{self.user.username}", "")
 

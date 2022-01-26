@@ -30,10 +30,11 @@ from pyrogram.handlers import (
     InlineQueryHandler,
     MessageHandler,
 )
-from pyrogram.types import CallbackQuery, InlineQuery, Message, User
+from pyrogram.types import CallbackQuery, InlineQuery, User
 from yaml import full_load
 
 from anjani import util
+from anjani.util.types import Message
 from language import getLangFile
 
 from .anjani_mixin_base import MixinBase
@@ -301,6 +302,7 @@ class TelegramBot(MixinBase):
                 return await reference.reply_photo(photo, caption=text, **kwargs)
             if video := kwargs.pop("video", None):
                 return await reference.reply_video(video, caption=text, **kwargs)
+
             return await reference.reply(text, **kwargs)
 
         if text:

@@ -44,9 +44,6 @@ class EventDispatcher(MixinBase):
     # Initialized during instantiation
     listeners: MutableMapping[str, MutableSequence[Listener]]
 
-    # Initialized runtime
-    __state: tuple[int, int]
-
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         # Initialize listener map
         self.listeners = {}
@@ -184,10 +181,10 @@ class EventDispatcher(MixinBase):
         if not self.loaded or self._TelegramBot__running:
             return
 
+        api_id = sha256(self.config["api_id"].encode()).hexdigest()
         collection = self.db.get_collection("SESSION")
-        data = await collection.find_one(
-            {"_id": sha256(self.config["api_id"].encode()).hexdigest()}
-        )
+
+        data = await collection.find_one({"_id": api_id})
         if not data:
             return
 
@@ -224,7 +221,6 @@ class EventDispatcher(MixinBase):
                 # TO-DO
                 # 1. Change qts to 0, because we want to get all missed events
                 #    so we have a proper loop going on until DifferenceEmpty
-                # 2. __state proper handling
                 diff = await self.client.send(
                     functions.updates.GetDifference(pts=pts, date=date, qts=-1)
                 )
@@ -237,8 +233,8 @@ class EventDispatcher(MixinBase):
                         state: Any = diff.intermediate_state
 
                     pts, date = state.pts, state.date
-                    users = {u.id: u for u in diff.users}
-                    chats = {c.id: c for c in diff.chats}
+                    users = {u.id: u for u in diff.users}  # type: ignore
+                    chats = {c.id: c for c in diff.chats}  # type: ignore
 
                     await asyncio.wait(
                         (
@@ -252,18 +248,16 @@ class EventDispatcher(MixinBase):
                     break
                 elif isinstance(diff, raw.types.updates.DifferenceTooLong):
                     pts = diff.pts
-                    self.log.debug(pts)
                     continue
                 else:
                     break
         except (ConnectionError, OSError, asyncio.CancelledError):
             pass
         finally:
-            self.__state = (pts, date)
             # Unset after we finished to avoid sending the same pts and date,
             # If GetState() doesn't executed on stop event
             await collection.update_one(
-                {"_id": sha256(self.config["api_id"].encode()).hexdigest()},
+                {"_id": api_id},
                 {"$unset": {"pts": "", "date": "", "qts": "", "seq": ""}},
             )
 
