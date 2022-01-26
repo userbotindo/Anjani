@@ -76,10 +76,9 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     voice_chat_started,
     web_page,
 )
-from pyrogram.types import Message
 
 from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
-from anjani.util.types import CustomFilter
+from anjani.util.types import CustomFilter, Message
 
 FilterFunc = Callable[[CustomFilter, Client, Message], Coroutine[Any, Any, bool]]
 __all__ = [
@@ -161,8 +160,8 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 # { permission
 def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat.type == "private"
-        if priv or not target:
+        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        if priv or not target or not message.chat:
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
@@ -235,21 +234,22 @@ owner_only = _owner_only()
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat.type == "private"
-        if priv:
+        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        if priv or not message.chat or not target:
             return False
 
         if message.sender_chat:
             if message.sender_chat.id == message.chat.id:  # Anonymous Admin
                 return True
 
-            curr_chat = await client.get_chat(message.chat.id)
+            curr_chat: Any = await client.get_chat(message.chat.id)
             if (
                 curr_chat.linked_chat
                 and message.sender_chat.id == curr_chat.linked_chat.id
                 and not message.forward_from_chat
             ):  # Linked Channel Owner
                 return True
+
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)

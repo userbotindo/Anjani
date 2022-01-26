@@ -49,13 +49,19 @@ class Plugin:
 
     @final
     def get_text(
-        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
+        self,
+        chat_id: Optional[int],
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any,
     ) -> Coroutine[Any, Any, str]:
         """Parse the string with user language setting.
 
         Parameters:
-            chat_id (`int`):
+            chat_id (`int`, *Optional*):
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
+                If chat_id is None, the language will always use 'en'.
             text_name (`str`):
                 String name to parse. The string is parsed from YAML documents.
             *args (`any`, *Optional*):
@@ -73,13 +79,19 @@ class Plugin:
     # Convenient alias get_text method
     @final
     def text(
-        self, chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
+        self,
+        chat_id: Optional[int],
+        text_name: str,
+        *args: Any,
+        noformat: bool = False,
+        **kwargs: Any,
     ) -> Coroutine[Any, Any, str]:
         """Parse the string with user language setting.
 
         Parameters:
-            chat_id (`int`):
+            chat_id (`int`, *Optional*):
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
+                If chat_id is None, the language will always use 'en'.
             text_name (`str`):
                 String name to parse. The string is parsed from YAML documents.
             *args (`any`, *Optional*):

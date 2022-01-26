@@ -35,12 +35,13 @@ from pyrogram.filters import Filter
 from pyrogram.types import ChatMember, ForceReply, InlineKeyboardMarkup
 from pyrogram.types import Message as M
 from pyrogram.types import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from pyrogram.types.messages_and_media.message import Str
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
 
 Bot = TypeVar("Bot", bound="Anjani", covariant=True)
-ChatId = TypeVar("ChatId", bound=int, covariant=True)
+ChatId = TypeVar("ChatId", int, None, covariant=True)
 TextName = TypeVar("TextName", bound=str, covariant=True)
 NoFormat = TypeVar("NoFormat", bound=bool, covariant=True)
 TypeData = TypeVar("TypeData", covariant=True)
@@ -53,7 +54,7 @@ class CustomFilter(Filter):  # skipcq: PYL-W0223
 
 class Message(M):
     command: List[str]
-    text: str
+    text: Str
 
     @abstractmethod
     async def edit(

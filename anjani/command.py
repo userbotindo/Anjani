@@ -34,7 +34,7 @@ from typing_extensions import final
 
 from anjani.action import BotAction
 from anjani.util.tg import get_text
-from anjani.util.types import CustomFilter
+from anjani.util.types import CustomFilter, Message
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
@@ -83,14 +83,14 @@ class Command:
 
 # Command invocation context
 class Context:
-    author: pyrogram.types.User
+    author: Optional[pyrogram.types.User]
     bot: "Anjani"
     chat: pyrogram.types.Chat
-    msg: pyrogram.types.Message
-    message: pyrogram.types.Message
+    msg: Message
+    message: Message
     cmd_len: int
 
-    response: pyrogram.types.Message
+    response: Message
     input: str
     input_raw: str
     args: Sequence[str]
@@ -101,21 +101,22 @@ class Context:
     def __init__(
         self,
         bot: "Anjani",
-        msg: pyrogram.types.Message,
+        msg: Message,
         cmd_len: int,
     ) -> None:
         self.bot = bot
         self.cmd_len = cmd_len
         self.msg = self.message = msg
         self.author = msg.from_user
-        self.chat = msg.chat
+        self.chat = msg.chat  # type: ignore
 
         # Response message to be filled later
         self.response = None  # type: ignore
         # Single argument string
         username = self.bot.user.username
-        slices = self.cmd_len + 1 + len(username)
-        if username in self.msg.text:
+        if username and username in self.msg.text:
+            slices = self.cmd_len + 1 + len(username)
+
             self.input = self.msg.text[slices:]
             self.input_raw = self.msg.text.markdown[slices:]
         else:
@@ -138,7 +139,7 @@ class Context:
         return self.args
 
     async def delete(
-        self, delay: Optional[float] = None, message: Optional[pyrogram.types.Message] = None
+        self, delay: Optional[float] = None, message: Optional[Message] = None
     ) -> None:
         """Bound method of *delete* of :obj:`~pyrogram.types.Message`.
         If the deletion fails then it is silently ignored.
@@ -177,9 +178,9 @@ class Context:
         delete_after: Optional[Union[int, float]] = None,
         mode: str = "edit",
         redact: bool = True,
-        reference: Optional[pyrogram.types.Message] = None,
+        reference: Optional[Message] = None,
         **kwargs: Any,
-    ) -> Optional[pyrogram.types.Message]:
+    ) -> Optional[Message]:
         """Respond to the destination with the content given.
 
         Parameters:
@@ -267,6 +268,9 @@ class Context:
                 *"choose_contact"* for contacts, *"playing"* for games, *"speaking"* for speaking in group calls or
                 *"cancel"* to cancel any chat action currently displayed.
         """
+        if not self.chat:
+            return False
+
         return await self.bot.client.send_chat_action(self.chat.id, action)
 
     def action(self, action: str = "typing") -> BotAction:
@@ -291,6 +295,8 @@ class Context:
 
         Parse the string with user language setting.
 
+        If :obj:`~pyrogram.types.Chat` is None text will always return as 'en'.
+
         Parameters:
             text_name (`str`):
                 String name to parse. The string is parsed from YAML documents.
@@ -304,4 +310,8 @@ class Context:
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return get_text(self.bot, self.chat.id, text_name, *args, noformat=noformat, **kwargs)
+        chat_id = None
+        if self.chat:
+            chat_id = self.chat.id
+
+        return get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)

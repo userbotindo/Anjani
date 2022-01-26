@@ -288,7 +288,7 @@ def __loop_safe(
     @wraps(func)
     async def wrapper(
         bot: "Anjani",
-        chat_id: int,
+        chat_id: Optional[int],
         text_name: str,
         *args: Any,
         noformat: bool = False,
@@ -301,6 +301,7 @@ def __loop_safe(
                 The bot instance.
             chat_id (`int`):
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
+                If chat_id is None, the language will always use 'en'.
             text_name (`str`):
                 String name to parse. The string is parsed from YAML documents.
             *args (`any`, *Optional*):
@@ -320,7 +321,12 @@ def __loop_safe(
 
 @__loop_safe
 def get_text(
-    bot: "Anjani", chat_id: int, text_name: str, *args: Any, noformat: bool = False, **kwargs: Any
+    bot: "Anjani",
+    chat_id: Optional[int],
+    text_name: str,
+    *args: Any,
+    noformat: bool = False,
+    **kwargs: Any,
 ) -> str:
     def _get_text(lang: str) -> str:
         try:
