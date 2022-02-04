@@ -23,12 +23,13 @@ back-button: ⬅️ Kembali
 markdown-helper: |
   Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
   <b>Markdown yang didukung:</b>
-  - <code>__italic__</code>: Buat dua garis bawah di antara kata, akan menghasilkan teks <i>italic</i>.
-  - <code>**bold**</code>: Buat dua tanda bintang di antara kata, akan menghasilkan teks <b>bold</b>.
-  - <code>`code`</code>: Buat tanda kutip terbalik atau backticks di antara kata, akan menghasilkan teks <code>monospace</code>.
-  - <code>~~strike~~</code>: Buat tanda gelombang atau tildes di antara kata, akan menghasilkan teks <del>strikethrough</del>.
-  - <code>--underline--</code>: Buat tanda penghubung di antara kata, akan menghasilkan teks <u>underline</u>.
-  - <code>[sometext](someURL)</code>: Ini akan membuat tautan - pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
+  - <code>__italic__</code>: Dua garis bawah di antara kata akan menghasilkan teks <i>italic</i>.
+  - <code>**bold**</code>: Dua tanda bintang di antara kata akan menghasilkan teks <b>bold</b>.
+  - <code>`code`</code>: Tanda kutip terbalik di antara kata akan menghasilkan teks <code>monospace</code>.
+  - <code>~~strike~~</code>: Dua tanda gelombang di antara kata akan menghasilkan teks <del>strikethrough</del>.
+  - <code>--underline--</code>: Dua tanda penghubung di antara kata akan menghasilkan teks <u>underline</u>.
+  - <code>||spoiler||</code>: Dua tanda garis vertikal di antara kata akan menghasilkan teks <spoiler>spoiler</spoiler>.
+  - <code>[sometext](someURL)</code>: Ini akan membuat tautan. pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
   Contoh: <code>[test](example.com)</code>
   - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
   Contoh: <code>[This is a button](buttonurl:google.com)</code>
