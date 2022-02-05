@@ -190,19 +190,34 @@ fed-ban-self: Mohon maaf, saya tidak bisa!
 fed-ban-owner: Bagaimana cara saya memblokir seorang pemilik federasi dalam federasi yang dia miliki!
 fed-ban-protected: Saya tidak akan melakukan fban kepada pengguna ini!
 fed-ban-info-update: |
-  **Larangan Baru Federasi**
+  **Pembaruan Larangan Federasi**
   **Federasi: **{}
   **Administrator Federasi: **{}
   **Pengguna: ** {}
   **ID Pengguna: ** {}
   **Alasan lama**: {}
   **Alasan baru**: {}
+fed-ban-chat-info-update: |
+  **Pembaruan Larangan Federasi**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Channel: ** {}
+  **Channel ID: ** {}
+  **Alasan lama**: {}
+  **Alasan baru**: {}
 fed-ban-info: |
-  **Larangan Baru Federasi**
+  **Larangan Federasi Baru**
   **Federasi: **{}
   **Administrator Federasi: **{}
   **Pengguna: ** {}
   **ID Pengguna: ** {}
+  **Alasan**: {}
+fed-ban-chat-info: |
+  **Larangan Federasi Baru**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Channel: ** {}
+  **Chat ID: ** {}
   **Alasan**: {}
 fed-user-not-banned: Pengguna ini tidak diblokir dalam federeasi ini!
 fed-unban-info: |
@@ -211,6 +226,12 @@ fed-unban-info: |
   **Administrator Federasi: **{}
   **Pengguna: **{}
   **ID Pengguna: **`{}`
+fed-unban-info-chat: |
+  **Membatalkan Larangan Federasi**
+  **Federasi: **{}
+  **Administrator Federasi: **{}
+  **Channel: **{}
+  **Chat ID: **{}
 fed-stat-banned: |
   Pengguna ini diblokir dalam federasi ini.
   **Alasan: ** {}
@@ -231,7 +252,8 @@ fed-log-set-group: "Grup ini diatur sebagai **{name}** catatan"
 fed-log-set-chnl: "Saluran ini telah ditetapkan sebagai catatan federasi untuk **{}**\nall tindakan terkait federasi akan dicatat di sini."
 fed-invalid-identity: Pengguna yang mengklik tombol konfirmasi bukanlah pemilik federasi.\nHanya pemilik federasi yang dapat menetapkan catatan federasi.
 fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
-fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Reason:** {}\n**Banned on:** {}"
+fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
+fed-autoban-chat: "Channel {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
 #endregion
 #region language
