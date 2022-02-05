@@ -181,6 +181,7 @@ fed-info-text: |
   **Creator: **{}
   **Total Admins: ** `{}`
   **Total banned user: ** `{}`
+  **Total banned channel: ** `{}`
   **Total groups connected: ** `{}`
 fed-admin-only: Only federation admin can do this!
 fed-admin-text: |

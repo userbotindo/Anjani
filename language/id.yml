@@ -179,6 +179,7 @@ fed-info-text: |
   **Pemilik: **{}
   **Total adminstrator: ** `{}`
   **Total pengguna yang dilarang: ** `{}`
+  **Total channel yang dilarang: ** `{}`
   **Total grup yang terhubung federasi: ** `{}`
 fed-admin-only: Hanya Administrator federasi yang dapat melakukan ini!
 fed-admin-text: |

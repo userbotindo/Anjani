@@ -132,7 +132,7 @@ class Federation(plugin.Plugin):
         if chat.type == "channel" and message.text and message.text.startswith("/setfedlog"):
             return await self.channel_setlog(message)
 
-        target = message.from_user or chat
+        target = message.from_user or message.sender_chat
         if not target:
             return
 
@@ -222,16 +222,6 @@ class Federation(plugin.Plugin):
         data = await self.get_fed_bychat(chat)
         if not data:
             return None
-        if str(target) in data.get("banned", {}):
-            user_data = data["banned"][str(target)]
-            user_data["fed_name"] = data["name"]
-            user_data["type"] = "user"
-            return user_data
-        if str(target) in data.get("banned_chat", {}):
-            channel_data = data["banned_chat"][str(target)]
-            channel_data["fed_name"] = data["name"]
-            channel_data["type"] = "chat"
-            return channel_data
 
         if str(target) in data.get("banned", {}):
             user_data = data["banned"][str(target)]
