@@ -104,13 +104,19 @@ class Reporting(plugin.Plugin):
 
     async def setting(self, chat_id: int, is_private: bool, setting: bool) -> None:
         if is_private:
-            await self.user_db.update_one(
-                {"_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
-            )
+            if setting:
+                await self.user_db.update_one(
+                    {"_id": chat_id}, {"$set": {"setting": True}}, upsert=True
+                )
+            else:
+                await self.user_db.delete_one({"_id": chat_id})
         else:
-            await self.db.update_one(
-                {"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
-            )
+            if setting:
+                await self.db.update_one(
+                    {"chat_id": chat_id}, {"$set": {"setting": True}}, upsert=True
+                )
+            else:
+                await self.db.delete_one({"chat_id": chat_id})
 
     async def is_active(self, uid: int, is_private: bool) -> bool:
         """Get current setting default to True"""

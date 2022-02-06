@@ -632,9 +632,12 @@ class SpamPrediction(plugin.Plugin):
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off spam prediction in chats"""
-        await self.setting_db.update_one(
-            {"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
-        )
+        if setting:
+            await self.setting_db.update_one(
+                {"chat_id": chat_id}, {"$set": {"setting": True}}, upsert=True
+            )
+        else:
+            await self.setting_db.delete_one({"chat_id": chat_id})
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""

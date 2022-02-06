@@ -39,7 +39,7 @@ class SpamShield(plugin.Plugin):
         if not self.token:
             self.bot.log.warning("SpamWatch API token not exist")
 
-        self.db = self.bot.db.get_collection("GBAN_SETTINGS")
+        self.db = self.bot.db.get_collection("GBAN_SETTINGS")  # spamshield autoban
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
 
     async def on_chat_migrate(self, message: Message) -> None:
@@ -191,7 +191,10 @@ class SpamShield(plugin.Plugin):
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off SpamShield in chats"""
-        await self.db.update_one({"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True)
+        if setting:
+            await self.db.update_one({"chat_id": chat_id}, {"$set": {"setting": True}}, upsert=True)
+        else:
+            await self.db.delete_one({"chat_id": chat_id})
 
     async def check(self, user: User, chat: Chat) -> None:
         """Shield checker action."""

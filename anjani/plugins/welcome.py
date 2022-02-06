@@ -169,12 +169,12 @@ class Greeting(plugin.Plugin):
     async def is_welcome(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
         active = await self.db.find_one({"chat_id": chat_id})
-        return active.get("should_welcome", False) if active else True
+        return active.get("should_welcome", True) if active else True
 
     async def is_goodbye(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
         active = await self.db.find_one({"chat_id": chat_id})
-        return active.get("should_goodbye", False) if active else True
+        return active.get("should_goodbye", True) if active else True
 
     async def welc_message(
         self, chat_id: int
@@ -200,9 +200,9 @@ class Greeting(plugin.Plugin):
         """Fetch clean service setting"""
         clean = await self.db.find_one({"chat_id": chat_id})
         if clean:
-            return clean.get("clean_service", False)
+            return clean.get("clean_service", True)
 
-        return False
+        return False  # Defaults off
 
     async def set_custom_welcome(self, chat_id: int, text: Str) -> None:
         """Set custom welcome"""
@@ -228,23 +228,12 @@ class Greeting(plugin.Plugin):
         """Delete custom goodbye message"""
         await self.db.update_one({"chat_id": chat_id}, {"$unset": {"custom_goodbye": ""}})
 
-    async def cleanservice_update(self, chat_id: int, value: bool) -> None:
-        """Clean service db"""
-        await self.db.update_one(
-            {"chat_id": chat_id}, {"$set": {"clean_service": value}}, upsert=True
-        )
-
-    async def welc_setting(self, chat_id: int, value: bool) -> None:
-        """Turn on/off welcome in chats"""
-        await self.db.update_one(
-            {"chat_id": chat_id}, {"$set": {"should_welcome": value}}, upsert=True
-        )
-
-    async def left_setting(self, chat_id: int, value: bool) -> None:
-        """Turn on/off welcome in chats"""
-        await self.db.update_one(
-            {"chat_id": chat_id}, {"$set": {"should_goodbye": value}}, upsert=True
-        )
+    async def greeting_setting(self, chat_id: int, key: str, value: bool) -> None:
+        """Turn on/off greetings in chats"""
+        if not value:
+            await self.db.update_one({"chat_id": chat_id}, {"$set": {key: False}}, upsert=True)
+        else:
+            await self.db.update_one({"chat_id": chat_id}, {"$unset": {key: ""}}, upsert=True)
 
     async def previous_welcome(self, chat_id: int, msg_id: int) -> Optional[int]:
         """Save latest welcome msg_id and return previous msg_id"""
@@ -330,7 +319,7 @@ class Greeting(plugin.Plugin):
         if enabled is not None:
             ret, _ = await asyncio.gather(
                 self.text(chat.id, "welcome-set", "on" if enabled else "off"),
-                self.welc_setting(chat.id, enabled),
+                self.greeting_setting(chat.id, "should_welcome", enabled),
             )
             return ret
 
@@ -387,7 +376,7 @@ class Greeting(plugin.Plugin):
         if enabled is not None:
             ret, _ = await asyncio.gather(
                 self.text(chat.id, "goodbye-set", "on" if enabled else "off"),
-                self.left_setting(chat.id, enabled),
+                self.greeting_setting(chat.id, "should_goodbye", enabled),
             )
             return ret
 
@@ -419,6 +408,6 @@ class Greeting(plugin.Plugin):
 
         ret, _ = await asyncio.gather(
             self.text(chat.id, "clean-serv-set", "on" if active else "off"),
-            self.cleanservice_update(chat.id, active),
+            self.greeting_setting(chat.id, "clean_service", active),
         )
         return ret
