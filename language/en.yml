@@ -135,8 +135,8 @@ federations-help: |
   × /unsetfedlog: Unset the federation log. Federation events will no longer be logged.
 
   **Federation Admin Commands:**
-  × /fban: Bans a user from the current chat's federation.
-  × /unfban: Unbans a user from the current chat's federation.
+  × /fban: Bans a user or channel from the current chat's federation.
+  × /unfban: Unbans a user or channel from the current chat's federation.
   × /fadmins: Get a list of federation admins.
 federation-limit: You can only own 1 federation!
 new-federation: |

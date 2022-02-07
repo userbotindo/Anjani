@@ -133,8 +133,8 @@ federations-help: |
   × /unsetfedlog: Membatalkan log federation. Semua peristiwa federasi tidak akan dicatat di sini.
 
   **Perintah yang tersedia untuk Administrator federasi:**
-  × /fban: Melarang seorang pengguna di federasi saat ini.
-  × /unfban: Membatalkan larang atau blokir seorang pengguna di federasi saat ini.
+  × /fban: Melarang pengguna atau channel di federasi saat ini.
+  × /unfban: Membatalkan blokir pengguna atau channel di federasi saat ini.
   × /fadmins: Menampilkan Administrator federasi saat ini.
 federation-limit: Kamu hanya dapat memiliki 1 federasi!
 new-federation: |
