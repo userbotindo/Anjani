@@ -12,7 +12,7 @@ Can be found on Telegram as [Anjani](https://t.me/dAnjani_bot).
 
 ## Requirements
 
-- Python 3.8 or higher (recomended).
+- Python 3.9.
 - [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
 - [Telegram Bot Token](https://t.me/botfather)
 - [MongoDB Database](https://cloud.mongodb.com/).
