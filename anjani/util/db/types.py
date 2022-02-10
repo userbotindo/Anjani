@@ -25,7 +25,6 @@ from pymongo.read_preferences import (
     SecondaryPreferred,
 )
 
-JavaScriptCode = TypeVar("JavaScriptCode", bound=str)
 ReadPreferences = Union[Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest]
 Request = Union[DeleteOne, InsertOne, ReplaceOne]
 Results = TypeVar("Results")

@@ -60,7 +60,7 @@ class AsyncClient(AsyncBaseProperty):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs.update(
-            {"driver": DriverInfo(name="AsyncIOMongoDB", version="staging", platform="AsyncIO")}
+            {"driver": DriverInfo("AsyncIOMongoDB", version="staging", platform="AsyncIO")}
         )
         dispatch = MongoClient(*args, **kwargs)
 
@@ -69,6 +69,9 @@ class AsyncClient(AsyncBaseProperty):
 
     def __getitem__(self, name: str) -> AsyncDatabase:
         return AsyncDatabase(self, self.dispatch[name])
+
+    def __hash__(self) -> int:
+        return hash(self.address)
 
     async def close(self) -> None:
         await util.run_sync(self.dispatch.close)
@@ -237,34 +240,6 @@ class AsyncClient(AsyncBaseProperty):
         return self.dispatch.is_primary
 
     @property
-    def local_threshold_ms(self) -> int:
-        return self.dispatch.local_threshold_ms
-
-    @property
-    def max_bson_size(self) -> int:
-        return self.dispatch.max_bson_size
-
-    @property
-    def max_idle_time_ms(self) -> Optional[int]:
-        return self.dispatch.max_idle_time_ms
-
-    @property
-    def max_message_size(self) -> int:
-        return self.dispatch.max_message_size
-
-    @property
-    def max_pool_size(self) -> int:
-        return self.dispatch.max_pool_size
-
-    @property
-    def max_write_batch_size(self) -> int:
-        return self.dispatch.max_write_batch_size
-
-    @property
-    def min_pool_size(self) -> int:
-        return self.dispatch.min_pool_size
-
-    @property
     def nodes(self) -> FrozenSet[Set[Tuple[str, int]]]:
         return self.dispatch.nodes
 
@@ -273,20 +248,8 @@ class AsyncClient(AsyncBaseProperty):
         return self.dispatch.primary
 
     @property
-    def retry_reads(self) -> bool:
-        return self.dispatch.retry_reads
-
-    @property
-    def retry_writes(self) -> bool:
-        return self.dispatch.retry_writes
-
-    @property
     def secondaries(self) -> Set[Tuple[str, int]]:
         return self.dispatch.secondaries
-
-    @property
-    def server_selection_timeout(self) -> int:
-        return self.dispatch.server_selection_timeout
 
     @property
     def topology_description(self) -> TopologyDescription:
