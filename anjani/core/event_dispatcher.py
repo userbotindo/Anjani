@@ -166,7 +166,7 @@ class EventDispatcher(MixinBase):
                         f"raised from {type(err).__name__}: {str(err)}"
                     ).with_traceback(err.__traceback__)
                     self.log.error(
-                        "Error dispatching event '%s' on $s",
+                        "Error dispatching event '%s' on %s",
                         event,
                         task.get_coro().__qualname__,
                         exc_info=dispatcher_error,
