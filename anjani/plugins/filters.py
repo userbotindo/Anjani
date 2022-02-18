@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from typing import Any, ClassVar, List, MutableMapping, Optional
+from typing import Any, ClassVar, List, MutableMapping, Optional, Tuple
 
 from pyrogram.types import Message
 
@@ -81,12 +81,19 @@ class Filters(plugin.Plugin):
         else:
             self.trigger[chat_id] = [keyword]
 
-    async def del_filter(self, chat_id: int, keyword: str) -> None:
+    async def del_filter(self, chat_id: int, keyword: str) -> Tuple[bool, str]:
+        filt = self.trigger.get(chat_id)
+        if not filt:
+            return False, "This chat has no filters, nothing to remove"
+        if keyword not in filt:
+            return False, f"No filters named {keyword} on this chat."
+
         await self.db.update_one(
             {"chat_id": chat_id},
             {"$unset": {f"trigger.{keyword}": ""}},
         )
         self.trigger[chat_id].remove(keyword)
+        return True, ""
 
     @command.filters(filters.admin_only)
     async def cmd_filter(self, ctx: command.Context, trigger: str, *, text: str) -> None:
@@ -103,15 +110,19 @@ class Filters(plugin.Plugin):
             await ctx.respond("Usage: `/stop <trigger>`")
             return
 
-        await self.del_filter(ctx.chat.id, trigger)
+        deleted, out = await self.del_filter(ctx.chat.id, trigger)
+        if not deleted:
+            await ctx.respond(out)
         await ctx.respond(f"Successfully removed `{trigger}` as filter.")
 
     @command.filters(filters.admin_only)
-    async def cmd_rmallfilter(self, ctx: command.Context):
+    async def cmd_rmallfilter(self, ctx: command.Context) -> str:
         chat_id = ctx.chat.id
+        triggers = self.trigger.pop(chat_id, None)
+        if not triggers:
+            return "This chat has no filters, nothing to remove"
         await self.db.delete_one({"chat_id": chat_id})
-        self.trigger.pop(chat_id, None)
-        await ctx.respond("Successfully removed all filters.")
+        return f"Successfully removed {len(triggers)} filters."
 
     @command.filters(filters.admin_only)
     async def cmd_filters(self, ctx: command.Context) -> str:
@@ -119,4 +130,6 @@ class Filters(plugin.Plugin):
         if not data:
             return "No filters found."
 
-        return "\n".join(data)
+        output = f"Filters in **{ctx.chat.title}**:"
+        output += "\n".join([f"`{i}`" for i in data])
+        return output
