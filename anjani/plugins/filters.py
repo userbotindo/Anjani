@@ -57,6 +57,8 @@ class Filters(plugin.Plugin):
         await self.reply_filter(message, chat_trigger, text)
 
     async def reply_filter(self, message: Message, trigger: List[str], text: str):
+        if text.startswith("/filter") or text.startswith("/stop"):
+            return  # Igonore when command triggered
         for i in trigger:
             pattern = r"( |^|[^\w])" + re.escape(i) + r"( |$|[^\w])"
             if re.search(pattern, text, flags=re.IGNORECASE):
@@ -86,7 +88,7 @@ class Filters(plugin.Plugin):
         if not filt:
             return False, "This chat has no filters, nothing to remove"
         if keyword not in filt:
-            return False, f"No filters named {keyword} on this chat."
+            return False, f"No filters named `{keyword}` on this chat."
 
         await self.db.update_one(
             {"chat_id": chat_id},
@@ -96,26 +98,25 @@ class Filters(plugin.Plugin):
         return True, ""
 
     @command.filters(filters.admin_only)
-    async def cmd_filter(self, ctx: command.Context, trigger: str, *, text: str) -> None:
+    async def cmd_filter(self, ctx: command.Context, trigger: str, *, text: str) -> str:
         if not trigger or not text:
-            await ctx.respond("Usage: `/filters <trigger> <text>`")
-            return
+            return "Usage: `/filters <trigger> <text>`"
 
         await self.save_filter(ctx.chat.id, trigger, text)
-        await ctx.respond(f"Successfully added `{trigger}` as filter.")
+        return f"Successfully added `{trigger}` as filter."
 
     @command.filters(filters.admin_only)
-    async def cmd_stop(self, ctx: command.Context, trigger: str):
+    async def cmd_stop(self, ctx: command.Context, trigger: str) -> str:
         if not trigger:
-            await ctx.respond("Usage: `/stop <trigger>`")
-            return
+            return "usage: `/stop <trigger>`"
 
         deleted, out = await self.del_filter(ctx.chat.id, trigger)
         if not deleted:
-            await ctx.respond(out)
-        await ctx.respond(f"Successfully removed `{trigger}` as filter.")
+            return out
 
-    @command.filters(filters.admin_only)
+        return f"Successfully removed `{trigger}` as filter."
+
+    @command.filters(filters.admin_only, aliases=["rmallfilters"])
     async def cmd_rmallfilter(self, ctx: command.Context) -> str:
         chat_id = ctx.chat.id
         triggers = self.trigger.pop(chat_id, None)
