@@ -237,6 +237,24 @@ fed-log-unset: Federation log of **{}** is unset.
 fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
 fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
 #endregion
+#region filters
+filters-button: Filters
+filters-help: |
+  × /filters: Get a list of all filters saved in chat.
+  × /filter <keyword> <reply message>: Add a filters of the keyword in this chat. The bot will reply the message whenever the keyword is mentioned.
+  × /stop <keyword>: Stop the filter with the keyword.
+  × /rmallfilters: Stop all filters in this chat.
+
+  Filters also support markdown and formatters like: {first}, {last} etc (check /formathelp).
+filters-added: "Successfully added `{}` as filters."
+filters-removed: "Successfully removed `{}` from filters."
+filter-help: "Usage: `/filters <trigger> <text>`"
+filter-stop-help: "Usage: `/stop <trigger>`"
+filters-chat-nofilter: This chat has no filters
+filters-chat-nokeyword: "No filters named `{}` on this chat."
+filters-rmall: "Successfully removed {} filters in this chat."
+filters-list: "Filters in **{}**:"
+#endregion
 #region language
 language-button: Language
 language-help: |

@@ -1,4 +1,4 @@
-""" Message purging plugin. """
+""" Filters plugin. """
 # Copyright (C) 2020 - 2022  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -86,9 +86,9 @@ class Filters(plugin.Plugin):
     async def del_filter(self, chat_id: int, keyword: str) -> Tuple[bool, str]:
         filt = self.trigger.get(chat_id)
         if not filt:
-            return False, "This chat has no filters, nothing to remove"
+            return False, await self.text(chat_id, "filters-chat-nofilter")
         if keyword not in filt:
-            return False, f"No filters named `{keyword}` on this chat."
+            return False, await self.text(chat_id, "filters-chat-nokeyword", keyword)
 
         await self.db.update_one(
             {"chat_id": chat_id},
@@ -100,37 +100,37 @@ class Filters(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_filter(self, ctx: command.Context, trigger: str, *, text: str) -> str:
         if not trigger or not text:
-            return "Usage: `/filters <trigger> <text>`"
+            return await self.text(ctx.chat.id, "filter-help")
 
         await self.save_filter(ctx.chat.id, trigger, text)
-        return f"Successfully added `{trigger}` as filter."
+        return await self.text(ctx.chat.id, "filters-added", trigger)
 
     @command.filters(filters.admin_only)
     async def cmd_stop(self, ctx: command.Context, trigger: str) -> str:
         if not trigger:
-            return "usage: `/stop <trigger>`"
+            return await self.text(ctx.chat.id, "filter-stop-help")
 
         deleted, out = await self.del_filter(ctx.chat.id, trigger)
         if not deleted:
             return out
 
-        return f"Successfully removed `{trigger}` as filter."
+        return await self.text(ctx.chat.id, "filters-removed", trigger)
 
     @command.filters(filters.admin_only, aliases=["rmallfilters"])
     async def cmd_rmallfilter(self, ctx: command.Context) -> str:
         chat_id = ctx.chat.id
         triggers = self.trigger.pop(chat_id, None)
         if not triggers:
-            return "This chat has no filters, nothing to remove"
+            return await self.text(chat_id, "filters-chat-nofilter")
         await self.db.delete_one({"chat_id": chat_id})
-        return f"Successfully removed {len(triggers)} filters."
+        return await self.text(chat_id, "filters-rmall", len(triggers))
 
     @command.filters(filters.admin_only)
     async def cmd_filters(self, ctx: command.Context) -> str:
         data = self.trigger.get(ctx.chat.id)
         if not data:
-            return "No filters found."
+            return await self.text(ctx.chat.id, "filters-chat-nofilter")
 
-        output = f"Filters in **{ctx.chat.title}**:"
-        output += "\n".join([f"`{i}`" for i in data])
+        output = await self.text(ctx.chat.id, "filters-list", ctx.chat.title)
+        output += "\n".join([f"× `{i}`" for i in data])
         return output
