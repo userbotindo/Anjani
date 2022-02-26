@@ -245,7 +245,7 @@ filters-help: |
   × /stop <keyword>: Stop the filter with the keyword.
   × /rmallfilters: Stop all filters in this chat.
 
-  Filters also support markdown and formatters like: {first}, {last} etc (check /formathelp).
+  Filters also support markdown and formatters (check /formathelp).
 filters-added: "Successfully added `{}` as filters."
 filters-removed: "Successfully removed `{}` from filters."
 filter-help: "Usage: `/filters <trigger> <text>`"
