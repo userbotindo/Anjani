@@ -43,6 +43,15 @@ class Filters(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": {data[self.name]}}, upsert=True)
 
+    async def on_chat_migrate(self, message: Message) -> None:
+        new_chat = message.chat.id
+        old_chat = message.migrate_from_chat_id
+
+        await self.db.update_one(
+            {"chat_id": old_chat},
+            {"$set": {"chat_id": new_chat}},
+        )
+
     async def on_message(self, message: Message) -> None:
         chat = message.chat
         text = message.text or message.caption
@@ -57,7 +66,7 @@ class Filters(plugin.Plugin):
         await self.reply_filter(message, chat_trigger, text)
 
     async def reply_filter(self, message: Message, trigger: List[str], text: str):
-        if text.startswith("/filter") or text.startswith("/stop"):
+        if not text or text.startswith("/filter") or text.startswith("/stop"):
             return  # Igonore when command triggered
         for i in trigger:
             pattern = r"( |^|[^\w])" + re.escape(i) + r"( |$|[^\w])"
