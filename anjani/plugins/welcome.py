@@ -18,7 +18,7 @@ import asyncio
 from html import escape
 from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
-from pyrogram.errors import ChatWriteForbidden, MessageDeleteForbidden
+from pyrogram.errors import ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
@@ -50,7 +50,7 @@ class Greeting(plugin.Plugin):
         if await self.clean_service(chat.id):
             try:
                 await message.delete()
-            except MessageDeleteForbidden:
+            except (MessageDeleteForbidden, ChannelPrivate):
                 pass
             reply_to = None
 
