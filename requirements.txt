@@ -2,7 +2,7 @@ aiohttp==3.8.0
 aiopath==0.5.12
 aiorun==2021.10.1
 colorlog==6.6.0
-dnspython==2.2.0
+dnspython==2.2.1
 meval==2.5
 pymongo==4.0.2
 pyrogram==1.4.8
