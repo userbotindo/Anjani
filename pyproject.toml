@@ -41,6 +41,8 @@ aiopath = "<0.6"
 pymongo = "^4.0.2"
 scikit-learn = {version = "1.0.2", optional = true}
 meval = "^2.5"
+hachoir = "^3.1.2"
+Pillow = "^9.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"

@@ -3,7 +3,9 @@ aiopath==0.5.12
 aiorun==2021.10.1
 colorlog==6.6.0
 dnspython==2.2.1
+hachoir==3.1.2
 meval==2.5
+Pillow==9.0.1
 pymongo==4.0.2
 pyrogram==1.4.9
 python-dotenv==0.19.2

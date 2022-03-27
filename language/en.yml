@@ -522,6 +522,17 @@ view-goodbye: |
   `Clean service message` = `{}`
   And the goodbye message of this chat is:
 #endregion
+#region Stickers
+sticker-no-reply: __Reply message which have [sticker/photo/media/video].
+sticker-kang-process: __Processing..__
+sticker-kang-success: __Sticker kanged..!__
+sticker-pack-btn: Open your pack.
+sticker-pack-insufficient: Pack is insufficient, Switch to pack `{}`.
+sticker-filename-missing: Sticker doesn't have file name..
+sticker-media-notfound: Media notfound, Process cancelled.
+sticker-unsupported-file: I can't kang that 🤔, unsupported file.
+sticker-new-pack: __Creating new pack..__
+#endregion
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"
 err-chat-groups: This command is specific to the group, not to the PM!

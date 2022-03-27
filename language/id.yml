@@ -525,6 +525,17 @@ view-goodbye: |
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
+#region Stickers
+sticker-no-reply: Balas ke pesan [sticker/media/photo/video].
+sticker-kang-process: __Sedang di proses..__
+sticker-kang-success: __Sticker ditambahkan..!__
+sticker-pack-btn: Buka kemasan sticker.
+sticker-pack-insufficient: Kemasan sticker penuh, mengganti ke kemasan `{}`.
+sticker-filename-missing: File ini tidak memiliki nama..!
+sticker-media-notfound: Media tidak ditemukan, Proses dibatalkan 🚫.
+sticker-unsupported-file: Sepertinya file ini tidak terdukung 🤔.
+sticker-new-pack: __Membuat kemasan baru..__
+#endregion
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!

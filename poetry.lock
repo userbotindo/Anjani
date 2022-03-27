@@ -260,6 +260,17 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "hachoir"
+version = "3.1.2"
+description = "Package of Hachoir parsers used to open binary files"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+urwid = ["urwid (==1.3.1)"]
+
+[[package]]
 name = "identify"
 version = "2.2.13"
 description = "File identification library for Python"
@@ -363,6 +374,14 @@ description = "Utility library for gitignore style pattern matching of file path
 category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+
+[[package]]
+name = "pillow"
+version = "9.0.1"
+description = "Python Imaging Library (Fork)"
+category = "main"
+optional = false
+python-versions = ">=3.7"
 
 [[package]]
 name = "platformdirs"
@@ -620,7 +639,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8, <3.10"
-content-hash = "103da5a1f4511baaebb70f9600f873ebe379246ae227c35b7b2e4f344fc7d3b1"
+content-hash = "1311821a9861889729e7451cab6f36e20009a82a31364d89f6892039b2f0a9f8"
 
 [metadata.files]
 aiofile = [
@@ -876,6 +895,10 @@ frozenlist = [
     {file = "frozenlist-1.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:735f386ec522e384f511614c01d2ef9cf799f051353876b4c6fb93ef67a6d1ee"},
     {file = "frozenlist-1.2.0.tar.gz", hash = "sha256:68201be60ac56aff972dc18085800b6ee07973c49103a8aba669dee3d71079de"},
 ]
+hachoir = [
+    {file = "hachoir-3.1.2-py3-none-any.whl", hash = "sha256:b17ba5907b7836b2204ef724e7992d2e794311596e2121098912a9f3c4e69273"},
+    {file = "hachoir-3.1.2.tar.gz", hash = "sha256:bc1259b1e2970532b2dbd99139cb0de59d9bb8904eb1489c3e8a82c979c98f23"},
+]
 identify = [
     {file = "identify-2.2.13-py2.py3-none-any.whl", hash = "sha256:7199679b5be13a6b40e6e19ea473e789b11b4e3b60986499b1f589ffb03c217c"},
     {file = "identify-2.2.13.tar.gz", hash = "sha256:7bc6e829392bd017236531963d2d937d66fc27cadc643ac0aba2ce9f26157c79"},
@@ -1004,6 +1027,43 @@ numpy = [
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
     {file = "pathspec-0.9.0.tar.gz", hash = "sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1"},
+]
+pillow = [
+    {file = "Pillow-9.0.1-1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a5d24e1d674dd9d72c66ad3ea9131322819ff86250b30dc5821cbafcfa0b96b4"},
+    {file = "Pillow-9.0.1-1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:2632d0f846b7c7600edf53c48f8f9f1e13e62f66a6dbc15191029d950bfed976"},
+    {file = "Pillow-9.0.1-1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:b9618823bd237c0d2575283f2939655f54d51b4527ec3972907a927acbcc5bfc"},
+    {file = "Pillow-9.0.1-cp310-cp310-macosx_10_10_universal2.whl", hash = "sha256:9bfdb82cdfeccec50aad441afc332faf8606dfa5e8efd18a6692b5d6e79f00fd"},
+    {file = "Pillow-9.0.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5100b45a4638e3c00e4d2320d3193bdabb2d75e79793af7c3eb139e4f569f16f"},
+    {file = "Pillow-9.0.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:528a2a692c65dd5cafc130de286030af251d2ee0483a5bf50c9348aefe834e8a"},
+    {file = "Pillow-9.0.1-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0f29d831e2151e0b7b39981756d201f7108d3d215896212ffe2e992d06bfe049"},
+    {file = "Pillow-9.0.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:855c583f268edde09474b081e3ddcd5cf3b20c12f26e0d434e1386cc5d318e7a"},
+    {file = "Pillow-9.0.1-cp310-cp310-win32.whl", hash = "sha256:d9d7942b624b04b895cb95af03a23407f17646815495ce4547f0e60e0b06f58e"},
+    {file = "Pillow-9.0.1-cp310-cp310-win_amd64.whl", hash = "sha256:81c4b81611e3a3cb30e59b0cf05b888c675f97e3adb2c8672c3154047980726b"},
+    {file = "Pillow-9.0.1-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:413ce0bbf9fc6278b2d63309dfeefe452835e1c78398efb431bab0672fe9274e"},
+    {file = "Pillow-9.0.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:80fe64a6deb6fcfdf7b8386f2cf216d329be6f2781f7d90304351811fb591360"},
+    {file = "Pillow-9.0.1-cp37-cp37m-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cef9c85ccbe9bee00909758936ea841ef12035296c748aaceee535969e27d31b"},
+    {file = "Pillow-9.0.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1d19397351f73a88904ad1aee421e800fe4bbcd1aeee6435fb62d0a05ccd1030"},
+    {file = "Pillow-9.0.1-cp37-cp37m-win32.whl", hash = "sha256:d21237d0cd37acded35154e29aec853e945950321dd2ffd1a7d86fe686814669"},
+    {file = "Pillow-9.0.1-cp37-cp37m-win_amd64.whl", hash = "sha256:ede5af4a2702444a832a800b8eb7f0a7a1c0eed55b644642e049c98d589e5092"},
+    {file = "Pillow-9.0.1-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:b5b3f092fe345c03bca1e0b687dfbb39364b21ebb8ba90e3fa707374b7915204"},
+    {file = "Pillow-9.0.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:335ace1a22325395c4ea88e00ba3dc89ca029bd66bd5a3c382d53e44f0ccd77e"},
+    {file = "Pillow-9.0.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:db6d9fac65bd08cea7f3540b899977c6dee9edad959fa4eaf305940d9cbd861c"},
+    {file = "Pillow-9.0.1-cp38-cp38-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f154d173286a5d1863637a7dcd8c3437bb557520b01bddb0be0258dcb72696b5"},
+    {file = "Pillow-9.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14d4b1341ac07ae07eb2cc682f459bec932a380c3b122f5540432d8977e64eae"},
+    {file = "Pillow-9.0.1-cp38-cp38-win32.whl", hash = "sha256:effb7749713d5317478bb3acb3f81d9d7c7f86726d41c1facca068a04cf5bb4c"},
+    {file = "Pillow-9.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:7f7609a718b177bf171ac93cea9fd2ddc0e03e84d8fa4e887bdfc39671d46b00"},
+    {file = "Pillow-9.0.1-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:80ca33961ced9c63358056bd08403ff866512038883e74f3a4bf88ad3eb66838"},
+    {file = "Pillow-9.0.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:1c3c33ac69cf059bbb9d1a71eeaba76781b450bc307e2291f8a4764d779a6b28"},
+    {file = "Pillow-9.0.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:12875d118f21cf35604176872447cdb57b07126750a33748bac15e77f90f1f9c"},
+    {file = "Pillow-9.0.1-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:514ceac913076feefbeaf89771fd6febde78b0c4c1b23aaeab082c41c694e81b"},
+    {file = "Pillow-9.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d3c5c79ab7dfce6d88f1ba639b77e77a17ea33a01b07b99840d6ed08031cb2a7"},
+    {file = "Pillow-9.0.1-cp39-cp39-win32.whl", hash = "sha256:718856856ba31f14f13ba885ff13874be7fefc53984d2832458f12c38205f7f7"},
+    {file = "Pillow-9.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:f25ed6e28ddf50de7e7ea99d7a976d6a9c415f03adcaac9c41ff6ff41b6d86ac"},
+    {file = "Pillow-9.0.1-pp37-pypy37_pp73-macosx_10_10_x86_64.whl", hash = "sha256:011233e0c42a4a7836498e98c1acf5e744c96a67dd5032a6f666cc1fb97eab97"},
+    {file = "Pillow-9.0.1-pp37-pypy37_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:253e8a302a96df6927310a9d44e6103055e8fb96a6822f8b7f514bb7ef77de56"},
+    {file = "Pillow-9.0.1-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6295f6763749b89c994fcb6d8a7f7ce03c3992e695f89f00b741b4580b199b7e"},
+    {file = "Pillow-9.0.1-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:a9f44cd7e162ac6191491d7249cceb02b8116b0f7e847ee33f739d7cb1ea1f70"},
+    {file = "Pillow-9.0.1.tar.gz", hash = "sha256:6c8bc8238a7dfdaf7a75f5ec5a663f4173f8c367e5a39f87e720495e1eed75fa"},
 ]
 platformdirs = [
     {file = "platformdirs-2.3.0-py3-none-any.whl", hash = "sha256:8003ac87717ae2c7ee1ea5a84a1a61e87f3fbd16eb5aadba194ea30a9019f648"},
