@@ -400,7 +400,7 @@ class SpamPrediction(plugin.Plugin):
         if util.tg.is_staff_or_admin(target):
             return
 
-        if probability >= 0.85:
+        if probability >= 0.8:
             if from_ocr:
                 alert = (
                     f"❗️**PHOTO SPAM ALERT**❗️\n\n"
