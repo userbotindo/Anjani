@@ -257,6 +257,26 @@ fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikelu
 fed-autoban-chat: "Channel {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
 #endregion
+#region filters
+filters-button: Filter
+filters-help: |
+  ** Hanya Administrator yang bisa menggunakan: **
+  × /filters: Daftar semua filter yang ada pada grup ini .
+  × /filter <kata kunci> <pesan balasan>: Menambah filter dari kata kunci pada grup. Bot akan membalas pesan ketika kata kunci disebutkan.
+  × /stop <keyword>: Stop the filter with the keyword.
+  × /stop <kata kunci>: Menghentikan filter dengan kata kunci yang diberikan.
+  × /rmallfilters: Menghentikan semua filter pada grup.
+
+  Filter mendukung markdown dan formatting (cek /formathelp).
+filters-added: "Berhasil menambahkan `{}` sebagai filter."
+filters-removed: "Berhasil menghapus `{}` dari filter."
+filter-help: "Contoh: `/filters <kata kunci> <teks>`"
+filter-stop-help: "Contoh: `/stop <kata kunci>`"
+filters-chat-nofilter: Grup ini tidak memiliki filter.
+filters-chat-nokeyword: "Tidak ada filter dengan kata kunci `{}` di grup ini."
+filters-rmall: "Berhasil menghapus {} filter pada grup ini."
+filters-list: "Filter pada **{}**:"
+#endregion
 #region language
 language-button: Bahasa
 language-help: |
@@ -394,7 +414,6 @@ restriction-help: |
 
   **Perintah pengguna:**
   × /warns: Periksa data peringatan pengguna. (bisa balas pesan orang yang akan diperiksa)
-
 no-kick-user: Siapa yang harus saya keluarkan?
 admin-kick: Saya tidak bisa mengeluarkan seorang Administrator.
 kick-done: "**{}** Dikeluarkan!"

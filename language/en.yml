@@ -240,6 +240,7 @@ fed-autoleave: "I no longger have permission to ban members in this chat. Leavin
 #region filters
 filters-button: Filters
 filters-help: |
+  **Admin Only:**
   × /filters: Get a list of all filters saved in chat.
   × /filter <keyword> <reply message>: Add a filters of the keyword in this chat. The bot will reply the message whenever the keyword is mentioned.
   × /stop <keyword>: Stop the filter with the keyword.
@@ -248,9 +249,9 @@ filters-help: |
   Filters also support markdown and formatters (check /formathelp).
 filters-added: "Successfully added `{}` as filters."
 filters-removed: "Successfully removed `{}` from filters."
-filter-help: "Usage: `/filters <trigger> <text>`"
-filter-stop-help: "Usage: `/stop <trigger>`"
-filters-chat-nofilter: This chat has no filters
+filter-help: "Usage: `/filters <trigger> <text>`."
+filter-stop-help: "Usage: `/stop <trigger>`."
+filters-chat-nofilter: This chat has no filters.
 filters-chat-nokeyword: "No filters named `{}` on this chat."
 filters-rmall: "Successfully removed {} filters in this chat."
 filters-list: "Filters in **{}**:"
