@@ -199,7 +199,7 @@ class Users(plugin.Plugin):
             async with ctx.action("upload_photo"):
                 file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.id
                 )
                 await file.unlink()
             return None
@@ -249,7 +249,7 @@ class Users(plugin.Plugin):
             async with ctx.action("upload_photo"):
                 file = AsyncPath(await self.bot.client.download_media(chat.photo.big_file_id))
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.id
                 )
                 await file.unlink()
             return None

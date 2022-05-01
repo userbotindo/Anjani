@@ -83,9 +83,7 @@ class Notes(plugin.Plugin):
     async def get_note(self, message: Message, name: str, noformat: bool = False) -> None:
         """Get note data and send based on types."""
         chat = message.chat
-        reply_to = (
-            message.reply_to_message.message_id if message.reply_to_message else message.message_id
-        )
+        reply_to = message.reply_to_message.id if message.reply_to_message else message.id
 
         data = await self.db.find_one({"chat_id": chat.id})
         if not data or not data.get("notes"):

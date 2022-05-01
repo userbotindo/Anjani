@@ -78,7 +78,7 @@ class Main(plugin.Plugin):
 
             self.bot.log.info(f"Bot downtime {duration_str}")
             await self.sendToLogChannel(
-                f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.message_id
+                f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.id
             )
             await status_msg.delete()
         else:
@@ -114,7 +114,7 @@ class Main(plugin.Plugin):
             {
                 "$set": {
                     "status_chat_id": status_msg.chat.id,
-                    "status_message_id": status_msg.message_id,
+                    "status_message_id": status_msg.id,
                     "time": util.time.usec(),
                 }
             },

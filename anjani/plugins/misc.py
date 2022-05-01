@@ -85,7 +85,7 @@ class Misc(plugin.Plugin):
         """Display ID's"""
         msg = ctx.msg.reply_to_message or ctx.msg
         out_str = f"👥 **Chat ID :** `{(msg.forward_from_chat or msg.chat).id}`\n"
-        out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.message_id}`\n"
+        out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.id}`\n"
         if msg.from_user:
             out_str += f"🙋‍♂️ **From User ID :** `{msg.from_user.id}`\n"
         file = (
@@ -182,7 +182,7 @@ class Misc(plugin.Plugin):
         await self.bot.client.send_animation(
             chat.id,
             res["url"],
-            reply_to_message_id=msg.message_id,
+            reply_to_message_id=msg.id,
             caption=text,
         )
         return None

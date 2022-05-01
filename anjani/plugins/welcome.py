@@ -42,7 +42,7 @@ class Greeting(plugin.Plugin):
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
-        reply_to = message.message_id
+        reply_to = message.id
         if message.left_chat_member and message.left_chat_member.id == self.bot.uid:
             return
 
@@ -80,7 +80,7 @@ class Greeting(plugin.Plugin):
         except ChatWriteForbidden:
             return
 
-        previous = await self.previous_goodbye(chat.id, msg.message_id)
+        previous = await self.previous_goodbye(chat.id, msg.id)
         if previous:
             try:
                 await self.bot.client.delete_messages(chat.id, previous)
@@ -125,7 +125,7 @@ class Greeting(plugin.Plugin):
                         reply_markup=button,
                     )
 
-                    previous = await self.previous_welcome(chat.id, msg.message_id)
+                    previous = await self.previous_welcome(chat.id, msg.id)
                     if previous:
                         try:
                             await self.bot.client.delete_messages(chat.id, previous)

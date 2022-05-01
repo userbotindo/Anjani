@@ -64,7 +64,7 @@ class Admins(plugin.Plugin):
             if not chat.pinned_message:
                 return await self.text(chat.id, "no-pinned-message")
 
-            pinned = chat.pinned_message.message_id
+            pinned = chat.pinned_message.id
             await self.bot.client.unpin_chat_message(chat.id, pinned)
         else:
             await ctx.msg.reply_to_message.unpin()
