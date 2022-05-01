@@ -101,7 +101,7 @@ class TelegramBot(MixinBase):
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
-            session_name="anjani",
+            name="anjani",
             api_id=api_id,
             api_hash=api_hash,
             bot_token=bot_token,
