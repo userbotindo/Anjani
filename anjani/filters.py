@@ -16,7 +16,7 @@
 
 from typing import Any, Callable, Coroutine, Optional
 
-from pyrogram import Client
+from pyrogram.client import Client
 from pyrogram.filters import (  # skipcq: PY-W2000
     Filter,
     animation,
@@ -31,7 +31,6 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     delete_chat_photo,
     dice,
     document,
-    edited,
     forwarded,
     from_scheduled,
     game,
@@ -69,11 +68,10 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     venue,
     via_bot,
     video,
+    video_chat_ended,
+    video_chat_members_invited,
+    video_chat_started,
     video_note,
-    voice,
-    voice_chat_ended,
-    voice_chat_members_invited,
-    voice_chat_started,
     web_page,
 )
 
@@ -102,7 +100,6 @@ __all__ = [
     "dev_only",
     "dice",
     "document",
-    "edited",
     "forwarded",
     "from_scheduled",
     "game",
@@ -144,10 +141,10 @@ __all__ = [
     "via_bot",
     "video",
     "video_note",
-    "voice",
-    "voice_chat_ended",
-    "voice_chat_members_invited",
-    "voice_chat_started",
+    "video",
+    "video_chat_ended",
+    "video_chat_members_invited",
+    "video_chat_started",
 ]
 
 
