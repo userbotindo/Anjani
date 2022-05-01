@@ -89,7 +89,7 @@ class Main(plugin.Plugin):
         if not await file.exists():
             return
 
-        data = await self.bot.client.send(GetState())
+        data = await self.bot.client.invoke(GetState())
         await self.db.update_one(
             {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
             {

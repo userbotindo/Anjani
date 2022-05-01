@@ -222,7 +222,7 @@ class EventDispatcher(MixinBase):
                 # TO-DO
                 # 1. Change qts to 0, because we want to get all missed events
                 #    so we have a proper loop going on until DifferenceEmpty
-                diff = await self.client.send(
+                diff = await self.client.invoke(
                     functions.updates.GetDifference(pts=pts, date=date, qts=-1)
                 )
                 if isinstance(
