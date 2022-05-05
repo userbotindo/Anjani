@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import bson
 from aiopath import AsyncPath
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.raw.functions.updates import GetState
 from pyrogram.types import (
@@ -202,7 +203,7 @@ class Main(plugin.Plugin):
         """Bot start command"""
         chat = ctx.msg.chat
 
-        if chat.type == "private":  # only send in PM's
+        if chat.type == ChatType.PRIVATE:  # only send in PM's
             if ctx.input and ctx.input == "help":
                 keyboard = await self.help_builder(chat.id)
                 await ctx.respond(
@@ -243,7 +244,7 @@ class Main(plugin.Plugin):
         """Bot plugins helper"""
         chat = ctx.msg.chat
 
-        if chat.type != "private":  # only send in PM's
+        if chat.type != ChatType.PRIVATE:  # only send in PM's
             await ctx.respond(
                 await self.text(chat.id, "help-chat"),
                 reply_markup=InlineKeyboardMarkup(

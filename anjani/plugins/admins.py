@@ -17,6 +17,7 @@
 import asyncio
 from typing import ClassVar, Optional
 
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
@@ -86,7 +87,7 @@ class Admins(plugin.Plugin):
     async def cmd_adminlist(self, ctx: command.Context) -> str:
         """Get list of chat admins"""
         chat = ctx.msg.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
         admins = ""
 

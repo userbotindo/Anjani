@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
 
@@ -141,7 +142,7 @@ class Reporting(plugin.Plugin):
             return None
 
         chat = ctx.chat
-        private = chat.type == "private"
+        private = chat.type == ChatType.PRIVATE
 
         if setting is None:
             if not ctx.input:

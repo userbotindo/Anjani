@@ -18,7 +18,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
 from pyrogram import Client, errors
-from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums import ChatAction, ChatType
 from pyrogram.filters import Filter, create
 
 from anjani import command, plugin, util
@@ -122,7 +122,7 @@ class CommandDispatcher(MixinBase):
             if message.via_bot:
                 return False
 
-            if (message.chat and message.chat.type == "channel") or (
+            if (message.chat and message.chat.type == ChatType.CHANNEL) or (
                 message.sender_chat
                 and message.forward_from_chat
                 and message.forward_from_chat.id == message.sender_chat.id

@@ -17,6 +17,7 @@
 from typing import Any, Callable, Coroutine, Optional
 
 from pyrogram.client import Client
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import (  # skipcq: PY-W2000
     Filter,
     animation,
@@ -157,7 +158,7 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 # { permission
 def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
         if priv or not target or not message.chat:
             return False
 
@@ -231,7 +232,7 @@ owner_only = _owner_only()
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
         if priv or not message.chat or not target:
             return False
 

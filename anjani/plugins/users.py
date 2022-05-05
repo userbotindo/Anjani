@@ -20,6 +20,7 @@ from hashlib import md5
 from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 
 from aiopath import AsyncPath
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
@@ -47,9 +48,9 @@ class Users(plugin.Plugin):
         async def _do_nothing() -> None:
             return
 
-        if channel.type == "channel":
+        if channel.type == ChatType.CHANNEL:
             data = await self.chats_db.find_one({"chat_id": channel.id})
-            content = {"chat_name": channel.title, "type": channel.type}
+            content = {"chat_name": channel.title, "type": "channel"}
             if not data or "hash" not in data:
                 content["hash"] = self.hash_id(channel.id)
             return self.bot.loop.create_task(
@@ -120,7 +121,7 @@ class Users(plugin.Plugin):
         set_content = {"username": user.username, "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
 
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             if self.predict_loaded:
                 if ch := message.forward_from_chat:
                     tasks.append(await self.build_channel_task(ch))
@@ -177,7 +178,7 @@ class Users(plugin.Plugin):
         text += f"**Permanent user link: **{util.tg.mention(user)}\n"
         text += (
             "**Number of profile pics: **"
-            f"`{await self.bot.client.get_profile_photos_count(user.id)}`\n"
+            f"`{await self.bot.client.get_chat_photos_count(user.id)}`\n"
         )
         if user.status:
             text += f"**Last seen: ** `{user.status}`\n"

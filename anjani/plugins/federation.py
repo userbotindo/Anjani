@@ -20,6 +20,7 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
 from pyrogram.types import (
     CallbackQuery,
@@ -129,7 +130,7 @@ class Federation(plugin.Plugin):
         chat = message.chat
         if not chat:
             return
-        if chat.type == "channel" and message.text and message.text.startswith("/setfedlog"):
+        if chat.type == ChatType.CHANNEL and message.text and message.text.startswith("/setfedlog"):
             return await self.channel_setlog(message)
 
         target = message.from_user or message.sender_chat
@@ -259,7 +260,7 @@ class Federation(plugin.Plugin):
     async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
         """Create a new federations"""
         chat = ctx.chat
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-private")
 
         if not name:
@@ -278,7 +279,7 @@ class Federation(plugin.Plugin):
     async def cmd_delfed(self, ctx: command.Context) -> Optional[str]:
         """Delete federations"""
         chat = ctx.chat
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-private")
 
         owner = ctx.msg.from_user
@@ -373,7 +374,7 @@ class Federation(plugin.Plugin):
     async def cmd_fedpromote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Promote user to fed admin"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         if not user:
@@ -411,7 +412,7 @@ class Federation(plugin.Plugin):
     async def cmd_feddemote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Demote user to fed admin"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         invoker = ctx.msg.from_user
@@ -454,7 +455,7 @@ class Federation(plugin.Plugin):
             data = await self.get_fed(fid)
             if not data:
                 return await self.text(chat.id, "fed-invalid-id")
-        elif chat.type != "private":
+        elif chat.type != ChatType.PRIVATE:
             data = await self.get_fed_bychat(chat.id)
             if not data:
                 return (
@@ -595,7 +596,7 @@ class Federation(plugin.Plugin):
     ) -> Optional[str]:
         """Fed ban command"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         banner = ctx.msg.from_user
@@ -676,7 +677,7 @@ class Federation(plugin.Plugin):
     async def cmd_unfban(self, ctx: command.Context, target: Union[User, Chat] = None) -> str:
         """Unban a user on federation"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         banner = ctx.msg.from_user
@@ -936,7 +937,7 @@ class Federation(plugin.Plugin):
 
     async def cmd_setfedlog(self, ctx: command.Context, fid: Optional[str] = None) -> Optional[str]:
         chat = ctx.chat
-        if chat.type == "channel":
+        if chat.type == ChatType.CHANNEL:
             if not fid:
                 return await self.text(chat.id, "fed-set-log-args")
 
@@ -959,7 +960,7 @@ class Federation(plugin.Plugin):
             )
             return None
 
-        if chat.type in {"group", "supergroup"}:
+        if chat.type in {ChatType.GROUP, ChatType.SUPERGROUP}:
             data = await self.get_fed_byowner(ctx.author.id)
             if not data:
                 return await self.text(chat.id, "user-no-feds")
@@ -975,7 +976,7 @@ class Federation(plugin.Plugin):
     async def cmd_unsetfedlog(self, ctx: command.Context) -> str:
         chat = ctx.chat
         user = ctx.msg.from_user
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             data = await self.get_fed_byowner(user.id)
             if not data:
                 return await self.text(chat.id, "user-no-feds")
