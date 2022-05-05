@@ -137,7 +137,7 @@ class Users(plugin.Plugin):
 
         chat_data = await self.chats_db.find_one({"chat_id": chat.id})
         chat_update = {
-            "$set": {"chat_name": chat.title, "type": chat.type},
+            "$set": {"chat_name": chat.title, "type": chat.type.name.lower()},
             "$addToSet": {"member": user.id},
         }
         if self.predict_loaded:
