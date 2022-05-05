@@ -20,6 +20,7 @@ from json import JSONDecodeError
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientOSError, ClientResponseError, ContentTypeError
+from pyrogram.enums import ParseMode
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -226,7 +227,7 @@ class SpamShield(plugin.Plugin):
             self.bot.client.send_message(
                 chat.id,
                 text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
-                parse_mode="markdown",
+                parse_mode=ParseMode.MARKDOWN,
                 disable_web_page_preview=True,
             ),
             self.bot.client.send_message(

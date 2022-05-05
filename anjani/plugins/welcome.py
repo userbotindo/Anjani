@@ -18,6 +18,7 @@ import asyncio
 from html import escape
 from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
+from pyrogram.enums import ParseMode
 from pyrogram.errors import ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
@@ -333,12 +334,12 @@ class Greeting(plugin.Plugin):
             text += "\n\n"
 
         if noformat:
-            parse_mode = None
+            parse_mode = ParseMode.DISABLED
             if button:
                 text += util.tg.revert_button(button)
             button = None
         else:
-            parse_mode = "markdown"
+            parse_mode = ParseMode.MARKDOWN
             if button:
                 button = util.tg.build_button(button)
 
@@ -385,9 +386,9 @@ class Greeting(plugin.Plugin):
         )
 
         if noformat:
-            parse_mode = None
+            parse_mode = ParseMode.DISABLED
         else:
-            parse_mode = "markdown"
+            parse_mode = ParseMode.MARKDOWN
 
         await ctx.respond(await self.text(chat.id, "view-goodbye", setting, clean_service))
         await ctx.respond(

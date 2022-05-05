@@ -17,7 +17,7 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
-from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums import ChatAction, ParseMode
 from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 
@@ -98,13 +98,13 @@ class Notes(plugin.Plugin):
 
         button = note.get("button", None)
         if noformat:
-            parse_mode = None
+            parse_mode = ParseMode.DISABLED
             btn_text = "\n\n"
             if button:
                 btn_text += revert_button(button)
             keyb = None
         else:
-            parse_mode = "markdown"
+            parse_mode = ParseMode.MARKDOWN
             btn_text = ""
             if button:
                 keyb = build_button(button)
