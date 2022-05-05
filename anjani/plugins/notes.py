@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
+from pyrogram.enums.chat_action import ChatAction
 from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 
@@ -29,22 +30,22 @@ class Notes(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
-    ACTION: MutableMapping[int, str]
+    ACTION: MutableMapping[int, ChatAction]
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self):
         self.db = self.bot.db.get_collection("NOTES")
         self.ACTION = {
-            Types.TEXT.value: "typing",
-            Types.BUTTON_TEXT.value: "typing",
-            Types.DOCUMENT.value: "upload_document",
-            Types.PHOTO.value: "upload_photo",
-            Types.VIDEO.value: "upload_video",
-            Types.STICKER.value: "cancel",  # "choose_sticker"
-            Types.AUDIO.value: "upload_audio",
-            Types.VOICE.value: "upload_audio",
-            Types.VIDEO_NOTE.value: "upload_video_note",
-            Types.ANIMATION.value: "upload_video",
+            Types.TEXT.value: ChatAction.TYPING,
+            Types.BUTTON_TEXT.value: ChatAction.TYPING,
+            Types.DOCUMENT.value: ChatAction.UPLOAD_DOCUMENT,
+            Types.PHOTO.value: ChatAction.UPLOAD_PHOTO,
+            Types.VIDEO.value: ChatAction.UPLOAD_VIDEO,
+            Types.STICKER.value: ChatAction.CHOOSE_STICKER,
+            Types.AUDIO.value: ChatAction.UPLOAD_AUDIO,
+            Types.VOICE.value: ChatAction.UPLOAD_AUDIO,
+            Types.VIDEO_NOTE.value: ChatAction.UPLOAD_VIDEO_NOTE,
+            Types.ANIMATION.value: ChatAction.UPLOAD_VIDEO,
         }
         self.SEND = {
             Types.TEXT.value: self.bot.client.send_message,
@@ -147,7 +148,7 @@ class Notes(plugin.Plugin):
         except MessageEmpty:
             pass
         finally:
-            await self.bot.client.send_chat_action(chat.id, "cancel")
+            await self.bot.client.send_chat_action(chat.id, ChatAction.CANCEL)
 
     async def cmd_get(self, ctx: command.Context) -> None:
         """Notes command trigger."""

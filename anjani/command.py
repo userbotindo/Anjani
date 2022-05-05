@@ -29,6 +29,7 @@ from typing import (
 )
 
 import pyrogram
+from pyrogram.enums.chat_action import ChatAction
 from pyrogram.filters import Filter
 from typing_extensions import final
 
@@ -255,35 +256,26 @@ class Context:
             self.response = None  # type: ignore
         return self.response
 
-    async def trigger_action(self, action: str = "typing") -> bool:
+    async def trigger_action(self, action: ChatAction = ChatAction.TYPING) -> bool:
         """Triggers a ChatAction on the invoked chat.
         A Shortcut for *bot.client.send_chat_action()*
 
         Parameters:
-            action (`str`, *Optional*):
-                Type of action to broadcast. Choose one, depending on what the user is about to receive: *"typing"* for
-                text messages, *"upload_photo"* for photos, *"record_video"* or *"upload_video"* for videos,
-                *"record_audio"* or *"upload_audio"* for audio files, *"upload_document"* for general files,
-                *"find_location"* for location data, *"record_video_note"* or *"upload_video_note"* for video notes,
-                *"choose_contact"* for contacts, *"playing"* for games, *"speaking"* for speaking in group calls or
-                *"cancel"* to cancel any chat action currently displayed.
+            action (`~pyrogram.types.ChatAction`, *Optional*):
+                Type of action to broadcast.
         """
         if not self.chat:
             return False
 
         return await self.bot.client.send_chat_action(self.chat.id, action)
 
-    def action(self, action: str = "typing") -> BotAction:
+    def action(self, action: ChatAction = ChatAction.TYPING) -> BotAction:
         """Returns a context manager that allows you to send a chat action
         for an indefinite time.
 
         Parameters:
-            action (`str`, *Optional*):
-                Type of action to broadcast. Choose one, depending on what the user is about to receive: *"typing"* for
-                text messages, *"upload_photo"* for photos, *"record_video"* or *"upload_video"* for videos,
-                *"record_audio"* or *"upload_audio"* for audio files, *"upload_document"* for general files,
-                *"find_location"* for location data, *"record_video_note"* or *"upload_video_note"* for video notes,
-                *"choose_contact"* for contacts, *"playing"* for games, *"speaking"* for speaking in group calls.
+            action (`~pyrogram.types.ChatAction`, *Optional*):
+                Type of action to broadcast.
         """
         return BotAction(self, action)
 

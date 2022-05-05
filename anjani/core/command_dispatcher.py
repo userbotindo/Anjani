@@ -18,6 +18,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
 from pyrogram import Client, errors
+from pyrogram.enums.chat_action import ChatAction
 from pyrogram.filters import Filter, create
 
 from anjani import command, plugin, util
@@ -191,7 +192,7 @@ class CommandDispatcher(MixinBase):
 
                 # Response shortcut
                 if ret is not None:
-                    async with ctx.action("typing"):
+                    async with ctx.action(ChatAction.TYPING):
                         await ctx.respond(
                             ret,
                             disable_web_page_preview=True,
