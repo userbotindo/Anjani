@@ -392,15 +392,15 @@ class SpamPrediction(plugin.Plugin):
         except DuplicateKeyError:
             await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
 
-        # Empty user big chances are anonymous admins
-        if user is None or message.sender_chat:
-            return
-
-        target = await message.chat.get_member(user)
-        if util.tg.is_staff_or_admin(target):
-            return
-
         if probability >= 0.8:
+            # Empty user big chances are anonymous admins
+            if user is None or message.sender_chat:
+                return
+
+            target = await message.chat.get_member(user)
+            if util.tg.is_staff_or_admin(target):
+                return
+
             if from_ocr:
                 alert = (
                     f"❗️**PHOTO SPAM ALERT**❗️\n\n"
