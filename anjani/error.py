@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any, Optional, Type
 
 if TYPE_CHECKING:
     from .command import Command
@@ -74,7 +74,10 @@ class ConversionError(BadArgument):
     """
 
     def __init__(  # skipcq: PYL-W1113
-        self, converter: "Converter" = None, err: Exception = None, *args: Any
+        self,
+        converter: Optional["Converter"] = None,
+        err: Optional[Exception] = None,
+        *args: Any
     ) -> None:
         if converter and err:
             self.converter = type(converter).__name__

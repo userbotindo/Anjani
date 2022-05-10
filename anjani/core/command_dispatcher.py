@@ -17,8 +17,10 @@
 import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
-from pyrogram import Client, errors
-from pyrogram.enums import ChatAction, ChatType
+from pyrogram import errors
+from pyrogram.client import Client
+from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import Filter, create
 
 from anjani import command, plugin, util

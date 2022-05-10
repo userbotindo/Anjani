@@ -149,7 +149,7 @@ __all__ = [
 ]
 
 
-def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
+def create(func: FilterFunc, name: Optional[str] = None, **kwargs: Any) -> CustomFilter:
     return type(
         name or func.__name__ or "CustomAnjaniFilter", (CustomFilter,), {"__call__": func, **kwargs}
     )()

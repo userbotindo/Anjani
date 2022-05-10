@@ -84,7 +84,7 @@ class Command:
 
 # Command invocation context
 class Context:
-    author: Optional[pyrogram.types.User]
+    author: pyrogram.types.User
     bot: "Anjani"
     chat: pyrogram.types.Chat
     msg: Message
@@ -109,7 +109,7 @@ class Context:
         self.cmd_len = cmd_len
         self.msg = self.message = msg
         self.author = msg.from_user
-        self.chat = msg.chat  # type: ignore
+        self.chat = msg.chat
 
         # Response message to be filled later
         self.response = None  # type: ignore

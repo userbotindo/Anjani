@@ -22,14 +22,12 @@ from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Typ
 
 import pyrogram.filters as flt
 from aiopath import AsyncPath
-from pyrogram import Client
+from pyrogram.client import Client
 from pyrogram.filters import Filter
-from pyrogram.handlers import (
-    CallbackQueryHandler,
-    ChatMemberUpdatedHandler,
-    InlineQueryHandler,
-    MessageHandler,
-)
+from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
+from pyrogram.handlers.chat_member_updated_handler import ChatMemberUpdatedHandler
+from pyrogram.handlers.inline_query_handler import InlineQueryHandler
+from pyrogram.handlers.message_handler import MessageHandler
 from pyrogram.types import CallbackQuery, InlineQuery, User
 from yaml import full_load
 
@@ -235,7 +233,7 @@ class TelegramBot(MixinBase):
                 ) -> None:
                     await self.dispatch_event(name, event)
 
-                handler_info = (event_type(event_handler, filters), group)
+                handler_info = (event_type(event_handler, filters), group)  # type: ignore
                 self.client.add_handler(*handler_info)
                 self._plugin_event_handlers[name] = handler_info
         elif name in self._plugin_event_handlers:

@@ -425,7 +425,7 @@ class SpamPrediction(plugin.Plugin):
             else:
                 await self.bot.log_stat("spam_deleted")
                 alert += "\n\nThe message has been deleted."
-                reply_id = None
+                reply_id = 0
 
             await self.bot.client.send_message(
                 message.chat.id,
