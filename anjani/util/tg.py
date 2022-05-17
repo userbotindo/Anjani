@@ -33,6 +33,7 @@ from typing import (
 )
 
 from pyrogram import Client
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.errors import (
     ChannelPrivate,
     ChatForbidden,
@@ -235,7 +236,7 @@ async def get_chat_admins(
     client: Client, chat: int, *, exclude_bot: bool = False
 ) -> AsyncGenerator[ChatMember, None]:
     member: ChatMember
-    async for member in client.iter_chat_members(chat, filter="administrators"):  # type: ignore
+    async for member in client.get_chat_members(chat, filter=ChatMemberStatus.ADMINISTRATOR):  # type: ignore
         if member.status in {"administrator", "creator"}:
             if exclude_bot and member.user.is_bot:
                 continue

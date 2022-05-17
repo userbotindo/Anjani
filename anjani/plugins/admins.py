@@ -110,7 +110,7 @@ class Admins(plugin.Plugin):
         zombie = 0
 
         await ctx.respond(await self.text(chat.id, "finding-zombie"))
-        async for member in self.bot.client.iter_chat_members(chat.id):  # type: ignore
+        async for member in self.bot.client.get_chat_members(chat.id):  # type: ignore
             if member.user.is_deleted:
                 zombie += 1
                 try:
