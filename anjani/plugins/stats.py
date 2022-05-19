@@ -17,7 +17,7 @@
 import asyncio
 from typing import Any, ClassVar, Optional
 
-from pyrogram.enums import ParseMode
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.types import Message
 
 from anjani import command, filters, plugin, util

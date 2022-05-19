@@ -17,7 +17,8 @@
 import asyncio
 from typing import Any, Callable, ClassVar, Coroutine, MutableMapping, Optional
 
-from pyrogram.enums import ChatAction, ParseMode
+from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 

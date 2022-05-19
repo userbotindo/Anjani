@@ -68,7 +68,7 @@ class Language(plugin.Plugin):
         # Check admin rights
         if chat.type != ChatType.PRIVATE:
             user = await chat.get_member(query.from_user.id)
-            if not user.can_change_info:
+            if not user.privileges.can_change_info:
                 await query.answer(await self.text(chat.id, "error-no-rights"))
                 return
 
@@ -108,7 +108,7 @@ class Language(plugin.Plugin):
         # Check admin rights
         if chat.type != ChatType.PRIVATE:
             user = await chat.get_member(ctx.msg.from_user.id)
-            if not user.can_change_info:
+            if not user.privileges.can_change_info:
                 return await self.text(chat.id, "error-no-rights")
 
         if ctx.input:

@@ -19,11 +19,12 @@ import re
 from hashlib import sha256
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
-import bson
 from aiopath import AsyncPath
-from pyrogram.enums import ChatType, ParseMode
+from bson.binary import Binary
+from pyrogram.enums.chat_type import ChatType
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
-from pyrogram.raw.functions.updates import GetState
+from pyrogram.raw.functions.updates.get_state import GetState
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -95,7 +96,7 @@ class Main(plugin.Plugin):
             {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
             {
                 "$set": {
-                    "session": bson.Binary(await file.read_bytes()),
+                    "session": Binary(await file.read_bytes()),
                     "date": data.date,
                     "pts": data.pts,
                     "qts": data.qts,

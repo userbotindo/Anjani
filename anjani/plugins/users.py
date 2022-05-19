@@ -20,7 +20,8 @@ from hashlib import md5
 from typing import Any, ClassVar, List, MutableMapping, Optional, Union
 
 from aiopath import AsyncPath
-from pyrogram.enums import ChatAction, ChatType
+from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
@@ -175,7 +176,7 @@ class Users(plugin.Plugin):
         if user.username:
             text += f"**Username: **@{user.username}\n"
 
-        text += f"**Permanent user link: **{util.tg.mention(user)}\n"
+        text += f"**Permanent user link: **{user.mention}\n"
         text += (
             "**Number of profile pics: **"
             f"`{await self.bot.client.get_chat_photos_count(user.id)}`\n"
@@ -198,11 +199,14 @@ class Users(plugin.Plugin):
 
         if user.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
-                file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
+                file = await self.bot.client.download_media(user.photo.big_file_id)
+                if not file:
+                    return text
+
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.id
+                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
                 )
-                await file.unlink()
+
             return None
 
         return text
@@ -248,11 +252,13 @@ class Users(plugin.Plugin):
 
         if chat.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
-                file = AsyncPath(await self.bot.client.download_media(chat.photo.big_file_id))
+                file = await self.bot.client.download_media(chat.photo.big_file_id)  # type: ignore
+                if not file:
+                    return text
+
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.id
+                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
                 )
-                await file.unlink()
             return None
 
         return text

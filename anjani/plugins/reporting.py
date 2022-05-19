@@ -91,7 +91,7 @@ class Reporting(plugin.Plugin):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
 
-        reply_text = await self.text(chat.id, "report-notif", util.tg.mention(reported_user))
+        reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
         slots = 4096 - len(reply_text)
         async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):

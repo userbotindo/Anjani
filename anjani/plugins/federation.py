@@ -16,7 +16,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Tuple, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
@@ -83,8 +83,8 @@ class Federation(plugin.Plugin):
             return
 
         if (
-            update.old_chat_member.can_restrict_members
-            and not update.new_chat_member.can_restrict_members
+            update.old_chat_member.privileges.can_restrict_members
+            and not update.new_chat_member.privileges.can_restrict_members
         ):
             chat = update.chat
             fed_data = await self.get_fed_bychat(chat.id)
@@ -246,7 +246,9 @@ class Federation(plugin.Plugin):
                     await self.text(
                         chat.id,
                         "fed-autoban" if data["type"] == "user" else "fed-autoban-chat",
-                        util.tg.mention(user) if data["type"] == "user" else data["title"],
+                        user.mention if (
+                            data["type"] == "user" and isinstance(user, User)
+                        ) else data["title"],
                         data["fed_name"],
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
@@ -402,7 +404,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Promotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
+                f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -441,7 +443,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Demotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
+                f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -475,7 +477,7 @@ class Federation(plugin.Plugin):
             "fed-info-text",
             data["_id"],
             data["name"],
-            util.tg.mention(owner),
+            owner.mention,
             len(data.get("admins", [])),
             len(data.get("banned", [])),
             len(data.get("banned_chat", [])),
@@ -505,7 +507,7 @@ class Federation(plugin.Plugin):
         if isinstance(owner, List):
             owner = owner[0]
 
-        text = await self.text(chat.id, "fed-admin-text", data["name"], util.tg.mention(owner))
+        text = await self.text(chat.id, "fed-admin-text", data["name"], owner.mention)
         if len(data.get("admins", [])) != 0:
             text += "\nAdmins:\n"
             admins = []
@@ -513,8 +515,11 @@ class Federation(plugin.Plugin):
                 admins.append(admin)
 
             admins = await self.bot.client.get_users(admins)
-            for admin in admins:
-                text += f" • {util.tg.mention(admin)}\n"
+            if isinstance(admins, Iterable):
+                for admin in admins:
+                    text += f" • {user.mention}\n"
+            else:
+                text += f" • {user.mention}\n"
         else:
             text += "\n" + await self.text(chat.id, "fed-no-admin")
 
@@ -540,8 +545,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-info-update",
                 fed_data["name"],
-                util.tg.mention(banner),
-                util.tg.mention(target),
+                banner.mention,
+                target.mention,
                 target.id,
                 fed_data["banned"][str(target.id)]["reason"],
                 reason,
@@ -550,8 +555,8 @@ class Federation(plugin.Plugin):
             chat.id,
             "fed-ban-info",
             fed_data["name"],
-            util.tg.mention(banner),
-            util.tg.mention(target),
+            banner.mention,
+            target.mention,
             target.id,
             reason,
         )
@@ -575,7 +580,7 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-chat-info-update",
                 fed_data["name"],
-                util.tg.mention(banner),
+                banner.mention,
                 target.title,
                 target.id,
                 fed_data["banned_chat"][str(target.id)]["reason"],
@@ -585,14 +590,14 @@ class Federation(plugin.Plugin):
             chat.id,
             "fed-ban-chat-info",
             fed_data["name"],
-            util.tg.mention(banner),
+            banner.mention,
             target.title,
             target.id,
             reason,
         )
 
     async def cmd_fban(
-        self, ctx: command.Context, target: Union[User, Chat] = None, *, reason: str = ""
+        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
     ) -> Optional[str]:
         """Fed ban command"""
         chat = ctx.chat
@@ -674,7 +679,9 @@ class Federation(plugin.Plugin):
 
         return None
 
-    async def cmd_unfban(self, ctx: command.Context, target: Union[User, Chat] = None) -> str:
+    async def cmd_unfban(
+        self, ctx: command.Context, target: Union[User, Chat, None] = None
+    ) -> str:
         """Unban a user on federation"""
         chat = ctx.chat
         if chat.type == ChatType.PRIVATE:
@@ -710,8 +717,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-unban-info",
                 data["name"],
-                util.tg.mention(banner),
-                util.tg.mention(target),
+                banner.mention,
+                target.mention,
                 target.id,
             )
         elif isinstance(target, Chat):
@@ -720,7 +727,7 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-unban-info-chat",
                 data["name"],
-                util.tg.mention(banner),
+                banner.mention,
                 target.title,
                 target.id,
             )

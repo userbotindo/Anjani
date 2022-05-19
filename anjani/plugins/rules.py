@@ -103,8 +103,9 @@ class Rules(plugin.Plugin):
         except PeerIdInvalid:
             content, chat = None, None
 
-        if not content:
+        if not content or not chat:
             return await self.text(rules_id, "rules-none")
+
         text = await self.text(rules_id, "rules-view-pm", chat.title)
 
         return text + content["rules"]

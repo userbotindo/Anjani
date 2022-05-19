@@ -20,7 +20,7 @@ from json import JSONDecodeError
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientOSError, ClientResponseError, ContentTypeError
-from pyrogram.enums import ParseMode
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -68,7 +68,7 @@ class SpamShield(plugin.Plugin):
 
         try:
             me = await chat.get_member("me")
-            if not me.can_restrict_members:
+            if not me.privileges.can_restrict_members:
                 return
 
             for member in message.new_chat_members:
@@ -91,7 +91,7 @@ class SpamShield(plugin.Plugin):
 
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
-            if not me.can_restrict_members or util.tg.is_staff_or_admin(target):
+            if not me.privileges.can_restrict_members or util.tg.is_staff_or_admin(target):
                 return
 
             await self.check(target.user, chat)
@@ -203,7 +203,7 @@ class SpamShield(plugin.Plugin):
         if not cas and not sw and not user.is_scam:
             return
 
-        userlink = util.tg.mention(user)
+        userlink = user.mention
         chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
         reason = ""
         banner = ""
