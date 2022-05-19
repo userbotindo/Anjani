@@ -16,7 +16,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
@@ -142,17 +142,17 @@ class Federation(plugin.Plugin):
             await self.fban_handler(chat, target, banned)
 
     @staticmethod
-    def is_fed_admin(data: MutableMapping[str, Any], user: int) -> bool:
+    def is_fed_admin(data: Mapping[str, Any], user: int) -> bool:
         """Check federation admin"""
         return user == data["owner"] or user in data.get("admins", [])
 
-    async def get_fed_bychat(self, chat: int) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed_bychat(self, chat: int) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"chats": chat})
 
-    async def get_fed_byowner(self, user: int) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed_byowner(self, user: int) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"owner": user})
 
-    async def get_fed(self, fid: str) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed(self, fid: str) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"_id": fid})
 
     async def fban_user(
@@ -229,11 +229,13 @@ class Federation(plugin.Plugin):
             user_data["fed_name"] = data["name"]
             user_data["type"] = "user"
             return user_data
+
         if str(target) in data.get("banned_chat", {}):
             channel_data = data["banned_chat"][str(target)]
             channel_data["fed_name"] = data["name"]
             channel_data["type"] = "chat"
             return channel_data
+
         return None
 
     async def fban_handler(
@@ -531,7 +533,7 @@ class Federation(plugin.Plugin):
         target: User,
         banner: User,
         reason: str,
-        fed_data: MutableMapping[str, Any],
+        fed_data: Mapping[str, Any],
     ) -> str:
         update = False
         if str(target.id) in fed_data.get("banned", {}).keys():
@@ -567,7 +569,7 @@ class Federation(plugin.Plugin):
         target: Chat,
         banner: User,
         reason: str,
-        fed_data: MutableMapping[str, Any],
+        fed_data: Mapping[str, Any],
     ) -> str:
         update = False
         if str(target.id) in fed_data.get("banned_chat", {}).keys():
@@ -916,7 +918,7 @@ class Federation(plugin.Plugin):
 
         return await self.text(chat.id, "fed-myfeds-no-admin")
 
-    def generate_log_btn(self, data: MutableMapping[str, Any]) -> InlineKeyboardMarkup:
+    def generate_log_btn(self, data: Mapping[str, Any]) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup(
             [
                 [

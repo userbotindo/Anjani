@@ -17,9 +17,8 @@
 import asyncio
 import re
 from hashlib import md5
-from typing import Any, ClassVar, List, MutableMapping, Optional, Union
+from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 
-from aiopath import AsyncPath
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
@@ -211,7 +210,7 @@ class Users(plugin.Plugin):
 
         return text
 
-    async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
+    async def _old_user_info(self, data: Mapping[str, Any]) -> str:
         text = "**Old User Info**\n\n"
         text += f"**ID**: `{data['_id']}`\n"
         if data.get("name"):
@@ -263,7 +262,7 @@ class Users(plugin.Plugin):
 
         return text
 
-    async def _old_chat_info(self, data: MutableMapping[str, Any]) -> str:
+    async def _old_chat_info(self, data: Mapping[str, Any]) -> str:
         text = "**Old Chat Info**\n\n"
         text += f"**ID:** `{data['chat_id']}`\n"
         text += f"**Chat Name:** {data['chat_name']}\n"
