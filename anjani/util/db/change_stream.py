@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
 
 from bson.timestamp import Timestamp
 from pymongo.change_stream import ChangeStream
@@ -44,7 +44,7 @@ class AsyncChangeStream(AsyncBase):
     def __init__(
         self,
         target: Union["AsyncClient", "AsyncDatabase", "AsyncCollection"],
-        pipeline: Optional[List[MutableMapping[str, Any]]],
+        pipeline: Optional[List[Mapping[str, Any]]],
         full_document: Optional[str],
         resume_after: Optional[Any],
         max_await_time_ms: Optional[int],
@@ -55,7 +55,7 @@ class AsyncChangeStream(AsyncBase):
         start_after: Optional[Any],
     ) -> None:
         self._target = target
-        self._options: MutableMapping[str, Any] = {
+        self._options: Mapping[str, Any] = {
             "pipeline": pipeline,
             "full_document": full_document,
             "resume_after": resume_after,
@@ -75,7 +75,7 @@ class AsyncChangeStream(AsyncBase):
     def __iter__(self) -> None:
         raise RuntimeError("Use 'async for' instead of 'for'")
 
-    async def __anext__(self) -> MutableMapping[str, Any]:
+    async def __anext__(self) -> Mapping[str, Any]:
         return await self.next()
 
     async def __aenter__(self) -> "AsyncChangeStream":
@@ -101,7 +101,7 @@ class AsyncChangeStream(AsyncBase):
         if self.dispatch:
             await util.run_sync(self.dispatch.close)
 
-    async def next(self) -> MutableMapping[str, Any]:
+    async def next(self) -> Mapping[str, Any]:
         while self.alive:
             document = await self.try_next()
             if document:
@@ -109,7 +109,7 @@ class AsyncChangeStream(AsyncBase):
 
         raise StopAsyncIteration
 
-    async def try_next(self) -> Optional[MutableMapping[str, Any]]:
+    async def try_next(self) -> Optional[Mapping[str, Any]]:
         self.dispatch = await self._init()
         return await util.run_sync(self.dispatch.try_next)
 

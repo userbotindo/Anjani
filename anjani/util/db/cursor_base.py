@@ -21,19 +21,21 @@ from typing import (
     Any,
     Coroutine,
     Deque,
+    Generic,
     List,
-    MutableMapping,
+    Mapping,
     Optional,
     Tuple,
     Union,
 )
 
+from pymongo.client_session import ClientSession
 from pymongo.cursor import _QUERY_OPTIONS, Cursor, RawBatchCursor
+from pymongo.typings import _DocumentType
 
 from anjani import util
 
 from .base import AsyncBase
-from .client_session import AsyncClientSession
 from .errors import InvalidOperation
 
 if TYPE_CHECKING:
@@ -41,7 +43,7 @@ if TYPE_CHECKING:
     from .command_cursor import CommandCursor, _LatentCursor
 
 
-class AsyncCursorBase(AsyncBase):
+class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
     """Base class for Cursor AsyncIOMongoDB instances
 
     *DEPRECATED* methods are removed in this class.
@@ -50,14 +52,24 @@ class AsyncCursorBase(AsyncBase):
     And we now have :meth:`~to_list()` so yeah kinda useless
     """
 
-    collection: "AsyncCollection"
-    dispatch: Union["_LatentCursor", "CommandCursor", Cursor, RawBatchCursor]
+    collection: "Optional[AsyncCollection[_DocumentType]]"
+    dispatch: Union[
+            "_LatentCursor[_DocumentType]",
+            "CommandCursor[_DocumentType]",
+            Cursor[_DocumentType],
+            RawBatchCursor[_DocumentType]
+    ]
     loop: asyncio.AbstractEventLoop
 
     def __init__(
         self,
-        cursor: Union["_LatentCursor", "CommandCursor", Cursor, RawBatchCursor],
-        collection: "AsyncCollection" = None,
+        cursor: Union[
+            "_LatentCursor[_DocumentType]",
+            "CommandCursor[_DocumentType]",
+            Cursor[_DocumentType],
+            RawBatchCursor[_DocumentType]
+        ],
+        collection: "Optional[AsyncCollection[_DocumentType]]" = None,
     ) -> None:
         super().__init__(cursor)
 
@@ -73,7 +85,7 @@ class AsyncCursorBase(AsyncBase):
     def __aiter__(self) -> "AsyncCursorBase":
         return self
 
-    async def __anext__(self) -> MutableMapping[str, Any]:
+    async def __anext__(self) -> Mapping[str, Any]:
         return await self.next()
 
     def _buffer_size(self) -> int:
@@ -88,7 +100,7 @@ class AsyncCursorBase(AsyncBase):
     def _killed(self) -> bool:
         raise NotImplementedError
 
-    def _get_more(self) -> Union[asyncio.Future[int], Coroutine[Any, Any, int]]:
+    def _get_more(self) -> Coroutine[Any, Any, int]:
         if not self.alive:
             raise InvalidOperation(
                 "Can't call get_more() on a AsyncCursor that has been" " exhausted or killed."
@@ -100,8 +112,8 @@ class AsyncCursorBase(AsyncBase):
     def _to_list(
         self,
         length: Optional[int],
-        the_list: List[MutableMapping[str, Any]],
-        future: asyncio.Future[List[MutableMapping[str, Any]]],
+        the_list: List[Mapping[str, Any]],
+        future: asyncio.Future[List[Mapping[str, Any]]],
         get_more_future: asyncio.Future[int],
     ) -> None:
         # get_more_future is the result of self._get_more().
@@ -153,7 +165,7 @@ class AsyncCursorBase(AsyncBase):
 
     def to_list(
         self, length: Optional[int] = None
-    ) -> asyncio.Future[List[MutableMapping[str, Any]]]:
+    ) -> asyncio.Future[List[Mapping[str, Any]]]:
         if length is not None and length < 0:
             raise ValueError("length must be non-negative")
 
@@ -161,7 +173,7 @@ class AsyncCursorBase(AsyncBase):
             raise InvalidOperation("Can't call to_list on tailable cursor")
 
         future = self.loop.create_future()
-        the_list: List[MutableMapping[str, Any]] = []
+        the_list: List[Mapping[str, Any]] = []
 
         if not self.alive:
             future.set_result(the_list)
@@ -189,5 +201,5 @@ class AsyncCursorBase(AsyncBase):
         return self.dispatch.cursor_id
 
     @property
-    def session(self) -> Optional[AsyncClientSession]:
+    def session(self) -> Optional[ClientSession[_DocumentType]]:
         return self.dispatch.session
