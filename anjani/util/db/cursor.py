@@ -52,16 +52,16 @@ class Cursor(_Cursor, Generic[_DocumentType]):
         super().__init__(collection.dispatch, *args, **kwargs)
 
     def add_option(self, mask: int) -> "Cursor[_DocumentType]":
-        ...
+        ...  # skipcq: PTC-W0049
 
     def allow_disk_use(self, allow_disk_use: bool) -> "Cursor[_DocumentType]":
-        ...
+        ...  # skipcq: PTC-W0049
 
     def collation(self, collation: Optional[_CollationIn]) -> "Cursor[_DocumentType]":
-        ...
+        ...  # skipcq: PTC-W0049
 
     def comment(self, comment: str) -> "Cursor[_DocumentType]":
-        ...
+        ...  # skipcq: PTC-W0049
 
     @property
     def _AsyncCursor__data(self) -> Deque[Any]:
@@ -117,7 +117,7 @@ class AsyncCursor(AsyncCursorBase, Generic[_DocumentType]):
     *DEPRECATED* methods are removed in this class.
     """
 
-    dispatch: Cursor[_DocumentType]
+    dispatch: _Cursor
 
     def add_option(self, mask: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.add_option(mask)
@@ -188,13 +188,13 @@ class AsyncCursor(AsyncCursorBase, Generic[_DocumentType]):
         return self
 
     def _query_flags(self) -> int:
-        return self.dispatch._AsyncCursor__query_flags  # skipcq: PYL-W0212
+        return self.dispatch._Cursor__query_flags  # skipcq: PYL-W0212
 
     def _data(self) -> Deque[Any]:
-        return self.dispatch._AsyncCursor__data  # skipcq: PYL-W0212
+        return self.dispatch._Cursor__data  # skipcq: PYL-W0212
 
     def _killed(self) -> bool:
-        return self.dispatch._AsyncCursor__killed  # skipcq: PYL-W0212
+        return self.dispatch._Cursor__killed  # skipcq: PYL-W0212
 
 
 class AsyncRawBatchCursor(AsyncCursor, Generic[_DocumentType]):
