@@ -233,7 +233,11 @@ class TelegramBot(MixinBase):
                 ) -> None:
                     await self.dispatch_event(name, event)
 
-                handler_info = (event_type(event_handler, filters), group)  # type: ignore
+                if filters is not None:
+                    handler_info = (event_type(event_handler, filters), group)
+                else:
+                    handler_info = (event_type(event_handler), group)
+
                 self.client.add_handler(*handler_info)
                 self._plugin_event_handlers[name] = handler_info
         elif name in self._plugin_event_handlers:
