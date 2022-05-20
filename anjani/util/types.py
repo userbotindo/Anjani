@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -244,17 +244,20 @@ class MemberInformation:
 
 
 class NDArray(Protocol[TypeData]):
+    @abstractmethod
     def __getitem__(self, key: int) -> Any:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
-    @property
+    @abstractproperty
     def size(self) -> int:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
 
 class Pipeline(Protocol):
+    @abstractmethod
     def predict(self, X: Iterable[Any], **predict_params: Any) -> NDArray[Any]:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
+    @abstractmethod
     def predict_proba(self, X: Iterable[Any]) -> NDArray[Any]:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError

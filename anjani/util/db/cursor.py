@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -51,17 +52,21 @@ class Cursor(_Cursor, Generic[_DocumentType]):
 
         super().__init__(collection.dispatch, *args, **kwargs)
 
+    @abstractmethod
     def add_option(self, mask: int) -> "Cursor[_DocumentType]":
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
+    @abstractmethod
     def allow_disk_use(self, allow_disk_use: bool) -> "Cursor[_DocumentType]":
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
+    @abstractmethod
     def collation(self, collation: Optional[_CollationIn]) -> "Cursor[_DocumentType]":
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
+    @abstractmethod
     def comment(self, comment: str) -> "Cursor[_DocumentType]":
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
     @property
     def _AsyncCursor__data(self) -> Deque[Any]:
