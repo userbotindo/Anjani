@@ -112,7 +112,7 @@ class Cursor(_Cursor, Generic[_DocumentType]):
         return self.delegate
 
 
-class RawBatchCursor(Cursor):
+class RawBatchCursor(Cursor):  # skipcq: PYL-W0223
     pass
 
 
