@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
 
@@ -90,7 +91,7 @@ class Reporting(plugin.Plugin):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
 
-        reply_text = await self.text(chat.id, "report-notif", util.tg.mention(reported_user))
+        reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
         slots = 4096 - len(reply_text)
         async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):
@@ -141,7 +142,7 @@ class Reporting(plugin.Plugin):
             return None
 
         chat = ctx.chat
-        private = chat.type == "private"
+        private = chat.type == ChatType.PRIVATE
 
         if setting is None:
             if not ctx.input:

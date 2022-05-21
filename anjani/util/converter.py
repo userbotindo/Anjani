@@ -19,7 +19,8 @@ from functools import partial
 from types import FunctionType
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Type, Union
 
-from pyrogram import Client, types
+from pyrogram import types
+from pyrogram.client import Client
 from pyrogram.errors import PeerIdInvalid
 
 from anjani.command import CommandFunc, Context

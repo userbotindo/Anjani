@@ -18,6 +18,7 @@ import asyncio
 from html import escape
 from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
@@ -42,7 +43,7 @@ class Greeting(plugin.Plugin):
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
-        reply_to = message.message_id
+        reply_to = message.id
         if message.left_chat_member and message.left_chat_member.id == self.bot.uid:
             return
 
@@ -52,7 +53,7 @@ class Greeting(plugin.Plugin):
                 await message.delete()
             except (MessageDeleteForbidden, ChannelPrivate):
                 pass
-            reply_to = None
+            reply_to = 0
 
         if message.new_chat_members:
             return await self._member_join(message, reply_to)
@@ -60,7 +61,7 @@ class Greeting(plugin.Plugin):
         if message.left_chat_member:
             return await self._member_leave(message, reply_to)
 
-    async def _member_leave(self, message: Message, reply_to: Optional[int] = None) -> None:
+    async def _member_leave(self, message: Message, reply_to: int) -> None:
         chat = message.chat
         if not await self.is_goodbye(chat.id):
             return
@@ -80,14 +81,14 @@ class Greeting(plugin.Plugin):
         except ChatWriteForbidden:
             return
 
-        previous = await self.previous_goodbye(chat.id, msg.message_id)
+        previous = await self.previous_goodbye(chat.id, msg.id)
         if previous:
             try:
                 await self.bot.client.delete_messages(chat.id, previous)
             except MessageDeleteForbidden:
                 pass
 
-    async def _member_join(self, message: Message, reply_to: Optional[int] = None) -> None:
+    async def _member_join(self, message: Message, reply_to: int) -> None:
         chat = message.chat
         if not await self.is_welcome(chat.id):
             return
@@ -117,15 +118,20 @@ class Greeting(plugin.Plugin):
 
                     if button:
                         button = util.tg.build_button(button)
+                        msg = await self.bot.client.send_message(
+                            chat.id,
+                            formatted_text,
+                            reply_to_message_id=reply_to,
+                            reply_markup=button,
+                        )
+                    else:
+                        msg = await self.bot.client.send_message(
+                            chat.id,
+                            formatted_text,
+                            reply_to_message_id=reply_to,
+                        )
 
-                    msg = await self.bot.client.send_message(
-                        chat.id,
-                        formatted_text,
-                        reply_to_message_id=reply_to,
-                        reply_markup=button,
-                    )
-
-                    previous = await self.previous_welcome(chat.id, msg.message_id)
+                    previous = await self.previous_welcome(chat.id, msg.id)
                     if previous:
                         try:
                             await self.bot.client.delete_messages(chat.id, previous)
@@ -159,8 +165,8 @@ class Greeting(plugin.Plugin):
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
-            username=f"@{user.username}" if user.username else util.tg.mention(user),
-            mention=util.tg.mention(user),
+            username=f"@{user.username}" if user.username else "__NULL__",
+            mention=user.mention,
             count=chat.members_count,
             chatname=escape(chat.title),
             id=user.id,
@@ -333,12 +339,12 @@ class Greeting(plugin.Plugin):
             text += "\n\n"
 
         if noformat:
-            parse_mode = None
+            parse_mode = ParseMode.DISABLED
             if button:
                 text += util.tg.revert_button(button)
             button = None
         else:
-            parse_mode = "markdown"
+            parse_mode = ParseMode.MARKDOWN
             if button:
                 button = util.tg.build_button(button)
 
@@ -385,9 +391,9 @@ class Greeting(plugin.Plugin):
         )
 
         if noformat:
-            parse_mode = None
+            parse_mode = ParseMode.DISABLED
         else:
-            parse_mode = "markdown"
+            parse_mode = ParseMode.MARKDOWN
 
         await ctx.respond(await self.text(chat.id, "view-goodbye", setting, clean_service))
         await ctx.respond(

@@ -34,7 +34,7 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
     # Initialized during instantiation
     log: logging.Logger
     http: aiohttp.ClientSession
-    client: pyrogram.Client
+    client: pyrogram.client.Client
     config: TelegramConfig[str, Any]
     loop: asyncio.AbstractEventLoop
     stopping: bool

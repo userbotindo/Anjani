@@ -19,10 +19,12 @@ import re
 from hashlib import sha256
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
-import bson
 from aiopath import AsyncPath
+from bson.binary import Binary
+from pyrogram.enums.chat_type import ChatType
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
-from pyrogram.raw.functions.updates import GetState
+from pyrogram.raw.functions.updates.get_state import GetState
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -78,7 +80,7 @@ class Main(plugin.Plugin):
 
             self.bot.log.info(f"Bot downtime {duration_str}")
             await self.sendToLogChannel(
-                f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.message_id
+                f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.id
             )
             await status_msg.delete()
         else:
@@ -89,12 +91,12 @@ class Main(plugin.Plugin):
         if not await file.exists():
             return
 
-        data = await self.bot.client.send(GetState())
+        data = await self.bot.client.invoke(GetState())
         await self.db.update_one(
             {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
             {
                 "$set": {
-                    "session": bson.Binary(await file.read_bytes()),
+                    "session": Binary(await file.read_bytes()),
                     "date": data.date,
                     "pts": data.pts,
                     "qts": data.qts,
@@ -114,7 +116,7 @@ class Main(plugin.Plugin):
             {
                 "$set": {
                     "status_chat_id": status_msg.chat.id,
-                    "status_message_id": status_msg.message_id,
+                    "status_message_id": status_msg.id,
                     "time": util.time.usec(),
                 }
             },
@@ -159,7 +161,7 @@ class Main(plugin.Plugin):
                 await query.edit_message_text(
                     await self.text(chat.id, "help-pm", self.bot_name),
                     reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode="markdown",
+                    parse_mode=ParseMode.MARKDOWN,
                 )
             except MessageNotModified:
                 pass
@@ -193,7 +195,7 @@ class Main(plugin.Plugin):
                             ]
                         ]
                     ),
-                    parse_mode="markdown",
+                    parse_mode=ParseMode.MARKDOWN,
                 )
             except MessageNotModified:
                 pass
@@ -202,7 +204,7 @@ class Main(plugin.Plugin):
         """Bot start command"""
         chat = ctx.msg.chat
 
-        if chat.type == "private":  # only send in PM's
+        if chat.type == ChatType.PRIVATE:  # only send in PM's
             if ctx.input and ctx.input == "help":
                 keyboard = await self.help_builder(chat.id)
                 await ctx.respond(
@@ -233,7 +235,7 @@ class Main(plugin.Plugin):
                 await self.text(chat.id, "start-pm", self.bot_name),
                 reply_markup=InlineKeyboardMarkup(buttons),
                 disable_web_page_preview=True,
-                parse_mode="markdown",
+                parse_mode=ParseMode.MARKDOWN,
             )
             return None
 
@@ -243,7 +245,7 @@ class Main(plugin.Plugin):
         """Bot plugins helper"""
         chat = ctx.msg.chat
 
-        if chat.type != "private":  # only send in PM's
+        if chat.type != ChatType.PRIVATE:  # only send in PM's
             await ctx.respond(
                 await self.text(chat.id, "help-chat"),
                 reply_markup=InlineKeyboardMarkup(
@@ -269,7 +271,7 @@ class Main(plugin.Plugin):
         """Send markdown helper."""
         await ctx.respond(
             await self.text(ctx.chat.id, "markdown-helper", self.bot_name),
-            parse_mode="html",
+            parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
 
@@ -278,6 +280,6 @@ class Main(plugin.Plugin):
         """Send markdown help."""
         await ctx.respond(
             await self.text(ctx.chat.id, "filling-format-helper", noformat=True),
-            parse_mode="markdown",
+            parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )

@@ -19,6 +19,7 @@ from io import BytesIO
 from typing import ClassVar, Optional, Set
 
 from aiopath import AsyncPath
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChannelInvalid,
     PeerIdInvalid,
@@ -105,7 +106,7 @@ class Staff(plugin.Plugin):
     async def cmd_logs(self, ctx: command.Context) -> None:
         """Send bot log"""
         file = AsyncPath("Anjani.log")
-        if ctx.message.chat.type != "private":
+        if ctx.message.chat.type != ChatType.PRIVATE:
             await ctx.respond("I've send the log on PM's")
 
         await self.bot.client.send_document(

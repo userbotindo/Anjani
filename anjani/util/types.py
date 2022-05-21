@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -63,7 +63,7 @@ class Message(M):
         *,
         parse_mode: Any = object,
         entities: List[MessageEntity] = [],
-        disable_web_page_preview: bool = None,
+        disable_web_page_preview: bool = False,
         reply_markup: Optional[InlineKeyboardMarkup] = None,
     ) -> "Message":  # skipcq: PYL-W0221
         ...
@@ -75,7 +75,7 @@ class Message(M):
         *,
         parse_mode: Any = object,
         entities: List[MessageEntity] = [],
-        disable_web_page_preview: bool = None,
+        disable_web_page_preview: bool = False,
         reply_markup: Optional[InlineKeyboardMarkup] = None,
     ) -> "Message":  # skipcq: PYL-W0221
         ...
@@ -92,7 +92,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
     ) -> "Message":  # skipcq: PYL-W0221
         ...
@@ -109,7 +109,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
     ) -> "Message":  # skipcq: PYL-W0221
         ...
@@ -130,7 +130,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
@@ -153,7 +153,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
@@ -173,7 +173,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
@@ -193,7 +193,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
@@ -218,7 +218,7 @@ class Message(M):
         disable_notification: bool = False,
         reply_to_message_id: Optional[int] = None,
         reply_markup: Union[
-            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
+            InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, None
         ] = None,
         progress: Optional[Callable[..., Union[Coroutine[Any, Any, None], None]]] = None,
         progress_args: Tuple[Any, ...] = (),
@@ -226,53 +226,38 @@ class Message(M):
         ...
 
 
-class MemberPermissions:
+class MemberInformation:
     def __init__(self, delegate: ChatMember) -> None:
-        self.user = delegate.user
         self.status = delegate.status
-        self.title = delegate.title
+        self.user = delegate.user
+        self.chat = delegate.chat
+        self.custom_title = delegate.custom_title
         self.until_date = delegate.until_date
         self.joined_date = delegate.joined_date
         self.invited_by = delegate.invited_by
         self.promoted_by = delegate.promoted_by
         self.restricted_by = delegate.restricted_by
         self.is_member = delegate.is_member
-        self.is_anonymous = delegate.is_anonymous
-
         self.can_be_edited = delegate.can_be_edited
-        self.can_manage_chat = delegate.can_manage_chat
-        self.can_post_messages = delegate.can_post_messages
-        self.can_edit_messages = delegate.can_edit_messages
-        self.can_delete_messages = delegate.can_delete_messages
-        self.can_restrict_members = delegate.can_restrict_members
-        self.can_promote_members = delegate.can_promote_members
-        self.can_change_info = delegate.can_change_info
-        self.can_invite_users = delegate.can_invite_users
-        self.can_pin_messages = delegate.can_pin_messages
-        self.can_manage_voice_chats = delegate.can_manage_voice_chats
-
-        self.can_send_messages = delegate.can_send_messages
-        self.can_send_media_messages = delegate.can_send_media_messages
-        self.can_send_stickers = delegate.can_send_stickers
-        self.can_send_animations = delegate.can_send_animations
-        self.can_send_games = delegate.can_send_games
-        self.can_use_inline_bots = delegate.can_use_inline_bots
-        self.can_add_web_page_previews = delegate.can_add_web_page_previews
-        self.can_send_polls = delegate.can_send_polls
+        self.permissions = delegate.permissions
+        self.privileges = delegate.privileges
 
 
 class NDArray(Protocol[TypeData]):
+    @abstractmethod
     def __getitem__(self, key: int) -> Any:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
-    @property
+    @abstractproperty
     def size(self) -> int:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
 
 class Pipeline(Protocol):
+    @abstractmethod
     def predict(self, X: Iterable[Any], **predict_params: Any) -> NDArray[Any]:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError
 
+    @abstractmethod
     def predict_proba(self, X: Iterable[Any]) -> NDArray[Any]:
-        ...  # skipcq: PTC-W0049
+        raise NotImplementedError

@@ -14,20 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
     Deque,
+    Generic,
     List,
-    MutableMapping,
+    Mapping,
     Optional,
     Tuple,
     Union,
 )
 
 from bson.code import Code
-from pymongo.collation import Collation
 from pymongo.cursor import Cursor as _Cursor
+from pymongo.typings import _CollationIn, _DocumentType
 
 from anjani import util
 
@@ -37,18 +39,34 @@ if TYPE_CHECKING:
     from .collection import AsyncCollection
 
 
-class Cursor(_Cursor):
+class Cursor(_Cursor, Generic[_DocumentType]):
 
     _Cursor__data: Deque[Any]
     _Cursor__killed: bool
     _Cursor__query_flags: int
 
-    delegate: "AsyncCollection"
+    delegate: "AsyncCollection[_DocumentType]"
 
-    def __init__(self, collection: "AsyncCollection", *args: Any, **kwargs: Any) -> None:
+    def __init__(self, collection: "AsyncCollection[_DocumentType]", *args: Any, **kwargs: Any) -> None:
         self.delegate = collection
 
         super().__init__(collection.dispatch, *args, **kwargs)
+
+    @abstractmethod
+    def add_option(self, mask: int) -> "Cursor[_DocumentType]":
+        raise NotImplementedError
+
+    @abstractmethod
+    def allow_disk_use(self, allow_disk_use: bool) -> "Cursor[_DocumentType]":
+        raise NotImplementedError
+
+    @abstractmethod
+    def collation(self, collation: Optional[_CollationIn]) -> "Cursor[_DocumentType]":
+        raise NotImplementedError
+
+    @abstractmethod
+    def comment(self, comment: str) -> "Cursor[_DocumentType]":
+        raise NotImplementedError
 
     @property
     def _AsyncCursor__data(self) -> Deque[Any]:
@@ -86,103 +104,103 @@ class Cursor(_Cursor):
         return self.__retrieved
 
     @property
-    def _AsyncCursor__spec(self) -> MutableMapping[str, Any]:
+    def _AsyncCursor__spec(self) -> Mapping[str, Any]:
         return self.__spec
 
     @property
-    def collection(self) -> "AsyncCollection":
-        return self.__collection
+    def collection(self) -> "AsyncCollection[_DocumentType]":
+        return self.delegate
 
 
-class RawBatchCursor(Cursor):
+class RawBatchCursor(Cursor):  # skipcq: PYL-W0223
     pass
 
 
-class AsyncCursor(AsyncCursorBase):
+class AsyncCursor(AsyncCursorBase, Generic[_DocumentType]):
     """AsyncIO :obj:`~Cursor`
 
     *DEPRECATED* methods are removed in this class.
     """
 
-    dispatch: Cursor
+    dispatch: _Cursor
 
-    def add_option(self, mask: int) -> "AsyncCursor":
+    def add_option(self, mask: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.add_option(mask)
         return self
 
-    def allow_disk_use(self, allow_disk_use: bool) -> "AsyncCursor":
+    def allow_disk_use(self, allow_disk_use: bool) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.allow_disk_use(allow_disk_use)
         return self
 
-    def collation(self, collation: Collation) -> "AsyncCursor":
+    def collation(self, collation: _CollationIn) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.collation(collation)
         return self
 
-    def comment(self, comment: str) -> "AsyncCursor":
+    def comment(self, comment: str) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.comment(comment)
         return self
 
     async def distinct(self, key: str) -> List[Any]:
         return await util.run_sync(self.dispatch.distinct, key)
 
-    async def explain(self) -> str:
+    async def explain(self) -> _DocumentType:
         return await util.run_sync(self.dispatch.explain)
 
-    def hint(self, index: Union[str, List[Tuple[str, Any]]]) -> "AsyncCursor":
+    def hint(self, index: Union[str, List[Tuple[str, Any]]]) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.hint(index)
         return self
 
-    def limit(self, limit: int) -> "AsyncCursor":
+    def limit(self, limit: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.limit(limit)
         return self
 
-    def max(self, spec: List[Any]) -> "AsyncCursor":
+    def max(self, spec: List[Any]) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.max(spec)
         return self
 
-    def max_await_time_ms(self, max_await_time_ms: int) -> "AsyncCursor":
+    def max_await_time_ms(self, max_await_time_ms: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.max_await_time_ms(max_await_time_ms)
         return self
 
-    def max_time_ms(self, max_time_ms: int) -> "AsyncCursor":
+    def max_time_ms(self, max_time_ms: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.max_time_ms(max_time_ms)
         return self
 
-    def min(self, spec: List[Any]) -> "AsyncCursor":
+    def min(self, spec: List[Any]) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.min(spec)
         return self
 
-    def remove_option(self, mask: int) -> "AsyncCursor":
+    def remove_option(self, mask: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.remove_option(mask)
         return self
 
-    def rewind(self) -> "AsyncCursor":
+    def rewind(self) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.rewind()
         return self
 
-    def skip(self, skip: int) -> "AsyncCursor":
+    def skip(self, skip: int) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.skip(skip)
         return self
 
     def sort(
         self, key: Union[str, List[Tuple[str, Any]]], *, direction: Any = None
-    ) -> "AsyncCursor":
+    ) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.sort(key, direction=direction)
         return self
 
-    def where(self, code: Code) -> "AsyncCursor":
+    def where(self, code: Code) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.where(code)
         return self
 
-    def _query_flags(self):
-        return self.dispatch._AsyncCursor__query_flags  # skipcq: PYL-W0212
+    def _query_flags(self) -> int:
+        return self.dispatch._Cursor__query_flags  # skipcq: PYL-W0212
 
-    def _data(self):
-        return self.dispatch._AsyncCursor__data  # skipcq: PYL-W0212
+    def _data(self) -> Deque[Any]:
+        return self.dispatch._Cursor__data  # skipcq: PYL-W0212
 
-    def _killed(self):
-        return self.dispatch._AsyncCursor__killed  # skipcq: PYL-W0212
+    def _killed(self) -> bool:
+        return self.dispatch._Cursor__killed  # skipcq: PYL-W0212
 
 
-class AsyncRawBatchCursor(AsyncCursor):
+class AsyncRawBatchCursor(AsyncCursor, Generic[_DocumentType]):
     pass

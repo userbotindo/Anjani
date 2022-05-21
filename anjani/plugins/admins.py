@@ -17,6 +17,7 @@
 import asyncio
 from typing import ClassVar, Optional
 
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
@@ -64,7 +65,7 @@ class Admins(plugin.Plugin):
             if not chat.pinned_message:
                 return await self.text(chat.id, "no-pinned-message")
 
-            pinned = chat.pinned_message.message_id
+            pinned = chat.pinned_message.id
             await self.bot.client.unpin_chat_message(chat.id, pinned)
         else:
             await ctx.msg.reply_to_message.unpin()
@@ -86,19 +87,19 @@ class Admins(plugin.Plugin):
     async def cmd_adminlist(self, ctx: command.Context) -> str:
         """Get list of chat admins"""
         chat = ctx.msg.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
         admins = ""
 
         async for admin in util.tg.get_chat_admins(ctx.bot.client, chat.id):
             if admin.status == "creator":
-                admins += f"• {util.tg.mention(admin.user)} (**Creator**)\n"
+                admins += f"• {admin.user.mention} (**Creator**)\n"
             elif admin.user.id == self.bot.uid:
-                admins += f"• {util.tg.mention(admin.user)} (**Me**)\n"
+                admins += f"• {admin.user.mention} (**Me**)\n"
             elif admin.user.id == ctx.author.id:
-                admins += f"• {util.tg.mention(admin.user)} (**You**)\n"
+                admins += f"• {admin.user.mention} (**You**)\n"
             else:
-                admins += f"• {util.tg.mention(admin.user)}\n"
+                admins += f"• {admin.user.mention}\n"
 
         return admins
 
@@ -109,7 +110,7 @@ class Admins(plugin.Plugin):
         zombie = 0
 
         await ctx.respond(await self.text(chat.id, "finding-zombie"))
-        async for member in self.bot.client.iter_chat_members(chat.id):  # type: ignore
+        async for member in self.bot.client.get_chat_members(chat.id):  # type: ignore
             if member.user.is_deleted:
                 zombie += 1
                 try:
@@ -151,17 +152,7 @@ class Admins(plugin.Plugin):
 
         bot, _ = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
         try:
-            await chat.promote_member(
-                user_id=user.id,
-                can_change_info=bot.can_change_info,
-                can_post_messages=bot.can_post_messages,
-                can_edit_messages=bot.can_edit_messages,
-                can_delete_messages=bot.can_delete_messages,
-                can_restrict_members=bot.can_restrict_members,
-                can_promote_members=bot.can_promote_members,
-                can_invite_users=bot.can_invite_users,
-                can_pin_messages=bot.can_pin_messages,
-            )
+            await chat.promote_member(user_id=user.id, privileges=bot.privileges)
         except ChatAdminRequired:
             return await self.text(chat.id, "promote-error-perm")
         except UserIdInvalid:
@@ -195,17 +186,7 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "error-its-myself")
 
         try:
-            await chat.promote_member(
-                user_id=user.id,
-                can_change_info=False,
-                can_post_messages=False,
-                can_edit_messages=False,
-                can_delete_messages=False,
-                can_restrict_members=False,
-                can_promote_members=False,
-                can_invite_users=False,
-                can_pin_messages=False,
-            )
+            await chat.promote_member(user_id=user.id)
         except ChatAdminRequired:
             return await self.text(chat.id, "demote-error-perm")
 

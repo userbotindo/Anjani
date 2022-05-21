@@ -63,7 +63,7 @@ class PluginExtender(MixinBase):
         del self.plugins[cls.name]
 
     def _load_all_from_metaplug(
-        self: "Anjani", subplugins: Iterable[PluginType], *, comment: str = None
+        self: "Anjani", subplugins: Iterable[PluginType], *, comment: Optional[str] = None
     ) -> None:
         for plug in subplugins:
             for sym in dir(plug):

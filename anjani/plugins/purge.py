@@ -33,9 +33,7 @@ class Purges(plugin.Plugin):
         if not reply_msg:
             return await self.text(ctx.chat.id, "error-reply-to-message")
 
-        await self.bot.client.delete_messages(
-            ctx.chat.id, [reply_msg.message_id, ctx.msg.message_id]
-        )
+        await self.bot.client.delete_messages(ctx.chat.id, [reply_msg.id, ctx.msg.id])
         return None
 
     @command.filters(filters.can_delete, aliases=["prune"])
@@ -45,7 +43,7 @@ class Purges(plugin.Plugin):
             return await self.text(ctx.msg.chat.id, "error-reply-to-message")
 
         time_start = datetime.now()
-        start, end = ctx.msg.reply_to_message.message_id, ctx.msg.message_id
+        start, end = ctx.msg.reply_to_message.id, ctx.msg.id
         messages = [*range(start, end)]
 
         try:

@@ -16,7 +16,7 @@
 
 from typing import TypeVar, Union
 
-from pymongo import DeleteOne, InsertOne, ReplaceOne
+from pymongo.operations import DeleteOne, InsertOne, ReplaceOne
 from pymongo.read_preferences import (
     Nearest,
     Primary,

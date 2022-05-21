@@ -17,7 +17,10 @@
 import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
-from pyrogram import Client, errors
+from pyrogram import errors
+from pyrogram.client import Client
+from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import Filter, create
 
 from anjani import command, plugin, util
@@ -121,7 +124,7 @@ class CommandDispatcher(MixinBase):
             if message.via_bot:
                 return False
 
-            if (message.chat and message.chat.type == "channel") or (
+            if (message.chat and message.chat.type == ChatType.CHANNEL) or (
                 message.sender_chat
                 and message.forward_from_chat
                 and message.forward_from_chat.id == message.sender_chat.id
@@ -191,7 +194,7 @@ class CommandDispatcher(MixinBase):
 
                 # Response shortcut
                 if ret is not None:
-                    async with ctx.action("typing"):
+                    async with ctx.action(ChatAction.TYPING):
                         await ctx.respond(
                             ret,
                             disable_web_page_preview=True,

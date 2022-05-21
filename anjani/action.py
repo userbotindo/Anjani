@@ -18,6 +18,7 @@ import asyncio
 from types import TracebackType
 from typing import TYPE_CHECKING, Optional, Type
 
+from pyrogram.enums.chat_action import ChatAction
 from pyrogram.types import Chat
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class BotAction:
 
     # Instances variable
     __running: bool
-    __current: str
+    __current: ChatAction
     __chat: Chat
 
     bot: "Anjani"
@@ -38,7 +39,7 @@ class BotAction:
     # Instance variable to be filled later
     __task: asyncio.Task[None]
 
-    def __init__(self, ctx: "Context", action: str = "typing") -> None:
+    def __init__(self, ctx: "Context", action: ChatAction = ChatAction.TYPING) -> None:
         self.__running = True
         self.__current = action
         self.__chat = ctx.chat
@@ -47,7 +48,7 @@ class BotAction:
         self.loop = ctx.bot.loop
 
     async def __cancel(self) -> None:
-        await self.bot.client.send_chat_action(self.__chat.id, "cancel")
+        await self.bot.client.send_chat_action(self.__chat.id, ChatAction.CANCEL)
 
     async def __start(self) -> None:
         while self.__running:
@@ -61,7 +62,7 @@ class BotAction:
         if not self.__task.done():
             self.__task.cancel()
 
-    async def switch(self, action: str) -> None:
+    async def switch(self, action: ChatAction) -> None:
         """Switch current BotAction"""
         # avoid race condition with current action
         async with asyncio.Lock():

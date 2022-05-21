@@ -18,6 +18,7 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from pyrogram import emoji
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import (
     CallbackQuery,
@@ -65,9 +66,9 @@ class Language(plugin.Plugin):
         chat = query.message.chat
 
         # Check admin rights
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             user = await chat.get_member(query.from_user.id)
-            if not user.can_change_info:
+            if not user.privileges.can_change_info:
                 await query.answer(await self.text(chat.id, "error-no-rights"))
                 return
 
@@ -105,9 +106,9 @@ class Language(plugin.Plugin):
         chat = ctx.msg.chat
 
         # Check admin rights
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             user = await chat.get_member(ctx.msg.from_user.id)
-            if not user.can_change_info:
+            if not user.privileges.can_change_info:
                 return await self.text(chat.id, "error-no-rights")
 
         if ctx.input:

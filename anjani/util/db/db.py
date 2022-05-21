@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
 
-from bson import CodecOptions, DBRef
+from bson.codec_options import CodecOptions
+from bson.dbref import DBRef
 from bson.son import SON
 from bson.timestamp import Timestamp
 from pymongo.collation import Collation
@@ -61,7 +62,7 @@ class AsyncDatabase(AsyncBaseProperty):
 
     def aggregate(
         self,
-        pipeline: List[MutableMapping[str, Any]],
+        pipeline: List[Mapping[str, Any]],
         *,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
@@ -76,7 +77,7 @@ class AsyncDatabase(AsyncBaseProperty):
 
     async def command(
         self,
-        command: Union[str, MutableMapping[str, Any]],
+        command: Union[str, Mapping[str, Any]],
         *,
         value: int = 1,
         check: bool = True,
@@ -85,7 +86,7 @@ class AsyncDatabase(AsyncBaseProperty):
         codec_options: Optional[CodecOptions] = None,
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         return await util.run_sync(
             self.dispatch.command,
             command,
@@ -127,7 +128,7 @@ class AsyncDatabase(AsyncBaseProperty):
 
     async def dereference(
         self, dbref: DBRef, *, session: Optional[AsyncClientSession] = None, **kwargs: Any
-    ) -> Optional[MutableMapping[str, Any]]:
+    ) -> Optional[Mapping[str, Any]]:
         return await util.run_sync(
             self.dispatch.dereference,
             dbref,
@@ -139,7 +140,7 @@ class AsyncDatabase(AsyncBaseProperty):
         self,
         name_or_collection: Union[str, AsyncCollection],
         session: Optional[AsyncClientSession] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
 
@@ -172,7 +173,7 @@ class AsyncDatabase(AsyncBaseProperty):
         self,
         *,
         session: Optional[AsyncClientSession] = None,
-        query: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> List[str]:
         return await util.run_sync(
@@ -186,13 +187,13 @@ class AsyncDatabase(AsyncBaseProperty):
         self,
         *,
         session: Optional[AsyncClientSession] = None,
-        query: Optional[MutableMapping[str, Any]] = None,
+        query: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> AsyncCommandCursor:
         cmd = SON([("listCollections", 1)])
         cmd.update(query, **kwargs)
 
-        res: MutableMapping[str, Any] = await util.run_sync(
+        res: Mapping[str, Any] = await util.run_sync(
             self.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session,
@@ -207,7 +208,7 @@ class AsyncDatabase(AsyncBaseProperty):
         full: bool = False,
         session: Optional[AsyncClientSession] = None,
         background: Optional[bool] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
 
@@ -222,7 +223,7 @@ class AsyncDatabase(AsyncBaseProperty):
 
     def watch(
         self,
-        pipeline: Optional[List[MutableMapping[str, Any]]] = None,
+        pipeline: Optional[List[Mapping[str, Any]]] = None,
         *,
         full_document: Optional[str] = None,
         resume_after: Optional[Any] = None,
