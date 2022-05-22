@@ -131,9 +131,6 @@ class CommandDispatcher(MixinBase):
             ):
                 return False  # ignore channel broadcasts
 
-            if message.edit_date:
-                return False  # ignore edits
-
             if message.text is not None and message.text.startswith("/"):
                 parts = message.text.split()
                 parts[0] = parts[0][1:]
