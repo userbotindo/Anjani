@@ -181,7 +181,7 @@ class Users(plugin.Plugin):
             f"`{await self.bot.client.get_chat_photos_count(user.id)}`\n"
         )
         if user.status:
-            text += f"**Last seen: ** `{user.status}`\n"
+            text += f"**Last seen: ** `{user.status.value}`\n"
 
         if user.id in self.bot.staff:
             text += "\nThis person is one of my **Staff**!\n"
