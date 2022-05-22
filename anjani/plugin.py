@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Optional
 
 from typing_extensions import final
 
-from anjani import util
+from anjani.util.tg import get_text
 
 if TYPE_CHECKING:
     from .core import Anjani
@@ -68,13 +68,13 @@ class Plugin:
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
             noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
+                If True, the text returned will not be formated.
                 Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
+        return get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
 
     # Convenient alias get_text method
     @final
@@ -98,13 +98,13 @@ class Plugin:
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
             noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
+                If True, the text returned will not be formated.
                 Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        return util.tg.get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
+        return get_text(self.bot, chat_id or 0, text_name, *args, noformat=noformat, **kwargs)
 
     # }
 

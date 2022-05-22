@@ -289,7 +289,7 @@ def __loop_safe(
     @wraps(func)
     async def wrapper(
         bot: "Anjani",
-        chat_id: int,
+        chat_id: Optional[int],
         text_name: str,
         *args: Any,
         noformat: bool = False,
@@ -300,7 +300,7 @@ def __loop_safe(
         Parameters:
             bot (`Anjani`):
                 The bot instance.
-            chat_id (`int`):
+            chat_id (`int`, *Optional*):
                 Id of the sender(PM's) or chat_id to fetch the user language setting.
                 If chat_id is None, the language will always use 'en'.
             text_name (`str`):
@@ -309,7 +309,7 @@ def __loop_safe(
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
             noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
+                If True, the text returned will not be formated.
                 Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
@@ -323,7 +323,7 @@ def __loop_safe(
 @__loop_safe
 def get_text(
     bot: "Anjani",
-    chat_id: int,
+    chat_id: Optional[int],
     text_name: str,
     *args: Any,
     noformat: bool = False,
@@ -351,7 +351,7 @@ def get_text(
                 bot.log.error("Failed to format '%s' string on '%s'", text_name, lang)
                 raise
 
-    return _get_text(bot.chats_languages.get(chat_id, "en"))
+    return _get_text(bot.chats_languages.get(chat_id or 0, "en"))
 
 
 # }

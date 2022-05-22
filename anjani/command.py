@@ -296,14 +296,11 @@ class Context:
                 One or more values that should be formatted and inserted in the string.
                 The value should be in order based on the language string placeholder.
             noformat (`bool`, *Optional*):
-                If exist and True, the text returned will not be formated.
+                If True, the text returned will not be formated.
                 Default to False.
             **kwargs (`any`, *Optional*):
                 One or more keyword values that should be formatted and inserted in the string.
                 based on the keyword on the language strings.
         """
-        chat_id = None
-        if self.chat:
-            chat_id = self.chat.id
-
+        chat_id = self.chat.id if self.chat else None
         return get_text(self.bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
