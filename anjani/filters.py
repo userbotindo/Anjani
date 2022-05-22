@@ -16,7 +16,8 @@
 
 from typing import Any, Callable, Coroutine, Optional
 
-from pyrogram import Client
+from pyrogram.client import Client
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import (  # skipcq: PY-W2000
     Filter,
     animation,
@@ -31,7 +32,6 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     delete_chat_photo,
     dice,
     document,
-    edited,
     forwarded,
     from_scheduled,
     game,
@@ -69,11 +69,10 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     venue,
     via_bot,
     video,
+    video_chat_ended,
+    video_chat_members_invited,
+    video_chat_started,
     video_note,
-    voice,
-    voice_chat_ended,
-    voice_chat_members_invited,
-    voice_chat_started,
     web_page,
 )
 
@@ -102,7 +101,6 @@ __all__ = [
     "dev_only",
     "dice",
     "document",
-    "edited",
     "forwarded",
     "from_scheduled",
     "game",
@@ -144,14 +142,14 @@ __all__ = [
     "via_bot",
     "video",
     "video_note",
-    "voice",
-    "voice_chat_ended",
-    "voice_chat_members_invited",
-    "voice_chat_started",
+    "video",
+    "video_chat_ended",
+    "video_chat_members_invited",
+    "video_chat_started",
 ]
 
 
-def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
+def create(func: FilterFunc, name: Optional[str] = None, **kwargs: Any) -> CustomFilter:
     return type(
         name or func.__name__ or "CustomAnjaniFilter", (CustomFilter,), {"__call__": func, **kwargs}
     )()
@@ -160,7 +158,7 @@ def create(func: FilterFunc, name: str = None, **kwargs: Any) -> CustomFilter:
 # { permission
 def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
         if priv or not target or not message.chat:
             return False
 
@@ -234,7 +232,7 @@ owner_only = _owner_only()
 # { admin_only
 def _admin_only(include_bot: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
-        target, priv = message.from_user, message.chat and message.chat.type == "private"
+        target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
         if priv or not message.chat or not target:
             return False
 

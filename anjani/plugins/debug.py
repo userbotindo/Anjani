@@ -26,6 +26,7 @@ from typing import Any, ClassVar, Optional, Tuple
 
 import pyrogram
 from meval import meval
+from pyrogram.enums.chat_action import ChatAction
 
 from anjani import command, filters, plugin, util
 
@@ -134,7 +135,7 @@ class Debug(plugin.Plugin):
             out = out[:-1]
 
         if len(out) > 4096:
-            async with ctx.action("upload_document"):
+            async with ctx.action(ChatAction.UPLOAD_DOCUMENT):
                 with io.BytesIO(str.encode(out)) as out_file:
                     out_file.name = "eval.text"
                     await ctx.msg.reply_document(

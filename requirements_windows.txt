@@ -4,8 +4,8 @@ aiorun==2021.10.1
 colorlog==6.6.0
 dnspython==2.2.1
 meval==2.5
-pymongo==4.0.2
-pyrogram==1.4.9
+pymongo==4.1.1
+pyrogram==2.0.24
 python-dotenv==0.19.2
 PyYAML==6.0
 scikit-learn==1.0.2

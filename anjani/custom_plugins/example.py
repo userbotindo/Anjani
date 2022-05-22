@@ -38,9 +38,7 @@ class ExamplePlugin(plugin.Plugin):
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
         self.log.info(f"Received message: {message.text}")
-        await self.db.update_one(
-            {"_id": message.message_id}, {"$set": {"text": message.text}}, upsert=True
-        )
+        await self.db.update_one({"_id": message.id}, {"$set": {"text": message.text}}, upsert=True)
 
     async def on_callback_query(self, query: CallbackQuery) -> None:
         self.log.info("Button clicked: %s", query.data)

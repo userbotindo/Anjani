@@ -16,9 +16,10 @@
 
 import asyncio
 import time
+from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional, Union
 
-import bson
+from bson.objectid import ObjectId
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
@@ -59,7 +60,7 @@ class Restrictions(plugin.Plugin):
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
         invoker = await chat.get_member(query.from_user.id)
-        if not invoker.can_restrict_members:
+        if not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "warn-keyboard-not-admins"))
 
         chat_data = await self.db.find_one({"chat_id": chat.id})
@@ -89,15 +90,15 @@ class Restrictions(plugin.Plugin):
                 await self.get_text(
                     chat.id,
                     "warn-removed",
-                    util.tg.mention(query.from_user),
-                    util.tg.mention(target),
+                    query.from_user.mention,
+                    target.mention,
                 )
             ),
         )
 
     @command.filters(filters.can_restrict)
     async def cmd_kick(
-        self, ctx: command.Context, target: Union[User, Chat] = None, *, reason: str = ""
+        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
     ) -> str:
         """Kick chat member"""
         chat = ctx.chat
@@ -122,16 +123,22 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-kick")
 
-        await self.bot.client.ban_chat_member(chat.id, target.id, until_date=int(time.time() + 30))
+        await self.bot.client.ban_chat_member(
+            chat.id, target.id, until_date=datetime.fromtimestamp(int(time.time() + 30))
+        )
 
-        ret = await self.text(chat.id, "kick-done", target.first_name or target.title)
+        ret = await self.text(
+            chat.id,
+            "kick-done",
+            target.first_name if isinstance(target, User) else target.title
+        )
         if reason:
             ret += await self.text(chat.id, "kick-reason", reason)
         return ret
 
     @command.filters(filters.can_restrict)
     async def cmd_ban(
-        self, ctx: command.Context, target: Union[User, Chat] = None, *, reason: str = ""
+        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
     ) -> str:
         """Ban chat member"""
         chat = ctx.chat
@@ -158,7 +165,9 @@ class Restrictions(plugin.Plugin):
                 return await self.text(chat.id, "admin-ban")
 
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "ban-done", target.first_name or target.title),
+            self.text(
+                chat.id, "ban-done", target.first_name if isinstance(target, User) else target.title
+            ),
             chat.ban_member(target.id),
         )
         if reason:
@@ -167,7 +176,7 @@ class Restrictions(plugin.Plugin):
         return ret
 
     @command.filters(filters.can_restrict)
-    async def cmd_unban(self, ctx: command.Context, user: Union[User, Chat] = None) -> str:
+    async def cmd_unban(self, ctx: command.Context, user: Union[User, Chat, None] = None) -> str:
         """Unban chat member"""
         chat = ctx.chat
 
@@ -185,7 +194,11 @@ class Restrictions(plugin.Plugin):
         except PeerIdInvalid:
             return await self.text(chat.id, "err-peer-invalid")
 
-        return await self.text(chat.id, "unban-done", user.first_name or user.title)
+        return await self.text(
+            chat.id,
+            "unban-done",
+            user.first_name if isinstance(user, User) else user.title
+        )
 
     @command.filters(filters.can_restrict)
     async def cmd_warn(
@@ -221,7 +234,7 @@ class Restrictions(plugin.Plugin):
             except KeyError:
                 pass
 
-        uid = str(bson.ObjectId())
+        uid = str(ObjectId())
         reason = reason or await ctx.get_text("warn-default-reason")
         keyboard = [
             [
@@ -239,7 +252,7 @@ class Restrictions(plugin.Plugin):
                 await self.get_text(
                     chat.id,
                     "warn-message",
-                    util.tg.mention(user),
+                    user.mention,
                     1 if warns is None else warns + 1,
                     threshold,
                     reason,
@@ -250,7 +263,7 @@ class Restrictions(plugin.Plugin):
 
         if warns is not None and warns + 1 >= threshold:
             ret, _ = await asyncio.gather(
-                ctx.get_text("warn-user-max", util.tg.mention(user)), chat.ban_member(user.id)
+                ctx.get_text("warn-user-max", user.mention), chat.ban_member(user.id)
             )
             return ret
 
@@ -272,22 +285,22 @@ class Restrictions(plugin.Plugin):
 
         chat_data = await self.db.find_one({"chat_id": chat.id})
         if not chat_data:
-            return await ctx.get_text("warn-no-data", util.tg.mention(user))
+            return await ctx.get_text("warn-no-data", user.mention)
         threshold = chat_data.get("warn_threshold", 3)
 
         try:
             warns_list = chat_data["warn_list"][str(user.id)]
         except KeyError:
-            return await ctx.get_text("warn-no-data", util.tg.mention(user))
+            return await ctx.get_text("warn-no-data", user.mention)
         else:
             warns = len(warns_list)
             if warns == 0:
-                return await ctx.get_text("warn-no-data", util.tg.mention(user))
+                return await ctx.get_text("warn-no-data", user.mention)
 
         return await self.get_text(
             chat.id,
             "warn-message-list",
-            util.tg.mention(user),
+            user.mention,
             warns,
             threshold,
             "\n".join(f"  • __{reason}__" for reason in warns_list.values()),
@@ -336,15 +349,15 @@ class Restrictions(plugin.Plugin):
 
         chat_data = await self.db.find_one({"chat_id": chat.id})
         if not chat_data:
-            return await ctx.get_text("warn-no-data", util.tg.mention(user))
+            return await ctx.get_text("warn-no-data", user.mention)
 
         try:
             warns_list = chat_data["warn_list"][str(user.id)]
         except KeyError:
-            return await ctx.get_text("warn-no-data", util.tg.mention(user))
+            return await ctx.get_text("warn-no-data", user.mention)
 
         ret, _ = await asyncio.gather(
-            self.get_text(chat.id, "rmwarn-done", util.tg.mention(user)),
+            self.get_text(chat.id, "rmwarn-done", user.mention),
             self.db.update_one(
                 {"chat_id": chat.id},
                 {"$unset": {f"warn_list.{user.id}.{list(warns_list.keys())[-1]}": ""}},

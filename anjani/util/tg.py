@@ -32,7 +32,8 @@ from typing import (
     Union,
 )
 
-from pyrogram import Client
+from pyrogram.client import Client
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.errors import (
     ChannelPrivate,
     ChatForbidden,
@@ -196,7 +197,7 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: Union[ChatMember, _types.MemberPermissions]) -> bool:
+def is_staff_or_admin(target: Union[ChatMember, _types.MemberInformation]) -> bool:
     return target.status in {"administrator", "creator"} or target.user.id in STAFF
 
 
@@ -216,15 +217,15 @@ def mention(user: User) -> str:
 
 # { Permission
 # Aliases
-Bot = _types.MemberPermissions
-Member = _types.MemberPermissions
+Bot = _types.MemberInformation
+Member = _types.MemberInformation
 
 
 async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
-    return _types.MemberPermissions(bot), _types.MemberPermissions(member)
+    return _types.MemberInformation(bot), _types.MemberInformation(member)
 
 
 # }
@@ -235,7 +236,7 @@ async def get_chat_admins(
     client: Client, chat: int, *, exclude_bot: bool = False
 ) -> AsyncGenerator[ChatMember, None]:
     member: ChatMember
-    async for member in client.iter_chat_members(chat, filter="administrators"):  # type: ignore
+    async for member in client.get_chat_members(chat, filter=ChatMemberStatus.ADMINISTRATOR):  # type: ignore
         if member.status in {"administrator", "creator"}:
             if exclude_bot and member.user.is_bot:
                 continue
@@ -288,7 +289,7 @@ def __loop_safe(
     @wraps(func)
     async def wrapper(
         bot: "Anjani",
-        chat_id: Optional[int],
+        chat_id: int,
         text_name: str,
         *args: Any,
         noformat: bool = False,
@@ -322,7 +323,7 @@ def __loop_safe(
 @__loop_safe
 def get_text(
     bot: "Anjani",
-    chat_id: Optional[int],
+    chat_id: int,
     text_name: str,
     *args: Any,
     noformat: bool = False,

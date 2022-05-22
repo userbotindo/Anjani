@@ -22,12 +22,15 @@ from typing import (
     AsyncGenerator,
     Callable,
     Coroutine,
-    MutableMapping,
+    Generic,
+    Mapping,
     Optional,
 )
 
+from bson.timestamp import Timestamp
 from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.read_concern import ReadConcern
+from pymongo.typings import _DocumentType
 from pymongo.write_concern import WriteConcern
 
 from anjani import util
@@ -40,7 +43,7 @@ if TYPE_CHECKING:
     from .client import AsyncClient
 
 
-class AsyncClientSession(AsyncBase):
+class AsyncClientSession(AsyncBase, Generic[_DocumentType]):
     """AsyncIO :obj:`~ClientSession`
 
     *DEPRECATED* methods are removed in this class.
@@ -164,10 +167,10 @@ class AsyncClientSession(AsyncBase):
                 # Commit succeeded.
                 return ret
 
-    def advance_cluster_time(self, cluster_time: int) -> None:
+    def advance_cluster_time(self, cluster_time: Mapping[str, Any]) -> None:
         self.dispatch.advance_cluster_time(cluster_time=cluster_time)
 
-    def advance_operation_time(self, operation_time: int) -> None:
+    def advance_operation_time(self, operation_time: Timestamp) -> None:
         self.dispatch.advance_operation_time(operation_time=operation_time)
 
     @property
@@ -175,7 +178,7 @@ class AsyncClientSession(AsyncBase):
         return self._client
 
     @property
-    def cluster_time(self) -> Optional[int]:
+    def cluster_time(self) -> Optional[Mapping[str, Any]]:
         return self.dispatch.cluster_time
 
     @property
@@ -187,7 +190,7 @@ class AsyncClientSession(AsyncBase):
         return self.dispatch.in_transaction
 
     @property
-    def operation_time(self) -> Optional[int]:
+    def operation_time(self) -> Optional[Timestamp]:
         return self.dispatch.operation_time
 
     @property
@@ -195,5 +198,5 @@ class AsyncClientSession(AsyncBase):
         return self.dispatch.options
 
     @property
-    def session_id(self) -> MutableMapping[str, Any]:
+    def session_id(self) -> Mapping[str, Any]:
         return self.dispatch.session_id

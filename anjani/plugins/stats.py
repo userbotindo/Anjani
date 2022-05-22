@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, ClassVar, Optional
 
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.types import Message
 
 from anjani import command, filters, plugin, util
@@ -133,5 +134,5 @@ class PluginStats(plugin.Plugin):
 <b>Auto banned users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
 """
         async with ctx.action():
-            await ctx.respond(text, parse_mode="html")
+            await ctx.respond(text, parse_mode=ParseMode.HTML)
             return None

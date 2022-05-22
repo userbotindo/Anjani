@@ -17,9 +17,10 @@
 import asyncio
 import re
 from hashlib import md5
-from typing import Any, ClassVar, List, MutableMapping, Optional, Union
+from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 
-from aiopath import AsyncPath
+from pyrogram.enums.chat_action import ChatAction
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
@@ -47,9 +48,9 @@ class Users(plugin.Plugin):
         async def _do_nothing() -> None:
             return
 
-        if channel.type == "channel":
+        if channel.type == ChatType.CHANNEL:
             data = await self.chats_db.find_one({"chat_id": channel.id})
-            content = {"chat_name": channel.title, "type": channel.type}
+            content = {"chat_name": channel.title, "type": "channel"}
             if not data or "hash" not in data:
                 content["hash"] = self.hash_id(channel.id)
             return self.bot.loop.create_task(
@@ -120,7 +121,7 @@ class Users(plugin.Plugin):
         set_content = {"username": user.username, "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
 
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             if self.predict_loaded:
                 if ch := message.forward_from_chat:
                     tasks.append(await self.build_channel_task(ch))
@@ -136,7 +137,7 @@ class Users(plugin.Plugin):
 
         chat_data = await self.chats_db.find_one({"chat_id": chat.id})
         chat_update = {
-            "$set": {"chat_name": chat.title, "type": chat.type},
+            "$set": {"chat_name": chat.title, "type": chat.type.name.lower()},
             "$addToSet": {"member": user.id},
         }
         if self.predict_loaded:
@@ -174,13 +175,13 @@ class Users(plugin.Plugin):
         if user.username:
             text += f"**Username: **@{user.username}\n"
 
-        text += f"**Permanent user link: **{util.tg.mention(user)}\n"
+        text += f"**Permanent user link: **{user.mention}\n"
         text += (
             "**Number of profile pics: **"
-            f"`{await self.bot.client.get_profile_photos_count(user.id)}`\n"
+            f"`{await self.bot.client.get_chat_photos_count(user.id)}`\n"
         )
         if user.status:
-            text += f"**Last seen: ** `{user.status}`\n"
+            text += f"**Last seen: ** `{user.status.value}`\n"
 
         if user.id in self.bot.staff:
             text += "\nThis person is one of my **Staff**!\n"
@@ -196,17 +197,20 @@ class Users(plugin.Plugin):
             text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
 
         if user.photo:
-            async with ctx.action("upload_photo"):
-                file = AsyncPath(await self.bot.client.download_media(user.photo.big_file_id))
+            async with ctx.action(ChatAction.UPLOAD_PHOTO):
+                file = await self.bot.client.download_media(user.photo.big_file_id)
+                if not file:
+                    return text
+
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
                 )
-                await file.unlink()
+
             return None
 
         return text
 
-    async def _old_user_info(self, data: MutableMapping[str, Any]) -> str:
+    async def _old_user_info(self, data: Mapping[str, Any]) -> str:
         text = "**Old User Info**\n\n"
         text += f"**ID**: `{data['_id']}`\n"
         if data.get("name"):
@@ -246,17 +250,19 @@ class Users(plugin.Plugin):
                     text += f"**Identifier:** `{chat_data.get('hash', 'unknown')}`\n"
 
         if chat.photo:
-            async with ctx.action("upload_photo"):
-                file = AsyncPath(await self.bot.client.download_media(chat.photo.big_file_id))
+            async with ctx.action(ChatAction.UPLOAD_PHOTO):
+                file = await self.bot.client.download_media(chat.photo.big_file_id)  # type: ignore
+                if not file:
+                    return text
+
                 await self.bot.client.send_photo(
-                    ctx.chat.id, str(file), text, reply_to_message_id=ctx.message.message_id
+                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
                 )
-                await file.unlink()
             return None
 
         return text
 
-    async def _old_chat_info(self, data: MutableMapping[str, Any]) -> str:
+    async def _old_chat_info(self, data: Mapping[str, Any]) -> str:
         text = "**Old Chat Info**\n\n"
         text += f"**ID:** `{data['chat_id']}`\n"
         text += f"**Chat Name:** {data['chat_name']}\n"

@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import ClassVar, Optional, Union
+import asyncio
+from datetime import datetime
+from typing import ClassVar, Optional
 
 from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
@@ -32,7 +34,10 @@ class Muting(plugin.Plugin):
         user_id = user.id
         mstring = "mute-success-time" if time else "mute-success"
         try:
-            await self.bot.client.restrict_chat_member(chat_id, user_id, ChatPermissions(), time)
+            await self.bot.client.restrict_chat_member(
+                chat_id, user_id, ChatPermissions(), datetime.fromtimestamp(time)
+            )
+
             return await self.text(chat_id, mstring, user.first_name, flag)
         except (UsernameInvalid, UsernameNotOccupied, PeerIdInvalid):
             return await self.text(chat_id, "err-invalid-username-id")
@@ -43,10 +48,12 @@ class Muting(plugin.Plugin):
     ) -> str:
         """Mute Chat Member"""
         chat_id = ctx.chat.id
-        is_member = True
-        if member is None:
+        user = None
+
+        if not member:
             if ctx.args and not ctx.args[0].endswith(("s", "m", "h")):
                 return await self.text(chat_id, "no-mute-user")
+
             if ctx.msg.reply_to_message and ctx.msg.reply_to_message.from_user:
                 try:
                     member = await self.bot.client.get_chat_member(
@@ -57,18 +64,25 @@ class Muting(plugin.Plugin):
                     user = await self.bot.client.get_users(ctx.msg.reply_to_message.from_user.id)
                     if isinstance(user, list):
                         user = user[0]
-                    is_member = False
+
                 flag = ctx.args[0] if ctx.args else ""
             else:
                 return await self.text(chat_id, "no-mute-user")
 
-        if is_member:
+        if member is not None:
             user = member.user
+            if util.tg.is_staff_or_admin(member):
+                return await self.text(chat_id, "no-mute-admin")
+
+            if not member.permissions.can_send_messages:
+                return await self.text(chat_id, "already-muted")
+
+        if not user:
+            return await self.text(chat_id, "no-mute-user")
 
         if user.id == self.bot.uid:
             return await self.text(chat_id, "self-muting")
-        if is_member and util.tg.is_staff_or_admin(member):
-            return await self.text(chat_id, "cant-mute-admin")
+
         if util.tg.is_staff(user.id):
             return await self.text(chat_id, "cant-mute-admin")
 
@@ -77,9 +91,6 @@ class Muting(plugin.Plugin):
             if not until:
                 return await self.text(chat_id, "invalid-time-flag")
         else:
-            if is_member and member.can_send_messages is False:
-                return await self.text(chat_id, "already-muted")
-
             until = 0
 
         return await self._muter(ctx.msg, user, until, flag)
@@ -91,6 +102,7 @@ class Muting(plugin.Plugin):
         if member is None:
             if ctx.args:
                 return await self.text(chat_id, "err-peer-invalid")
+
             if ctx.msg.reply_to_message and ctx.msg.reply_to_message.from_user:
                 member = await self.bot.client.get_chat_member(
                     chat_id, ctx.msg.reply_to_message.from_user.id
@@ -98,7 +110,11 @@ class Muting(plugin.Plugin):
             else:
                 return await self.text(chat_id, "no-unmute-user")
 
-        if member.can_send_messages is False:
-            await ctx.message.chat.unban_member(member.user.id)
-            return await self.text(chat_id, "unmute-done")
+        if not member.permissions.can_send_messages:
+            _, t = await asyncio.gather(
+                ctx.message.chat.unban_member(member.user.id),
+                self.text(chat_id, "unmute-done")
+            )
+            return t
+
         return await self.text(chat_id, "user-not-muted")

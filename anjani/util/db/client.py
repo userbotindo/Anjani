@@ -20,24 +20,24 @@ from typing import (
     AsyncGenerator,
     FrozenSet,
     List,
-    MutableMapping,
+    Mapping,
     Optional,
     Set,
     Tuple,
     Union,
 )
 
-from bson import CodecOptions
-from bson.codec_options import DEFAULT_CODEC_OPTIONS
+from bson.codec_options import DEFAULT_CODEC_OPTIONS, CodecOptions
 from bson.son import SON
 from bson.timestamp import Timestamp
-from pymongo import MongoClient
 from pymongo.client_session import TransactionOptions
 from pymongo.collation import Collation
 from pymongo.driver_info import DriverInfo
+from pymongo.mongo_client import MongoClient
 from pymongo.read_concern import ReadConcern
 from pymongo.read_preferences import ReadPreference
 from pymongo.topology_description import TopologyDescription
+from pymongo.typings import _Address
 from pymongo.write_concern import DEFAULT_WRITE_CONCERN, WriteConcern
 
 from anjani import util
@@ -146,12 +146,12 @@ class AsyncClient(AsyncBaseProperty):
             read_preference=ReadPreference.PRIMARY,
             write_concern=DEFAULT_WRITE_CONCERN,
         )
-        res: MutableMapping[str, Any] = await util.run_sync(
+        res: Mapping[str, Any] = await util.run_sync(
             database.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session,
         )
-        cursor: MutableMapping[str, Any] = {
+        cursor: Mapping[str, Any] = {
             "id": 0,
             "firstBatch": res["databases"],
             "ns": "admin.$cmd",
@@ -160,7 +160,7 @@ class AsyncClient(AsyncBaseProperty):
 
     async def server_info(
         self, session: Optional[AsyncClientSession] = None
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         return await util.run_sync(
             self.dispatch.server_info, session=session.dispatch if session else session
         )
@@ -187,7 +187,7 @@ class AsyncClient(AsyncBaseProperty):
 
     def watch(
         self,
-        pipeline: Optional[List[MutableMapping[str, Any]]] = None,
+        pipeline: Optional[List[Mapping[str, Any]]] = None,
         *,
         full_document: Optional[str] = None,
         resume_after: Optional[Any] = None,
@@ -240,7 +240,7 @@ class AsyncClient(AsyncBaseProperty):
         return self.dispatch.is_primary
 
     @property
-    def nodes(self) -> FrozenSet[Set[Tuple[str, int]]]:
+    def nodes(self) -> FrozenSet[_Address]:
         return self.dispatch.nodes
 
     @property

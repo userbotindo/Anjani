@@ -147,7 +147,7 @@ class SpamPrediction(plugin.Plugin):
         except Exception:  # skipcq: PYL-W0703
             return self.log.warning(
                 "Failed to download image from MessageID %s in Chat %s",
-                message.message_id,
+                message.id,
                 message.chat.id,
             )
 
@@ -171,7 +171,7 @@ class SpamPrediction(plugin.Plugin):
         author = query.from_user.id
 
         if not content:
-            return await query.answer("Can't get hash from MessageID: '{message.message_id}'")
+            return await query.answer(f"Can't get hash from MessageID: '{message.id}'")
 
         content_hash = content[0]
 
@@ -385,12 +385,12 @@ class SpamPrediction(plugin.Plugin):
                         "spam": [],
                         "ham": [],
                         "proba": probability,
-                        "msg_id": [msg.message_id],
+                        "msg_id": [msg.id],
                         "date": util.time.sec(),
                     }
                 )
         except DuplicateKeyError:
-            await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.message_id}})
+            await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
 
         if probability >= 0.8:
             # Empty user big chances are anonymous admins
@@ -421,11 +421,11 @@ class SpamPrediction(plugin.Plugin):
                 await message.delete()
             except (MessageDeleteForbidden, ChatAdminRequired, UserAdminInvalid):
                 alert += "\n\nNot enough permission to delete message."
-                reply_id = message.message_id
+                reply_id = message.id
             else:
                 await self.bot.log_stat("spam_deleted")
                 alert += "\n\nThe message has been deleted."
-                reply_id = None
+                reply_id = 0
 
             await self.bot.client.send_message(
                 message.chat.id,
@@ -509,7 +509,7 @@ class SpamPrediction(plugin.Plugin):
             ocr_result = await self.runOcr(reply_msg)
             if ocr_result:
                 try:
-                    await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.message_id)
+                    await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.id)
                 except Exception as e:  # skipcq: PYL-W0703
                     self.log.error("Failed to marked OCR results as spam", exc_info=e)
 
@@ -584,7 +584,7 @@ class SpamPrediction(plugin.Plugin):
         if replied.photo:
             await ctx.respond(
                 await self.get_text(chat.id, "spampredict-photo"),
-                reply_to_message_id=replied.message_id,
+                reply_to_message_id=replied.id,
             )
 
             ocr_result = await self.runOcr(replied)
@@ -625,7 +625,7 @@ class SpamPrediction(plugin.Plugin):
                 photoPrediction + "**Result Caption Text**\n\n" + textPrediction
                 if photoPrediction
                 else "**Result**\n\n" + textPrediction,
-                reply_to_message_id=None if replied.photo else replied.message_id,
+                reply_to_message_id=None if replied.photo else replied.id,
             ),
         )
         return None

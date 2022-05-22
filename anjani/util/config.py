@@ -23,7 +23,7 @@ _VT = TypeVar("_VT", covariant=True)
 
 class TelegramConfig(MutableMapping[_KT, _VT]):
 
-    __data: ClassVar[MutableMapping[_KT, _VT]] = {}
+    __data: MutableMapping[_KT, _VT] = {}
 
     def __init__(self) -> None:
 

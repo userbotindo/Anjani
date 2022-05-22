@@ -16,10 +16,11 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
 from pyrogram.types import (
     CallbackQuery,
@@ -82,8 +83,8 @@ class Federation(plugin.Plugin):
             return
 
         if (
-            update.old_chat_member.can_restrict_members
-            and not update.new_chat_member.can_restrict_members
+            update.old_chat_member.privileges.can_restrict_members
+            and not update.new_chat_member.privileges.can_restrict_members
         ):
             chat = update.chat
             fed_data = await self.get_fed_bychat(chat.id)
@@ -129,7 +130,7 @@ class Federation(plugin.Plugin):
         chat = message.chat
         if not chat:
             return
-        if chat.type == "channel" and message.text and message.text.startswith("/setfedlog"):
+        if chat.type == ChatType.CHANNEL and message.text and message.text.startswith("/setfedlog"):
             return await self.channel_setlog(message)
 
         target = message.from_user or message.sender_chat
@@ -141,17 +142,17 @@ class Federation(plugin.Plugin):
             await self.fban_handler(chat, target, banned)
 
     @staticmethod
-    def is_fed_admin(data: MutableMapping[str, Any], user: int) -> bool:
+    def is_fed_admin(data: Mapping[str, Any], user: int) -> bool:
         """Check federation admin"""
         return user == data["owner"] or user in data.get("admins", [])
 
-    async def get_fed_bychat(self, chat: int) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed_bychat(self, chat: int) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"chats": chat})
 
-    async def get_fed_byowner(self, user: int) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed_byowner(self, user: int) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"owner": user})
 
-    async def get_fed(self, fid: str) -> Optional[MutableMapping[str, Any]]:
+    async def get_fed(self, fid: str) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"_id": fid})
 
     async def fban_user(
@@ -228,11 +229,13 @@ class Federation(plugin.Plugin):
             user_data["fed_name"] = data["name"]
             user_data["type"] = "user"
             return user_data
+
         if str(target) in data.get("banned_chat", {}):
             channel_data = data["banned_chat"][str(target)]
             channel_data["fed_name"] = data["name"]
             channel_data["type"] = "chat"
             return channel_data
+
         return None
 
     async def fban_handler(
@@ -245,7 +248,9 @@ class Federation(plugin.Plugin):
                     await self.text(
                         chat.id,
                         "fed-autoban" if data["type"] == "user" else "fed-autoban-chat",
-                        util.tg.mention(user) if data["type"] == "user" else data["title"],
+                        user.mention if (
+                            data["type"] == "user" and isinstance(user, User)
+                        ) else data["title"],
                         data["fed_name"],
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
@@ -259,7 +264,7 @@ class Federation(plugin.Plugin):
     async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
         """Create a new federations"""
         chat = ctx.chat
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-private")
 
         if not name:
@@ -278,7 +283,7 @@ class Federation(plugin.Plugin):
     async def cmd_delfed(self, ctx: command.Context) -> Optional[str]:
         """Delete federations"""
         chat = ctx.chat
-        if chat.type != "private":
+        if chat.type != ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-private")
 
         owner = ctx.msg.from_user
@@ -373,7 +378,7 @@ class Federation(plugin.Plugin):
     async def cmd_fedpromote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Promote user to fed admin"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         if not user:
@@ -401,7 +406,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Promotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
+                f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -411,7 +416,7 @@ class Federation(plugin.Plugin):
     async def cmd_feddemote(self, ctx: command.Context, user: Optional[User] = None) -> str:
         """Demote user to fed admin"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         invoker = ctx.msg.from_user
@@ -440,7 +445,7 @@ class Federation(plugin.Plugin):
                 log,
                 "**New Fed Demotion**\n"
                 "**Fed**: " + data["name"] + "\n"
-                f"**Promoted FedAdmin**: {util.tg.mention(user)}\n"
+                f"**Promoted FedAdmin**: {user.mention}\n"
                 f"**User ID**: `{user.id}`",
             )
 
@@ -454,7 +459,7 @@ class Federation(plugin.Plugin):
             data = await self.get_fed(fid)
             if not data:
                 return await self.text(chat.id, "fed-invalid-id")
-        elif chat.type != "private":
+        elif chat.type != ChatType.PRIVATE:
             data = await self.get_fed_bychat(chat.id)
             if not data:
                 return (
@@ -474,7 +479,7 @@ class Federation(plugin.Plugin):
             "fed-info-text",
             data["_id"],
             data["name"],
-            util.tg.mention(owner),
+            owner.mention,
             len(data.get("admins", [])),
             len(data.get("banned", [])),
             len(data.get("banned_chat", [])),
@@ -504,7 +509,7 @@ class Federation(plugin.Plugin):
         if isinstance(owner, List):
             owner = owner[0]
 
-        text = await self.text(chat.id, "fed-admin-text", data["name"], util.tg.mention(owner))
+        text = await self.text(chat.id, "fed-admin-text", data["name"], owner.mention)
         if len(data.get("admins", [])) != 0:
             text += "\nAdmins:\n"
             admins = []
@@ -512,8 +517,11 @@ class Federation(plugin.Plugin):
                 admins.append(admin)
 
             admins = await self.bot.client.get_users(admins)
-            for admin in admins:
-                text += f" • {util.tg.mention(admin)}\n"
+            if isinstance(admins, Iterable):
+                for admin in admins:
+                    text += f" • {user.mention}\n"
+            else:
+                text += f" • {user.mention}\n"
         else:
             text += "\n" + await self.text(chat.id, "fed-no-admin")
 
@@ -525,7 +533,7 @@ class Federation(plugin.Plugin):
         target: User,
         banner: User,
         reason: str,
-        fed_data: MutableMapping[str, Any],
+        fed_data: Mapping[str, Any],
     ) -> str:
         update = False
         if str(target.id) in fed_data.get("banned", {}).keys():
@@ -539,8 +547,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-info-update",
                 fed_data["name"],
-                util.tg.mention(banner),
-                util.tg.mention(target),
+                banner.mention,
+                target.mention,
                 target.id,
                 fed_data["banned"][str(target.id)]["reason"],
                 reason,
@@ -549,8 +557,8 @@ class Federation(plugin.Plugin):
             chat.id,
             "fed-ban-info",
             fed_data["name"],
-            util.tg.mention(banner),
-            util.tg.mention(target),
+            banner.mention,
+            target.mention,
             target.id,
             reason,
         )
@@ -561,7 +569,7 @@ class Federation(plugin.Plugin):
         target: Chat,
         banner: User,
         reason: str,
-        fed_data: MutableMapping[str, Any],
+        fed_data: Mapping[str, Any],
     ) -> str:
         update = False
         if str(target.id) in fed_data.get("banned_chat", {}).keys():
@@ -574,7 +582,7 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-ban-chat-info-update",
                 fed_data["name"],
-                util.tg.mention(banner),
+                banner.mention,
                 target.title,
                 target.id,
                 fed_data["banned_chat"][str(target.id)]["reason"],
@@ -584,18 +592,18 @@ class Federation(plugin.Plugin):
             chat.id,
             "fed-ban-chat-info",
             fed_data["name"],
-            util.tg.mention(banner),
+            banner.mention,
             target.title,
             target.id,
             reason,
         )
 
     async def cmd_fban(
-        self, ctx: command.Context, target: Union[User, Chat] = None, *, reason: str = ""
+        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
     ) -> Optional[str]:
         """Fed ban command"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         banner = ctx.msg.from_user
@@ -673,10 +681,12 @@ class Federation(plugin.Plugin):
 
         return None
 
-    async def cmd_unfban(self, ctx: command.Context, target: Union[User, Chat] = None) -> str:
+    async def cmd_unfban(
+        self, ctx: command.Context, target: Union[User, Chat, None] = None
+    ) -> str:
         """Unban a user on federation"""
         chat = ctx.chat
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
 
         banner = ctx.msg.from_user
@@ -709,8 +719,8 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-unban-info",
                 data["name"],
-                util.tg.mention(banner),
-                util.tg.mention(target),
+                banner.mention,
+                target.mention,
                 target.id,
             )
         elif isinstance(target, Chat):
@@ -719,7 +729,7 @@ class Federation(plugin.Plugin):
                 chat.id,
                 "fed-unban-info-chat",
                 data["name"],
-                util.tg.mention(banner),
+                banner.mention,
                 target.title,
                 target.id,
             )
@@ -908,7 +918,7 @@ class Federation(plugin.Plugin):
 
         return await self.text(chat.id, "fed-myfeds-no-admin")
 
-    def generate_log_btn(self, data: MutableMapping[str, Any]) -> InlineKeyboardMarkup:
+    def generate_log_btn(self, data: Mapping[str, Any]) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup(
             [
                 [
@@ -936,7 +946,7 @@ class Federation(plugin.Plugin):
 
     async def cmd_setfedlog(self, ctx: command.Context, fid: Optional[str] = None) -> Optional[str]:
         chat = ctx.chat
-        if chat.type == "channel":
+        if chat.type == ChatType.CHANNEL:
             if not fid:
                 return await self.text(chat.id, "fed-set-log-args")
 
@@ -959,7 +969,7 @@ class Federation(plugin.Plugin):
             )
             return None
 
-        if chat.type in {"group", "supergroup"}:
+        if chat.type in {ChatType.GROUP, ChatType.SUPERGROUP}:
             data = await self.get_fed_byowner(ctx.author.id)
             if not data:
                 return await self.text(chat.id, "user-no-feds")
@@ -975,7 +985,7 @@ class Federation(plugin.Plugin):
     async def cmd_unsetfedlog(self, ctx: command.Context) -> str:
         chat = ctx.chat
         user = ctx.msg.from_user
-        if chat.type == "private":
+        if chat.type == ChatType.PRIVATE:
             data = await self.get_fed_byowner(user.id)
             if not data:
                 return await self.text(chat.id, "user-no-feds")

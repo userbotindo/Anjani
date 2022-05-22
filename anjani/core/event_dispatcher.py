@@ -194,7 +194,7 @@ class EventDispatcher(MixinBase):
             return
 
         async def send_missed_message(
-            messages: list[raw.base.Message],
+            messages: list[raw.base.message.Message],
             users: MutableMapping[int, Any],
             chats: MutableMapping[int, Any],
         ) -> None:
@@ -202,14 +202,16 @@ class EventDispatcher(MixinBase):
                 self.log.debug("Sending missed message with data '%s'", message)
                 await self.client.dispatcher.updates_queue.put(
                     (
-                        raw.types.UpdateNewMessage(message=message, pts=0, pts_count=0),
+                        raw.types.update_new_message.UpdateNewMessage(
+                            message=message, pts=0, pts_count=0
+                        ),
                         users,
                         chats,
                     )
                 )
 
         async def send_missed_update(
-            updates: list[raw.base.Update],
+            updates: list[raw.base.update.Update],
             users: MutableMapping[int, Any],
             chats: MutableMapping[int, Any],
         ) -> None:
@@ -222,13 +224,16 @@ class EventDispatcher(MixinBase):
                 # TO-DO
                 # 1. Change qts to 0, because we want to get all missed events
                 #    so we have a proper loop going on until DifferenceEmpty
-                diff = await self.client.send(
-                    functions.updates.GetDifference(pts=pts, date=date, qts=-1)
+                diff = await self.client.invoke(
+                    functions.updates.get_difference.GetDifference(pts=pts, date=date, qts=-1)
                 )
                 if isinstance(
-                    diff, (raw.types.updates.Difference, raw.types.updates.DifferenceSlice)
+                    diff, (
+                        raw.types.updates.difference.Difference,
+                        raw.types.updates.difference_slice.DifferenceSlice
+                    )
                 ):
-                    if isinstance(diff, raw.types.updates.Difference):
+                    if isinstance(diff, raw.types.updates.difference.Difference):
                         state: Any = diff.state
                     else:
                         state: Any = diff.intermediate_state
@@ -243,11 +248,11 @@ class EventDispatcher(MixinBase):
                             send_missed_update(diff.other_updates, users, chats),
                         )
                     )
-                elif isinstance(diff, raw.types.updates.DifferenceEmpty):
+                elif isinstance(diff, raw.types.updates.difference_empty.DifferenceEmpty):
                     self.log.info("Missed event exhausted, you are up to date.")
                     date = diff.date
                     break
-                elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                elif isinstance(diff, raw.types.updates.difference_too_long.DifferenceTooLong):
                     pts = diff.pts
                     continue
                 else:

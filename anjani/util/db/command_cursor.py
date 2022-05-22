@@ -24,13 +24,16 @@ from typing import (
     ClassVar,
     Coroutine,
     Deque,
-    MutableMapping,
+    Generic,
+    Mapping,
     Optional,
     Tuple,
     Union,
 )
 
+from pymongo.client_session import ClientSession
 from pymongo.command_cursor import CommandCursor as _CommandCursor
+from pymongo.typings import _DocumentType
 
 from anjani import util
 
@@ -41,7 +44,7 @@ if TYPE_CHECKING:
     from .collection import AsyncCollection
 
 
-class CommandCursor(_CommandCursor):
+class CommandCursor(_CommandCursor, Generic[_DocumentType]):
 
     _CommandCursor__data: Deque[Any]
     _CommandCursor__killed: bool
@@ -51,7 +54,7 @@ class CommandCursor(_CommandCursor):
     def __init__(
         self,
         collection: "AsyncCollection",
-        cursor_info: MutableMapping[str, Any],
+        cursor_info: Mapping[str, Any],
         address: Optional[Tuple[str, int]] = None,
         *,
         batch_size: int = 0,
@@ -83,11 +86,11 @@ class CommandCursor(_CommandCursor):
         return self.__killed
 
     @property
-    def collection(self) -> "AsyncCollection":
-        return self.__collection
+    def collection(self) -> "AsyncCollection[_DocumentType]":
+        return self.delegate
 
 
-class RawBatchCommandCursor(CommandCursor):
+class RawBatchCommandCursor(CommandCursor, Generic[_DocumentType]):
     pass
 
 
@@ -109,7 +112,7 @@ class AsyncCommandCursor(AsyncCursorBase):
         return self.dispatch._CommandCursor__killed  # skipcq: PYL-W0212
 
 
-class _LatentCursor:
+class _LatentCursor(Generic[_DocumentType]):
     """Base class for LatentCursor AsyncIOMongoDB instance"""
 
     # ClassVar
@@ -122,7 +125,7 @@ class _LatentCursor:
     _CommandCursor__explicit_session: ClassVar[Optional[bool]] = None
     address: ClassVar[Optional[Tuple[str, int]]] = None
     cursor_id: ClassVar[Optional[Any]] = None
-    session: ClassVar[Optional[AsyncClientSession]] = None
+    session: Optional[ClientSession[_DocumentType]] = None
 
     _CommandCursor__collection: "AsyncCollection"
 
@@ -165,7 +168,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
     def __init__(
         self,
         collection: "AsyncCollection",
-        start: Callable[..., Union[CommandCursor, RawBatchCommandCursor]],
+        start: Callable[..., Any],
         *args: Any,
         **kwargs: Any,
     ) -> None:
