@@ -163,9 +163,30 @@ class SpamPrediction(plugin.Plugin):
 
         return stdout.strip()
 
-    @listener.filters(filters.regex(r"spam_check_(t|f)"))
+    @listener.filters(
+        filters.regex(r"spam_check_(?P<value>t|f)") | filters.regex(r"spam_ban_(?P<user>.*)")
+    )
     async def on_callback_query(self, query: CallbackQuery) -> None:
-        method = query.matches[0].group(1)
+        data = query.matches[0].groupdict()
+        if "value" in data:
+            await self._spam_vote_handler(query, data["value"])
+        elif "user" in data:
+            await self._spam_ban_handler(query, data["user"])
+
+    async def _spam_ban_handler(self, query: CallbackQuery, user: str) -> None:
+        invoker = await self.bot.client.get_chat_member(query.message.chat.id, query.from_user.id)
+        if not invoker.privileges or not invoker.privileges.can_restrict_members:
+            await query.answer("You don't have permission to ban users!")
+            return
+        user_id = int(user)
+        await query.message.chat.ban_member(user_id)
+        await query.answer(f"Banned {user_id}")
+        new_keyb = query.message.reply_markup.inline_keyboard[:-1]  # type: ignore
+        await query.edit_message_reply_markup(
+            reply_markup=InlineKeyboardMarkup(new_keyb) if new_keyb else None  # type: ignore
+        )
+
+    async def _spam_vote_handler(self, query: CallbackQuery, value: str) -> None:
         message = query.message
         content = re.compile(r"([A-Fa-f0-9]{64})").search(message.text)
         author = query.from_user.id
@@ -181,7 +202,7 @@ class SpamPrediction(plugin.Plugin):
 
         users_on_correct = data["spam"]
         users_on_incorrect = data["ham"]
-        if method == "t":
+        if value == "t":
             try:
                 # Check user in incorrect data
                 if author in users_on_incorrect:
@@ -196,7 +217,7 @@ class SpamPrediction(plugin.Plugin):
                     "You can't vote this anymore, because this was marked as a spam by our staff",
                     show_alert=True,
                 )
-        elif method == "f":
+        elif value == "f":
             try:
                 # Check user in correct data
                 if author in users_on_correct:
@@ -432,7 +453,14 @@ class SpamPrediction(plugin.Plugin):
                 alert,
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("View Message", url=msg.link)]]
+                    [
+                        [InlineKeyboardButton("View Message", url=msg.link)],
+                        [
+                            InlineKeyboardButton(
+                                "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
+                            )
+                        ],
+                    ]
                 ),
             )
 
