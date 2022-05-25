@@ -164,7 +164,7 @@ def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
         try:
-            if getattr(bot_perm, name) and getattr(member_perm, name):
+            if getattr(bot_perm.privileges, name) and getattr(member_perm.privileges, name):
                 return True
         except AttributeError:
             flt.anjani.log.error(f"{name} is not a valid permission")
