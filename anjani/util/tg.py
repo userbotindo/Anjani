@@ -34,6 +34,7 @@ from typing import (
 
 from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
+from pyrogram.enums.chat_members_filter import ChatMembersFilter
 from pyrogram.errors import (
     ChannelPrivate,
     ChatForbidden,
@@ -198,7 +199,10 @@ def truncate(text: str) -> str:
 
 
 def is_staff_or_admin(target: Union[ChatMember, _types.MemberInformation]) -> bool:
-    return target.status in {"administrator", "creator"} or target.user.id in STAFF
+    return (
+        target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
+        or target.user.id in STAFF
+    )
 
 
 def is_staff(target_id: int) -> bool:
@@ -236,8 +240,8 @@ async def get_chat_admins(
     client: Client, chat: int, *, exclude_bot: bool = False
 ) -> AsyncGenerator[ChatMember, None]:
     member: ChatMember
-    async for member in client.get_chat_members(chat, filter=ChatMemberStatus.ADMINISTRATOR):  # type: ignore
-        if member.status in {"administrator", "creator"}:
+    async for member in client.get_chat_members(chat, filter=ChatMembersFilter.ADMINISTRATORS):  # type: ignore
+        if member.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             if exclude_bot and member.user.is_bot:
                 continue
             yield member

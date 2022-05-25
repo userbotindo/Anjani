@@ -17,6 +17,7 @@
 from typing import Any, Callable, Coroutine, Optional
 
 from pyrogram.client import Client
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import (  # skipcq: PY-W2000
     Filter,
@@ -251,9 +252,9 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
-        if bot_perm.status == "administrator" and member_perm.status in {
-            "administrator",
-            "creator",
+        if bot_perm.status == ChatMemberStatus.ADMINISTRATOR and member_perm.status in {
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
         }:
             return True
 

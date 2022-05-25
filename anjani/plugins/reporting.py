@@ -17,6 +17,7 @@
 import asyncio
 from typing import Any, MutableMapping, Optional
 
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
@@ -63,7 +64,7 @@ class Reporting(plugin.Plugin):
             return
 
         invoker = await chat.get_member(user.id)
-        if invoker.status in {"creator", "administrator"}:
+        if invoker.status in {ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR}:
             return  # ignore command from admins
 
         if not message.reply_to_message:
@@ -155,7 +156,7 @@ class Reporting(plugin.Plugin):
             return await self.text(chat.id, "err-yes-no-args")
 
         _, member = await util.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
-        if member.status not in {"administrator", "creator"}:
+        if member.status not in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return None
 
         if setting is True:

@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional, Union
 
 from bson.objectid import ObjectId
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.errors import PeerIdInvalid, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
@@ -128,9 +129,7 @@ class Restrictions(plugin.Plugin):
         )
 
         ret = await self.text(
-            chat.id,
-            "kick-done",
-            target.first_name if isinstance(target, User) else target.title
+            chat.id, "kick-done", target.first_name if isinstance(target, User) else target.title
         )
         if reason:
             ret += await self.text(chat.id, "kick-reason", reason)
@@ -195,9 +194,7 @@ class Restrictions(plugin.Plugin):
             return await self.text(chat.id, "err-peer-invalid")
 
         return await self.text(
-            chat.id,
-            "unban-done",
-            user.first_name if isinstance(user, User) else user.title
+            chat.id, "unban-done", user.first_name if isinstance(user, User) else user.title
         )
 
     @command.filters(filters.can_restrict)
@@ -221,7 +218,7 @@ class Restrictions(plugin.Plugin):
             return await ctx.get_text("error-its-myself")
 
         target = await chat.get_member(user.id)
-        if target.status in {"administrator", "creator"}:
+        if target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return await ctx.get_text("rmwarn-admin")
 
         threshold = 3
@@ -280,7 +277,7 @@ class Restrictions(plugin.Plugin):
             return await ctx.get_text("error-its-myself")
 
         target = await chat.get_member(user.id)
-        if target.status in {"administrator", "creator"}:
+        if target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return await ctx.get_text("rmwarn-admin")
 
         chat_data = await self.db.find_one({"chat_id": chat.id})
@@ -344,7 +341,7 @@ class Restrictions(plugin.Plugin):
             return await ctx.get_text("error-its-myself")
 
         target = await chat.get_member(user.id)
-        if target.status in {"administrator", "creator"}:
+        if target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return await ctx.get_text("rmwarn-admin")
 
         chat_data = await self.db.find_one({"chat_id": chat.id})

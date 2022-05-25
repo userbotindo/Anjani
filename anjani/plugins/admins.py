@@ -17,6 +17,7 @@
 import asyncio
 from typing import ClassVar, Optional
 
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import (
     ChatAdminRequired,
@@ -92,7 +93,7 @@ class Admins(plugin.Plugin):
         admins = ""
 
         async for admin in util.tg.get_chat_admins(ctx.bot.client, chat.id):
-            if admin.status == "creator":
+            if admin.status == ChatMemberStatus.OWNER:
                 admins += f"• {admin.user.mention} (**Creator**)\n"
             elif admin.user.id == self.bot.uid:
                 admins += f"• {admin.user.mention} (**Me**)\n"
