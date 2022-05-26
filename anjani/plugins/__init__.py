@@ -28,7 +28,7 @@ try:
     _reload_flag: bool
 
     # noinspection PyUnboundLocalVariable
-    if _reload_flag:
+    if _reload_flag:  # skipcq: PYL-E0601
         # Plugin has been reloaded, reload our subplugins
         for plugin in subplugins:
             importlib.reload(plugin)
