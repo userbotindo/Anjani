@@ -23,7 +23,6 @@ from typing import Any
 import aiorun
 import colorlog
 from dotenv import load_dotenv
-from pyrogram.session import Session
 
 from .core import Anjani
 from .util.config import TelegramConfig
@@ -79,9 +78,6 @@ def setup_log() -> None:
     logging.getLogger("pymongo").setLevel(logging.WARNING)
     logging.getLogger("pyrogram").setLevel(logging.ERROR)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    # Disable pyrogram notice
-    Session.notice_displayed = True
 
 
 def start() -> None:
