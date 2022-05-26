@@ -16,6 +16,7 @@
 
 import asyncio
 import signal
+import sys
 from functools import partial
 from hashlib import sha256
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
@@ -186,13 +187,22 @@ class TelegramBot(MixinBase):
             if v.startswith("SIG") and not v.startswith("SIG_")
         }
 
-        def signal_handler(signum):
-            print(flush=True)  # Separate signal and next log
-            self.log.info(f"Stop signal received ('{signals[signum]}').")
-            self.__running = False
+        if sys.platform == "win32":
+            def signal_handler_windows(signum: int, frame: Any) -> None:
+                print(flush=True)
+                self.log.info(f"Stop signal received ('{signals[signum]}').")
+                self.__running = False
 
-        for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-            self.loop.add_signal_handler(signame, partial(signal_handler, signame))
+            for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+                signal.signal(signame, signal_handler_windows)
+        else:
+            def signal_handler(signum: int) -> None:
+                print(flush=True)  # Separate signal and next log
+                self.log.info(f"Stop signal received ('{signals[signum]}').")
+                self.__running = False
+
+            for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+                self.loop.add_signal_handler(signame, partial(signal_handler, signame))
 
         self.__running = True
         while self.__running:
