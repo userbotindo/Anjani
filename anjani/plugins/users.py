@@ -42,6 +42,7 @@ class Users(plugin.Plugin):
         self.predict_loaded = "SpamPredict" in self.bot.plugins
 
     def hash_id(self, id: int) -> str:
+        # skipcq: PTC-W1003
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: BAN-B324
 
     async def build_channel_task(self, channel: Chat) -> asyncio.Task[Any]:

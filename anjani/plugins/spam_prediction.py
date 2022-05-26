@@ -128,6 +128,7 @@ class SpamPrediction(plugin.Plugin):
     def _build_hex(self, id: Optional[int]) -> str:
         if not id:
             id = self.bot.uid
+        # skipcq: PTC-W1003
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: BAN-B324
 
     @staticmethod
