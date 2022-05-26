@@ -19,7 +19,7 @@ import pickle
 import re
 from functools import partial
 from hashlib import md5, sha256
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, Callable, ClassVar, MutableMapping, Optional
 
 from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
@@ -128,7 +128,7 @@ class SpamPrediction(plugin.Plugin):
     def _build_hex(self, id: Optional[int]) -> str:
         if not id:
             id = self.bot.uid
-        return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: PTC-W1003
+        return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: BAN-B324
 
     @staticmethod
     def prob_to_string(value: float) -> str:
@@ -168,22 +168,38 @@ class SpamPrediction(plugin.Plugin):
     )
     async def on_callback_query(self, query: CallbackQuery) -> None:
         data = query.matches[0].groupdict()
-        if "value" in data:
-            await self._spam_vote_handler(query, data["value"])
-        elif "user" in data:
-            await self._spam_ban_handler(query, data["user"])
+        handler: MutableMapping[str, Callable] = {
+            "value": self._spam_vote_handler,
+            "user": self._spam_ban_handler,
+        }
+        for handle in data.keys():
+            await handler[handle](query, data[handle])
 
     async def _spam_ban_handler(self, query: CallbackQuery, user: str) -> None:
-        invoker = await self.bot.client.get_chat_member(query.message.chat.id, query.from_user.id)
+        chat = query.message.chat
+        invoker = await chat.get_member(query.from_user.id)
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
-            await query.answer("You don't have permission to ban users!")
-            return
-        user_id = int(user)
-        await query.message.chat.ban_member(user_id)
-        await query.answer(f"Banned {user_id}")
-        new_keyb = query.message.reply_markup.inline_keyboard[:-1]  # type: ignore
+            return await query.answer(await self.get_text(chat.id, "spampredict-ban-no-perm"))
+
+        target = await self.bot.client.get_users(int(user))
+        if isinstance(target, list):
+            target = target[0]
+
+        await chat.ban_member(target.id)
+        await query.answer(
+            await self.get_text(
+                chat.id,
+                "spampredict-ban",
+                user=target.username or target.first_name
+            )
+        )
+
+        keyboard = query.message.reply_markup
+        if not isinstance(keyboard, InlineKeyboardMarkup):
+            raise ValueError("Reply markup must be an InlineKeyboardMarkup")
+
         await query.edit_message_reply_markup(
-            reply_markup=InlineKeyboardMarkup(new_keyb) if new_keyb else None  # type: ignore
+            reply_markup=InlineKeyboardMarkup(keyboard.inline_keyboard[:-1])
         )
 
     async def _spam_vote_handler(self, query: CallbackQuery, value: str) -> None:
@@ -418,10 +434,6 @@ class SpamPrediction(plugin.Plugin):
             if user is None or message.sender_chat:
                 return
 
-            target = await message.chat.get_member(user)
-            if util.tg.is_staff_or_admin(target):
-                return
-
             if from_ocr:
                 alert = (
                     f"❗️**PHOTO SPAM ALERT**❗️\n\n"
@@ -448,20 +460,23 @@ class SpamPrediction(plugin.Plugin):
                 alert += "\n\nThe message has been deleted."
                 reply_id = 0
 
+            chat = message.chat
+            me = await chat.get_member(self.bot.uid)
+            button = [[InlineKeyboardButton("View Message", url=msg.link)]]
+            if me.privileges and me.privileges.can_restrict_members:
+                button.append(
+                    [
+                        InlineKeyboardButton(
+                            "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
+                        )
+                    ],
+                )
+
             await self.bot.client.send_message(
-                message.chat.id,
+                chat.id,
                 alert,
                 reply_to_message_id=reply_id,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [InlineKeyboardButton("View Message", url=msg.link)],
-                        [
-                            InlineKeyboardButton(
-                                "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
-                            )
-                        ],
-                    ]
-                ),
+                reply_markup=InlineKeyboardMarkup(button),
             )
 
     async def mark_spam_ocr(

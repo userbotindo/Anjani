@@ -463,6 +463,8 @@ spampredict-unauthorized: |
   Your reputation point is not enough to use this command! ({}/100)
   To get a reputation point cast a vote on @SpamPredictionLog.
 spampredict-failed: Prediction failed...
+spampredict-ban: "{user} has been banned!"
+spampredict-ban-no-perm: You don't have permission to ban users!
 #endregion
 #region spam shield
 spamshield-button: Spam Shield

@@ -484,6 +484,8 @@ spampredict-unauthorized: |
   Poin reputasi anda tidak cukup untuk menggunakan perintah ini! ({}/100)
   Untuk mendapatkan poin reputasi silahkan berikan suara di @SpamPredictionLog.
 spampredict-failed: Prediksi gagal...
+spampredict-ban: "{user} telah diblokir!"
+spampredict-ban-no-perm: "Kamu tidak punya izin untuk melakukan ini!"
 #endregion
 #region spam shield
 spamshield-button: Spam Shield
