@@ -20,7 +20,6 @@ from json import JSONDecodeError
 from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiohttp import ClientOSError, ClientResponseError, ContentTypeError
-from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -68,7 +67,7 @@ class SpamShield(plugin.Plugin):
 
         try:
             me = await chat.get_member("me")
-            if not me.privileges.can_restrict_members:
+            if not me.privileges or not me.privileges.can_restrict_members:
                 return
 
             for member in message.new_chat_members:
