@@ -1,0 +1,5 @@
+:repo:deb [trusted=yes] https://ppa.launchpadcontent.net/alex-p/tesseract-ocr5/ubuntu focal main tesseract-ocr
+tesseract-ocr-eng
+tesseract-ocr-ind
+tesseract-ocr-osd
+libarchive13
