@@ -72,7 +72,7 @@ class Muting(plugin.Plugin):
         if member is not None:
             user = member.user
             if util.tg.is_staff_or_admin(member):
-                return await self.text(chat_id, "no-mute-admin")
+                return await self.text(chat_id, "cant-mute-admin")
 
             if not member.permissions.can_send_messages:
                 return await self.text(chat_id, "already-muted")
