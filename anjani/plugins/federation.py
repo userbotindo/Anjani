@@ -519,9 +519,9 @@ class Federation(plugin.Plugin):
             admins = await self.bot.client.get_users(admins)
             if isinstance(admins, Iterable):
                 for admin in admins:
-                    text += f" • {user.mention}\n"
+                    text += f" • {admin.mention}\n"
             else:
-                text += f" • {user.mention}\n"
+                text += f" • {admins.mention}\n"
         else:
             text += "\n" + await self.text(chat.id, "fed-no-admin")
 
