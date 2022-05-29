@@ -74,7 +74,7 @@ class Muting(plugin.Plugin):
             if util.tg.is_staff_or_admin(member):
                 return await self.text(chat_id, "cant-mute-admin")
 
-            if member.permissions and  not member.permissions.can_send_messages:
+            if member.permissions and not member.permissions.can_send_messages:
                 return await self.text(chat_id, "already-muted")
 
         if not user:
@@ -110,7 +110,7 @@ class Muting(plugin.Plugin):
             else:
                 return await self.text(chat_id, "no-unmute-user")
 
-        if not member.permissions.can_send_messages:
+        if member.permissions and not member.permissions.can_send_messages:
             _, t = await asyncio.gather(
                 ctx.message.chat.unban_member(member.user.id),
                 self.text(chat_id, "unmute-done")
