@@ -21,7 +21,7 @@ from uuid import uuid4
 
 from aiopath import AsyncPath
 from pyrogram.enums.chat_type import ChatType
-from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden
+from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden, PeerIdInvalid
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -516,12 +516,14 @@ class Federation(plugin.Plugin):
             for admin in data["admins"]:
                 admins.append(admin)
 
-            admins = await self.bot.client.get_users(admins)
-            if isinstance(admins, Iterable):
-                for admin in admins:
-                    text += f" • {admin.mention}\n"
-            else:
-                text += f" • {admins.mention}\n"
+            for uid in admins:
+                try:
+                    admin = await self.bot.client.get_users(uid)
+                except PeerIdInvalid:
+                    text += f"[{uid}](tg://user?id={uid})\n"
+                    continue
+
+                text += f" • {admin.mention}\n"  # type: ignore
         else:
             text += "\n" + await self.text(chat.id, "fed-no-admin")
 
