@@ -142,8 +142,8 @@ class SpamPrediction(plugin.Plugin):
     async def _is_spam(self, text: str) -> bool:
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
-    async def runOcr(self, message: Message) -> Optional[str]:
-        """Read image text"""
+    async def run_ocr(self, message: Message) -> Optional[str]:
+        """Run tesseract"""
         try:
             image = AsyncPath(await message.download())
         except Exception:  # skipcq: PYL-W0703
@@ -154,7 +154,15 @@ class SpamPrediction(plugin.Plugin):
             )
 
         try:
-            stdout, _, exitCode = await util.system.run_command("tesseract", str(image), "stdout")
+            stdout, _, exitCode = await util.system.run_command(
+                "tesseract",
+                str(image),
+                "stdout",
+                "-l",
+                "eng+ind",
+                "--psm",
+                "6"
+            )
         except Exception as e:  # skipcq: PYL-W0703
             return self.log.error("Unexpected error occured when running OCR", exc_info=e)
         finally:
@@ -332,7 +340,7 @@ class SpamPrediction(plugin.Plugin):
             else (message.caption.strip() if message.media and message.caption else None)
         )
         if message.photo:
-            future = self.bot.loop.create_task(self.runOcr(message))
+            future = self.bot.loop.create_task(self.run_ocr(message))
             future.add_done_callback(
                 partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
             )
@@ -562,7 +570,7 @@ class SpamPrediction(plugin.Plugin):
             content = ctx.input
 
         if reply_msg and reply_msg.photo:
-            ocr_result = await self.runOcr(reply_msg)
+            ocr_result = await self.run_ocr(reply_msg)
             if ocr_result:
                 try:
                     await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.id)
@@ -643,7 +651,7 @@ class SpamPrediction(plugin.Plugin):
                 reply_to_message_id=replied.id,
             )
 
-            ocr_result = await self.runOcr(replied)
+            ocr_result = await self.run_ocr(replied)
             if ocr_result:
                 ocr_prediction = await self._predict(ocr_result)
                 if ocr_prediction.size != 0:
