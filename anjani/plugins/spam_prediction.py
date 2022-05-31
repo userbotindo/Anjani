@@ -31,6 +31,7 @@ from pyrogram.errors import (
     MessageNotModified,
     QueryIdInvalid,
     UserAdminInvalid,
+    UserNotParticipant
 )
 from pyrogram.types import (
     CallbackQuery,
@@ -178,7 +179,14 @@ class SpamPrediction(plugin.Plugin):
 
     async def _spam_ban_handler(self, query: CallbackQuery, user: str) -> None:
         chat = query.message.chat
-        invoker = await chat.get_member(query.from_user.id)
+        try:
+            invoker = await chat.get_member(query.from_user.id)
+        except UserNotParticipant:
+            return await query.answer(
+                await self.get_text(chat.id, "error-no-rights"),
+                show_alert=True
+            )
+
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "spampredict-ban-no-perm"))
 
