@@ -77,14 +77,18 @@ class Federation(plugin.Plugin):
                 await self.db.update_one({"_id": fed_data["_id"]}, {"$pull": {"chats": chat.id}})
 
     async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
+        """Leave federation if bot is demoted"""
         if not (update.old_chat_member and update.new_chat_member):
             return
         if update.old_chat_member.user.id != self.bot.uid:
             return
 
+        old_priv = update.old_chat_member.privileges
+        new_priv = update.new_chat_member.privileges
+
         if (
-            update.old_chat_member.privileges.can_restrict_members
-            and not update.new_chat_member.privileges.can_restrict_members
+            (old_priv and old_priv.can_restrict_members)
+            and not (new_priv and new_priv.can_restrict_members)
         ):
             chat = update.chat
             fed_data = await self.get_fed_bychat(chat.id)
