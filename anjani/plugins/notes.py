@@ -80,7 +80,8 @@ class Notes(plugin.Plugin):
     @listener.filters(filters.regex(r"^#[\w\-]+(?!\n)$"))
     async def on_message(self, message: Message) -> None:
         """Notes hashtag trigger."""
-        return await self.get_note(message, message.text.lstrip("#"))
+        trigger = message.text or message.caption
+        return await self.get_note(message, trigger.lstrip("#"))
 
     async def get_note(self, message: Message, name: str, noformat: bool = False) -> None:
         """Get note data and send based on types."""
