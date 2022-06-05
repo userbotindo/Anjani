@@ -353,11 +353,15 @@ class Restrictions(plugin.Plugin):
         except KeyError:
             return await ctx.get_text("warn-no-data", user.mention)
 
-        ret, _ = await asyncio.gather(
-            self.get_text(chat.id, "rmwarn-done", user.mention),
-            self.db.update_one(
-                {"chat_id": chat.id},
-                {"$unset": {f"warn_list.{user.id}.{list(warns_list.keys())[-1]}": ""}},
-            ),
-        )
+        try:
+            ret, _ = await asyncio.gather(
+                self.get_text(chat.id, "rmwarn-done", user.mention),
+                self.db.update_one(
+                    {"chat_id": chat.id},
+                    {"$unset": {f"warn_list.{user.id}.{list(warns_list.keys())[-1]}": ""}},
+                ),
+            )
+        except IndexError:
+            return await ctx.get_text("warn-no-data", user.mention)
+
         return ret
