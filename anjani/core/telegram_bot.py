@@ -276,7 +276,7 @@ class TelegramBot(MixinBase):
     def events_activated(self: "Anjani") -> int:
         return len(self._plugin_event_handlers)
 
-    def redact_message(self, text: str) -> str:
+    def redact_message(self: "Anjani", text: str) -> str:
         api_id = self.config["api_id"]
         api_hash = self.config["api_hash"]
         bot_token = self.config["bot_token"]
