@@ -188,7 +188,7 @@ class TelegramBot(MixinBase):
         }
 
         if sys.platform == "win32":
-            def signal_handler_windows(signum: int, frame: Any) -> None:
+            def signal_handler_windows(signum: int, _: Any) -> None:
                 print(flush=True)
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
                 self.__running = False
