@@ -16,10 +16,11 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden, PeerIdInvalid
 from pyrogram.types import (
@@ -324,7 +325,7 @@ class Federation(plugin.Plugin):
         user = ctx.msg.from_user
 
         invoker = await chat.get_member(user.id)
-        if invoker.status != "creator":
+        if invoker.status != ChatMemberStatus.OWNER:
             return await self.text(chat.id, "err-group-creator-cmd")
 
         if not fid:
@@ -359,7 +360,7 @@ class Federation(plugin.Plugin):
         user = ctx.msg.from_user
 
         invoker = await chat.get_member(user.id)
-        if invoker.status != "creator" or invoker.user.id != self.bot.owner:
+        if invoker.status != ChatMemberStatus.OWNER or invoker.user.id != self.bot.owner:
             return await self.text(chat.id, "err-group-creator-cmd")
 
         if not fid:
