@@ -19,7 +19,12 @@ from datetime import datetime
 from json import JSONDecodeError
 from typing import Any, ClassVar, MutableMapping, Optional
 
-from aiohttp import ClientOSError, ClientResponseError, ContentTypeError
+from aiohttp import (
+    ClientConnectorError,
+    ClientOSError,
+    ClientResponseError,
+    ContentTypeError,
+)
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
@@ -90,8 +95,11 @@ class SpamShield(plugin.Plugin):
 
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
-            if (not me.privileges or not me.privileges.can_restrict_members or
-                    util.tg.is_staff_or_admin(target)):
+            if (
+                not me.privileges
+                or not me.privileges.can_restrict_members
+                or util.tg.is_staff_or_admin(target)
+            ):
                 return
 
             await self.check(target.user, chat)
@@ -104,34 +112,35 @@ class SpamShield(plugin.Plugin):
 
         path = f"https://api.spamwat.ch/banlist/{user_id}"
         headers = {"Authorization": f"Bearer {self.token}"}
-        async with self.bot.http.get(path, headers=headers) as resp:
-            if resp.status in {200, 201}:
-                return await resp.json()
-            if resp.status == 204:
-                return {}
-            if resp.status == 401:
-                raise ClientResponseError(
-                    resp.request_info,
-                    resp.history,
-                    message="Make sure your Spamwatch API token is corret",
-                )
-            if resp.status == 403:
-                raise ClientResponseError(
-                    resp.request_info,
-                    resp.history,
-                    message="Forbidden, your token permissions is not valid",
-                )
-            if resp.status == 404:
-                return {}
-            if resp.status == 429:
-                until = (await resp.json()).get("until", 0)
-                raise ClientResponseError(
-                    resp.request_info,
-                    resp.history,
-                    message=f"Too many requests. Try again in {until - datetime.now()}",
-                )
+        try:
+            async with self.bot.http.get(path, headers=headers) as resp:
+                if resp.status in {200, 201}:
+                    return await resp.json()
+                if resp.status in {204, 404, 502}:
+                    return {}
+                if resp.status == 401:
+                    raise ClientResponseError(
+                        resp.request_info,
+                        resp.history,
+                        message="Make sure your Spamwatch API token is corret",
+                    )
+                if resp.status == 403:
+                    raise ClientResponseError(
+                        resp.request_info,
+                        resp.history,
+                        message="Forbidden, your token permissions is not valid",
+                    )
+                if resp.status == 429:
+                    until = (await resp.json()).get("until", 0)
+                    raise ClientResponseError(
+                        resp.request_info,
+                        resp.history,
+                        message=f"Too many requests. Try again in {until - datetime.now()}",
+                    )
 
-            raise ClientResponseError(resp.request_info, resp.history)
+                raise ClientResponseError(resp.request_info, resp.history)
+        except ClientConnectorError:
+            return {}
 
     async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""
