@@ -1,6 +1,5 @@
 """ Anime Plugin """
 from datetime import datetime
-from io import BytesIO
 from typing import Any, ClassVar, Mapping, MutableMapping, Optional
 
 from aiopath import AsyncPath
@@ -19,7 +18,7 @@ TRUNCATION_SUFFIX = "...<i><a href='{link}'>READ MORE</a></i>"
 
 
 def truncate(text: str, link: str) -> str:
-    """Truncates the given text to fit in one Telegram message."""
+    """Truncates the given text to fit in one Telegram message with read more link."""
 
     if len(text) > MESSAGE_CHAR_LIMIT:
         return text[: MESSAGE_CHAR_LIMIT - len(TRUNCATION_SUFFIX)] + TRUNCATION_SUFFIX.format(
@@ -240,43 +239,31 @@ class Anime(plugin.Plugin):
     # TO-DO: add helpable
     helpable: ClassVar[bool] = False
 
+    move_map: MutableMapping[str, int]
+
+    async def on_load(self) -> None:
+        # Declare here so we don't declare everytime the button gets called
+        self.move_map = {"prev": -1, "next": 1}
+
     @listener.filters(
         filters.regex(
-            r"^anilist_(?P<category>airing|search|trending|upcoming)_?(?P<name>[\S\s]+)?_"
-            r"(?P<current_page>\d+)_"
-            "(?P<move>prev|next)$"
+            r"^anilist_(?P<category>airing|search\((?P<name>[\S\s]+)\)|trending|upcoming)_"
+            r"page\((?P<current_page>\d+)\)_"
+            r"action\((?P<move>prev|next)\)$"
         )
     )
     async def on_callback_query(self, query: CallbackQuery) -> None:
         page_data = query.matches[0].groupdict()
         move = page_data["move"]
         current_page = int(page_data["current_page"])
-        if move == "next":
-            page = current_page + 1
-        elif move == "prev":
-            page = current_page - 1
-        else:
-            raise ValueError("Invalid move")
 
-        if page_data["category"] == "search":
-            try:
-                data = await self.search(page_data["name"], page)
-            except IndexError:
-                """
-                TO-DO: draft
-
-                await query.answer("There are no more results.", show_alert=True)
-                button = [
-                    InlineKeyboardButton(
-                        "⏪ Previous",
-                        callback_data=f"anilist_search_{page_data['name']}_{current_page}_prev")
-                ]
-                await query.message.edit_reply_markup(InlineKeyboardMarkup([button]))
-                return
-                """
-                return
+        data: Mapping[str, Any]
+        if page_data["name"] is not None:
+            data = await self.search(page_data["name"], current_page + self.move_map[move])
         else:
-            data = await self.__getattribute__(page_data["category"])(page)
+            data = await self.__getattribute__(page_data["category"])(
+                current_page + self.move_map[move]
+            )
 
         try:
             await query.message.edit_media(
@@ -295,6 +282,12 @@ class Anime(plugin.Plugin):
             )
             await cover.unlink()
         await query.answer()
+
+    # TO-DO
+    async def extract_metadata(
+        self, name: str, data: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        return {}
 
     async def get(self, query: str, variables: MutableMapping[str, Any]) -> Mapping[str, Any]:
         try:
@@ -334,7 +327,8 @@ class Anime(plugin.Plugin):
                 button.append(
                     [
                         InlineKeyboardButton(
-                            "⏪ Previous", callback_data=f"anilist_airing_{current_page}_prev"
+                            "⏪ Previous",
+                            callback_data=f"anilist_airing_page({current_page})_action(prev)",
                         )
                     ]
                 )
@@ -343,14 +337,16 @@ class Anime(plugin.Plugin):
                     button.append(
                         [
                             InlineKeyboardButton(
-                                "Next ⏩", callback_data=f"anilist_airing_{current_page}_next"
+                                "Next ⏩",
+                                callback_data=f"anilist_airing_page({current_page})_action(next)",
                             )
                         ]
                     )
                 else:
                     button[0].append(
                         InlineKeyboardButton(
-                            "Next ⏩", callback_data=f"anilist_airing_{current_page}_next"
+                            "Next ⏩",
+                            callback_data=f"anilist_airing_page({current_page})_action(next)",
                         )
                     )
 
@@ -364,16 +360,15 @@ class Anime(plugin.Plugin):
 
     async def search(self, name: str, page: int = 1) -> Mapping[str, Any]:
         """
-        Return trending anime.
+        Search anime.
         """
         data = await self.get(name_query, {"search": name, "page": page, "perPage": 1})
         metadata = ""
         page_info = data["data"]["Page"]["pageInfo"]
 
-        # TO-DO: use line#257 or this
-        # search again for next page so we have proper button
-        data1 = await self.get(name_query, {"search": name, "page": page + 1, "perPage": 1})
-        total = data1["data"]["Page"]["pageInfo"]["total"]
+        # Get next data for proper button
+        next_data = await self.get(name_query, {"search": name, "page": page + 1, "perPage": 1})
+        total = next_data["data"]["Page"]["pageInfo"]["total"]
 
         button = []
         current_page = page_info["currentPage"]
@@ -381,7 +376,8 @@ class Anime(plugin.Plugin):
             button.append(
                 [
                     InlineKeyboardButton(
-                        "⏪ Previous", callback_data=f"anilist_search_{name}_{current_page}_prev"
+                        "⏪ Previous",
+                        callback_data=f"anilist_search({name})_page({current_page})_action(prev)",
                     )
                 ]
             )
@@ -390,7 +386,8 @@ class Anime(plugin.Plugin):
                 button.append(
                     [
                         InlineKeyboardButton(
-                            "Next ⏩", callback_data=f"anilist_search_{name}_{current_page}_next"
+                            "Next ⏩",
+                            callback_data=f"anilist_search({name})_page({current_page})_action(next)",
                         )
                     ]
                 )
@@ -398,7 +395,8 @@ class Anime(plugin.Plugin):
                 if current_page < total:
                     button[0].append(
                         InlineKeyboardButton(
-                            "Next ⏩", callback_data=f"anilist_search_{name}_{current_page}_next"
+                            "Next ⏩",
+                            callback_data=f"anilist_search({name})_page({current_page})_action(next)",
                         )
                     )
 
@@ -455,7 +453,8 @@ class Anime(plugin.Plugin):
                 button.append(
                     [
                         InlineKeyboardButton(
-                            "⏪ Previous", callback_data=f"anilist_trending_{current_page}_prev"
+                            "⏪ Previous",
+                            callback_data=f"anilist_trending_page({current_page})_action(prev)",
                         )
                     ]
                 )
@@ -464,14 +463,16 @@ class Anime(plugin.Plugin):
                     button.append(
                         [
                             InlineKeyboardButton(
-                                "Next ⏩", callback_data=f"anilist_trending_{current_page}_next"
+                                "Next ⏩",
+                                callback_data=f"anilist_trending_page({current_page})_action(next)",
                             )
                         ]
                     )
                 else:
                     button[0].append(
                         InlineKeyboardButton(
-                            "Next ⏩", callback_data=f"anilist_trending_{current_page}_next"
+                            "Next ⏩",
+                            callback_data=f"anilist_trending_page({current_page})_action(next)",
                         )
                     )
 
@@ -485,7 +486,7 @@ class Anime(plugin.Plugin):
 
     async def upcoming(self, page: int = 1) -> Mapping[str, Any]:
         """
-        Get airing anime on Anilist.
+        Get upcoming anime on Anilist.
         """
         data = await self.get(upcoming_query, {"page": page, "perPage": 1})
         metadata = ""
@@ -507,7 +508,8 @@ class Anime(plugin.Plugin):
                 button.append(
                     [
                         InlineKeyboardButton(
-                            "⏪ Previous", callback_data=f"anilist_upcoming_{current_page}_prev"
+                            "⏪ Previous",
+                            callback_data=f"anilist_upcoming_page({current_page})_action(prev)",
                         )
                     ]
                 )
@@ -516,14 +518,16 @@ class Anime(plugin.Plugin):
                     button.append(
                         [
                             InlineKeyboardButton(
-                                "Next ⏩", callback_data=f"anilist_upcoming_{current_page}_next"
+                                "Next ⏩",
+                                callback_data=f"anilist_upcoming_page({current_page})_action(next)",
                             )
                         ]
                     )
                 else:
                     button[0].append(
                         InlineKeyboardButton(
-                            "Next ⏩", callback_data=f"anilist_upcoming_{current_page}_next"
+                            "Next ⏩",
+                            callback_data=f"anilist_upcoming_page({current_page})_action(next)",
                         )
                     )
 
@@ -543,7 +547,8 @@ class Anime(plugin.Plugin):
         if not name:
             return "Please specify category or name."
 
-        if name in {"airing", "upcoming", "trending"}:
+        data: Mapping[str, Any]
+        if name in {"airing", "trending", "upcoming"}:
             data = await self.__getattribute__(name)()
         else:
             data = await self.search(name)
