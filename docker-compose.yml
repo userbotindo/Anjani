@@ -4,9 +4,10 @@ services:
   anjani:
     build:
       context: .
+    restart: on-failure
+# From here you can remove it when using mongodb atlas
     depends_on:
       - mongo
-    restart: on-failure
     environment:
       DB_URI: 'mongodb://anjani:mypasswd@mongo'
 
@@ -20,3 +21,4 @@ services:
 
 volumes:
   mongo_anjani:
+# Leave one line, for coding style
