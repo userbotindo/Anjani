@@ -1,9 +1,15 @@
 """ Anime Plugin """
+import asyncio
 from datetime import datetime
 from typing import Any, ClassVar, Mapping, MutableMapping, Optional
 
 from aiopath import AsyncPath
-from pyrogram.errors import WebpageMediaEmpty
+from pyrogram.errors import (
+    FloodWait,
+    MessageNotModified,
+    QueryIdInvalid,
+    WebpageMediaEmpty,
+)
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -47,7 +53,7 @@ query ($page: Int, $perPage: Int, $search: String, $id: Int) {
                 native
             }
             averageScore
-            type
+            format
             genres
             duration
             startDate {
@@ -97,7 +103,7 @@ query ($page: Int, $perPage: Int) {
                 native
             }
             averageScore
-            type
+            format
             genres
             duration
             startDate {
@@ -147,7 +153,7 @@ query ($page: Int, $perPage: Int) {
                 native
             }
             averageScore
-            type
+            format
             genres
             duration
             startDate {
@@ -197,7 +203,7 @@ query ($page: Int, $perPage: Int) {
                 native
             }
             averageScore
-            type
+            format
             genres
             duration
             startDate {
@@ -239,12 +245,14 @@ class Anime(plugin.Plugin):
     # TO-DO: add helpable
     helpable: ClassVar[bool] = False
 
-    move_map: MutableMapping[str, int]
+    move_step: MutableMapping[str, int]
 
     async def on_load(self) -> None:
         # Declare here so we don't declare everytime the button gets called
-        self.move_map = {"prev": -1, "next": 1}
+        self.move_step = {"prev": -1, "next": 1}
 
+    # TO-DO:
+    # r"^anilist\((?P<user_id>)\)_"
     @listener.filters(
         filters.regex(
             r"^anilist_(?P<category>airing|search\((?P<name>[\S\s]+)\)|trending|upcoming)_"
@@ -259,29 +267,45 @@ class Anime(plugin.Plugin):
 
         data: Mapping[str, Any]
         if page_data["name"] is not None:
-            data = await self.search(page_data["name"], current_page + self.move_map[move])
+            data = await self.search(page_data["name"], current_page + self.move_step[move])
         else:
             data = await self.__getattribute__(page_data["category"])(
-                current_page + self.move_map[move]
+                current_page + self.move_step[move]
             )
 
-        try:
-            await query.message.edit_media(
-                InputMediaPhoto(data["coverImage"], caption=data["metadata"]),
-                reply_markup=InlineKeyboardMarkup(data["button"]),
-            )
-        except WebpageMediaEmpty:
-            async with self.bot.http.get(data["coverImage"]) as resp:
-                cover = AsyncPath(f"downloads/{data['coverImage'].split('/')[-1] + '.png'}")
-                content = await resp.read()
+        while True:
+            try:
+                await query.message.edit_media(
+                    InputMediaPhoto(data["coverImage"], caption=data["metadata"]),
+                    reply_markup=InlineKeyboardMarkup(data["button"]),
+                )
+            except WebpageMediaEmpty:
+                cover = await self.get_cover(data["coverImage"])
+                await query.message.edit_media(
+                    InputMediaPhoto(str(cover), caption=data["metadata"]),
+                    reply_markup=InlineKeyboardMarkup(data["button"]),
+                )
+                await cover.unlink()
+            except (FloodWait, MessageNotModified) as e:
+                amount = e.value if isinstance(e.value, int) else None
+                try:
+                    await query.answer(
+                        f"Please wait{f' {amount} secs' if amount else ''} "
+                        f"while i'm loading the {move} page.",
+                        show_alert=True,
+                    )
+                except QueryIdInvalid:
+                    break
 
-            await cover.write_bytes(content)
-            await query.message.edit_media(
-                InputMediaPhoto(str(cover), caption=data["metadata"]),
-                reply_markup=InlineKeyboardMarkup(data["button"]),
-            )
-            await cover.unlink()
-        await query.answer()
+                if amount:
+                    await asyncio.sleep(amount)
+
+                continue
+            except QueryIdInvalid:
+                break
+
+            await query.answer()
+            break
 
     # TO-DO
     async def extract_metadata(
@@ -295,8 +319,14 @@ class Anime(plugin.Plugin):
                 "https://graphql.anilist.co", json={"query": query, "variables": variables}
             ) as resp:
                 return await resp.json()
-        except Exception:
+        except Exception:  # skipcq: PYL-W0703
             return {}
+
+    async def get_cover(self, link: str) -> AsyncPath:
+        cover = AsyncPath(f"downloads/{link.split('/')[-1] + '.png'}")
+        async with self.bot.http.get(link) as resp:
+            await cover.write_bytes(await resp.read())
+            return cover
 
     async def airing(self, page: int = 1) -> Mapping[str, Any]:
         """
@@ -311,10 +341,10 @@ class Anime(plugin.Plugin):
             metadata += (
                 f"<b>Episodes</b>: {'N/A' if anime['episodes'] is None else anime['episodes']}\n"
             )
-            if anime["status"] == "RELEASING":
-                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode'] if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S') if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['type'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
+            if anime["nextAiringEpisode"]:
+                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode']}\n"
+                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S')}\n"
+            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['format'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
             metadata += f"<b>Score</b>: {'N/A' if anime['averageScore'] is None else '⭐️ ' + str(anime['averageScore'])}\n"
             metadata += f"<b>Genres</b>: {', '.join(['<code>' + genre + '</code>' for genre in anime['genres']]) if anime['genres'] else 'N/A'}\n"
             metadata += f"<b>Studios</b>: {', '.join(['<code>' + studio['name'] + '</code>' for studio in anime['studios']['nodes']]) if anime['studios']['nodes'] else 'N/A'}\n"
@@ -402,14 +432,14 @@ class Anime(plugin.Plugin):
 
         for anime in data["data"]["Page"]["media"]:
             metadata += f"<a href='{anime['siteUrl']}'>{anime['title']['romaji']} ({anime['title']['native']})</a>\n\n"
-            metadata += f"<b>Status</b>: {anime['status']}\n"
+            metadata += f"<b>Status</b>: {anime['status'].replace('_', ' ')}\n"
             metadata += (
                 f"<b>Episodes</b>: {'N/A' if anime['episodes'] is None else anime['episodes']}\n"
             )
-            if anime["status"] == "RELEASING":
-                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode'] if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S') if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['type'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
+            if anime["nextAiringEpisode"]:
+                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode']}\n"
+                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S')}\n"
+            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['format'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
             metadata += f"<b>Score</b>: {'N/A' if anime['averageScore'] is None else '⭐️ ' + str(anime['averageScore'])}\n"
             metadata += f"<b>Genres</b>: {', '.join(['<code>' + genre + '</code>' for genre in anime['genres']]) if anime['genres'] else 'N/A'}\n"
             metadata += f"<b>Studios</b>: {', '.join(['<code>' + studio['name'] + '</code>' for studio in anime['studios']['nodes']]) if anime['studios']['nodes'] else 'N/A'}\n"
@@ -437,10 +467,10 @@ class Anime(plugin.Plugin):
             metadata += (
                 f"<b>Episodes</b>: {'N/A' if anime['episodes'] is None else anime['episodes']}\n"
             )
-            if anime["status"] == "RELEASING":
-                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode'] if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S') if anime['nextAiringEpisode'] is not None else 'N/A'}\n"
-            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['type'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
+            if anime["nextAiringEpisode"]:
+                metadata += f"<b>Current Episode</b>: {anime['nextAiringEpisode']['episode']}\n"
+                metadata += f"<b>Next Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S')}\n"
+            metadata += f"<b>Duration</b>: {'N/A' if anime['duration'] is None else str(anime['duration']) + ' minutes'}{'/ep' if anime['format'] != 'MOVIE' and anime['duration'] is not None else ''}\n"
             metadata += f"<b>Score</b>: {'N/A' if anime['averageScore'] is None else '⭐️ ' + str(anime['averageScore'])}\n"
             metadata += f"<b>Genres</b>: {', '.join(['<code>' + genre + '</code>' for genre in anime['genres']]) if anime['genres'] else 'N/A'}\n"
             metadata += f"<b>Studios</b>: {', '.join(['<code>' + studio['name'] + '</code>' for studio in anime['studios']['nodes']]) if anime['studios']['nodes'] else 'N/A'}\n"
@@ -496,7 +526,7 @@ class Anime(plugin.Plugin):
             if anime["nextAiringEpisode"] is not None:
                 metadata += f"<b>Start Airing At</b>: {datetime.fromtimestamp(anime['nextAiringEpisode']['airingAt']).strftime('%Y-%m-%d %H:%M:%S')}\n"
             else:
-                metadata += f"<b>Start Airing At</b>: TBA\n"
+                metadata += "<b>Start Airing At</b>: TBA\n"
             metadata += f"<b>Genres</b>: {', '.join(['<code>' + genre + '</code>' for genre in anime['genres']]) if anime['genres'] else 'N/A'}\n"
             metadata += f"<b>Studios</b>: {', '.join(['<code>' + studio['name'] + '</code>' for studio in anime['studios']['nodes']]) if anime['studios']['nodes'] else 'N/A'}\n"
             metadata += f"<b>Description</b>: {anime['description']}"
@@ -561,11 +591,7 @@ class Anime(plugin.Plugin):
                 reply_to_message_id=ctx.message.id,
             )
         except WebpageMediaEmpty:
-            async with self.bot.http.get(data["coverImage"]) as resp:
-                cover = AsyncPath(f"downloads/{data['coverImage'].split('/')[-1] + '.png'}")
-                content = await resp.read()
-
-            await cover.write_bytes(content)
+            cover = await self.get_cover(data["coverImage"])
             await ctx.respond(
                 data["metadata"],
                 photo=str(cover),
