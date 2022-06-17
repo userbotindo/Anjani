@@ -22,10 +22,10 @@ from pyrogram.client import Client
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import Filter, create
+from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
-from anjani.util.types import Message
 
 from .anjani_mixin_base import MixinBase
 

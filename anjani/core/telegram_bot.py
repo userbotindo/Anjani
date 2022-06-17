@@ -29,11 +29,10 @@ from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
 from pyrogram.handlers.chat_member_updated_handler import ChatMemberUpdatedHandler
 from pyrogram.handlers.inline_query_handler import InlineQueryHandler
 from pyrogram.handlers.message_handler import MessageHandler
-from pyrogram.types import CallbackQuery, InlineQuery, User
+from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
 from anjani import util
-from anjani.util.types import Message
 from language import getLangFile
 
 from .anjani_mixin_base import MixinBase
@@ -188,6 +187,7 @@ class TelegramBot(MixinBase):
         }
 
         if sys.platform == "win32":
+
             def signal_handler_windows(signum: int, _: Any) -> None:
                 print(flush=True)
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
@@ -196,6 +196,7 @@ class TelegramBot(MixinBase):
             for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
                 signal.signal(signame, signal_handler_windows)
         else:
+
             def signal_handler(signum: int) -> None:
                 print(flush=True)  # Separate signal and next log
                 self.log.info(f"Stop signal received ('{signals[signum]}').")

@@ -76,9 +76,10 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     video_note,
     web_page,
 )
+from pyrogram.types import Message
 
 from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
-from anjani.util.types import CustomFilter, Message
+from anjani.util.types import CustomFilter
 
 FilterFunc = Callable[[CustomFilter, Client, Message], Coroutine[Any, Any, bool]]
 __all__ = [

@@ -31,11 +31,12 @@ from typing import (
 import pyrogram
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.filters import Filter
+from pyrogram.types import Message
 from typing_extensions import final
 
 from anjani.action import BotAction
 from anjani.util.tg import get_text
-from anjani.util.types import CustomFilter, Message
+from anjani.util.types import CustomFilter
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
