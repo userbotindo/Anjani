@@ -31,7 +31,7 @@ from pyrogram.errors import (
     MessageNotModified,
     QueryIdInvalid,
     UserAdminInvalid,
-    UserNotParticipant
+    UserNotParticipant,
 )
 from pyrogram.types import (
     CallbackQuery,
@@ -134,7 +134,7 @@ class SpamPrediction(plugin.Plugin):
 
     @staticmethod
     def prob_to_string(value: float) -> str:
-        return str(value * 10 ** 2)[0:7]
+        return str(value * 10**2)[0:7]
 
     async def _predict(self, text: str) -> util.types.NDArray[float]:
         return await util.run_sync(self.model.predict_proba, [text])
@@ -155,13 +155,7 @@ class SpamPrediction(plugin.Plugin):
 
         try:
             stdout, _, exitCode = await util.system.run_command(
-                "tesseract",
-                str(image),
-                "stdout",
-                "-l",
-                "eng+ind",
-                "--psm",
-                "6"
+                "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
             )
         except Exception as e:  # skipcq: PYL-W0703
             return self.log.error("Unexpected error occured when running OCR", exc_info=e)
@@ -191,8 +185,7 @@ class SpamPrediction(plugin.Plugin):
             invoker = await chat.get_member(query.from_user.id)
         except UserNotParticipant:
             return await query.answer(
-                await self.get_text(chat.id, "error-no-rights"),
-                show_alert=True
+                await self.get_text(chat.id, "error-no-rights"), show_alert=True
             )
 
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
@@ -205,9 +198,7 @@ class SpamPrediction(plugin.Plugin):
         await chat.ban_member(target.id)
         await query.answer(
             await self.get_text(
-                chat.id,
-                "spampredict-ban",
-                user=target.username or target.first_name
+                chat.id, "spampredict-ban", user=target.username or target.first_name
             )
         )
 
@@ -311,7 +302,7 @@ class SpamPrediction(plugin.Plugin):
                             "Please wait i'm updating the content for you.",
                             show_alert=True,
                         )
-                        await asyncio.sleep(flood.x)  # type: ignore
+                        await asyncio.sleep(flood.value)  # type: ignore
                         continue
 
                     await asyncio.sleep(0.1)
@@ -424,7 +415,7 @@ class SpamPrediction(plugin.Plugin):
                     reply_markup=InlineKeyboardMarkup(keyb),
                 )
             except FloodWait as flood:
-                await asyncio.sleep(flood.x)  # type: ignore
+                await asyncio.sleep(flood.value)  # type: ignore
                 continue
 
             await asyncio.sleep(0.1)
@@ -451,9 +442,13 @@ class SpamPrediction(plugin.Plugin):
             if user is None or message.sender_chat:
                 return
 
-            target = await message.chat.get_member(user)
-            if util.tg.is_staff_or_admin(target):
-                return
+            try:
+                target = await message.chat.get_member(user)
+            except UserNotParticipant:
+                target = None
+            else:
+                if util.tg.is_staff_or_admin(target):
+                    return
 
             if from_ocr:
                 alert = (
@@ -484,7 +479,7 @@ class SpamPrediction(plugin.Plugin):
             chat = message.chat
             me = await chat.get_member(self.bot.uid)
             button = [[InlineKeyboardButton("View Message", url=msg.link)]]
-            if me.privileges and me.privileges.can_restrict_members:
+            if me.privileges and me.privileges.can_restrict_members and target is not None:
                 button.append(
                     [
                         InlineKeyboardButton(
