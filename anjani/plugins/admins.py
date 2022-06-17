@@ -119,7 +119,7 @@ class Admins(plugin.Plugin):
                 except UserAdminInvalid:
                     zombie -= 1
                 except FloodWait as flood:
-                    await asyncio.sleep(flood.x)  # type: ignore
+                    await asyncio.sleep(flood.value)  # type: ignore
 
         if zombie == 0:
             return await self.text(chat.id, "zombie-clean")
