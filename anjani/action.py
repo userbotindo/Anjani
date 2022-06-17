@@ -19,6 +19,7 @@ from types import TracebackType
 from typing import TYPE_CHECKING, Optional, Type
 
 from pyrogram.enums.chat_action import ChatAction
+from pyrogram.errors import FloodWait
 from pyrogram.types import Chat
 
 if TYPE_CHECKING:
@@ -48,12 +49,19 @@ class BotAction:
         self.loop = ctx.bot.loop
 
     async def __cancel(self) -> None:
-        await self.bot.client.send_chat_action(self.__chat.id, ChatAction.CANCEL)
+        try:
+            await self.bot.client.send_chat_action(self.__chat.id, ChatAction.CANCEL)
+        except FloodWait as e:
+            await asyncio.sleep(e.value)  # type: ignore
 
     async def __start(self) -> None:
         while self.__running:
-            await self.bot.client.send_chat_action(self.__chat.id, self.__current)
-            await asyncio.sleep(1)
+            try:
+                await self.bot.client.send_chat_action(self.__chat.id, self.__current)
+            except FloodWait as e:
+                await asyncio.sleep(e.value)  # type: ignore
+            else:
+                await asyncio.sleep(1)
 
     async def __stop(self) -> None:
         self.__running = False
@@ -61,6 +69,8 @@ class BotAction:
 
         if not self.__task.done():
             self.__task.cancel()
+        else:
+            self.__task.result()
 
     async def switch(self, action: ChatAction) -> None:
         """Switch current BotAction"""
