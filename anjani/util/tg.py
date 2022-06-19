@@ -198,7 +198,7 @@ def truncate(text: str) -> str:
     return text
 
 
-def is_staff_or_admin(target: Union[ChatMember, _types.MemberInformation]) -> bool:
+def is_staff_or_admin(target: ChatMember) -> bool:
     return (
         target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
         or target.user.id in STAFF
@@ -221,15 +221,15 @@ def mention(user: User) -> str:
 
 # { Permission
 # Aliases
-Bot = _types.MemberInformation
-Member = _types.MemberInformation
+Bot = ChatMember
+Member = ChatMember
 
 
 async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
     bot, member = await asyncio.gather(
         client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
     )
-    return _types.MemberInformation(bot), _types.MemberInformation(member)
+    return bot, member
 
 
 # }
