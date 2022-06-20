@@ -5,6 +5,7 @@ __pycache__/
 !sample_config.env
 
 # file
+.DS_Store
 *.pyc
 *.log
 *.session
