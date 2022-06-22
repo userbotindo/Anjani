@@ -158,14 +158,14 @@ class Greeting(plugin.Plugin):
 
     @staticmethod
     def _build_text(text: str, user: User, chat: Chat) -> str:
-        first_name = user.first_name or ""  # Ensure formatting from None
+        first_name = user.first_name
         last_name = user.last_name
         full_name = first_name + last_name if last_name else first_name
         return text.format(
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
-            username=f"@{user.username}" if user.username else "__NULL__",
+            username=f"@{user.username}" if user.username else user.mention,
             mention=user.mention,
             count=chat.members_count,
             chatname=escape(chat.title),
