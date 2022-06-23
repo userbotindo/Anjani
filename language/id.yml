@@ -70,6 +70,7 @@ admins-help: |
   × /promote <ID Pengguna/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
   × /demote <ID Pengguna/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
 gpic-no-photo: Berikan saya sebuah foto!
+gpic-success-changed: Gambar grup berhasil diganti!.
 finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
 cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
 zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"

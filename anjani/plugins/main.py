@@ -202,7 +202,7 @@ class Main(plugin.Plugin):
 
     async def cmd_start(self, ctx: command.Context) -> Optional[str]:
         """Bot start command"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
 
         if chat.type == ChatType.PRIVATE:  # only send in PM's
             if ctx.input and ctx.input == "help":
@@ -243,7 +243,7 @@ class Main(plugin.Plugin):
 
     async def cmd_help(self, ctx: command.Context) -> None:
         """Bot plugins helper"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
 
         if chat.type != ChatType.PRIVATE:  # only send in PM's
             await ctx.respond(

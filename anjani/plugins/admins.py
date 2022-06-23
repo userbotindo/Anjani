@@ -38,7 +38,7 @@ class Admins(plugin.Plugin):
     async def cmd_pin(self, ctx: command.Context) -> Optional[str]:
         """Pin message on chats"""
         if not ctx.msg.reply_to_message:
-            return await self.text(ctx.msg.chat.id, "error-reply-to-message")
+            return await self.text(ctx.chat.id, "error-reply-to-message")
 
         is_silent = True
         if ctx.input and ctx.input in {
@@ -54,7 +54,7 @@ class Admins(plugin.Plugin):
     @command.filters(filters.can_pin)
     async def cmd_unpin(self, ctx: command.Context) -> Optional[str]:
         """Unpin message on chats"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
 
         if ctx.input and ctx.input == "all":
             await self.bot.client.unpin_all_chat_messages(chat.id)
@@ -80,14 +80,14 @@ class Admins(plugin.Plugin):
         file = msg.photo or None
 
         if not file:
-            return await self.text(msg.chat.id, "gpic-no-photo")
+            return await self.text(ctx.chat.id, "gpic-no-photo")
 
-        await self.bot.client.set_chat_photo(msg.chat.id, photo=file.file_id)
-        return None
+        await self.bot.client.set_chat_photo(ctx.chat.id, photo=file.file_id)
+        return await self.text(ctx.chat.id, "gpic-success-changed")
 
     async def cmd_adminlist(self, ctx: command.Context) -> str:
         """Get list of chat admins"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         if chat.type == ChatType.PRIVATE:
             return await self.text(chat.id, "err-chat-groups")
         admins = ""
@@ -107,7 +107,7 @@ class Admins(plugin.Plugin):
     @command.filters(filters.can_restrict)
     async def cmd_zombies(self, ctx: command.Context) -> str:
         """Kick all deleted acc in group."""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         zombie = 0
 
         await ctx.respond(await self.text(chat.id, "finding-zombie"))
@@ -129,7 +129,7 @@ class Admins(plugin.Plugin):
     @command.filters(filters.can_promote)
     async def cmd_promote(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Bot promote member, required Both permission of can_promote"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         if not chat:
             return
 
@@ -164,7 +164,7 @@ class Admins(plugin.Plugin):
     @command.filters(filters.can_promote)
     async def cmd_demote(self, ctx: command.Context, user: Optional[User] = None) -> Optional[str]:
         """Demoter Just owner and promoter can demote admin."""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         if not chat:
             return
 
