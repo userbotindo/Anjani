@@ -31,7 +31,7 @@ class Backups(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
         """Backup chat data from file"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         data = {"chat_id": chat.id}
         file = AsyncPath(f"{chat.title}-backup.anjani")
 
@@ -78,7 +78,7 @@ class Backups(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_restore(self, ctx: command.Context) -> Optional[str]:
         """Restore data to a file"""
-        chat = ctx.msg.chat
+        chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
 
         if not reply_msg or (reply_msg and not reply_msg.document):

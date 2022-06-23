@@ -72,6 +72,7 @@ admins-help: |
   × /promote <user_id/username> : Promote member to administrator
   × /demote <user_id/username> : Demote administrator to members.
 gpic-no-photo: Give me a photo!
+gpic-success-changed: Group picture changed successfully!.
 finding-zombie: "`Finding zombies account...`"
 cleaning-zombie: "**{}** `zombies found and has been removed..!` 🚮"
 zombie-clean: "`Zombies not found, group are clean..` "

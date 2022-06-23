@@ -40,7 +40,7 @@ class Purges(plugin.Plugin):
     async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
         """purge message from message replied"""
         if not ctx.msg.reply_to_message:
-            return await self.text(ctx.msg.chat.id, "error-reply-to-message")
+            return await self.text(ctx.chat.id, "error-reply-to-message")
 
         time_start = datetime.now()
         start, end = ctx.msg.reply_to_message.id, ctx.msg.id

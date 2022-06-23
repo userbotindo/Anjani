@@ -103,7 +103,7 @@ class Language(plugin.Plugin):
     @command.filters(aliases=["lang", "language"])
     async def cmd_setlang(self, ctx: command.Context) -> Optional[str]:
         """Set user/chat language."""
-        chat = ctx.msg.chat
+        chat = ctx.chat
 
         # Check admin rights
         if chat.type != ChatType.PRIVATE:
