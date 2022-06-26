@@ -33,7 +33,7 @@ from typing import (
 
 from pymongo.client_session import ClientSession
 from pymongo.command_cursor import CommandCursor as _CommandCursor
-from pymongo.typings import _DocumentType
+from pymongo.typings import _Address, _DocumentType
 
 from anjani import util
 
@@ -55,7 +55,7 @@ class CommandCursor(_CommandCursor, Generic[_DocumentType]):
         self,
         collection: "AsyncCollection",
         cursor_info: Mapping[str, Any],
-        address: Optional[Tuple[str, int]] = None,
+        address: Optional[Union[Tuple[str, int], _Address]] = None,
         *,
         batch_size: int = 0,
         max_await_time_ms: Optional[int] = None,
@@ -123,7 +123,7 @@ class _LatentCursor(Generic[_DocumentType]):
     _CommandCursor__sock_mgr: ClassVar[Optional[Any]] = None
     _CommandCursor__session: ClassVar[Optional[AsyncClientSession]] = None
     _CommandCursor__explicit_session: ClassVar[Optional[bool]] = None
-    address: ClassVar[Optional[Tuple[str, int]]] = None
+    address: ClassVar[Optional[Union[Tuple[str, int], _Address]]] = None
     cursor_id: ClassVar[Optional[Any]] = None
     session: Optional[ClientSession[_DocumentType]] = None
 

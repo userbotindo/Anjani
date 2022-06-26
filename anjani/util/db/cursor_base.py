@@ -30,8 +30,9 @@ from typing import (
 )
 
 from pymongo.client_session import ClientSession
+from pymongo.collection import Collection
 from pymongo.cursor import _QUERY_OPTIONS, Cursor, RawBatchCursor
-from pymongo.typings import _DocumentType
+from pymongo.typings import _Address, _DocumentType
 
 from anjani import util
 
@@ -52,12 +53,12 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
     And we now have :meth:`~to_list()` so yeah kinda useless
     """
 
-    collection: "Optional[AsyncCollection[_DocumentType]]"
+    collection: Optional[Union["AsyncCollection[_DocumentType]", Collection[_DocumentType]]]
     dispatch: Union[
-            "_LatentCursor[_DocumentType]",
-            "CommandCursor[_DocumentType]",
-            Cursor[_DocumentType],
-            RawBatchCursor[_DocumentType]
+        "_LatentCursor[_DocumentType]",
+        "CommandCursor[_DocumentType]",
+        Cursor[_DocumentType],
+        RawBatchCursor[_DocumentType],
     ]
     loop: asyncio.AbstractEventLoop
 
@@ -67,7 +68,7 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
             "_LatentCursor[_DocumentType]",
             "CommandCursor[_DocumentType]",
             Cursor[_DocumentType],
-            RawBatchCursor[_DocumentType]
+            RawBatchCursor[_DocumentType],
         ],
         collection: "Optional[AsyncCollection[_DocumentType]]" = None,
     ) -> None:
@@ -163,9 +164,7 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
             return await util.run_sync(next, self.dispatch)
         raise StopAsyncIteration
 
-    def to_list(
-        self, length: Optional[int] = None
-    ) -> asyncio.Future[List[Mapping[str, Any]]]:
+    def to_list(self, length: Optional[int] = None) -> asyncio.Future[List[Mapping[str, Any]]]:
         if length is not None and length < 0:
             raise ValueError("length must be non-negative")
 
@@ -187,7 +186,7 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
         return future
 
     @property
-    def address(self) -> Optional[Tuple[str, int]]:
+    def address(self) -> Optional[Union[Tuple[str, int], _Address]]:
         return self.dispatch.address
 
     @property
