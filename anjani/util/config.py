@@ -14,38 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-from typing import Any, ClassVar, Iterator, MutableMapping, TypeVar
+from typing import Any, Iterator, MutableMapping, Optional, TypeVar
 
 _KT = TypeVar("_KT", bound=str, contravariant=True)
 _VT = TypeVar("_VT", covariant=True)
 
 
 class TelegramConfig(MutableMapping[_KT, _VT]):
-
-    __data: MutableMapping[_KT, _VT] = {}
-
-    def __init__(self) -> None:
-
-        config: MutableMapping[Any, Any] = {
-            "api_id": os.environ.get("API_ID"),
-            "api_hash": os.environ.get("API_HASH"),
-            "bot_token": os.environ.get("BOT_TOKEN"),
-            "db_uri": os.environ.get("DB_URI"),
-            "download_path": os.environ.get("DOWNLOAD_PATH"),
-            "owner_id": os.environ.get("OWNER_ID"),
-            "sp_token": os.environ.get("SP_TOKEN"),
-            "sp_url": os.environ.get("SP_URL"),
-            "sw_api": os.environ.get("SW_API"),
-            "log_channel": os.environ.get("LOG_CHANNEL"),
-        }
-
+    def __init__(self, config: MutableMapping[str, Any]) -> None:
         for key, value in config.items():
             if not value:
                 continue
 
             super().__setattr__(key, value)
-            self.__data[key] = value
 
     def __delattr__(self, obj: object) -> None:  # skipcq: PYL-W0613
         raise RuntimeError("Can't delete configuration while running the bot.")
@@ -56,14 +37,17 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
     def __getattr__(self, name: str) -> _VT:
         return self.__getattribute__(name)
 
-    def __getitem__(self, k: _KT) -> _VT:
-        return self.__data[k]
+    def __getitem__(self, k: _KT) -> Optional[_VT]:
+        try:
+            return self.__getattr__(k)
+        except AttributeError:
+            return None
 
-    def __iter__(self) -> Iterator[_KT]:
-        return self.__data.__iter__()
+    def __iter__(self) -> Iterator[str]:
+        return self.__dict__.__iter__()
 
     def __len__(self) -> int:
-        return len(self.__data)
+        return len(self.__dict__)
 
     def __setattr__(self, name: str, value: Any) -> None:  # skipcq: PYL-W0613
         raise RuntimeError("Configuration must be done before running the bot.")
