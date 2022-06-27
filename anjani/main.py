@@ -120,7 +120,7 @@ def start() -> None:
         "sw_api": os.environ.get("SW_API"),
         "log_channel": os.environ.get("LOG_CHANNEL"),
     }
-    config = TelegramConfig(config_data)
+    config: TelegramConfig[str, Any] = TelegramConfig(config_data)
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
         return log.error("Configuration must be done correctly before running the bot.")
 
