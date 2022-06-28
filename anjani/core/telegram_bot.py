@@ -33,7 +33,7 @@ from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
 from anjani import util
-from language import getLangFile
+from anjani.language import getLangFile
 
 from .anjani_mixin_base import MixinBase
 
