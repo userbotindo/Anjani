@@ -35,11 +35,11 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
     log: logging.Logger
     http: aiohttp.ClientSession
     client: pyrogram.client.Client
-    config: TelegramConfig[str, Any]
+    config: TelegramConfig[str, str]
     loop: asyncio.AbstractEventLoop
     stopping: bool
 
-    def __init__(self, config: TelegramConfig[str, Any]):
+    def __init__(self, config: TelegramConfig[str, str]):
         self.config = config
         self.log = logging.getLogger("bot")
         self.loop = asyncio.get_event_loop()
@@ -53,7 +53,7 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
 
     @classmethod
     async def init_and_run(
-        cls, config: TelegramConfig[str, Any], *, loop: Optional[asyncio.AbstractEventLoop] = None
+        cls, config: TelegramConfig[str, str], *, loop: Optional[asyncio.AbstractEventLoop] = None
     ) -> "Anjani":
         anjani = None
 

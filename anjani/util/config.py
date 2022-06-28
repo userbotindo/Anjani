@@ -40,11 +40,8 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
     def __getattr__(self, name: str) -> _VT:
         return self.__getattribute__(name)
 
-    def __getitem__(self, k: _KT) -> Optional[_VT]:
-        try:
-            return self.__getattr__(k)
-        except AttributeError:
-            return None
+    def __getitem__(self, k: _KT) -> _VT:
+        return self.__dict__[k]
 
     def __iter__(self) -> Iterator[str]:
         return self.__dict__.__iter__()
