@@ -160,8 +160,9 @@ class EventDispatcher(MixinBase):
         if wait:
             await asyncio.wait(tasks)
             for task in tasks:
-                err = task.exception()  # Handle the future exception
-                if err:
+                try:
+                    task.result()
+                except Exception as err:  # Handle all future exception
                     dispatcher_error = EventDispatchError(
                         f"raised from {type(err).__name__}: {str(err)}"
                     ).with_traceback(err.__traceback__)
@@ -171,7 +172,8 @@ class EventDispatcher(MixinBase):
                         task.get_coro().__qualname__,
                         exc_info=dispatcher_error,
                     )
-                    return None
+
+                    continue
 
         if get_tasks:
             return tasks
@@ -228,10 +230,11 @@ class EventDispatcher(MixinBase):
                     functions.updates.get_difference.GetDifference(pts=pts, date=date, qts=-1)
                 )
                 if isinstance(
-                    diff, (
+                    diff,
+                    (
                         raw.types.updates.difference.Difference,
-                        raw.types.updates.difference_slice.DifferenceSlice
-                    )
+                        raw.types.updates.difference_slice.DifferenceSlice,
+                    ),
                 ):
                     if isinstance(diff, raw.types.updates.difference.Difference):
                         state: Any = diff.state
