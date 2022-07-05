@@ -162,7 +162,7 @@ class EventDispatcher(MixinBase):
             for task in tasks:
                 try:
                     task.result()
-                except Exception as err:  # Handle all future exception
+                except Exception as err:  # skipcq: PYL-W0703 - Handle all future exception
                     dispatcher_error = EventDispatchError(
                         f"raised from {type(err).__name__}: {str(err)}"
                     ).with_traceback(err.__traceback__)
