@@ -17,6 +17,7 @@
 import asyncio
 import pickle
 import re
+import unicodedata
 from functools import partial
 from hashlib import md5, sha256
 from typing import Any, Callable, ClassVar, MutableMapping, Optional
@@ -131,6 +132,13 @@ class SpamPrediction(plugin.Plugin):
             id = self.bot.uid
         # skipcq: PTC-W1003
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: BAN-B324
+
+    @staticmethod
+    def _normalize_text(text: str) -> str:
+        """Normalize text to remove accents and other non-ASCII characters."""
+        return (
+            unicodedata.normalize("NFKD", text).encode("utf-8", "ignore").decode("utf-8", "ignore")
+        )
 
     @staticmethod
     def prob_to_string(value: float) -> str:
@@ -348,7 +356,8 @@ class SpamPrediction(plugin.Plugin):
         except AttributeError:
             user = None
 
-        response = await self._predict(text.strip())
+        text_norm = self._normalize_text(text.strip())
+        response = await self._predict(text_norm)
         if response.size == 0:
             return
 
@@ -426,7 +435,7 @@ class SpamPrediction(plugin.Plugin):
                 await self.db.insert_one(
                     {
                         "_id": content_hash,
-                        "text": text,
+                        "text": text_norm,
                         "spam": [],
                         "ham": [],
                         "proba": probability,
@@ -669,6 +678,7 @@ class SpamPrediction(plugin.Plugin):
         if not content:
             return await self.get_text(chat.id, "spampredict-empty")
 
+        content = self._normalize_text(content)
         pred = await self._predict(content)
         if pred.size == 0:
             return await self.get_text(chat.id, "spampredict-failed")
