@@ -44,7 +44,7 @@ scipy = {version = "^1.8.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "^22.6"
-pre-commit = "^2.19.0"
+pre-commit = "^2.20.0"
 pylint = "^2.14.4"
 isort = "^5.10.1"
 
