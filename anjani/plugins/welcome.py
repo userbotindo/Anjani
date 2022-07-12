@@ -158,7 +158,7 @@ class Greeting(plugin.Plugin):
 
     @staticmethod
     def _build_text(text: str, user: User, chat: Chat) -> str:
-        first_name = user.first_name
+        first_name = user.first_name or ""  # Ensure first name is not None
         last_name = user.last_name
         full_name = first_name + last_name if last_name else first_name
         return text.format(
