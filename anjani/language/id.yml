@@ -349,7 +349,7 @@ notes-help: |
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCek /markdownhelp untuk detail pemformatan.
 notes-invalid-args : |
-  Membalas pesan yang akan disimpan pesannya atau memberikan isi setelah nama catatan.
+  Balas pesan yang akan disimpan atau berikan isi setelah nama catatan.
   Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
 note-saved: "Pesan disimpan dengan nama `{}`."
 note-list: "**Daftar semua catatan pada grup ini {}:**\n"

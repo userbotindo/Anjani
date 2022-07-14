@@ -163,7 +163,7 @@ class Notes(plugin.Plugin):
             await self.get_note(ctx.msg, ctx.args[0])
 
     @command.filters(filters.admin_only)
-    async def cmd_save(self, ctx: command.Context) -> str:
+    async def cmd_save(self, ctx: command.Context) -> Optional[str]:
         """Save notes."""
         chat = ctx.chat
         if (
@@ -172,7 +172,10 @@ class Notes(plugin.Plugin):
             or ctx.msg.reply_to_message
             and len(ctx.args) < 1
         ):
-            return await self.text(chat.id, "notes-invalid-args")
+            await ctx.respond(
+                await self.text(chat.id, "notes-invalid-args"), parse_mode=ParseMode.MARKDOWN
+            )
+            return
 
         name = ctx.args[0]
         text, types, content, buttons = get_message_info(ctx.msg)
