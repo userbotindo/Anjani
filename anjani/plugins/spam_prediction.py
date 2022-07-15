@@ -590,7 +590,8 @@ class SpamPrediction(plugin.Plugin):
 
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
-        pred = await self._predict(content.strip())
+        content_normalized = self._normalize_text(content.strip())
+        pred = await self._predict(content_normalized)
         if pred.size == 0:
             return "Prediction failed"
 
@@ -605,7 +606,7 @@ class SpamPrediction(plugin.Plugin):
                 {"_id": content_hash},
                 {
                     "$set": {
-                        "text": content.strip(),
+                        "text": content_normalized,
                         "spam": 1,
                         "ham": 0,
                     }
