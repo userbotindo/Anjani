@@ -481,6 +481,7 @@ spampredict-view: |
   Jika dinyalakan akan otomatis menghapus pesan yang terdeteksi sebagai suatu spam.
 spampredict-empty: pesan/photo teks atau keterangan media kosong untuk diprediksi...
 spampredict-photo: "Membaca teks pada foto dengan ocr...\nIni bisa saja membutuhkan waktu lama."
+spampredict-photo-failed: "__Gagal membaca teks pada foto dengan ocr.__\n\n"
 spampredict-unauthorized: |
   Poin reputasi anda tidak cukup untuk menggunakan perintah ini! ({}/100)
   Untuk mendapatkan poin reputasi silahkan berikan suara di @SpamPredictionLog.

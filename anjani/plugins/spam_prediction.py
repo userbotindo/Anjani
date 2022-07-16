@@ -587,7 +587,7 @@ class SpamPrediction(plugin.Plugin):
                     return None
 
         if not content:
-            return "Give me a text or reply to a message / forwarded message"
+            return await ctx.get_text("spampredict-empty")
 
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
@@ -644,7 +644,7 @@ class SpamPrediction(plugin.Plugin):
         replied = ctx.msg.reply_to_message
         if not replied:
             await ctx.respond(
-                await self.get_text(chat.id, "error-reply-to-message"), delete_after=5
+                await ctx.get_text("error-reply-to-message"), delete_after=5
             )
             return None
 
@@ -653,7 +653,7 @@ class SpamPrediction(plugin.Plugin):
         photoPrediction = None
         if replied.photo:
             await ctx.respond(
-                await self.get_text(chat.id, "spampredict-photo"),
+                await ctx.get_text("spampredict-photo"),
                 reply_to_message_id=replied.id,
             )
 
@@ -675,15 +675,15 @@ class SpamPrediction(plugin.Plugin):
                         )
                         return None
             else:
-                photoPrediction = "__Failed to read text from photo__\n\n"
+                photoPrediction = await ctx.get_text("spampredict-photo-failed")
 
         if not content:
-            return await self.get_text(chat.id, "spampredict-empty")
+            return await ctx.get_text("spampredict-empty")
 
-        content = self._normalize_text(content)
+        content = self._normalize_text(content.strip())
         pred = await self._predict(content)
         if pred.size == 0:
-            return await self.get_text(chat.id, "spampredict-failed")
+            return await ctx.get_text("spampredict-failed")
 
         textPrediction = (
             f"**Is Spam**: {await self._is_spam(content)}\n"
