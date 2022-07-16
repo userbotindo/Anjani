@@ -138,7 +138,7 @@ class SpamPrediction(plugin.Plugin):
         """Normalize text to remove accents and other non-ASCII characters."""
         return (
             unicodedata.normalize("NFKD", text).encode("utf-8", "ignore").decode("utf-8", "ignore")
-        )
+        ).lower()
 
     @staticmethod
     def prob_to_string(value: float) -> str:
@@ -173,7 +173,7 @@ class SpamPrediction(plugin.Plugin):
         if exitCode != 0:
             return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
 
-        return stdout.strip()
+        return stdout
 
     @listener.filters(
         filters.regex(r"spam_check_(?P<value>t|f)") | filters.regex(r"spam_ban_(?P<user>.*)")
@@ -334,9 +334,9 @@ class SpamPrediction(plugin.Plugin):
         chat = message.chat
         user = message.from_user
         text = (
-            message.text.strip()
+            message.text
             if message.text
-            else (message.caption.strip() if message.media and message.caption else None)
+            else (message.caption if message.media and message.caption else None)
         )
         if message.photo:
             future = self.bot.loop.create_task(self.run_ocr(message))
@@ -351,12 +351,13 @@ class SpamPrediction(plugin.Plugin):
         return await self.spam_check(message, text)
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
+        text = text.strip()
         try:
             user = message.from_user.id
         except AttributeError:
             user = None
 
-        text_norm = self._normalize_text(text.strip())
+        text_norm = self._normalize_text(text)
         response = await self._predict(text_norm)
         if response.size == 0:
             return
@@ -509,7 +510,7 @@ class SpamPrediction(plugin.Plugin):
     ) -> bool:
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
-        pred = await self._predict(content.strip())
+        pred = await self._predict(content)
         if pred.size == 0:
             return False
 
@@ -529,7 +530,7 @@ class SpamPrediction(plugin.Plugin):
                 {"_id": content_hash},
                 {
                     "$set": {
-                        "text": content.strip(),
+                        "text": content,
                         "spam": 1,
                         "ham": 0,
                     }
