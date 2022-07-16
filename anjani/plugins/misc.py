@@ -61,6 +61,7 @@ class Paste:
 
                         self.__token = token.group(1)
                         break
+
             if self.__token:
                 content["_csrf_token"] = self.__token
 
@@ -75,6 +76,8 @@ class Paste:
                 if self.__name == "hastebin"
                 else url + content_data["payload"]["id"]
             )
+
+        raise ValueError("Failed to paste content.")
 
 
 class Misc(plugin.Plugin):
@@ -176,13 +179,14 @@ class Misc(plugin.Plugin):
         async with self.bot.http.get("https://www.nekos.life/api/v2/img/slap") as slap:
             if slap.status != 200:
                 return await self.text(chat.id, "err-api-down")
-            res = await slap.json()
 
-        msg = ctx.msg.reply_to_message or ctx.msg
-        await self.bot.client.send_animation(
-            chat.id,
-            res["url"],
-            reply_to_message_id=msg.id,
-            caption=text,
-        )
+            res = await slap.json()
+            msg = ctx.msg.reply_to_message or ctx.msg
+            await self.bot.client.send_animation(
+                chat.id,
+                res["url"],
+                reply_to_message_id=msg.id,
+                caption=text,
+            )
+
         return None

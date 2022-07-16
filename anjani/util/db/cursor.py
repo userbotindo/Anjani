@@ -47,7 +47,9 @@ class Cursor(_Cursor, Generic[_DocumentType]):
 
     delegate: "AsyncCollection[_DocumentType]"
 
-    def __init__(self, collection: "AsyncCollection[_DocumentType]", *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, collection: "AsyncCollection[_DocumentType]", *args: Any, **kwargs: Any
+    ) -> None:
         self.delegate = collection
 
         super().__init__(collection.dispatch, *args, **kwargs)
@@ -193,13 +195,16 @@ class AsyncCursor(AsyncCursorBase, Generic[_DocumentType]):
         return self
 
     def _query_flags(self) -> int:
-        return self.dispatch._Cursor__query_flags  # skipcq: PYL-W0212
+        # skipcq: PYL-W0212
+        return self.dispatch._Cursor__query_flags  # type: ignore
 
     def _data(self) -> Deque[Any]:
-        return self.dispatch._Cursor__data  # skipcq: PYL-W0212
+        # skipcq: PYL-W0212
+        return self.dispatch._Cursor__data  # type: ignore
 
     def _killed(self) -> bool:
-        return self.dispatch._Cursor__killed  # skipcq: PYL-W0212
+        # skipcq: PYL-W0212
+        return self.dispatch._Cursor__killed  # type: ignore
 
 
 class AsyncRawBatchCursor(AsyncCursor, Generic[_DocumentType]):

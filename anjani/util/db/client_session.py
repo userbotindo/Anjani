@@ -139,33 +139,35 @@ class AsyncClientSession(AsyncBase, Generic[_DocumentType]):
                     ):
                         # Retry the entire transaction.
                         continue
+
                     raise
 
-            if not self.in_transaction:
-                # Assume callback intentionally ended the transaction.
-                return ret
+                if not self.in_transaction:
+                    # Assume callback intentionally ended the transaction.
+                    return ret
 
-            while True:
-                try:
-                    await self.commit_transaction()
-                except PyMongoError as exc:
-                    if (
-                        exc.has_error_label("UnknownTransactionCommitResult")
-                        and _within_time_limit(start_time)
-                        and not _max_time_expired_error(exc)
-                    ):
-                        # Retry the commit.
-                        continue
+                while True:
+                    try:
+                        await self.commit_transaction()
+                    except PyMongoError as exc:
+                        if (
+                            exc.has_error_label("UnknownTransactionCommitResult")
+                            and _within_time_limit(start_time)
+                            and not _max_time_expired_error(exc)
+                        ):
+                            # Retry the commit.
+                            continue
 
-                    if exc.has_error_label("TransientTransactionError") and _within_time_limit(
-                        start_time
-                    ):
-                        # Retry the entire transaction.
-                        break
-                    raise
+                        if exc.has_error_label("TransientTransactionError") and _within_time_limit(
+                            start_time
+                        ):
+                            # Retry the entire transaction.
+                            break
 
-                # Commit succeeded.
-                return ret
+                        raise
+
+                    # Commit succeeded.
+                    return ret
 
     def advance_cluster_time(self, cluster_time: Mapping[str, Any]) -> None:
         self.dispatch.advance_cluster_time(cluster_time=cluster_time)

@@ -134,12 +134,13 @@ class TelegramBot(MixinBase):
         async with asyncio.Lock():  # Lock to avoid race condition with command_dispatcher
             user = await self.client.get_me()
 
-        if not isinstance(user, User):
-            raise TypeError("Missing full self user information")
+            if not isinstance(user, User):
+                raise TypeError("Missing full self user information")
 
-        self.user = user
-        # noinspection PyTypeChecker
-        self.uid = user.id
+            self.user = user
+            # noinspection PyTypeChecker
+            self.uid = user.id
+
         self.staff.add(self.owner)
         self.devs.add(self.owner)
 
