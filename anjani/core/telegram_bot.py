@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Typ
 import pyrogram.filters as flt
 from aiopath import AsyncPath
 from pyrogram.client import Client
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.filters import Filter
 from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
 from pyrogram.handlers.chat_member_updated_handler import ChatMemberUpdatedHandler
@@ -104,6 +105,7 @@ class TelegramBot(MixinBase):
             api_hash=api_hash,
             bot_token=bot_token,
             workdir="anjani",
+            parse_mode=ParseMode.MARKDOWN,
         )
 
     async def start(self: "Anjani") -> None:

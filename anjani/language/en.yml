@@ -303,7 +303,7 @@ muting-help: |
   × /unmute <usehandle>: Unmutes any muted member.\n
   Example for temporary mute:
   m = Minutes, h = Hours and d = Days.
-  ``/mute @username 2h``; This mute a user for 2 hours.
+  `/mute @username 2h`; This mute a user for 2 hours.
 invalid-time-flag: Invalid time type specified. Expected m,h, or d.
 no-mute-user: Give me a user to mute
 no-unmute-user: Give me a user to unmute
@@ -374,8 +374,8 @@ cant-self-report: Hold on... Why you're reporting yourself?
 report-notif: Reported {} to the admins!
 report-admin-format: |
   **Report from: {chat}**
-  × **Report by: ** {by_user} ``{by_user_id}``
-  × **Reported user: ** {reported_mention} ``{reported_id}``
+  × **Report by: ** {by_user} `{by_user_id}`
+  × **Reported user: ** {reported_mention} `{reported_id}`
 user-not-in-chat: The user you trying to report is not in this group anymore.
 #endregion
 #region restrictions

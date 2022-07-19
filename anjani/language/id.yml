@@ -324,7 +324,7 @@ muting-help: |
   × /unmute <Melalui id pengguna atau username>: Tidak membisukan seorang pengguna yang dibisukan.\n
   Contoh untuk membisukan sementara seseorang:
   m = Menit, h = Jam and d = Hari.
-  ``/mute @username 2h``; Pengguna ini akan dibisukan selama 2 jam.
+  `/mute @username 2h`; Pengguna ini akan dibisukan selama 2 jam.
 invalid-time-flag: Tipe waktu tidak benar. Tolong gunakan m,h, atau d.
 no-mute-user: Berikan saya pengguna yang akan dibisukan!
 no-unmute-user: Berikan saya pengguna yang akan tidak dibisukan dan membuat mereka bisa berbicara kembali!
@@ -394,8 +394,8 @@ cant-self-report: Kenapa anda melaporkan diri anda sendiri?
 report-notif: Melaporkan {} kepada para Administrator!
 report-admin-format: |
   **Laporan dari: {chat}**
-  × **Dilaporkan oleh: ** {by_user} ``{by_user_id}``
-  × **Pengguna yang dilaporkan: ** {reported_mention} ``{reported_id}``
+  × **Dilaporkan oleh: ** {by_user} `{by_user_id}`
+  × **Pengguna yang dilaporkan: ** {reported_mention} `{reported_id}`
 user-not-in-chat: Pengguna yang kamu laporkan sudah tidak ada dalam grup ini lagi.
 #endregion
 #region restrictions
