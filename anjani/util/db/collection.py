@@ -55,6 +55,9 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         # Propagate initialization to base
         super().__init__(dispatch)
 
+    def __bool__(self) -> bool:
+        return self.dispatch is not None
+
     def __getitem__(self, name: str) -> "AsyncCollection":
         return AsyncCollection(
             Collection(
@@ -74,8 +77,8 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
     def aggregate(
         self,
         pipeline: List[Mapping[str, Any]],
-        *,
         session: Optional[AsyncClientSession[_DocumentType]] = None,
+        *args: Any,
         **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
@@ -83,6 +86,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
             self.dispatch.aggregate,
             pipeline,
             session=session.dispatch if session else session,
+            *args,
             **kwargs,
         )
 
@@ -350,10 +354,17 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         )
 
     def list_indexes(
-        self, session: Optional[AsyncClientSession] = None
+        self,
+        session: Optional[AsyncClientSession] = None,
+        *args: Any,
+        **kwargs: Any
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
-            self, self.dispatch.list_indexes, session=session.dispatch if session else session
+            self,
+            self.dispatch.list_indexes,
+            session=session.dispatch if session else session,
+            *args,
+            **kwargs,
         )
 
     async def options(
@@ -455,6 +466,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
+        comment: Optional[str] = None
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -467,6 +479,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
             start_at_operation_time,
             session,
             start_after,
+            comment
         )
 
     def with_options(

@@ -53,6 +53,7 @@ class AsyncChangeStream(AsyncBase):
         start_at_operation_time: Optional[Timestamp],
         session: Optional[AsyncClientSession],
         start_after: Optional[Any],
+        comment: Optional[str]
     ) -> None:
         self._target = target
         self._options: Mapping[str, Any] = {
@@ -65,6 +66,7 @@ class AsyncChangeStream(AsyncBase):
             "start_at_operation_time": start_at_operation_time,
             "session": session.dispatch if session else session,
             "start_after": start_after,
+            "comment": comment
         }
 
         super().__init__(None)  # type: ignore

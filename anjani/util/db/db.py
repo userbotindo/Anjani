@@ -54,6 +54,9 @@ class AsyncDatabase(AsyncBaseProperty):
         # Propagate initialization to base
         super().__init__(database)
 
+    def __bool__(self) -> bool:
+        return self.dispatch is not None
+
     def __getitem__(self, name) -> AsyncCollection:
         return AsyncCollection(Collection(self.dispatch, name))
 
@@ -63,8 +66,8 @@ class AsyncDatabase(AsyncBaseProperty):
     def aggregate(
         self,
         pipeline: List[Mapping[str, Any]],
-        *,
         session: Optional[AsyncClientSession] = None,
+        *args: Any,
         **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
@@ -72,6 +75,7 @@ class AsyncDatabase(AsyncBaseProperty):
             self.dispatch.aggregate,
             pipeline,
             session=session.dispatch if session else session,
+            *args,
             **kwargs,
         )
 
@@ -233,6 +237,7 @@ class AsyncDatabase(AsyncBaseProperty):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
+        comment: Optional[str] = None
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -245,6 +250,7 @@ class AsyncDatabase(AsyncBaseProperty):
             start_at_operation_time,
             session,
             start_after,
+            comment
         )
 
     def with_options(
