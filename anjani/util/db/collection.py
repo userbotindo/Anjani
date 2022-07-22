@@ -77,8 +77,8 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
     def aggregate(
         self,
         pipeline: List[Mapping[str, Any]],
-        session: Optional[AsyncClientSession[_DocumentType]] = None,
         *args: Any,
+        session: Optional[AsyncClientSession[_DocumentType]] = None,
         **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
@@ -355,8 +355,8 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
 
     def list_indexes(
         self,
-        session: Optional[AsyncClientSession] = None,
         *args: Any,
+        session: Optional[AsyncClientSession] = None,
         **kwargs: Any
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(

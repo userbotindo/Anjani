@@ -66,8 +66,8 @@ class AsyncDatabase(AsyncBaseProperty):
     def aggregate(
         self,
         pipeline: List[Mapping[str, Any]],
-        session: Optional[AsyncClientSession] = None,
         *args: Any,
+        session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> AsyncLatentCommandCursor:
         return AsyncLatentCommandCursor(
