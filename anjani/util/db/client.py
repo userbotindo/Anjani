@@ -197,6 +197,7 @@ class AsyncClient(AsyncBaseProperty):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
+        comment: Optional[str] = None
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -209,6 +210,7 @@ class AsyncClient(AsyncBaseProperty):
             start_at_operation_time,
             session,
             start_after,
+            comment
         )
 
     @property
