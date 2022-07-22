@@ -115,6 +115,7 @@ class AsyncDatabase(AsyncBaseProperty):
         write_concern: Optional[WriteConcern] = None,
         read_concern: Optional[ReadConcern] = None,
         session: Optional[AsyncClientSession] = None,
+        check_exists: bool = True,
         **kwargs: Any,
     ) -> AsyncCollection:
         return AsyncCollection(
@@ -126,6 +127,7 @@ class AsyncDatabase(AsyncBaseProperty):
                 write_concern=write_concern,
                 read_concern=read_concern,
                 session=session.dispatch if session else session,
+                check_exists=check_exists,
                 **kwargs,
             )
         )
