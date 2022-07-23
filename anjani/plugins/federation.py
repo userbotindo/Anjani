@@ -87,9 +87,8 @@ class Federation(plugin.Plugin):
         old_priv = update.old_chat_member.privileges
         new_priv = update.new_chat_member.privileges
 
-        if (
-            (old_priv and old_priv.can_restrict_members)
-            and not (new_priv and new_priv.can_restrict_members)
+        if (old_priv and old_priv.can_restrict_members) and not (
+            new_priv and new_priv.can_restrict_members
         ):
             chat = update.chat
             fed_data = await self.get_fed_bychat(chat.id)
@@ -159,6 +158,13 @@ class Federation(plugin.Plugin):
 
     async def get_fed(self, fid: str) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"_id": fid})
+
+    async def _get_fed_subs(self, fid: str) -> Optional[str]:
+        """Get subscriber for current federation"""
+        res = ""
+        async for i in self.db.find({"subscribers": fid}):
+            res += f"- {i['name']} ({i['_id']})\n"
+        return res or None
 
     async def fban_user(
         self,
@@ -253,9 +259,9 @@ class Federation(plugin.Plugin):
                     await self.text(
                         chat.id,
                         "fed-autoban" if data["type"] == "user" else "fed-autoban-chat",
-                        user.mention if (
-                            data["type"] == "user" and isinstance(user, User)
-                        ) else data["title"],
+                        user.mention
+                        if (data["type"] == "user" and isinstance(user, User))
+                        else data["title"],
                         data["fed_name"],
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
@@ -479,7 +485,7 @@ class Federation(plugin.Plugin):
         if isinstance(owner, List):
             owner = owner[0]
 
-        return await self.text(
+        res = await self.text(
             chat.id,
             "fed-info-text",
             data["_id"],
@@ -489,7 +495,11 @@ class Federation(plugin.Plugin):
             len(data.get("banned", [])),
             len(data.get("banned_chat", [])),
             len(data.get("chats", [])),
+            len(data.get("subscribers", [])),
         )
+        if subs := await self._get_fed_subs(data["_id"]):
+            res += await self.text(chat.id, "fed-info-subscription") + f"{subs}"
+        return res
 
     @command.filters(aliases=["fedadmin", "fadmin", "fadmins"])
     async def cmd_fedadmins(self, ctx: command.Context, fid: Optional[str] = None) -> str:
@@ -669,8 +679,6 @@ class Federation(plugin.Plugin):
                 )
                 failed[chat] = err.MESSAGE
 
-        await ctx.respond(string)
-
         text = ""
         if failed:
             for key, err_msg in failed.items():
@@ -680,6 +688,25 @@ class Federation(plugin.Plugin):
             text += f"**Those chat has leaved the federation {data['name']}!**"
             await ctx.respond(text, mode="reply", reference=ctx.response)
 
+        if data.get("subsribers", []):
+            for fed_id in data["subscribers"]:
+                subs_data = await self.get_fed(fed_id)
+                if not subs_data:
+                    continue
+                for chat in subs_data.get("chats", []):
+                    try:
+                        await self.bot.client.ban_chat_member(chat, target.id)
+                    except BadRequest as br:
+                        self.log.warning(
+                            f"Failed to send fban on subfed {subs_data['_id']} of {data['_id']} at {chat} due to {br.MESSAGE}"
+                        )
+                    except Forbidden as err:
+                        self.log.warning(
+                            f"Can't to fban on subfed {subs_data['_id']} of {data['_id']} at {chat} caused by {err.MESSAGE}"
+                        )
+
+        await ctx.respond(string)
+
         # send message to federation log
         if log := data.get("log"):
             await self.bot.client.send_message(log, string, disable_web_page_preview=True)
@@ -688,9 +715,7 @@ class Federation(plugin.Plugin):
 
         return None
 
-    async def cmd_unfban(
-        self, ctx: command.Context, target: Union[User, Chat, None] = None
-    ) -> str:
+    async def cmd_unfban(self, ctx: command.Context, target: Union[User, Chat, None] = None) -> str:
         """Unban a user on federation"""
         chat = ctx.chat
         if chat.type == ChatType.PRIVATE:
@@ -746,8 +771,21 @@ class Federation(plugin.Plugin):
         for chat in data["chats"]:
             try:
                 await self.bot.client.unban_chat_member(chat, target.id)
-            except (BadRequest, Forbidden):
-                pass
+            except (BadRequest, Forbidden) as err:
+                self.log.warning(f"Failed to unfban on {data['_id']} due to {err.MESSAGE}")
+
+        if data.get("subsribers", []):
+            for fed_id in data["subscribers"]:
+                subs_data = await self.get_fed(fed_id)
+                if not subs_data:
+                    continue
+                for chat in subs_data.get("chats", []):
+                    try:
+                        await self.bot.client.unban_chat_member(chat, target.id)
+                    except (BadRequest, Forbidden) as err:
+                        self.log.warning(
+                            f"Failed to unfban on subfed {subs_data['_id']} of {data['_id']} due to {err.MESSAGE}"
+                        )
 
         if log := data.get("log"):
             await self.bot.client.send_message(log, text, disable_web_page_preview=True)
@@ -1004,3 +1042,47 @@ class Federation(plugin.Plugin):
             return ret
 
         return await self.text(chat.id, "err-chat-private")
+
+    async def cmd_subfed(self, ctx: command.Context, fid: Optional[str] = None):
+        if not fid:
+            return await self.text(ctx.chat.id, "fed-not-found")
+        if ctx.chat.type == ChatType.PRIVATE:
+            return await self.text(ctx.chat.id, "err-chat-groups")
+
+        curr_fed = await self.get_fed_bychat(ctx.chat.id)
+        to_subs = await self.get_fed(fid)
+        if not curr_fed:
+            return await self.text(ctx.chat.id, "fed-no-fed-chat")
+        if curr_fed["owner"] != ctx.author.id:
+            return await self.text(ctx.chat.id, "fed-owner-cmd")
+        if not to_subs:
+            return await self.text(ctx.chat.id, "fed-not-found")
+
+        await self.db.update_one({"_id": fid}, {"$push": {"subscribers": curr_fed["_id"]}})
+        await self.bot.client.send_message(
+            to_subs["log"] or to_subs["owner"],
+            f"Federation {curr_fed['name']} has subscribed to {to_subs['name']}",
+        )
+        return f"Federation {curr_fed['name']} has subscribed to {to_subs['name']}"
+
+    async def cmd_unsubfed(self, ctx: command.Context, fid: Optional[str] = None):
+        if not fid:
+            return await self.text(ctx.chat.id, "fed-not-found")
+        if ctx.chat.type == ChatType.PRIVATE:
+            return await self.text(ctx.chat.id, "err-chat-groups")
+
+        curr_fed = await self.get_fed_bychat(ctx.chat.id)
+        to_unsubs = await self.get_fed(fid)
+        if not curr_fed:
+            return await self.text(ctx.chat.id, "fed-no-fed-chat")
+        if curr_fed["owner"] != ctx.author.id:
+            return await self.text(ctx.chat.id, "fed-owner-cmd")
+        if not to_unsubs:
+            return await self.text(ctx.chat.id, "fed-not-found")
+
+        await self.db.update_one({"_id": fid}, {"$pull": {"subscribers": curr_fed["_id"]}})
+        await self.bot.client.send_message(
+            to_unsubs["log"],
+            f"Federation {curr_fed['name']} has unsubscribed from {to_unsubs['name']}",
+        )
+        return f"Federation {curr_fed['name']} has unsubscribed from {to_unsubs['name']}"

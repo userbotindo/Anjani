@@ -182,6 +182,8 @@ fed-info-text: |
   **Total pengguna yang dilarang: ** `{}`
   **Total channel yang dilarang: ** `{}`
   **Total grup yang terhubung federasi: ** `{}`
+  **Total fed pengikut: ** `{}`
+fed-info-subscription: "\nMengikuti federasi berikut:\n"
 fed-admin-only: Hanya Administrator federasi yang dapat melakukan ini!
 fed-admin-text: |
   **{} admins:**
@@ -257,6 +259,7 @@ fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
 fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoban-chat: "Channel {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
+fed-owner-cmd: "Perintah ini hanya bisa digunakan oleh pemilik federasi."
 #endregion
 #region filters
 filters-button: Filter

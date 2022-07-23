@@ -184,6 +184,8 @@ fed-info-text: |
   **Total banned user: ** `{}`
   **Total banned channel: ** `{}`
   **Total groups connected: ** `{}`
+  **Total fed subscribers: ** `{}`
+fed-info-subscription: "\nSubscribed to the following feds:\n"
 fed-admin-only: Only federation admin can do this!
 fed-admin-text: |
   **{} admins:**
@@ -237,6 +239,7 @@ fed-invalid-identity: The user who clicked confirmation button was not the fed c
 fed-log-unset: Federation log of **{}** is unset.
 fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
 fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
+fed-owner-cmd: "This command is only for federation owner!"
 #endregion
 #region filters
 filters-button: Filters
