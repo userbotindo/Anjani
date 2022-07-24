@@ -132,6 +132,9 @@ federations-help: |
   × /feddemote | /fdemote: Demote a federation admin from your fed.
   × /fedbackup: Get a backup of banned user on federation in CSV (PM Only).
   × /fedrestore: export a federation backup file to restore banned users (PM Only).
+  × /subfed <fedID>: Subscribe to other federation. Users banned in the subscribed federation will be banned in your federation too.
+  Note: This doesn't affect your federation banlist. It only inherits the bans from the subscribed federation.
+  × /unsubfed <fedID>: Unsubscribe your federation from another. Bans from the other fed will no longer take effect.
   × /setfedlog: Sets the current chat as the federation log. All federation events will be logged here.
   × /unsetfedlog: Unset the federation log. Federation events will no longer be logged.
 

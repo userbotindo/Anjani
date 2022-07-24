@@ -130,6 +130,9 @@ federations-help: |
   × /feddemote | /fdemote:  Menurunkan seorang Administrator federasi di federasi anda.
   × /fedbackup: Mendapatkan file cadangan tentang pengguna yang dilarang dalam federasi dalam CSV (Hanya melalui PM).
   × /fedrestore: Mengembalikan file candangan untuk memulihkan pengguna yang dilarang (Hanya melalui PM).
+  × /subfed <fedID>: Mengikuti federasi lain. Pengguna yang diblokir di federasi yang berlangganan akan diblokir di federasi Anda juga.
+  Catatan: Tidak mempengaruhi daftar larangan federasi anda, hanya mewarisi larangan dari federasi yang diikuti.
+  × /unsubfed <fedID>: Berhenti mengikuti federasi anda dari yang lain. Larangan dari fed lain tidak akan berlaku lagi.
   × /setfedlog: Membuat grup atau channel saat ini sebagai log federasi. Semua peristiwa federasi akan dicatat di sini.
   × /unsetfedlog: Membatalkan log federation. Semua peristiwa federasi tidak akan dicatat di sini.
 
