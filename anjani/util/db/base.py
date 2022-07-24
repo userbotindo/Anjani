@@ -37,7 +37,7 @@ class AsyncBase(Generic[_DocumentType]):
 
     dispatch: Union[
         "_LatentCursor[_DocumentType]",
-        ClientSession[_DocumentType],
+        ClientSession,
         Collection[_DocumentType],
         CommandCursor[_DocumentType],
         Cursor[_DocumentType],
@@ -51,7 +51,7 @@ class AsyncBase(Generic[_DocumentType]):
         self,
         dispatch: Union[
             "_LatentCursor[_DocumentType]",
-            ClientSession[_DocumentType],
+            ClientSession,
             Collection[_DocumentType],
             CommandCursor[_DocumentType],
             Cursor[_DocumentType],
