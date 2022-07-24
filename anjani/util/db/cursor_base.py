@@ -200,5 +200,5 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
         return self.dispatch.cursor_id
 
     @property
-    def session(self) -> Optional[ClientSession[_DocumentType]]:
+    def session(self) -> Optional[ClientSession]:
         return self.dispatch.session

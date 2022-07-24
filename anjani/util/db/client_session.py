@@ -22,7 +22,6 @@ from typing import (
     AsyncGenerator,
     Callable,
     Coroutine,
-    Generic,
     Mapping,
     Optional,
 )
@@ -30,7 +29,6 @@ from typing import (
 from bson.timestamp import Timestamp
 from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.read_concern import ReadConcern
-from pymongo.typings import _DocumentType
 from pymongo.write_concern import WriteConcern
 
 from anjani import util
@@ -43,7 +41,7 @@ if TYPE_CHECKING:
     from .client import AsyncClient
 
 
-class AsyncClientSession(AsyncBase, Generic[_DocumentType]):
+class AsyncClientSession(AsyncBase):
     """AsyncIO :obj:`~ClientSession`
 
     *DEPRECATED* methods are removed in this class.

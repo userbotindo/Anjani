@@ -125,7 +125,7 @@ class _LatentCursor(Generic[_DocumentType]):
     _CommandCursor__explicit_session: ClassVar[Optional[bool]] = None
     address: ClassVar[Optional[Union[Tuple[str, int], _Address]]] = None
     cursor_id: ClassVar[Optional[Any]] = None
-    session: Optional[ClientSession[_DocumentType]] = None
+    session: Optional[ClientSession] = None
 
     _CommandCursor__collection: "AsyncCollection"
 
