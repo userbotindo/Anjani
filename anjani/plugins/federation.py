@@ -268,7 +268,7 @@ class Federation(plugin.Plugin):
             return res
 
         async for fed in self._get_fed_subs_data(data["_id"]):
-            """Check if user is banned in any of the subscribed feds"""
+            # Check if user is banned in any of the subscribed feds
             res = check(target, fed)
             if res:
                 res["subfed"] = True
@@ -719,7 +719,7 @@ class Federation(plugin.Plugin):
             text += f"**Those chat has leaved the federation {data['name']}!**"
             await ctx.respond(text, mode="reply", reference=ctx.response)
 
-        if data.get("subsribers", []):
+        if data.get("subscribers", []):
             for fed_id in data["subscribers"]:
                 subs_data = await self.get_fed(fed_id)
                 if not subs_data:
@@ -805,7 +805,7 @@ class Federation(plugin.Plugin):
             except (BadRequest, Forbidden) as err:
                 self.log.warning(f"Failed to unfban on {data['_id']} due to {err.MESSAGE}")
 
-        if data.get("subsribers", []):
+        if data.get("subscribers", []):
             for fed_id in data["subscribers"]:
                 subs_data = await self.get_fed(fed_id)
                 if not subs_data:
@@ -1074,20 +1074,33 @@ class Federation(plugin.Plugin):
 
         return await self.text(chat.id, "err-chat-private")
 
-    async def cmd_subfed(self, ctx: command.Context, fid: Optional[str] = None):
+    async def _subfed_perm_check(self, ctx: command.Context, fid: Optional[str] = None):
         if not fid:
-            return await self.text(ctx.chat.id, "fed-not-found")
+            await ctx.respond(await self.text(ctx.chat.id, "fed-not-found"))
+            return None
         if ctx.chat.type == ChatType.PRIVATE:
-            return await self.text(ctx.chat.id, "err-chat-groups")
+            await ctx.respond(await self.text(ctx.chat.id, "err-chat-groups"))
+            return None
 
         curr_fed = await self.get_fed_bychat(ctx.chat.id)
-        to_subs = await self.get_fed(fid)
+        target = await self.get_fed(fid)
         if not curr_fed:
-            return await self.text(ctx.chat.id, "fed-no-fed-chat")
+            await ctx.respond(await self.text(ctx.chat.id, "fed-no-fed-chat"))
+            return None
         if curr_fed["owner"] != ctx.author.id:
-            return await self.text(ctx.chat.id, "fed-owner-cmd")
-        if not to_subs:
-            return await self.text(ctx.chat.id, "fed-not-found")
+            await ctx.respond(await self.text(ctx.chat.id, "fed-owner-cmd"))
+            return None
+        if not target:
+            await ctx.respond(await self.text(ctx.chat.id, "fed-not-found"))
+            return None
+
+        return (curr_fed, target)
+
+    async def cmd_subfed(self, ctx: command.Context, fid: Optional[str] = None):
+        res = await self._subfed_perm_check(ctx, fid)
+        if not res:
+            return
+        curr_fed, to_subs = res
 
         await self.db.update_one({"_id": fid}, {"$push": {"subscribers": curr_fed["_id"]}})
         await self.bot.client.send_message(
@@ -1097,19 +1110,10 @@ class Federation(plugin.Plugin):
         return f"Federation {curr_fed['name']} has subscribed to {to_subs['name']}"
 
     async def cmd_unsubfed(self, ctx: command.Context, fid: Optional[str] = None):
-        if not fid:
-            return await self.text(ctx.chat.id, "fed-not-found")
-        if ctx.chat.type == ChatType.PRIVATE:
-            return await self.text(ctx.chat.id, "err-chat-groups")
-
-        curr_fed = await self.get_fed_bychat(ctx.chat.id)
-        to_unsubs = await self.get_fed(fid)
-        if not curr_fed:
-            return await self.text(ctx.chat.id, "fed-no-fed-chat")
-        if curr_fed["owner"] != ctx.author.id:
-            return await self.text(ctx.chat.id, "fed-owner-cmd")
-        if not to_unsubs:
-            return await self.text(ctx.chat.id, "fed-not-found")
+        res = await self._subfed_perm_check(ctx, fid)
+        if not res:
+            return
+        curr_fed, to_unsubs = res
 
         await self.db.update_one({"_id": fid}, {"$pull": {"subscribers": curr_fed["_id"]}})
         await self.bot.client.send_message(
