@@ -258,6 +258,8 @@ fed-invalid-identity: Pengguna yang mengklik tombol konfirmasi bukanlah pemilik 
 fed-log-unset: Catatan federasi dari **{}** telah dibatalkan.
 fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoban-chat: "Channel {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
+fed-autoban-subfed: "Pengguna {} dilarang dalam subfederasi (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
+fed-autoban-chat-subfed: "Channel {} dilarang dalam subfederasi (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
 fed-owner-cmd: "Perintah ini hanya bisa digunakan oleh pemilik federasi."
 #endregion

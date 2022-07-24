@@ -16,7 +16,17 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+)
 from uuid import uuid4
 
 from aiopath import AsyncPath
@@ -159,12 +169,17 @@ class Federation(plugin.Plugin):
     async def get_fed(self, fid: str) -> Optional[Mapping[str, Any]]:
         return await self.db.find_one({"_id": fid})
 
-    async def _get_fed_subs(self, fid: str) -> Optional[str]:
-        """Get subscriber for current federation"""
+    async def _get_fed_subs_str(self, fid: str) -> Optional[str]:
+        """Get federation that subcribe current federation as string"""
         res = ""
         async for i in self.db.find({"subscribers": fid}):
             res += f"- {i['name']} ({i['_id']})\n"
         return res or None
+
+    async def _get_fed_subs_data(self, fid: str) -> AsyncIterator[Mapping[str, Any]]:
+        """Get federation that subcribe current federation"""
+        async for i in self.db.find({"subscribers": fid}):
+            yield i
 
     async def fban_user(
         self,
@@ -235,30 +250,46 @@ class Federation(plugin.Plugin):
         if not data:
             return None
 
-        if str(target) in data.get("banned", {}):
-            user_data = data["banned"][str(target)]
-            user_data["fed_name"] = data["name"]
-            user_data["type"] = "user"
-            return user_data
+        def check(target: int, data: Mapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+            if str(target) in data.get("banned", {}):
+                user_data = data["banned"][str(target)]
+                user_data["fed_name"] = data["name"]
+                user_data["type"] = "user"
+                return user_data
 
-        if str(target) in data.get("banned_chat", {}):
-            channel_data = data["banned_chat"][str(target)]
-            channel_data["fed_name"] = data["name"]
-            channel_data["type"] = "chat"
-            return channel_data
+            if str(target) in data.get("banned_chat", {}):
+                channel_data = data["banned_chat"][str(target)]
+                channel_data["fed_name"] = data["name"]
+                channel_data["type"] = "chat"
+                return channel_data
 
-        return None
+        res = check(target, data)
+        if res:
+            return res
+
+        async for fed in self._get_fed_subs_data(data["_id"]):
+            """Check if user is banned in any of the subscribed feds"""
+            res = check(target, fed)
+            if res:
+                res["subfed"] = True
+                return res
 
     async def fban_handler(
         self, chat: Chat, user: Union[User, Chat], data: MutableMapping[str, Any]
     ) -> None:
+        string = "fed-autoban"
+        if data["type"] != "user":
+            string += "-chat"
+        if data.get("subfed", False):
+            string += "-subfed"
+
         try:
             await asyncio.gather(
                 self.bot.client.send_message(
                     chat.id,
                     await self.text(
                         chat.id,
-                        "fed-autoban" if data["type"] == "user" else "fed-autoban-chat",
+                        string,
                         user.mention
                         if (data["type"] == "user" and isinstance(user, User))
                         else data["title"],
@@ -497,7 +528,7 @@ class Federation(plugin.Plugin):
             len(data.get("chats", [])),
             len(data.get("subscribers", [])),
         )
-        if subs := await self._get_fed_subs(data["_id"]):
+        if subs := await self._get_fed_subs_str(data["_id"]):
             res += await self.text(chat.id, "fed-info-subscription") + f"{subs}"
         return res
 
