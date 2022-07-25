@@ -548,6 +548,8 @@ view-goodbye: |
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
+#region lockings
+#endregion
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!

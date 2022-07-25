@@ -165,6 +165,8 @@ class SpamPrediction(plugin.Plugin):
             stdout, _, exitCode = await util.system.run_command(
                 "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
             )
+        except FileNotFoundError:
+            return
         except Exception as e:  # skipcq: PYL-W0703
             return self.log.error("Unexpected error occured when running OCR", exc_info=e)
         finally:
@@ -643,9 +645,7 @@ class SpamPrediction(plugin.Plugin):
 
         replied = ctx.msg.reply_to_message
         if not replied:
-            await ctx.respond(
-                await ctx.get_text("error-reply-to-message"), delete_after=5
-            )
+            await ctx.respond(await ctx.get_text("error-reply-to-message"), delete_after=5)
             return None
 
         content = replied.text or replied.caption

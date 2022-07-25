@@ -235,7 +235,7 @@ owner_only = _owner_only()
 
 
 # { admin_only
-def _admin_only(include_bot: bool = True) -> CustomFilter:
+def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
         if priv or not message.chat or not target:
@@ -262,15 +262,19 @@ def _admin_only(include_bot: bool = True) -> CustomFilter:
         }:
             return True
 
-        flt.anjani.loop.create_task(
-            reply_and_delete(
-                message, await get_text(flt.anjani, message.chat.id, "err-not-admin"), 5
+        if send_error:
+            flt.anjani.loop.create_task(
+                reply_and_delete(
+                    message, await get_text(flt.anjani, message.chat.id, "err-not-admin"), 5
+                )
             )
-        )
+
         return False
 
     return create(func, "admin_only", include_bot=include_bot)
 
 
 admin_only = _admin_only()
+admin_only_no_report = _admin_only(send_error=False)
+"""Set filter to admin only but without sending error message"""
 # }
