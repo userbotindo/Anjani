@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 from typing import TYPE_CHECKING, Any
 
 from anjani import util
@@ -28,8 +29,16 @@ class DatabaseProvider(MixinBase):
     db: util.db.AsyncDatabase
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
-        client = util.db.AsyncClient(self.config["db_uri"], connect=False)
-        self.db = client["AnjaniBot"]
+        if sys.platform == "win32":
+            import certifi
+
+            client = util.db.AsyncClient(
+                self.config["db_uri"], connect=False, tlsCAFile=certifi.where()
+            )
+        else:
+            client = util.db.AsyncClient(self.config["db_uri"], connect=False)
+
+        self.db = client.get_database("AnjaniBot")
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
