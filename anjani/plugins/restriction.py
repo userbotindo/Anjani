@@ -61,7 +61,7 @@ class Restrictions(plugin.Plugin):
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
         invoker = await chat.get_member(query.from_user.id)
-        if not invoker.privileges.can_restrict_members:
+        if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "warn-keyboard-not-admins"))
 
         chat_data = await self.db.find_one({"chat_id": chat.id})
