@@ -93,7 +93,8 @@ class Staff(plugin.Plugin):
         async for chat in self.db.find({}):
             if not get_all and chat.get("type") == "channel":
                 continue
-            chatfile += "{} - ({})\n".format(chat["chat_name"], chat["chat_id"])
+
+            chatfile += f"{chat['chat_name']} | ({chat['chat_id']})\n"
 
         with BytesIO(str.encode(chatfile)) as output:
             output.name = "chatlist.txt"

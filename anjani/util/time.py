@@ -49,23 +49,23 @@ def format_duration_us(t_us: Union[int, float]) -> str:
 
     if t_d >= 1:
         rem_h = t_h % 24
-        return "%dd %dh" % (t_d, rem_h)
+        return f"{t_d:d}d {rem_h:d}h"
 
     if t_h >= 1:
         rem_m = t_m % 60
-        return "%dh %dm" % (t_h, rem_m)
+        return f"{t_h:d}d {rem_m:d}m"
 
     if t_m >= 1:
         rem_s = t_s % 60
-        return "%dm %ds" % (t_m, rem_s)
+        return f"{t_m:d}m {rem_s:d}s"
 
     if t_s >= 1:
-        return "%d sec" % t_s
+        return f"{t_s:d} sec"
 
     if t_ms >= 1:
-        return "%d ms" % t_ms
+        return f"{t_ms:d} ms"
 
-    return "%d μs" % t_us
+    return f"{t_us:d} μs"
 
 
 def extract_time(time_text: str) -> Union[int, bool]:

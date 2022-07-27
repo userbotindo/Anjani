@@ -30,17 +30,17 @@ def _calc_pct(num1: int, num2: int) -> str:
     if not num2:
         return "0"
 
-    return "{:.1f}".format((num1 / num2) * 100).rstrip("0").rstrip(".")
+    return f"{(num1 / num2) * 100:.1f}".rstrip("0").rstrip(".")
 
 
 def _calc_ph(stat: int, uptime: int) -> str:
     up_hr = max(1, uptime) / USEC_PER_HOUR
-    return "{:.1f}".format(stat / up_hr).rstrip("0").rstrip(".")
+    return f"{stat / up_hr:.1f}".rstrip("0").rstrip(".")
 
 
 def _calc_pd(stat: int, uptime: int) -> str:
     up_day = max(1, uptime) / USEC_PER_DAY
-    return "{:.1f}".format(stat / up_day).rstrip("0").rstrip(".")
+    return f"{stat / up_day:.1f}".rstrip("0").rstrip(".")
 
 
 class PluginStats(plugin.Plugin):
