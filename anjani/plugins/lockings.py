@@ -266,7 +266,7 @@ class Lockings(plugin.Plugin):
     @command.filters(filters.admin_only, aliases={"locktypes"})
     async def cmd_lock_types(self, ctx: command.Context) -> str:
         text = ""
-        for types in list(LOCK_TYPES) + list(self.restrictions["lock"]):
+        for types in sorted(list(LOCK_TYPES) + list(self.restrictions["lock"])):
             text += f"\n × `{types}`"
 
         return await ctx.get_text("lock-types-available") + text
