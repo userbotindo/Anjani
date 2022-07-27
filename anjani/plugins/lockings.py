@@ -18,7 +18,7 @@ import time
 import unicodedata as ud
 from collections import OrderedDict
 from datetime import datetime
-from typing import ClassVar, List, MutableMapping, Optional, Set
+from typing import Any, ClassVar, List, MutableMapping, Optional, Set
 
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.message_entity_type import MessageEntityType
@@ -60,71 +60,28 @@ class Lockings(plugin.Plugin):
     db: util.db.AsyncCollection
     restrictions: MutableMapping[str, MutableMapping[str, MutableMapping[str, bool]]]
 
-    async def detect_alphabet(self, ustring: str) -> Set[str]:
-        return set(ud.name(char).split(" ")[0].lower() for char in ustring if char.isalpha())
-
-    def get_mode(self, mode: str) -> bool:
-        return False if mode == "lock" else True
-
-    def get_restrictions(self, mode: str) -> MutableMapping[str, MutableMapping[str, bool]]:
-        return OrderedDict(
-            sorted(
-                {
-                    "all": {
-                        "can_send_messages": self.get_mode(mode),
-                        "can_send_media_messages": self.get_mode(mode),
-                        "can_send_polls": self.get_mode(mode),
-                        "can_send_other_messages": self.get_mode(mode),
-                        "can_add_web_page_previews": self.get_mode(mode),
-                        "can_change_info": self.get_mode(mode),
-                        "can_invite_users": self.get_mode(mode),
-                        "can_pin_messages": self.get_mode(mode),
-                    },
-                    "messages": {"can_send_messages": self.get_mode(mode)},
-                    "media": {"can_send_media_messages": self.get_mode(mode)},
-                    "sticker": {"can_send_other_messages": self.get_mode(mode)},
-                    "gif": {"can_send_other_messages": self.get_mode(mode)},
-                    "polls": {"can_send_polls": self.get_mode(mode)},
-                    "other": {"can_send_other_messages": self.get_mode(mode)},
-                    "previews": {"can_add_web_page_previews": self.get_mode(mode)},
-                    "info": {"can_change_info": self.get_mode(mode)},
-                    "invite": {"can_invite_users": self.get_mode(mode)},
-                    "pin": {"can_pin_messages": self.get_mode(mode)},
-                }.items()
-            )
-        )
-
-    async def get_chat_restrictions(self, chat_id: int) -> List[str]:
-        data = await self.db.find_one({"_id": chat_id})
-        return data["type"] if data else []
-
-    def unpack_permissions(
-        self, permissions: MutableMapping[str, bool], mode: str, lock_type: str
-    ) -> ChatPermissions:
-        try:
-            del permissions["_client"]
-        except KeyError:
-            pass
-
-        permissions.update(self.restrictions[mode][lock_type])
-        return ChatPermissions(**permissions)
-
-    async def update_chat_restrictions(self, chat_id: int, types: str, mode: str) -> None:
-        if mode == "lock":
-            aggregation = "$push"
-        elif mode == "unlock":
-            aggregation = "$pull"
-        else:
-            raise ValueError("Invalid mode")
-
-        await self.db.update_one({"_id": chat_id}, {aggregation: {"type": types}}, upsert=True)
-
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("LOCKINGS")
         self.restrictions = {
             "lock": self.get_restrictions("lock"),
             "unlock": self.get_restrictions("unlock"),
         }
+
+    async def on_chat_migrate(self, message: Message) -> None:
+        new_chat = message.chat.id
+        old_chat = message.migrate_from_chat_id
+
+        await self.db.update_one(
+            {"chat_id": old_chat},
+            {"$set": {"chat_id": new_chat}},
+        )
+
+    async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
+        language = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
+        return {self.name: language} if language else {}
+
+    async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @listener.filters(~filters.admin_only_no_report & filters.group)
     async def on_message(self, message: Message) -> None:
@@ -203,6 +160,65 @@ class Lockings(plugin.Plugin):
                 )
             except UserNotParticipant:  # Bot probably kicked already
                 continue
+
+    async def detect_alphabet(self, ustring: str) -> Set[str]:
+        return set(ud.name(char).split(" ")[0].lower() for char in ustring if char.isalpha())
+
+    def get_mode(self, mode: str) -> bool:
+        return False if mode == "lock" else True
+
+    def get_restrictions(self, mode: str) -> MutableMapping[str, MutableMapping[str, bool]]:
+        return OrderedDict(
+            sorted(
+                {
+                    "all": {
+                        "can_send_messages": self.get_mode(mode),
+                        "can_send_media_messages": self.get_mode(mode),
+                        "can_send_polls": self.get_mode(mode),
+                        "can_send_other_messages": self.get_mode(mode),
+                        "can_add_web_page_previews": self.get_mode(mode),
+                        "can_change_info": self.get_mode(mode),
+                        "can_invite_users": self.get_mode(mode),
+                        "can_pin_messages": self.get_mode(mode),
+                    },
+                    "messages": {"can_send_messages": self.get_mode(mode)},
+                    "media": {"can_send_media_messages": self.get_mode(mode)},
+                    "sticker": {"can_send_other_messages": self.get_mode(mode)},
+                    "gif": {"can_send_other_messages": self.get_mode(mode)},
+                    "polls": {"can_send_polls": self.get_mode(mode)},
+                    "other": {"can_send_other_messages": self.get_mode(mode)},
+                    "previews": {"can_add_web_page_previews": self.get_mode(mode)},
+                    "info": {"can_change_info": self.get_mode(mode)},
+                    "invite": {"can_invite_users": self.get_mode(mode)},
+                    "pin": {"can_pin_messages": self.get_mode(mode)},
+                }.items()
+            )
+        )
+
+    async def get_chat_restrictions(self, chat_id: int) -> List[str]:
+        data = await self.db.find_one({"chat_id": chat_id})
+        return data["type"] if data else []
+
+    def unpack_permissions(
+        self, permissions: MutableMapping[str, bool], mode: str, lock_type: str
+    ) -> ChatPermissions:
+        try:
+            del permissions["_client"]
+        except KeyError:
+            pass
+
+        permissions.update(self.restrictions[mode][lock_type])
+        return ChatPermissions(**permissions)
+
+    async def update_chat_restrictions(self, chat_id: int, types: str, mode: str) -> None:
+        if mode == "lock":
+            aggregation = "$push"
+        elif mode == "unlock":
+            aggregation = "$pull"
+        else:
+            raise ValueError("Invalid mode")
+
+        await self.db.update_one({"chat_id": chat_id}, {aggregation: {"type": types}}, upsert=True)
 
     @command.filters(filters.admin_only, aliases={"listlocks", "locks", "locked", "locklist"})
     async def cmd_list_locks(self, ctx: command.Context) -> str:
