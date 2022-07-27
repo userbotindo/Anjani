@@ -123,19 +123,17 @@ class TelegramBot(MixinBase):
         await self.dispatch_event("load")
         self.loaded = True
 
-        # Start Telegram client
-        try:
-            await self.client.start()
-        except AttributeError:
-            self.log.error(
-                "Unable to get input for authorization! Make sure all configuration are done before running the bot."
-            )
-            raise
+        async with asyncio.Lock():
+            # Start Telegram client
+            try:
+                await self.client.start()
+            except AttributeError:
+                self.log.error(
+                    "Unable to get input for authorization! Make sure all configuration are done before running the bot."
+                )
+                raise
 
-        # Get info
-        async with asyncio.Lock():  # Lock to avoid race condition with command_dispatcher
             user = await self.client.get_me()
-
             if not isinstance(user, User):
                 raise TypeError("Missing full self user information")
 

@@ -73,9 +73,7 @@ class SpamPrediction(plugin.Plugin):
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
 
-        # Avoid race conditions with on_message listener
-        async with asyncio.Lock():
-            await self.__load_model(token, url)
+        await self.__load_model(token, url)
 
     async def on_chat_migrate(self, message: Message) -> None:
         await self.db.update_one(
