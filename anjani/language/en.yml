@@ -529,7 +529,8 @@ view-goodbye: |
 #endregion
 #region lockings
 lock-types-available: "Locks available:\n"
-lock-types-list: "**Current locked types in this chat**:\n"
+lock-types-perm: "**Current locked chat permissions in this chat for non admins**:\n"
+lock-types-list: "**Current locked types in this chat for non admins**:\n"
 lock-types-list-empty: "**No active lock in this chat.**"
 lock-type-required: Please provide a type of lock.
 lock-type-locked: "'`{lock_type}`' already locked."

@@ -18,7 +18,17 @@ import time
 import unicodedata as ud
 from collections import OrderedDict
 from datetime import datetime
-from typing import Any, ClassVar, List, MutableMapping, Optional, Set
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    List,
+    MutableMapping,
+    Optional,
+    Set,
+    Union,
+)
 
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.message_entity_type import MessageEntityType
@@ -48,6 +58,7 @@ LOCK_TYPES = OrderedDict(
             "url": "url",
             "bots": "bots",
             "rtl": "rtl",
+            "anon": "anon",
         }.items()
     )
 )
@@ -89,32 +100,37 @@ class Lockings(plugin.Plugin):
         locked = await self.get_chat_restrictions(chat.id)
         for lock_type in locked:
             try:
-                if lock_type == "bots":
-                    continue
+                func: Union[str, Callable[..., Coroutine[Any, Any, bool]]] = LOCK_TYPES[lock_type]
+                if callable(func):
+                    if await func(self.bot.client, message):
+                        await message.delete()
+                else:
+                    if lock_type == "bots":
+                        continue  # bots are handled in on_chat_action
 
-                if lock_type == "button" and message.reply_markup:
-                    await message.delete()
-                    continue
+                    if lock_type == "anon" and message.sender_chat:
+                        current_chat: Any = await self.bot.client.get_chat(message.chat.id)
+                        if not (
+                            current_chat.linked_chat
+                            and message.sender_chat.id == current_chat.linked_chat.id
+                            and not message.forward_from_chat
+                        ):
+                            await message.delete()
 
-                text = message.text or message.caption
-                if lock_type == "rtl" and text:
-                    checkers = await self.detect_alphabet(text)
-                    if "arabic" in checkers:
+                    if lock_type == "button" and message.reply_markup:
                         await message.delete()
 
-                    continue
-
-                if lock_type == "url" and message.entities:
-                    for entity in message.entities:
-                        if entity.type == MessageEntityType.URL:
+                    text = message.text or message.caption
+                    if lock_type == "rtl" and text:
+                        checkers = await self.detect_alphabet(text)
+                        if "arabic" in checkers:
                             await message.delete()
-                            break
 
-                    continue
-
-                is_locked: bool = await LOCK_TYPES[lock_type](self.bot.client, message)
-                if is_locked:
-                    await message.delete()
+                    if lock_type == "url" and message.entities:
+                        for entity in message.entities:
+                            if entity.type == MessageEntityType.URL:
+                                await message.delete()
+                                break
             except MessageDeleteForbidden:
                 await self.bot.respond(
                     message,
@@ -223,15 +239,26 @@ class Lockings(plugin.Plugin):
     @command.filters(filters.admin_only, aliases={"listlocks", "locks", "locked", "locklist"})
     async def cmd_list_locks(self, ctx: command.Context) -> str:
         chat = ctx.chat
+        permissions = dict(chat.permissions.__dict__)
+        try:
+            del permissions["_client"]
+        except KeyError:
+            pass
+
+        text = await ctx.get_text("lock-types-perm")
+        for types, is_lock in permissions.items():
+            if not is_lock:
+                text += f"\n × `{types}`"
+
         locked = await self.get_chat_restrictions(chat.id)
-        if not locked:
+        if not locked and all(value is True for value in permissions.values()):
             return await ctx.get_text("lock-types-list-empty")
 
-        text = ""
+        text += "\n\n" + await ctx.get_text("lock-types-list")
         for types in sorted(locked):
             text += f"\n × `{types}`"
 
-        return await ctx.get_text("lock-types-list") + text
+        return text
 
     @command.filters(filters.admin_only)
     async def cmd_lock(self, ctx: command.Context, lock_type: Optional[str] = None) -> str:
