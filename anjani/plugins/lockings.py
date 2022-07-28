@@ -110,7 +110,7 @@ class Lockings(plugin.Plugin):
                         continue  # bots are handled in on_chat_action
 
                     if lock_type == "anon" and message.sender_chat:
-                        current_chat: Any = await self.bot.client.get_chat(message.chat.id)
+                        current_chat: Any = await self.bot.client.get_chat(chat.id)
                         if not (
                             current_chat.linked_chat
                             and message.sender_chat.id == current_chat.linked_chat.id
@@ -140,7 +140,7 @@ class Lockings(plugin.Plugin):
                 )
             except MessageIdInvalid:  # Probably deleted already
                 continue
-            except Exception as e:
+            except Exception as e:  # skipcq: PYL-W0703
                 self.log.error(e)
                 continue
 
@@ -178,10 +178,12 @@ class Lockings(plugin.Plugin):
             except UserNotParticipant:  # Bot probably kicked already
                 continue
 
-    async def detect_alphabet(self, ustring: str) -> Set[str]:
+    @staticmethod
+    async def detect_alphabet(ustring: str) -> Set[str]:
         return {ud.name(char).split(" ")[0].lower() for char in ustring if char.isalpha()}
 
-    def get_mode(self, mode: str) -> bool:
+    @staticmethod
+    def get_mode(mode: str) -> bool:
         return mode != "lock"
 
     def get_restrictions(self, mode: str) -> MutableMapping[str, MutableMapping[str, bool]]:
