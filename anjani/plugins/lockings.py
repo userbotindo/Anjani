@@ -94,6 +94,7 @@ class Lockings(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
+    # skipcq: PYL-E1130
     @listener.filters(~filters.admin_only_no_report & filters.group)
     async def on_message(self, message: Message) -> None:
         chat = message.chat
@@ -178,10 +179,10 @@ class Lockings(plugin.Plugin):
                 continue
 
     async def detect_alphabet(self, ustring: str) -> Set[str]:
-        return set(ud.name(char).split(" ")[0].lower() for char in ustring if char.isalpha())
+        return {ud.name(char).split(" ")[0].lower() for char in ustring if char.isalpha()}
 
     def get_mode(self, mode: str) -> bool:
-        return False if mode == "lock" else True
+        return mode != "lock"
 
     def get_restrictions(self, mode: str) -> MutableMapping[str, MutableMapping[str, bool]]:
         return OrderedDict(
