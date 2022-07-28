@@ -528,20 +528,28 @@ view-goodbye: |
   And the goodbye message of this chat is:
 #endregion
 #region lockings
-lock-types-available: "Locks available:\n"
-lock-types-perm: "**Current locked chat permissions in this chat for non admins**:\n"
-lock-types-list: "**Current locked types in this chat for non admins**:\n"
-lock-types-list-empty: "**No active lock in this chat.**"
-lock-type-required: Please provide a type of lock.
-lock-type-locked: "'`{lock_type}`' already locked."
-lock-type-invalid: "'`{lock_type}`' invalid lock type."
-lock-type-done: Successfully locked '`{lock_type}`'.
-unlock-type-required: Please provide a type of unlock.
-unlock-type-unlocked: "'`{unlock_type}`' is not locked."
-unlock-type-invalid: "'`{unlock_type}`' invalid unlock type."
-unlock-type-done: Successfully unlocked '`{unlock_type}`'.
-locking-bots-not-admin: I see a bot added by non admin/owner and it's locked.\nBut i can't kicked it because i'm not an admin.
-locking-failed-to-delete: "'`{lock_type}`' is locked but i can't delete the message.\nIt's probably i'm not an admin."
+lockings-button: Lockings
+lockings-help: |
+  This plugin will help you to lock/unlock your group's permissions/types for non-admins.\n
+  **Admin Commands:**
+  × /lock <types/permissions>: Will lock the group's permissions/types for non-admins.\n
+  × /unlock <types/permissions>: Will unlock the group's locked types/permissions.\n
+  × /locktypes : See available types/permissions to lock/unlock.\n
+  × /locks : See locked types/permissions.\n
+lockings-types-available: "**Locks permissions/types available**:\n"
+lockings-types-perm: "**Current locked chat permissions in this chat for non admins**:\n"
+lockings-types-list: "**Current locked types in this chat for non admins**:\n"
+lockings-types-list-empty: "**No active lock in this chat.**"
+lockings-type-required: Please provide a type of lock.
+lockings-type-locked: "'`{lock_type}`' already locked."
+lockings-type-invalid: "'`{lock_type}`' invalid lock type."
+lockings-type-done: Successfully locked '`{lock_type}`'.
+lockings-bots-not-admin: I see a bot added by not the owner and it's locked.\nBut i can't kicked it because i'm not an admin.
+lockings-failed-to-delete: "'`{lock_type}`' is locked but i can't delete the message.\nIt's probably i'm not an admin."
+unlockings-type-required: Please provide a type of unlock.
+unlockings-type-unlocked: "'`{unlock_type}`' is not locked."
+unlockings-type-invalid: "'`{unlock_type}`' invalid unlock type."
+unlockings-type-done: Successfully unlocked '`{unlock_type}`'.
 #endregion
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"

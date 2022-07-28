@@ -66,7 +66,7 @@ LOCK_TYPES = OrderedDict(
 
 class Lockings(plugin.Plugin):
     name: ClassVar[str] = "Lockings"
-    helpable: ClassVar[bool] = False  # TODO: implement helpable
+    helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
     restrictions: MutableMapping[str, MutableMapping[str, MutableMapping[str, bool]]]
@@ -134,7 +134,7 @@ class Lockings(plugin.Plugin):
             except MessageDeleteForbidden:
                 await self.bot.respond(
                     message,
-                    await self.get_text(chat.id, "locking-failed-to-delete", lock_type=lock_type),
+                    await self.get_text(chat.id, "lockings-failed-to-delete", lock_type=lock_type),
                     quote=True,
                 )
             except MessageIdInvalid:  # Probably deleted already
@@ -166,7 +166,7 @@ class Lockings(plugin.Plugin):
 
             if bot_perm.status != ChatMemberStatus.ADMINISTRATOR:
                 await self.bot.respond(
-                    action, await self.get_text(chat.id, "locking-bots-not-admin"), quote=True
+                    action, await self.get_text(chat.id, "lockings-bots-not-admin"), quote=True
                 )
                 return  # Tell once so we don't spam the chat
 
@@ -245,16 +245,16 @@ class Lockings(plugin.Plugin):
         except KeyError:
             pass
 
-        text = await ctx.get_text("lock-types-perm")
+        text = await ctx.get_text("lockings-types-perm")
         for types, is_lock in permissions.items():
             if not is_lock:
                 text += f"\n × `{types}`"
 
         locked = await self.get_chat_restrictions(chat.id)
         if not locked and all(value is True for value in permissions.values()):
-            return await ctx.get_text("lock-types-list-empty")
+            return await ctx.get_text("lockings-types-list-empty")
 
-        text += "\n\n" + await ctx.get_text("lock-types-list")
+        text += "\n\n" + await ctx.get_text("lockings-types-list")
         for types in sorted(locked):
             text += f"\n × `{types}`"
 
@@ -264,7 +264,7 @@ class Lockings(plugin.Plugin):
     async def cmd_lock(self, ctx: command.Context, lock_type: Optional[str] = None) -> str:
         chat = ctx.chat
         if not lock_type:
-            return await ctx.get_text("lock-type-required")
+            return await ctx.get_text("lockings-type-required")
 
         lock_type = lock_type.lower()
         permissions = dict(chat.permissions.__dict__)
@@ -273,7 +273,7 @@ class Lockings(plugin.Plugin):
                 not permissions[list(self.restrictions["lock"][lock_type].keys())[0]]
                 and lock_type != "all"
             ):
-                return await ctx.get_text("lock-type-locked", lock_type=lock_type)
+                return await ctx.get_text("lockings-type-locked", lock_type=lock_type)
 
             await self.bot.client.set_chat_permissions(
                 chat_id=chat.id,
@@ -282,13 +282,13 @@ class Lockings(plugin.Plugin):
         elif lock_type in LOCK_TYPES:
             locked = await self.get_chat_restrictions(chat.id)
             if lock_type in locked:
-                return await ctx.get_text("lock-type-locked", lock_type=lock_type)
+                return await ctx.get_text("lockings-type-locked", lock_type=lock_type)
 
             await self.update_chat_restrictions(chat.id, lock_type, "lock")
         else:
-            return await ctx.get_text("lock-type-invalid", lock_type=lock_type)
+            return await ctx.get_text("lockings-type-invalid", lock_type=lock_type)
 
-        return await ctx.get_text("lock-type-done", lock_type=lock_type)
+        return await ctx.get_text("lockings-type-done", lock_type=lock_type)
 
     @command.filters(filters.admin_only, aliases={"locktypes"})
     async def cmd_lock_types(self, ctx: command.Context) -> str:
@@ -296,13 +296,13 @@ class Lockings(plugin.Plugin):
         for types in sorted(list(LOCK_TYPES) + list(self.restrictions["lock"])):
             text += f"\n × `{types}`"
 
-        return await ctx.get_text("lock-types-available") + text
+        return await ctx.get_text("lockings-types-available") + text
 
     @command.filters(filters.admin_only)
     async def cmd_unlock(self, ctx: command.Context, unlock_type: Optional[str] = None) -> str:
         chat = ctx.chat
         if not unlock_type:
-            return await ctx.get_text("unlock-type-required")
+            return await ctx.get_text("unlockings-type-required")
 
         unlock_type = unlock_type.lower()
         permissions = dict(chat.permissions.__dict__)
@@ -311,7 +311,7 @@ class Lockings(plugin.Plugin):
                 permissions[list(self.restrictions["unlock"][unlock_type].keys())[0]]
                 and unlock_type != "all"
             ):
-                return await ctx.get_text("unlock-type-unlocked", unlock_type=unlock_type)
+                return await ctx.get_text("unlockings-type-unlocked", unlock_type=unlock_type)
 
             await self.bot.client.set_chat_permissions(
                 chat_id=chat.id,
@@ -320,10 +320,10 @@ class Lockings(plugin.Plugin):
         elif unlock_type in LOCK_TYPES:
             locked = await self.get_chat_restrictions(chat.id)
             if not locked or unlock_type not in locked:
-                return await ctx.get_text("unlock-type-unlocked", unlock_type=unlock_type)
+                return await ctx.get_text("unlockings-type-unlocked", unlock_type=unlock_type)
 
             await self.update_chat_restrictions(chat.id, unlock_type, "unlock")
         else:
-            return await ctx.get_text("unlock-type-invalid", unlock_type=unlock_type)
+            return await ctx.get_text("unlockings-type-invalid", unlock_type=unlock_type)
 
-        return await ctx.get_text("unlock-type-done", unlock_type=unlock_type)
+        return await ctx.get_text("unlockings-type-done", unlock_type=unlock_type)
