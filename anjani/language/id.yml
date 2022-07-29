@@ -548,6 +548,30 @@ view-goodbye: |
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
+#region lockings
+lockings-button: Lockings
+lockings-help: |
+  Plugin ini akan membantu anda untuk mengunci/membuka pengaturan hak/tipe pesan untuk anggota yang bukan admin pada grup.\n
+  **Hanya Administrator yang bisa menggunakan:**
+  × /lock <tipe pesan/hak>: Akan mengunci hak/tipe pesan pada grup.\n
+  × /unlock <tipe pesan/hak>: Akan membuka tipe pesan/hak yang terkunci pada grup.\n
+  × /locktypes : Melihat tipe pesan/hak yang tersedia untuk dikunci/dibuka.\n
+  × /locks : Melihat tipe pesan/hak yang terkunci.\n
+lockings-types-available: "**Tipe pesan atau hak kunci yang tersedia**:\n"
+lockings-types-perm: "**Hak grup yang terkunci saat ini untuk anggota yang bukan admin**:\n"
+lockings-types-list: "**Tipe pesan yang terkunci saat ini untuk anggota yang bukan admin**:\n"
+lockings-types-list-empty: "**Tidak ada yang terkunci saat ini pada grup.**"
+lockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
+lockings-type-locked: "'`{lock_type}`' sudah terkunci."
+lockings-type-invalid: "'`{lock_type}`' tipe pesan tidak sah."
+lockings-type-done: Berhasil mengunci '`{lock_type}`'.
+lockings-bots-not-admin: Saya melihat bot ditambahkan selain pemilik grup dan pengaturan tipe bot dikunci.\nAkan tetapi saya tidak bisa mengeluarkannya karena saya bukan administrator.
+lockings-failed-to-delete: "'`{lock_type}`' dikunci tetapi saya tidak bisa menghapusnya.\nKemungkinan saya bukan administrator."
+unlockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
+unlockings-type-unlocked: "'`{unlock_type}`' tidak terkunci."
+unlockings-type-invalid: "'`{unlock_type}`' tipe pesan tidak sah."
+unlockings-type-done: Berhasil membuka kunci '`{unlock_type}`'.
+#endregion
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
