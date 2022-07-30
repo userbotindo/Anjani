@@ -40,6 +40,7 @@ from pyrogram.errors import (
     ChatForbidden,
     ChatWriteForbidden,
     MessageDeleteForbidden,
+    UserNotParticipant,
 )
 from pyrogram.types import (
     ChatMember,
@@ -225,11 +226,16 @@ Bot = ChatMember
 Member = ChatMember
 
 
-async def fetch_permissions(client: Client, chat: int, user: int) -> Tuple[Bot, Member]:
-    bot, member = await asyncio.gather(
-        client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
-    )
-    return bot, member
+async def fetch_permissions(
+    client: Client, chat: int, user: int
+) -> Tuple[Optional[Bot], Optional[Member]]:
+    try:
+        bot, member = await asyncio.gather(
+            client.get_chat_member(chat, "me"), client.get_chat_member(chat, user)
+        )
+        return bot, member
+    except UserNotParticipant:
+        return None, None
 
 
 # }

@@ -165,7 +165,7 @@ def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
-        if not bot_perm.privileges or not member_perm.privileges:
+        if not (bot_perm and member_perm) or not (bot_perm.privileges and member_perm.privileges):
             return False
 
         try:
