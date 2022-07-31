@@ -157,7 +157,7 @@ class Lockings(plugin.Plugin):
         bot_perm, added_by_perm = await util.tg.fetch_permissions(
             self.bot.client, chat.id, added_by.id
         )
-        if added_by_perm.status == ChatMemberStatus.OWNER:
+        if not (bot_perm and added_by_perm) or added_by_perm.status == ChatMemberStatus.OWNER:
             return  # bot added by owner
 
         # Kick the bot if it's not added by the owner

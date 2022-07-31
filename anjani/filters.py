@@ -256,6 +256,9 @@ def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilt
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
+        if not (bot_perm and member_perm):
+            return False
+
         if bot_perm.status == ChatMemberStatus.ADMINISTRATOR and member_perm.status in {
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.OWNER,

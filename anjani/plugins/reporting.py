@@ -156,7 +156,10 @@ class Reporting(plugin.Plugin):
             return await self.text(chat.id, "err-yes-no-args")
 
         _, member = await util.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
-        if member.status not in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
+        if not member or member.status not in {
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        }:
             return None
 
         if setting is True:
