@@ -63,9 +63,12 @@ class Reporting(plugin.Plugin):
         if not user:
             return
 
-        invoker = await chat.get_member(user.id)
-        if invoker.status in {ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR}:
-            return  # ignore command from admins
+        try:
+            invoker = await chat.get_member(user.id)
+            if invoker.status in {ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR}:
+                return  # ignore command from admins
+        except UserNotParticipant:
+            pass  # keep going when user is not a member
 
         if not message.reply_to_message:
             await message.reply(await self.text(chat.id, "no-report-user"))
