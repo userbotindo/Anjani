@@ -30,6 +30,7 @@ from pyrogram.errors import (
     MessageDeleteForbidden,
     MessageIdInvalid,
     MessageNotModified,
+    PeerIdInvalid,
     QueryIdInvalid,
     UserAdminInvalid,
     UserNotParticipant,
@@ -199,7 +200,18 @@ class SpamPrediction(plugin.Plugin):
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "spampredict-ban-no-perm"))
 
-        target = await self.bot.client.get_users(int(user))
+        keyboard = query.message.reply_markup
+        if not isinstance(keyboard, InlineKeyboardMarkup):
+            raise ValueError("Reply markup must be an InlineKeyboardMarkup")
+
+        try:
+            target = await self.bot.client.get_users(int(user))
+        except PeerIdInvalid:
+            await query.answer("Error while fetching user!")
+            await query.edit_message_reply_markup(
+                reply_markup=InlineKeyboardMarkup(keyboard.inline_keyboard[:-1])
+            )
+            return
         if isinstance(target, list):
             target = target[0]
 
@@ -209,10 +221,6 @@ class SpamPrediction(plugin.Plugin):
                 chat.id, "spampredict-ban", user=target.username or target.first_name
             )
         )
-
-        keyboard = query.message.reply_markup
-        if not isinstance(keyboard, InlineKeyboardMarkup):
-            raise ValueError("Reply markup must be an InlineKeyboardMarkup")
 
         await query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(keyboard.inline_keyboard[:-1])
