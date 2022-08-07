@@ -250,7 +250,7 @@ filters-help: |
   Filters also support markdown and formatters (check /formathelp).
 filters-added: "Successfully added `{}` as filters."
 filters-removed: "Successfully removed `{}` from filters."
-filter-help: "Usage: `/filters <trigger> <text>`."
+filter-help: "Usage: `/filter <trigger> <text>`."
 filter-stop-help: "Usage: `/stop <trigger>`."
 filters-chat-nofilter: This chat has no filters.
 filters-chat-nokeyword: "No filters named `{}` on this chat."

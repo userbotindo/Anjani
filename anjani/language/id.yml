@@ -271,7 +271,7 @@ filters-help: |
   Filter mendukung markdown dan formatting (cek /formathelp).
 filters-added: "Berhasil menambahkan `{}` sebagai filter."
 filters-removed: "Berhasil menghapus `{}` dari filter."
-filter-help: "Contoh: `/filters <kata kunci> <teks>`"
+filter-help: "Contoh: `/filter <kata kunci> <teks>`"
 filter-stop-help: "Contoh: `/stop <kata kunci>`"
 filters-chat-nofilter: Grup ini tidak memiliki filter.
 filters-chat-nokeyword: "Tidak ada filter dengan kata kunci `{}` di grup ini."
