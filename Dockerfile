@@ -45,4 +45,4 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-dev -E all
 
 # Command to run when container started
-CMD ["python3", "-m", "anjani"]
+CMD ["poetry", "run", "anjani"]
