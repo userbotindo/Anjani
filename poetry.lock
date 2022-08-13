@@ -54,7 +54,7 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-dev = ["pytest", "pytest-cov"]
+dev = ["pytest-cov", "pytest"]
 
 [[package]]
 name = "aiosignal"
@@ -287,10 +287,10 @@ optional = false
 python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
-requirements_deprecated_finder = ["pipreqs", "pip-api"]
-colors = ["colorama (>=0.4.3,<0.5.0)"]
 plugins = ["setuptools"]
+colors = ["colorama (>=0.4.3,<0.5.0)"]
+requirements_deprecated_finder = ["pip-api", "pipreqs"]
+pipfile_deprecated_finder = ["requirementslib", "pipreqs"]
 
 [[package]]
 name = "joblib"
@@ -442,7 +442,7 @@ aws = ["pymongo-auth-aws (<2.0.0)"]
 
 [[package]]
 name = "pyrogram"
-version = "2.0.36"
+version = "2.0.38"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
@@ -633,7 +633,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9, <3.10"
-content-hash = "9804f870e2f89efd41a0c6d7b27d05925acf4dcd23c29315a02f7f0e01ee077e"
+content-hash = "e9b7fa4676916d51617ccb60ed031b90568259f239b087dc868d0fe08fd82b00"
 
 [metadata.files]
 aiofile = [
@@ -1121,8 +1121,8 @@ pymongo = [
     {file = "pymongo-4.2.0.tar.gz", hash = "sha256:72f338f6aabd37d343bd9d1fdd3de921104d395766bcc5cdc4039e4c2dd97766"},
 ]
 pyrogram = [
-    {file = "Pyrogram-2.0.36-py3-none-any.whl", hash = "sha256:96b2f4fc4915371114ea49397334fbf7967b64aedc7915e71f41bca9ab7e72c5"},
-    {file = "Pyrogram-2.0.36.tar.gz", hash = "sha256:e4d8904fee0200673b0914e2b7277a629ec484891fc573cb9ba89f011064a75f"},
+    {file = "Pyrogram-2.0.38-py3-none-any.whl", hash = "sha256:fb4af2a2f70526bc07e7d5b0aae57c7fb5c47ee38df483fca1d76064c6a3e038"},
+    {file = "Pyrogram-2.0.38.tar.gz", hash = "sha256:bc46516ed5c000c0c3a4c653045c849bc07d5f4959c27f6f053550ace5152835"},
 ]
 pysocks = [
     {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},

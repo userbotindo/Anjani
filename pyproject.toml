@@ -32,7 +32,7 @@ aiohttp = "^3.8.1"
 aiorun = "^2022.4.1"
 colorlog = "^6.6.0"
 dnspython = "^2.2.1"
-Pyrogram = "^2.0.36"
+Pyrogram = "^2.0.38"
 python-dotenv = "^0.20.0"
 TgCrypto = "^1.2.3"
 uvloop = {version ="^0.16.0", optional = true}
