@@ -656,7 +656,7 @@ class SpamPrediction(plugin.Plugin):
 
         content = replied.text or replied.caption
 
-        photoPrediction = None
+        photo_prediction = None
         if replied.photo:
             await ctx.respond(
                 await ctx.get_text("spampredict-photo"),
@@ -667,7 +667,7 @@ class SpamPrediction(plugin.Plugin):
             if ocr_result:
                 ocr_prediction = await self._predict(ocr_result)
                 if ocr_prediction.size != 0:
-                    photoPrediction = (
+                    photo_prediction = (
                         "**Result Photo Text**\n\n"
                         f"**Is Spam**: {await self._is_spam(ocr_result)}\n"
                         f"**Spam Prediction**: `{self.prob_to_string(ocr_prediction[0][1])}`\n"
@@ -677,11 +677,11 @@ class SpamPrediction(plugin.Plugin):
                     if not content:
                         await asyncio.gather(
                             self.bot.log_stat("predicted"),
-                            ctx.respond(photoPrediction),
+                            ctx.respond(photo_prediction),
                         )
                         return None
             else:
-                photoPrediction = await ctx.get_text("spampredict-photo-failed")
+                photo_prediction = await ctx.get_text("spampredict-photo-failed")
 
         if not content:
             return await ctx.get_text("spampredict-empty")
@@ -699,8 +699,8 @@ class SpamPrediction(plugin.Plugin):
         await asyncio.gather(
             self.bot.log_stat("predicted"),
             ctx.respond(
-                photoPrediction + "**Result Caption Text**\n\n" + textPrediction
-                if photoPrediction
+                photo_prediction + "**Result Caption Text**\n\n" + textPrediction
+                if photo_prediction
                 else "**Result**\n\n" + textPrediction,
                 reply_to_message_id=None if replied.photo else replied.id,
             ),

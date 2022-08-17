@@ -79,12 +79,15 @@ class Main(plugin.Plugin):
                 status_msg = status_msg[0]
 
             self.bot.log.info(f"Bot downtime {duration_str}")
-            await self.sendToLogChannel(
+            await self.send_to_log(
                 f"Bot downtime {duration_str}.", reply_to_message_id=status_msg.id
             )
-            await status_msg.delete()
+            try:
+                await status_msg.delete()
+            except MessageDeleteForbidden:
+                pass
         else:
-            await self.sendToLogChannel("Starting system...")
+            await self.send_to_log("Starting system...")
 
     async def on_stop(self) -> None:
         file = AsyncPath("anjani/anjani.session")
@@ -106,7 +109,7 @@ class Main(plugin.Plugin):
             upsert=True,
         )
 
-        status_msg = await self.sendToLogChannel("Shutdowning system...")
+        status_msg = await self.send_to_log("Shutdowning system...")
         self.bot.log.info("Preparing to shutdown...")
         if not status_msg:
             return
@@ -123,7 +126,7 @@ class Main(plugin.Plugin):
             upsert=True,
         )
 
-    async def sendToLogChannel(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
+    async def send_to_log(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
         try:
             return await self.bot.client.send_message(
                 int(self.bot.config.log_channel), text, *args, **kwargs

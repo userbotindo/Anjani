@@ -34,7 +34,7 @@ from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
 from anjani import util
-from anjani.language import getLangFile
+from anjani.language import get_lang_file
 
 from .anjani_mixin_base import MixinBase
 
@@ -159,7 +159,7 @@ class TelegramBot(MixinBase):
             self.chats_languages[data["chat_id"]] = data["language"]
 
         # Load text from language file
-        async for language_file in getLangFile():
+        async for language_file in get_lang_file():
             self.languages[language_file.stem] = await util.run_sync(
                 full_load, await language_file.read_text()
             )

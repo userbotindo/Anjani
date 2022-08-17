@@ -7,7 +7,7 @@ authors = ["UserbotIndo Team"]
 readme = "README.md"
 homepage = "https://github.com/userbotindo/anjani#readme"
 repository = "https://github.com/userbotindo/anjani"
-documentation = "https://github.com/userbotindo/Anjani/wiki"
+documentation = "https://userbotindo.com/docs/home"
 keywords = ["chatbot", "bot", "python", "telegram-bot", "pyrogram"]
 classifiers = [
     "Environment :: Console",
@@ -65,18 +65,31 @@ target-version = ["py38"]
 #
 [tool.isort]
 profile = "black"
-known_third_party = ["aiohttp", "aiopath", "aiorun", "colorlog", "dotenv", "pymongo", "pyrogram", "yaml"]
+known_third_party = [
+    "aiohttp",
+    "aiopath",
+    "aiorun",
+    "colorlog",
+    "dotenv",
+    "pymongo",
+    "pyrogram",
+    "scikit-learn",
+    "yaml"
+]
 
 #
 # Pylint Config
 #
 [tool.pylint]
+    ignore = "anjani/util/db"
+
     [tool.pylint.messages_control]
     disable = [
         "attribute-defined-outside-init",
         "too-few-public-methods",
         "missing-class-docstring",
         "logging-fstring-interpolation",
+        "missing-function-docstring"
     ]
 
     [tool.pylint.reports]
