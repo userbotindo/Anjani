@@ -377,83 +377,84 @@ class SpamPrediction(plugin.Plugin):
         content_hash = self._build_hash(text)
         identifier = self._build_hex(user)
         proba_str = self.prob_to_string(probability)
-
-        notice = (
-            "#SPAM_PREDICTION\n\n"
-            f"**Prediction Result**: {proba_str}\n"
-            f"**Identifier**: `{identifier}`\n"
-        )
-        if ch := message.forward_from_chat:
-            notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
-
-        if from_ocr:
-            notice += (
-                f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-            )
-        else:
-            notice += (
-                f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-            )
-
-        l_spam, l_ham = 0, 0
-        _, data = await asyncio.gather(
-            self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
-        )
-        if data:
-            l_spam = len(data["spam"])
-            l_ham = len(data["ham"])
-
-        keyb = [
-            [
-                InlineKeyboardButton(text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"),
-                InlineKeyboardButton(text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"),
-            ]
-        ]
+        msg = None
 
         if message.chat.username:
-            keyb.append(
-                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")]
-            )
 
-        if message.forward_from_chat and message.forward_from_chat.username:
-            raw_btn = InlineKeyboardButton(
-                text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+            notice = (
+                "#SPAM_PREDICTION\n\n"
+                f"**Prediction Result**: {proba_str}\n"
+                f"**Identifier**: `{identifier}`\n"
             )
-            if message.chat.username:
-                keyb[1].append(raw_btn)
+            if ch := message.forward_from_chat:
+                notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
+
+            if from_ocr:
+                notice += (
+                    f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+                )
             else:
-                keyb.append([raw_btn])
+                notice += f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
-        while True:
+            l_spam, l_ham = 0, 0
+            _, data = await asyncio.gather(
+                self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
+            )
+            if data:
+                l_spam = len(data["spam"])
+                l_ham = len(data["ham"])
+
+            keyb = [
+                [
+                    InlineKeyboardButton(
+                        text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"
+                    ),
+                    InlineKeyboardButton(
+                        text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"
+                    ),
+                ],
+                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
+            ]
+
+            if message.forward_from_chat and message.forward_from_chat.username:
+                raw_btn = InlineKeyboardButton(
+                    text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+                )
+                if message.chat.username:
+                    keyb[1].append(raw_btn)
+                else:
+                    keyb.append([raw_btn])
+
+            while True:
+                try:
+                    msg = await self.bot.client.send_message(
+                        chat_id=-1001314588569,
+                        text=notice,
+                        disable_web_page_preview=True,
+                        reply_markup=InlineKeyboardMarkup(keyb),
+                    )
+                except FloodWait as flood:
+                    await asyncio.sleep(flood.value)  # type: ignore
+                    continue
+
+                await asyncio.sleep(0.1)
+                break
+
             try:
-                msg = await self.bot.client.send_message(
-                    chat_id=-1001314588569,
-                    text=notice,
-                    disable_web_page_preview=True,
-                    reply_markup=InlineKeyboardMarkup(keyb),
-                )
-            except FloodWait as flood:
-                await asyncio.sleep(flood.value)  # type: ignore
-                continue
-
-            await asyncio.sleep(0.1)
-            break
-
-        try:
-            async with asyncio.Lock():
-                await self.db.insert_one(
-                    {
-                        "_id": content_hash,
-                        "text": text_norm,
-                        "spam": [],
-                        "ham": [],
-                        "proba": probability,
-                        "msg_id": [msg.id],
-                        "date": util.time.sec(),
-                    }
-                )
-        except DuplicateKeyError:
-            await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
+                async with asyncio.Lock():
+                    await self.db.insert_one(
+                        {
+                            "_id": content_hash,
+                            "text": text_norm,
+                            "spam": [],
+                            "ham": [],
+                            "proba": probability,
+                            "msg_id": [msg.id],
+                            "date": util.time.sec(),
+                        }
+                    )
+            except DuplicateKeyError:
+                await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
 
         if probability >= 0.8:
             # Empty user big chances are anonymous admins
@@ -495,15 +496,18 @@ class SpamPrediction(plugin.Plugin):
                 reply_id = 0
 
             chat = message.chat
+            button = []
             me = await chat.get_member(self.bot.uid)
-            button = [[InlineKeyboardButton("View Message", url=msg.link)]]
+            if message.chat.username and msg:
+                button.append([InlineKeyboardButton("View Message", url=msg.link)])
+
             if me.privileges and me.privileges.can_restrict_members and target is not None:
                 button.append(
                     [
                         InlineKeyboardButton(
                             "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
                         )
-                    ],
+                    ]
                 )
 
             await self.bot.client.send_message(
