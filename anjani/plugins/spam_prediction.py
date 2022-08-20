@@ -458,7 +458,7 @@ class SpamPrediction(plugin.Plugin):
 
         if probability >= 0.8:
             # Empty user big chances are anonymous admins
-            if user is None or message.sender_chat:
+            if user is None or message.sender_chat and message.sender_chat.id == message.chat.id:
                 return
 
             try:
