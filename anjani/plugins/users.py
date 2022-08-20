@@ -17,6 +17,7 @@
 import asyncio
 import re
 from hashlib import md5
+from time import time
 from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 
 from pyrogram.enums.chat_action import ChatAction
@@ -62,7 +63,7 @@ class Users(plugin.Plugin):
 
     async def build_user_task(self, user: User) -> asyncio.Task:
         data = await self.users_db.find_one({"_id": user.id})
-        content: MutableMapping[str, Any] = {"username": user.username}
+        content: MutableMapping[str, Any] = {"username": user.username, "last_seen": int(time())}
         if not data or "hash" not in data:
             content["hash"] = self.hash_id(user.id)
         if not data or "chats" not in data:
@@ -119,7 +120,7 @@ class Users(plugin.Plugin):
             return
 
         tasks = []
-        set_content = {"username": user.username, "name": user.first_name}
+        set_content = {"username": user.username, "name": user.first_name, "last_seen": int(time())}
         user_data = await self.users_db.find_one({"_id": user.id})
 
         if chat.type == ChatType.PRIVATE:
@@ -138,7 +139,11 @@ class Users(plugin.Plugin):
 
         chat_data = await self.chats_db.find_one({"chat_id": chat.id})
         chat_update = {
-            "$set": {"chat_name": chat.title, "type": chat.type.name.lower()},
+            "$set": {
+                "chat_name": chat.title,
+                "type": chat.type.name.lower(),
+                "last_update": int(time()),
+            },
             "$addToSet": {"member": user.id},
         }
         if self.predict_loaded:
@@ -156,7 +161,7 @@ class Users(plugin.Plugin):
             if usr := message.forward_from:
                 tasks.append(await self.build_user_task(usr))
         else:
-            update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
+            update = {"$set": set_content, "$addToSet": {"chats": chat.id}}
 
         await asyncio.gather(
             self.users_db.update_one({"_id": user.id}, update, upsert=True),
