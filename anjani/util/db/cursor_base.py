@@ -83,6 +83,13 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
 
         self.loop = asyncio.get_event_loop()
 
+    async def __aenter__(self) -> "AsyncCursorBase":
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        if self.dispatch:
+            await self.close()
+
     def __aiter__(self) -> "AsyncCursorBase":
         return self
 
