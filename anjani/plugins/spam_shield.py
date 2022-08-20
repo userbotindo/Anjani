@@ -143,8 +143,6 @@ class SpamShield(plugin.Plugin):
         except ClientConnectorError:
             return {}
 
-        raise OSError("Failed to connect to SpamWatch API")
-
     async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""
         retry = 0
