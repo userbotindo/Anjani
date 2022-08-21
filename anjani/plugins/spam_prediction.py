@@ -20,6 +20,7 @@ import re
 import unicodedata
 from functools import partial
 from hashlib import md5, sha256
+from random import randint
 from typing import Any, Callable, ClassVar, MutableMapping, Optional
 
 from aiopath import AsyncPath
@@ -148,6 +149,15 @@ class SpamPrediction(plugin.Plugin):
 
     async def _is_spam(self, text: str) -> bool:
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
+
+    async def _collect_random_sample(self, proba: float, uid: Optional[int]) -> None:
+        if not uid:
+            return
+        if randint(1, 3) == 2:  # 33% chance to collect a sample
+            await self.user_db.update_one(
+                {"_id": uid},
+                {"$push": {"pred_sample": proba}},
+            )  # Do not upsert
 
     async def run_ocr(self, message: Message) -> Optional[str]:
         """Run tesseract"""
@@ -366,11 +376,17 @@ class SpamPrediction(plugin.Plugin):
             user = None
 
         text_norm = self._normalize_text(text)
+        if len(text_norm.split()) < 5:  # Skip short messages
+            return
+
         response = await self._predict(text_norm)
         if response.size == 0:
             return
 
         probability = response[0][1]
+
+        await self._collect_random_sample(probability, user)
+
         if probability <= 0.5:
             return
 
@@ -445,6 +461,7 @@ class SpamPrediction(plugin.Plugin):
                     await self.db.insert_one(
                         {
                             "_id": content_hash,
+                            "user": identifier,
                             "text": text_norm,
                             "spam": [],
                             "ham": [],
