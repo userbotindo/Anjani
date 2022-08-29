@@ -127,6 +127,8 @@ class EventDispatcher(MixinBase):
         if not listeners:
             return None
 
+        self.log.debug("Dispatching event '%s' with data %s", event, args)
+
         match = None
         index = None
         for lst in listeners:
@@ -145,7 +147,6 @@ class EventDispatcher(MixinBase):
                 else:
                     continue
 
-            self.log.debug("Dispatching event '%s' with data %s", event, args)
             if match and index is not None:
                 args[index].matches = match
 
