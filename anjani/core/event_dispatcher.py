@@ -257,7 +257,7 @@ class EventDispatcher(MixinBase):
                     continue
                 else:
                     break
-        except (ConnectionError, OSError, asyncio.CancelledError):
+        except (OSError, asyncio.CancelledError):
             pass
         finally:
             # Unset after we finished to avoid sending the same pts and date,
