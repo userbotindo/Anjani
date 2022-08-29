@@ -17,7 +17,7 @@
 import asyncio
 import bisect
 from hashlib import sha256
-from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Set
+from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Tuple
 
 from pyrogram import raw
 from pyrogram.filters import Filter
@@ -25,7 +25,7 @@ from pyrogram.raw import functions
 from pyrogram.types import CallbackQuery, InlineQuery, Message
 
 from anjani import plugin, util
-from anjani.error import EventDispatchError
+from anjani.error import EventDispatchError, StopPropagation
 from anjani.listener import Listener, ListenerFunc
 
 from .anjani_mixin_base import MixinBase
@@ -115,11 +115,9 @@ class EventDispatcher(MixinBase):
         self: "Anjani",
         event: str,
         *args: Any,
-        wait: bool = True,
-        get_tasks: bool = False,
         **kwargs: Any,
-    ) -> Optional[Set[asyncio.Task[Any]]]:
-        tasks = set()
+    ) -> Optional[Tuple[Any, ...]]:
+        results = []
 
         try:
             listeners = self.listeners[event]
@@ -147,38 +145,36 @@ class EventDispatcher(MixinBase):
                 else:
                     continue
 
-            task = self.loop.create_task(lst.func(*args, **kwargs))
-            tasks.add(task)
+            self.log.debug("Dispatching event '%s' with data %s", event, args)
+            if match and index is not None:
+                args[index].matches = match
 
-        if not tasks:
-            return None
+            result = None
+            try:
+                result = await lst.func(*args, **kwargs)
+            except StopPropagation:
+                break
+            except Exception as err:  # skipcq: PYL-W0703
+                dispatcher_error = EventDispatchError(
+                    f"raised from {type(err).__name__}: {str(err)}"
+                ).with_traceback(err.__traceback__)
+                self.log.error(
+                    "Error dispatching event '%s' on %s",
+                    event,
+                    lst.func.__qualname__,
+                    exc_info=dispatcher_error,
+                )
 
-        if match and index is not None:
-            args[index].matches = match
+                continue
+            finally:
+                if result:
+                    results.append(result)
 
-        self.log.debug("Dispatching event '%s' with data %s", event, args)
-        if wait:
-            await asyncio.wait(tasks)
-            for task in tasks:
-                try:
-                    task.result()
-                except Exception as err:  # skipcq: PYL-W0703 - Handle all future exception
-                    dispatcher_error = EventDispatchError(
-                        f"raised from {type(err).__name__}: {str(err)}"
-                    ).with_traceback(err.__traceback__)
-                    self.log.error(
-                        "Error dispatching event '%s' on %s",
-                        event,
-                        task.get_coro().__qualname__,
-                        exc_info=dispatcher_error,
-                    )
+                match = None
+                index = None
+                result = None
 
-                    continue
-
-        if get_tasks:
-            return tasks
-
-        return None
+        return tuple(results)
 
     async def dispatch_missed_events(self: "Anjani") -> None:
         if not self.loaded or self._TelegramBot__running:
@@ -271,4 +267,4 @@ class EventDispatcher(MixinBase):
             )
 
     async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
-        await self.dispatch_event("stat_listen", stat, value, wait=False)
+        await self.dispatch_event("stat_listen", stat, value)
