@@ -153,6 +153,8 @@ class EventDispatcher(MixinBase):
             result = None
             try:
                 result = await lst.func(*args, **kwargs)
+            except KeyError:
+                continue
             except StopPropagation:
                 break
             except Exception as err:  # skipcq: PYL-W0703
