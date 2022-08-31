@@ -74,10 +74,7 @@ class ConversionError(BadArgument):
     """
 
     def __init__(  # skipcq: PYL-W1113
-        self,
-        converter: Optional["Converter"] = None,
-        err: Optional[Exception] = None,
-        *args: Any
+        self, converter: Optional["Converter"] = None, err: Optional[Exception] = None, *args: Any
     ) -> None:
         if converter and err:
             self.converter = type(converter).__name__

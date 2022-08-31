@@ -51,3 +51,7 @@ def find_prefixed_funcs(obj: Any, prefix: str) -> Set[Tuple[str, Callable[..., A
             results.add((name, func))
 
     return results
+
+
+class StopPropagation(Exception):
+    """Exception that raised to stop propagating an event"""

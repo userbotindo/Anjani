@@ -17,7 +17,7 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
 from aiopath import AsyncPath
 
@@ -37,25 +37,13 @@ class Backups(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "backup-progress"))
 
-        tasks = await self.bot.dispatch_event("plugin_backup", chat.id, get_tasks=True)
-        if not tasks:
+        results = await self.bot.dispatch_event("plugin_backup", chat.id)
+        if not results or len(results) <= 1:
             return await self.text(chat.id, "backup-null")
 
-        task: asyncio.Task[MutableMapping[str, Any]]
-        for task in tasks:
-            # Make sure all plugin backup are done
-            if not task.done():
-                await task
-
-            # skip adding to data if result is empty map
-            result = task.result()
-            if not result:
-                continue
-
+        result: MutableMapping[str, Any]
+        for result in results:
             data.update(result)
-
-        if len(data) <= 1:
-            return await self.text(chat.id, "backup-null")
 
         await file.write_text(json.dumps(data, indent=2))
 
@@ -71,8 +59,9 @@ class Backups(plugin.Plugin):
                 caption=await self.text(chat.id, "backup-doc", chat.title, chat.id, date, saved),
             ),
             ctx.response.delete(),
-            file.unlink(),
         )
+        await file.unlink()
+
         return None
 
     @command.filters(filters.admin_only)
@@ -102,14 +91,6 @@ class Backups(plugin.Plugin):
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
-        tasks = await self.bot.dispatch_event(
-            "plugin_restore", chat.id, data, wait=False, get_tasks=True
-        )
-        for task in tasks or []:
-            try:
-                await task
-            except KeyError:
-                continue
-
+        await self.bot.dispatch_event("plugin_restore", chat.id, data)
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
         return None
