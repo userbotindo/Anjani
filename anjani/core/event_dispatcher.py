@@ -25,8 +25,9 @@ from pyrogram.raw import functions
 from pyrogram.types import CallbackQuery, InlineQuery, Message
 
 from anjani import plugin, util
-from anjani.error import EventDispatchError, StopPropagation
+from anjani.error import EventDispatchError
 from anjani.listener import Listener, ListenerFunc
+from anjani.util.misc import StopPropagation
 
 from .anjani_mixin_base import MixinBase
 

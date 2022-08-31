@@ -132,7 +132,3 @@ class ExistingPluginError(PluginLoadError):
         self.old_plugin = old_plugin
         self.new_plugin = new_plugin
         super().__init__(f"Plugin '{old_plugin.name}' ({old_plugin.__name__}) already exists")
-
-
-class StopPropagation(AnjaniException):
-    """Exception that raised to stop propagating an event"""
