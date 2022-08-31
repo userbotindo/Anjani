@@ -105,33 +105,40 @@ class Lockings(plugin.Plugin):
                 if callable(func):
                     if await func(self.bot.client, message):
                         await message.delete()
-                else:
-                    if lock_type == "bots":
-                        continue  # bots are handled in on_chat_action
 
-                    if lock_type == "anon" and message.sender_chat:
-                        current_chat: Any = await self.bot.client.get_chat(chat.id)
-                        if not (
-                            current_chat.linked_chat
-                            and message.sender_chat.id == current_chat.linked_chat.id
-                            and not message.forward_from_chat
-                        ):
-                            await message.delete()
+                    continue
 
-                    if lock_type == "button" and message.reply_markup:
+                if func == "bots":
+                    continue  # bots are handled in on_chat_action
+
+                if func == "anon" and message.sender_chat:
+                    current_chat: Any = await self.bot.client.get_chat(chat.id)
+                    if not (
+                        current_chat.linked_chat
+                        and message.sender_chat.id == current_chat.linked_chat.id
+                        and not message.forward_from_chat
+                    ):
                         await message.delete()
 
-                    text = message.text or message.caption
-                    if lock_type == "rtl" and text:
-                        checkers = await self.detect_alphabet(text)
-                        if "arabic" in checkers:
-                            await message.delete()
+                    continue
 
-                    if lock_type == "url" and message.entities:
-                        for entity in message.entities:
-                            if entity.type == MessageEntityType.URL:
-                                await message.delete()
-                                break
+                if func == "button" and message.reply_markup:
+                    await message.delete()
+                    continue
+
+                text = message.text or message.caption
+                if func == "rtl" and text:
+                    checkers = await self.detect_alphabet(text)
+                    if "arabic" in checkers:
+                        await message.delete()
+
+                    continue
+
+                if func == "url" and message.entities:
+                    for entity in message.entities:
+                        if entity.type == MessageEntityType.URL:
+                            await message.delete()
+                            break
             except MessageDeleteForbidden:
                 await self.bot.respond(
                     message,
