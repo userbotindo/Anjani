@@ -58,7 +58,7 @@ class AsyncDatabase(AsyncBaseProperty):
         return self.dispatch is not None
 
     def __getitem__(self, name) -> AsyncCollection:
-        return AsyncCollection(Collection(self.dispatch, name))
+        return AsyncCollection(self, name)
 
     def __hash__(self) -> int:
         return hash((self.client, self.name))
@@ -119,7 +119,9 @@ class AsyncDatabase(AsyncBaseProperty):
         **kwargs: Any,
     ) -> AsyncCollection:
         return AsyncCollection(
-            await util.run_sync(
+            self,
+            name,
+            collection=await util.run_sync(
                 self.dispatch.create_collection,
                 name,
                 codec_options=codec_options,
@@ -129,7 +131,8 @@ class AsyncDatabase(AsyncBaseProperty):
                 session=session.dispatch if session else session,
                 check_exists=check_exists,
                 **kwargs,
-            )
+            ),
+            session=session,
         )
 
     async def dereference(
@@ -166,13 +169,12 @@ class AsyncDatabase(AsyncBaseProperty):
         read_concern: Optional[ReadConcern] = None,
     ) -> AsyncCollection:
         return AsyncCollection(
-            self.dispatch.get_collection(
-                name,
-                codec_options=codec_options,
-                read_preference=read_preference,
-                write_concern=write_concern,
-                read_concern=read_concern,
-            )
+            self,
+            name,
+            codec_options=codec_options,
+            read_preference=read_preference,
+            write_concern=write_concern,
+            read_concern=read_concern,
         )
 
     async def list_collection_names(
@@ -239,7 +241,7 @@ class AsyncDatabase(AsyncBaseProperty):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -252,7 +254,7 @@ class AsyncDatabase(AsyncBaseProperty):
             start_at_operation_time,
             session,
             start_after,
-            comment
+            comment,
         )
 
     def with_options(
