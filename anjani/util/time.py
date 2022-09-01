@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
+import time as t
 from typing import Union
 
 
 def usec() -> int:
     """Returns the current time in microseconds since the Unix epoch."""
 
-    return int(time.time() * 1000000)
+    return int(t.time() * 1000000)
 
 
 def msec() -> int:
@@ -33,7 +33,7 @@ def msec() -> int:
 def sec() -> int:
     """Returns the current time in seconds since the Unix epoch."""
 
-    return int(time.time())
+    return int(t.time())
 
 
 def format_duration_us(t_us: Union[int, float]) -> str:
@@ -76,12 +76,12 @@ def extract_time(time_text: str) -> Union[int, bool]:
             return False
 
         if unit == "m":
-            return int(time.time() + int(time_num) * 60)
+            return int(t.time() + int(time_num) * 60)
 
         if unit == "h":
-            return int(time.time() + int(time_num) * 60 * 60)
+            return int(t.time() + int(time_num) * 60 * 60)
 
         if unit == "d":
-            return int(time.time() + int(time_num) * 24 * 60 * 60)
+            return int(t.time() + int(time_num) * 24 * 60 * 60)
 
     return False
