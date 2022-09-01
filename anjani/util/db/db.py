@@ -30,7 +30,7 @@ from anjani import util
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
 from .client_session import AsyncClientSession
-from .collection import AsyncCollection, Collection
+from .collection import AsyncCollection
 from .command_cursor import AsyncCommandCursor, AsyncLatentCommandCursor, CommandCursor
 from .types import ReadPreferences
 
