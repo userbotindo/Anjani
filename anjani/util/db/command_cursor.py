@@ -188,7 +188,9 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
             self.started = True
             original_future = self.loop.create_future()
             future = self.loop.create_task(util.run_sync(self.start, *self.args, **self.kwargs))
-            future.add_done_callback(partial(self._on_started, original_future))
+            future.add_done_callback(
+                partial(self.loop.call_soon_threadsafe, self._on_started, original_future)
+            )
 
             self.start, self.args, self.kwargs = lambda _: None, (), {}
 
