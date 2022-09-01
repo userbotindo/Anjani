@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import inspect
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -185,7 +186,11 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
             future.set_result(the_list)
             return future
 
-        get_more_future = self.loop.create_task(self._get_more())
+        # Ignored the type since some commands are called from command_cursor
+        get_more_future: Union[asyncio.Future, asyncio.Task] = self._get_more()  # type: ignore
+        if inspect.iscoroutine(get_more_future):
+            get_more_future = self.loop.create_task(get_more_future)
+
         get_more_future.add_done_callback(
             partial(self.loop.call_soon_threadsafe, self._to_list, length, the_list, future)
         )
