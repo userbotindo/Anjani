@@ -116,7 +116,7 @@ class TelegramBot(MixinBase):
         await self.init_client()
 
         # Register core command handler
-        self.client.add_handler(MessageHandler(self.on_command, self.command_predicate()), -1)
+        self.client.add_handler(MessageHandler(self.on_command, self.command_predicate()))
 
         # Load plugin
         self.load_all_plugins()
@@ -262,9 +262,11 @@ class TelegramBot(MixinBase):
         self.update_plugin_event(
             "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
         )
-        self.update_plugin_event("chat_member_update", ChatMemberUpdatedHandler)
-        self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
-        self.update_plugin_event("inline_query", InlineQueryHandler)
+        self.update_plugin_event("chat_member_update", ChatMemberUpdatedHandler, group=1)
+        self.update_plugin_event(
+            "chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id, group=1
+        )
+        self.update_plugin_event("inline_query", InlineQueryHandler, group=1)
         self.update_plugin_event(
             "message",
             MessageHandler,
@@ -272,6 +274,7 @@ class TelegramBot(MixinBase):
             & ~flt.left_chat_member
             & ~flt.migrate_from_chat_id
             & ~flt.migrate_to_chat_id,
+            group=-1,
         )
 
     @property
