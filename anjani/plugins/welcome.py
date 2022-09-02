@@ -32,14 +32,8 @@ class Greeting(plugin.Plugin):
 
     db: util.db.AsyncCollection
 
-    # Late init
-    fed: Any
-
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
-
-    async def on_start(self, _: int) -> None:
-        self.fed = self.bot.plugins["SpamShield"]
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
@@ -103,11 +97,6 @@ class Greeting(plugin.Plugin):
                         reply_to_message_id=reply_to,
                     )
                 else:
-                    if await self.fed.is_active(chat.id) and await self.fed.is_banned(
-                        new_member.id
-                    ):
-                        continue
-
                     text, button = await self.welc_message(chat.id)
                     if not text:
                         string = await self.text(chat.id, "default-welcome", noformat=True)

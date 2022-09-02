@@ -17,7 +17,7 @@
 import asyncio
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, List, MutableMapping, Optional
 
 from aiohttp import (
     ClientConnectorError,
@@ -27,6 +27,7 @@ from aiohttp import (
 )
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
+from util.misc import StopPropagation
 
 from anjani import command, filters, listener, plugin, util
 
@@ -75,8 +76,14 @@ class SpamShield(plugin.Plugin):
             if not me.privileges or not me.privileges.can_restrict_members:
                 return
 
+            tasks = set()
             for member in message.new_chat_members:
-                await self.check(member, chat)
+                tasks.add(self.bot.loop.create_task(self.check(member, chat)))
+
+            res: List[bool] = await asyncio.gather(*tasks)
+            # Assume only one member is added at a time, so raise StopPropagation
+            if all(res):
+                raise StopPropagation
         except ChannelPrivate:
             return
 
@@ -177,11 +184,6 @@ class SpamShield(plugin.Plugin):
         data = await self.db.find_one({"chat_id": chat_id})
         return data["setting"] if data else True
 
-    async def is_banned(self, user_id: int) -> bool:
-        """Check if user already banned"""
-        data = await self.federation_db.find_one({"_id": "AnjaniSpamShield"})
-        return str(user_id) in data["banned"] if data else False
-
     async def ban(self, chat: Chat, user: User, reason: str) -> None:
         fullname = user.first_name + user.last_name if user.last_name else user.first_name
         await asyncio.gather(
@@ -207,11 +209,11 @@ class SpamShield(plugin.Plugin):
         else:
             await self.db.delete_one({"chat_id": chat_id})
 
-    async def check(self, user: User, chat: Chat) -> None:
+    async def check(self, user: User, chat: Chat) -> bool:
         """Shield checker action."""
         cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
         if not cas and not sw and not user.is_scam:
-            return
+            return False
 
         userlink = user.mention
         chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
@@ -251,6 +253,8 @@ class SpamShield(plugin.Plugin):
                 disable_web_page_preview=True,
             ),
         )
+
+        return True
 
     @command.filters(filters.admin_only)
     async def cmd_spamshield(self, ctx: command.Context, enable: Optional[bool] = None) -> str:
