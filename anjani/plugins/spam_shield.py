@@ -27,9 +27,9 @@ from aiohttp import (
 )
 from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
-from util.misc import StopPropagation
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.misc import StopPropagation
 
 
 class SpamShield(plugin.Plugin):
