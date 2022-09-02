@@ -18,8 +18,11 @@ import asyncio
 from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
+from pyrogram.types import Message
 
-from anjani import plugin
+from anjani import listener, plugin, util
+
+SEC_PER_DAY = 86400
 
 
 class Canonical(plugin.Plugin):
@@ -29,20 +32,35 @@ class Canonical(plugin.Plugin):
     """
 
     name: ClassVar[str] = "canonical"
-    task: asyncio.Task
+
+    # Private
+    __task: asyncio.Task[None]
 
     async def on_load(self) -> None:
         if not self.bot.config.get("sp_token"):
             return self.bot.unload_plugin(self)
-        self.db = self.bot.db.get_collection("TEST")
 
-    async def on_start(self, _) -> None:
+        self.db = self.bot.db.get_collection("TEST")
+        self.db_analytics = self.bot.db.get_collection("ANALYTICS")
+
+    async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
-        self.task = self.bot.loop.create_task(self.watch_streams())
+        self.__task = self.bot.loop.create_task(self.watch_streams())
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
-        self.task.cancel()
+        self.__task.cancel()
+
+    @listener.priority(65)
+    async def on_message(self, message: Message) -> None:
+        if message.outgoing:
+            return
+
+        today = util.time.sec()
+        timestamp = today - (today % SEC_PER_DAY)
+        await self.db_analytics.update_one(
+            {"key": 1}, {"$inc": {f"data.{str(timestamp)}": 1}}, upsert=True
+        )
 
     async def watch_streams(self) -> None:
         try:
