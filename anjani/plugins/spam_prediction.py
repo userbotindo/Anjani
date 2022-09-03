@@ -20,6 +20,7 @@ import re
 import unicodedata
 from functools import partial
 from hashlib import md5, sha256
+from pathlib import Path
 from random import randint
 from typing import Any, Callable, ClassVar, MutableMapping, Optional
 
@@ -54,11 +55,21 @@ except ImportError:
 
 from anjani import command, filters, listener, plugin, util
 
+env = Path("config.env")
+try:
+    token = re.search(r'^(?!#)\s+?SP_TOKEN="(\w+)"', env.read_text().strip(), re.MULTILINE).group(  # type: ignore
+        1
+    )
+except (AttributeError, FileNotFoundError):
+    token = ""
+
+del env
+
 
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
     helpable: ClassVar[bool] = True
-    disabled: ClassVar[bool] = not _run_predict
+    disabled: ClassVar[bool] = not _run_predict or not token
 
     db: util.db.AsyncCollection
     user_db: util.db.AsyncCollection
@@ -66,16 +77,11 @@ class SpamPrediction(plugin.Plugin):
     model: Pipeline
 
     async def on_load(self) -> None:
-        token = self.bot.config.get("sp_token")
-        url = self.bot.config.get("sp_url")
-        if not (token and url):
-            return self.bot.unload_plugin(self)
-
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
 
-        await self.__load_model(token, url)
+        await self.__load_model()
 
     async def on_chat_migrate(self, message: Message) -> None:
         await self.db.update_one(
@@ -92,14 +98,11 @@ class SpamPrediction(plugin.Plugin):
             {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
         )
 
-    async def __load_model(self, token: str, url: str) -> None:
+    async def __load_model(self) -> None:
         self.log.info("Downloading spam prediction model!")
-        async with self.bot.http.get(
-            url,
-            headers={
-                "Authorization": f"token {token}",
-                "Accept": "application/vnd.github.v3.raw",
-            },
+        async with self.bot.http.post(
+            "https://spamdetect.userbotindo.com",
+            headers={"Authorization": f"Bearer {token}"},
         ) as res:
             if res.status == 200:
                 self.model = await util.run_sync(pickle.loads, await res.read())
@@ -581,12 +584,7 @@ class SpamPrediction(plugin.Plugin):
 
     @command.filters(filters.staff_only)
     async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
-        token = self.bot.config.get("sp_token")
-        url = self.bot.config.get("sp_url")
-        if not (token and url):
-            return "No token provided!"
-
-        await self.__load_model(token, url)
+        await self.__load_model()
         await ctx.respond("Done", delete_after=5)
 
     @command.filters(filters.staff_only)

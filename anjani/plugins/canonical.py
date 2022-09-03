@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import re
+from pathlib import Path
 from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
@@ -24,6 +26,14 @@ from anjani import listener, plugin, util
 
 SEC_PER_DAY = 86400
 
+env = Path("config.env")
+try:
+    token = re.search(r'^(?!#)\s+?SP_TOKEN="(\w+)"', env.read_text().strip(), re.MULTILINE)
+except (AttributeError, FileNotFoundError):
+    token = ""
+
+del env
+
 
 class Canonical(plugin.Plugin):
     """Helper Plugin
@@ -31,15 +41,13 @@ class Canonical(plugin.Plugin):
     to comunicate with https://userbotindo.com
     """
 
-    name: ClassVar[str] = "canonical"
+    name: ClassVar[str] = "Canonical"
+    disabled: ClassVar[bool] = not token
 
     # Private
     __task: asyncio.Task[None]
 
     async def on_load(self) -> None:
-        if not self.bot.config.get("sp_token"):
-            return self.bot.unload_plugin(self)
-
         self.db = self.bot.db.get_collection("TEST")
         self.db_analytics = self.bot.db.get_collection("ANALYTICS")
 
