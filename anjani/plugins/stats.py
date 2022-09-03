@@ -97,7 +97,7 @@ class PluginStats(plugin.Plugin):
     async def put(self, key: str, value: int) -> None:
         await self.db.find_one_and_update({"_id": 1}, {"$set": {key: value}}, upsert=True)
 
-    @command.filters(filters.dev_only)
+    @command.filters(filters.dev_only & filters.private)
     async def cmd_stats(self, ctx: command.Context) -> None:
         if ctx.input == "reset":
             await self.db.delete_many({})
