@@ -116,7 +116,7 @@ class TelegramBot(MixinBase):
         await self.init_client()
 
         # Register core command handler
-        self.client.add_handler(MessageHandler(self.on_command, self.command_predicate()))
+        self.client.add_handler(MessageHandler(self.on_command, self.command_predicate()), -1)
 
         # Load plugin
         self.load_all_plugins()

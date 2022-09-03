@@ -17,7 +17,7 @@
 import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
-from pyrogram import errors
+from pyrogram import ContinuePropagation, errors
 from pyrogram.client import Client
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
@@ -242,3 +242,6 @@ class CommandDispatcher(MixinBase):
                 message.command,
                 exc_info=constructor_handler,
             )
+        else:
+            # Continue processing handler of on_message
+            raise ContinuePropagation
