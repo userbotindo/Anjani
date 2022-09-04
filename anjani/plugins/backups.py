@@ -17,7 +17,7 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, ClassVar, MutableMapping, Optional, Tuple
+from typing import Any, ClassVar, MutableMapping, Optional
 
 from aiopath import AsyncPath
 
@@ -27,6 +27,9 @@ from anjani import command, filters, plugin
 class Backups(plugin.Plugin):
     name: ClassVar[str] = "Backups"
     helpable: ClassVar[bool] = True
+
+    async def on_load(self) -> None:
+        self.db = self.bot.db.get_collection("MIGRATED_BACKUPS")
 
     @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
@@ -90,6 +93,12 @@ class Backups(plugin.Plugin):
 
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
+
+        if data.get("_migrated", False):
+            await ctx.respond(
+                await self.text(chat.id, "restore-progress") + "\nMigrate file detected..."
+            )
+            await self.db.insert_one({"chat_id": chat.id, "on": datetime.now()})
 
         await self.bot.dispatch_event("plugin_restore", chat.id, data)
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
