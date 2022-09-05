@@ -24,13 +24,13 @@ Anjani is a modern, easy-to-develop, fully async Telegram group managing bot for
 -   Localization support.
 -   Class based plugin system.
 
-## [Documentation](https://userbotindo.com/docs/home)
+## [Documentation](https://userbotindo.com/anjani/docs/home)
 
-## [Installing](https://userbotindo.com/docs/install)
+## [Installing](https://userbotindo.com/anjani/docs/install)
 
 ## Plugin
 
-If you want to make your custom plugins, refer to [Anjani's Plugins Guide](https://userbotindo.com/docs/plugin/creating-your-own-plugin).
+If you want to make your custom plugins, refer to [Anjani's Plugins Guide](https://userbotindo.com/anjani/docs/plugin/creating-your-own-plugin).
 
 ## Credits
 
