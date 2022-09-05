@@ -1,0 +1,30 @@
+name: Bug Report (core)
+description: Create a bug report specific for Anjani-core
+labels: [bug, core]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please fill out this form as completely as possible.
+        *If you leave out some section or providing insufficent/incorect information there is likehood that the issue may be closed or converting to a discussion.
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs (if any)
+      description: Relevant logs and traceback output. (automaticaly rendered non need backticks)
+      render: Shell
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: Any additional information you would like to share.
