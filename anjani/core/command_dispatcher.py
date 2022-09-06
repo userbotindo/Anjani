@@ -242,6 +242,6 @@ class CommandDispatcher(MixinBase):
                 message.command,
                 exc_info=constructor_handler,
             )
-        else:
+        finally:
             # Continue processing handler of on_message
             raise ContinuePropagation
