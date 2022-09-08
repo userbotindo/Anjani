@@ -45,6 +45,7 @@ from pyrogram.types import (
 )
 
 try:
+    from scipy.stats import ttest_1samp
     from sklearn.pipeline import Pipeline
 
     _run_predict = True
@@ -161,6 +162,18 @@ class SpamPrediction(plugin.Plugin):
                 {"_id": uid},
                 {"$push": {"pred_sample": proba}},
             )  # Do not upsert
+
+    async def get_trust(self, uid: int) -> Optional[float]:
+        user = await self.user_db.find_one(
+            {"_id": uid}, {"chats": False, "last_seen": False, "last_seen": False}
+        )
+        if not user:
+            return None
+        sample = user.get("pred_sample", [])
+        if len(sample) < 3:
+            return None
+        _, pred = ttest_1samp(sample, 0.5, alternative="greater")
+        return pred * 100
 
     async def run_ocr(self, message: Message) -> Optional[str]:
         """Run tesseract"""

@@ -201,6 +201,11 @@ class Users(plugin.Plugin):
         if user_db and self.predict_loaded:
             text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
             text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
+            trust = await self.bot.plugins["SpamPredict"].get_trust(user.id)  # type: ignore
+            if trust:
+                text += f"\n**Trust: **`{trust:.2f}`"
+            else:
+                text += "\n**Trust: **`N/A`"
 
         if user.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
