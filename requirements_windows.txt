@@ -1,7 +1,7 @@
 aiohttp==3.8.1
 aiopath==0.5.12
 aiorun==2022.4.1
-certifi==2022.6.15
+certifi==2022.6.15.1
 colorlog==6.7.0
 dnspython==2.2.1
 meval==2.5
