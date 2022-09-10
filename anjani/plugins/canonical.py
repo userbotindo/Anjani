@@ -20,11 +20,10 @@ from pathlib import Path
 from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
+from pyrogram.enums.message_media_type import MessageMediaType
 from pyrogram.types import Message
 
 from anjani import listener, plugin, util
-
-SEC_PER_DAY = 86400
 
 env = Path("config.env")
 try:
@@ -46,6 +45,12 @@ class Canonical(plugin.Plugin):
 
     # Private
     __task: asyncio.Task[None]
+    _mt: MutableMapping[MessageMediaType, str] = {
+        MessageMediaType.STICKER: "s",
+        MessageMediaType.PHOTO: "p",
+        MessageMediaType.DOCUMENT: "f",
+        MessageMediaType.VIDEO: "v",
+    }
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("TEST")
@@ -59,15 +64,23 @@ class Canonical(plugin.Plugin):
         self.log.debug("Stopping watch streams")
         self.__task.cancel()
 
+    def get_type(self, message: Message) -> str:
+
+        if message.media and message.media in self._mt:
+            return self._mt[message.media]
+        return "t"
+
     @listener.priority(65)
     async def on_message(self, message: Message) -> None:
         if message.outgoing:
             return
 
         today = util.time.sec()
-        timestamp = today - (today % SEC_PER_DAY)
+        timestamp = today - (today % 86400)  # truncate to day
         await self.db_analytics.update_one(
-            {"key": 1}, {"$inc": {f"data.{str(timestamp)}": 1}}, upsert=True
+            {"key": 2},
+            {"$inc": {f"data.{str(timestamp)}.{self.get_type(message)}": 1}},
+            upsert=True,
         )
 
     async def watch_streams(self) -> None:
