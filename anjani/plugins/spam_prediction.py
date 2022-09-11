@@ -55,6 +55,7 @@ except ImportError:
     _run_predict = False
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.misc import StopPropagation
 
 env = Path("config.env")
 try:
@@ -359,6 +360,7 @@ class SpamPrediction(plugin.Plugin):
             pass
 
     @listener.filters(filters.group)
+    @listener.priority(70)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
         setting = await self.setting_db.find_one({"chat_id": message.chat.id})
@@ -549,6 +551,7 @@ class SpamPrediction(plugin.Plugin):
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(button),
             )
+            raise StopPropagation
 
     async def mark_spam_ocr(
         self, content: str, user_id: Optional[int], chat_id: int, message_id: int
