@@ -54,10 +54,7 @@ async def anon(client: Client, message: Message) -> bool:
 
 
 async def button(_: Client, message: Message) -> bool:
-    if not message.reply_markup:
-        return False
-
-    return True
+    return bool(message.reply_markup)
 
 
 async def rtl(_: Client, message: Message) -> bool:
