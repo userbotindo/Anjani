@@ -238,20 +238,21 @@ owner_only = _owner_only()
 def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
-        if priv or not message.chat or not target:
+        if priv or not message.chat:
             return False
 
-        if message.sender_chat:
-            if message.sender_chat.id == message.chat.id:  # Anonymous Admin
-                return True
+        if not target:
+            if message.sender_chat:
+                if message.sender_chat.id == message.chat.id:  # Anonymous Admin
+                    return True
 
-            curr_chat: Any = await client.get_chat(message.chat.id)
-            if (
-                curr_chat.linked_chat
-                and message.sender_chat.id == curr_chat.linked_chat.id
-                and not message.forward_from_chat
-            ):  # Linked Channel Owner
-                return True
+                curr_chat: Any = await client.get_chat(message.chat.id)
+                if (
+                    curr_chat.linked_chat
+                    and message.sender_chat.id == curr_chat.linked_chat.id
+                    and not message.forward_from_chat
+                ):  # Linked Channel Owner
+                    return True
 
             return False
 
