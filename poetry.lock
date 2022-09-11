@@ -445,7 +445,7 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "Pyrogram"
-version = "2.0.50"
+version = "2.0.51"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
@@ -649,7 +649,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9, <3.10"
-content-hash = "c67637ecfcff3ae8b9534b652faec20b57544ca2d22dd6ddf0e5719de31696f1"
+content-hash = "5013aa0b1fdef0a2bcdc388c3eb5775ac89f6e8b46483b1d0e3c5b44c60cbbd3"
 
 [metadata.files]
 aiofile = [
@@ -1069,6 +1069,7 @@ pylint = [
     {file = "pylint-2.15.2.tar.gz", hash = "sha256:f63404a2547edb5247da263748771ac9a806ed1de4174cda01293c08ddbc2999"},
 ]
 pymongo = [
+    {file = "pymongo-4.2.0-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:b9e4981a65f8500a3a46bb3a1e81b9feb45cf0b2115ad9c4f8d517326d026940"},
     {file = "pymongo-4.2.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1c81414b706627f15e921e29ae2403aab52e33e36ed92ed989c602888d7c3b90"},
     {file = "pymongo-4.2.0-cp310-cp310-manylinux1_i686.whl", hash = "sha256:c549bb519456ee230e92f415c5b4d962094caac0fdbcc4ed22b576f66169764e"},
     {file = "pymongo-4.2.0-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:70216ec4c248213ae95ea499b6314c385ce01a5946c448fb22f6c8395806e740"},
@@ -1137,8 +1138,8 @@ pymongo = [
     {file = "pymongo-4.2.0.tar.gz", hash = "sha256:72f338f6aabd37d343bd9d1fdd3de921104d395766bcc5cdc4039e4c2dd97766"},
 ]
 Pyrogram = [
-    {file = "Pyrogram-2.0.50-py3-none-any.whl", hash = "sha256:d6125b4a6ec62327c488a5187fcff49248a504952c6327a243c75b0bbd8d0149"},
-    {file = "Pyrogram-2.0.50.tar.gz", hash = "sha256:4c49f5ba56abae32c1445e2a2821d5a98730d7e6181950eb9f5290e9a4c3e8ff"},
+    {file = "Pyrogram-2.0.51-py3-none-any.whl", hash = "sha256:1505f97e039fa331900aa5097650792dc797eb4dc9ff6227f0915a73cf13806f"},
+    {file = "Pyrogram-2.0.51.tar.gz", hash = "sha256:f8f1f77b4f08cbc4ce7c980eadab29d4ed8104a4a896f4c8abefbc5297120c10"},
 ]
 pysocks = [
     {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},
