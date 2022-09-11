@@ -27,7 +27,6 @@ from typing import (
     MutableMapping,
     Optional,
     Set,
-    Union,
 )
 
 from pyrogram.enums.chat_member_status import ChatMemberStatus
@@ -71,6 +70,44 @@ class Lockings(plugin.Plugin):
     db: util.db.AsyncCollection
     restrictions: MutableMapping[str, MutableMapping[str, MutableMapping[str, bool]]]
 
+    async def anon(self, message: Message) -> None:
+        if not message.sender_chat:
+            return
+
+        chat = message.chat
+        current_chat: Any = await self.bot.client.get_chat(chat.id)
+        if (
+            current_chat.linked_chat
+            and message.sender_chat.id == current_chat.linked_chat.id
+            or message.sender_chat.id == current_chat.id
+        ):  # Linked channel group or anonymous admin
+            return
+
+        await message.delete()
+
+    async def button(self, message: Message) -> None:
+        if not message.reply_markup:
+            return
+
+        await message.delete()
+
+    async def rtl(self, message: Message) -> None:
+        text = message.text or message.caption
+        if not text:
+            return
+
+        checkers = await self.detect_alphabet(text)
+        if "arabic" in checkers:
+            await message.delete()
+
+    async def url(self, message: Message) -> None:
+        if not message.entities:
+            return
+
+        for entity in message.entities:
+            if entity.type == MessageEntityType.URL:
+                await message.delete()
+
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("LOCKINGS")
         self.restrictions = {
@@ -101,44 +138,17 @@ class Lockings(plugin.Plugin):
         locked = await self.get_chat_restrictions(chat.id)
         for lock_type in locked:
             try:
-                func: Union[str, Callable[..., Coroutine[Any, Any, bool]]] = LOCK_TYPES[lock_type]
+                func: Callable[..., Coroutine[Any, Any, bool]] = LOCK_TYPES[lock_type]
                 if callable(func):
                     if await func(self.bot.client, message):
                         await message.delete()
 
                     continue
 
-                if func == "bots":
-                    continue  # bots are handled in on_chat_action
-
-                if func == "anon" and message.sender_chat:
-                    current_chat: Any = await self.bot.client.get_chat(chat.id)
-                    if not (
-                        current_chat.linked_chat
-                        and message.sender_chat.id == current_chat.linked_chat.id
-                        and not message.forward_from_chat
-                    ):
-                        await message.delete()
-
-                    continue
-
-                if func == "button" and message.reply_markup:
-                    await message.delete()
-                    continue
-
-                text = message.text or message.caption
-                if func == "rtl" and text:
-                    checkers = await self.detect_alphabet(text)
-                    if "arabic" in checkers:
-                        await message.delete()
-
-                    continue
-
-                if func == "url" and message.entities:
-                    for entity in message.entities:
-                        if entity.type == MessageEntityType.URL:
-                            await message.delete()
-                            break
+                func = getattr(self, func)
+                await func(message)
+            except AttributeError:
+                continue
             except MessageDeleteForbidden:
                 await self.bot.respond(
                     message,
