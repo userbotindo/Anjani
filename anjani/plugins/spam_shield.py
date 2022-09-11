@@ -39,6 +39,7 @@ class SpamShield(plugin.Plugin):
     db: util.db.AsyncCollection
     federation_db: util.db.AsyncCollection
     token: Optional[str]
+    spam_protection: bool
 
     async def on_load(self) -> None:
         self.token = self.bot.config.get("sw_api")
@@ -47,6 +48,10 @@ class SpamShield(plugin.Plugin):
 
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")  # spamshield autoban
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
+        self.user_db = self.bot.db.get_collection("USERS")
+
+    async def on_start(self, _) -> None:
+        self.spam_protection = "SpamPredict" in self.bot.plugins
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -99,6 +104,11 @@ class SpamShield(plugin.Plugin):
         )
         if not chat or not user or not text or not await self.is_active(chat.id):
             return
+
+        if self.spam_protection:
+            trust = await self.bot.plugins["SpamPredict"].get_trust(user.id)  # type: ignore
+            if trust and trust < 5.0:
+                await self.user_db.update_one({"_id": user.id}, {"$set": {"spam": True}})
 
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
@@ -232,6 +242,9 @@ class SpamShield(plugin.Plugin):
         if user.is_scam:  # overwrite banner and reason if user is flagged by telegram
             banner = "Telegram Server"
             reason = "Flagged as a scammer."
+        if self.spam_protection and self.user_db.find_one({"_id": user.id, "spam": True}):
+            banner = "Anjani Spam Protection"
+            reason = "Flagged as a spammer."
 
         await asyncio.gather(
             self.bot.log_stat("banned"),
