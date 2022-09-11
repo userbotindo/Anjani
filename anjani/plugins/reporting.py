@@ -134,6 +134,7 @@ class Reporting(plugin.Plugin):
 
         return data.get("setting", True)
 
+    @command.filters(filters.group)
     async def cmd_report(self, ctx: command.Context) -> None:
         return await self.on_message(ctx.message)
 
