@@ -29,12 +29,59 @@ from typing import (
     Set,
 )
 
+from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.message_entity_type import MessageEntityType
 from pyrogram.errors import MessageDeleteForbidden, MessageIdInvalid, UserNotParticipant
 from pyrogram.types import ChatPermissions, Message
 
 from anjani import command, filters, listener, plugin, util
+
+
+async def anon(client: Client, message: Message) -> bool:
+    if not message.sender_chat:
+        return False
+
+    chat = message.chat
+    current_chat: Any = await client.get_chat(chat.id)
+    if (
+        current_chat.linked_chat and message.sender_chat.id == current_chat.linked_chat.id
+    ) or message.sender_chat.id == current_chat.id:
+        # Linked channel group or anonymous admin
+        return False
+
+    return True
+
+
+async def button(_: Client, message: Message) -> bool:
+    if not message.reply_markup:
+        return False
+
+    return True
+
+
+async def rtl(_: Client, message: Message) -> bool:
+    text = message.text or message.caption
+    if not text:
+        return False
+
+    checkers = await Lockings.detect_alphabet(text)
+    if "arabic" in checkers:
+        return True
+
+    return False
+
+
+async def url(_: Client, message: Message) -> bool:
+    if not message.entities:
+        return False
+
+    for entity in message.entities:
+        if entity.type == MessageEntityType.URL:
+            return True
+
+    return False
+
 
 LOCK_TYPES = OrderedDict(
     sorted(
@@ -52,12 +99,12 @@ LOCK_TYPES = OrderedDict(
             "game": filters.game,
             "poll": filters.poll,
             "dice": filters.dice,
-            "button": "button",
+            "button": button,
             "inline": filters.via_bot,
-            "url": "url",
+            "url": url,
             "bots": "bots",
-            "rtl": "rtl",
-            "anon": "anon",
+            "rtl": rtl,
+            "anon": anon,
         }.items()
     )
 )
@@ -69,44 +116,6 @@ class Lockings(plugin.Plugin):
 
     db: util.db.AsyncCollection
     restrictions: MutableMapping[str, MutableMapping[str, MutableMapping[str, bool]]]
-
-    async def anon(self, message: Message) -> None:
-        if not message.sender_chat:
-            return
-
-        chat = message.chat
-        current_chat: Any = await self.bot.client.get_chat(chat.id)
-        if (
-            current_chat.linked_chat
-            and message.sender_chat.id == current_chat.linked_chat.id
-            or message.sender_chat.id == current_chat.id
-        ):  # Linked channel group or anonymous admin
-            return
-
-        await message.delete()
-
-    async def button(self, message: Message) -> None:
-        if not message.reply_markup:
-            return
-
-        await message.delete()
-
-    async def rtl(self, message: Message) -> None:
-        text = message.text or message.caption
-        if not text:
-            return
-
-        checkers = await self.detect_alphabet(text)
-        if "arabic" in checkers:
-            await message.delete()
-
-    async def url(self, message: Message) -> None:
-        if not message.entities:
-            return
-
-        for entity in message.entities:
-            if entity.type == MessageEntityType.URL:
-                await message.delete()
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("LOCKINGS")
@@ -139,26 +148,20 @@ class Lockings(plugin.Plugin):
         for lock_type in locked:
             try:
                 func: Callable[..., Coroutine[Any, Any, bool]] = LOCK_TYPES[lock_type]
-                if callable(func):
-                    if await func(self.bot.client, message):
-                        await message.delete()
-
-                    continue
-
-                func = getattr(self, func)
-                await func(message)
-            except AttributeError:
-                continue
+                if await func(self.bot.client, message):
+                    await message.delete()
             except MessageDeleteForbidden:
                 await self.bot.respond(
                     message,
                     await self.get_text(chat.id, "lockings-failed-to-delete", lock_type=lock_type),
                     quote=True,
                 )
-            except MessageIdInvalid:  # Probably deleted already
+            except (MessageIdInvalid, TypeError):
+                # MessageIdInvalid: Message was deleted
+                # TypeError: lock_type == "bots" is excpected
                 continue
             except Exception as e:  # skipcq: PYL-W0703
-                self.log.error(e)
+                self.log.error(e, exc_info=e)
                 continue
 
     async def on_chat_action(self, action: Message) -> None:
