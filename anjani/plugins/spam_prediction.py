@@ -22,7 +22,7 @@ from functools import partial
 from hashlib import md5, sha256
 from pathlib import Path
 from random import randint
-from typing import Any, Callable, ClassVar, MutableMapping, Optional
+from typing import Any, Callable, ClassVar, List, MutableMapping, Optional
 
 from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
@@ -66,6 +66,21 @@ except (AttributeError, FileNotFoundError):
     token = ""
 
 del env
+
+
+def get_trust(sample: List[float]) -> Optional[float]:
+    """Compute the trust score of a user
+    Args:
+        sample (List[float]): A list of scores
+    Returns:
+        Optional[float]: The trust score of the user
+    """
+    if not _run_predict:
+        return None
+    if len(sample) < 3:
+        return None  # Not enough data
+    _, pred = ttest_1samp(sample, 0.5, alternative="greater")
+    return pred * 100
 
 
 class SpamPrediction(plugin.Plugin):
@@ -163,18 +178,6 @@ class SpamPrediction(plugin.Plugin):
                 {"_id": uid},
                 {"$push": {"pred_sample": proba}},
             )  # Do not upsert
-
-    async def get_trust(self, uid: int) -> Optional[float]:
-        user = await self.user_db.find_one(
-            {"_id": uid}, {"chats": False, "last_seen": False, "last_seen": False}
-        )
-        if not user:
-            return None
-        sample = user.get("pred_sample", [])
-        if len(sample) < 3:
-            return None
-        _, pred = ttest_1samp(sample, 0.5, alternative="greater")
-        return pred * 100
 
     async def run_ocr(self, message: Message) -> Optional[str]:
         """Run tesseract"""

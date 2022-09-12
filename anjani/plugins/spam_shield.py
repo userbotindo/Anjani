@@ -31,6 +31,8 @@ from pyrogram.types import Chat, Message, User
 from anjani import command, filters, listener, plugin, util
 from anjani.util.misc import StopPropagation
 
+from .spam_prediction import get_trust
+
 
 class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
@@ -106,9 +108,14 @@ class SpamShield(plugin.Plugin):
             return
 
         if self.spam_protection:
-            trust = await self.bot.plugins["SpamPredict"].get_trust(user.id)  # type: ignore
-            if trust and trust < 5.0:
-                await self.user_db.update_one({"_id": user.id}, {"$set": {"spam": True}})
+            sample = await self.user_db.find_one(
+                {"_id": user.id}, {"pred_sample": True, "spam": True}
+            )
+            if sample and not sample.get("spam", False):
+                trust = get_trust(sample.get("pred_sample", []))
+                if trust and trust < 5.0:
+                    self.log.debug(f"{user.id} has low trust score, flaging as spam")
+                    await self.user_db.update_one({"_id": user.id}, {"$set": {"spam": True}})
 
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
