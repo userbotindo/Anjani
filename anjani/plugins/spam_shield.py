@@ -189,6 +189,12 @@ class SpamShield(plugin.Plugin):
                 await asyncio.sleep(0.5)
                 self.log.debug(f"Retrying CAS check for {user.id}")
 
+    async def check_spam(self, uid: int) -> bool:
+        if not self.spam_protection:
+            return False
+        res = await self.user_db.find_one({"_id": uid}, {"spam": True})
+        return res.get("spam", False) if res else False
+
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
         data = await self.db.find_one({"chat_id": chat_id})
@@ -221,8 +227,10 @@ class SpamShield(plugin.Plugin):
 
     async def check(self, user: User, chat: Chat) -> bool:
         """Shield checker action."""
-        cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
-        if not cas and not sw and not user.is_scam:
+        cas, sw, spam = await asyncio.gather(
+            self.cas_check(user), self.get_ban(user.id), self.check_spam(user.id)
+        )
+        if not (cas or sw or spam):
             return False
 
         userlink = user.mention
@@ -242,7 +250,7 @@ class SpamShield(plugin.Plugin):
         if user.is_scam:  # overwrite banner and reason if user is flagged by telegram
             banner = "Telegram Server"
             reason = "Flagged as a scammer."
-        if self.spam_protection and self.user_db.find_one({"_id": user.id, "spam": True}):
+        if spam:
             banner = "Anjani Spam Protection"
             reason = "Flagged as a spammer."
 
