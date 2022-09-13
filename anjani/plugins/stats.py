@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, List, Mapping, Optional
 
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.types import Message
@@ -140,9 +140,22 @@ class PluginStats(plugin.Plugin):
         ) = resp
         total_federations = 0
         total_fbanned = 0
-        async for fed in self.feds_db.find({}):
+        total_chat_fbanned = 0
+        pipeline: List[Mapping[str, Any]] = [
+            {
+                "$project": {
+                    "_id": 1,
+                    "name": 1,
+                    "banned_user": {"$size": {"$objectToArray": {"$ifNull": ["$banned", {}]}}},
+                    "banned_chat": {"$size": {"$objectToArray": {"$ifNull": ["$banned_chat", {}]}}},
+                }
+            }
+        ]
+
+        async for opt in self.feds_db.aggregate(pipeline=pipeline):
             total_federations += 1
-            total_fbanned += len(fed.get("banned", []))
+            total_fbanned += opt.get("banned_user", 0)
+            total_chat_fbanned += opt.get("banned_chat", 0)
 
         text = f"""<b>STATS  SINCE  LAST  RESET</b>:\n
   • <b>Total Uptime Elapsed</b>: <b>{util.time.format_duration_us(uptime - downtime)}</b>
@@ -156,8 +169,8 @@ class PluginStats(plugin.Plugin):
   • <b>Total Users</b>: <b>{total_users}</b>
   • <b>Total Chats</b>: <b>{total_chats}</b>
   • <b>Total Federations</b>: <b>{total_federations}</b>
-  • <b>Total Fbanned Users</b>: <b>{total_fbanned}</b>
-     × <b>{_calc_pct(total_fbanned, total_users)}%</b> from total users
+     × <b>Total Fbanned Users</b>: <b>{total_fbanned}</b>
+     × <b>Total Fbanned Chats</b>: <b>{total_chat_fbanned}</b>
   • <b>Auto Banned Users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
 """
         async with ctx.action():
