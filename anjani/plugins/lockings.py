@@ -232,7 +232,7 @@ class Lockings(plugin.Plugin):
         )
 
     async def get_chat_restrictions(self, chat_id: int) -> List[str]:
-        data = await self.db.find_one({"chat_id": chat_id})
+        data = await self.db.find_one({"chat_id": chat_id}, {"type": True})
         return data["type"] if data else []
 
     def unpack_permissions(

@@ -89,13 +89,13 @@ class PluginStats(plugin.Plugin):
         return collection.get(key) if collection else None
 
     async def inc(self, key: str, value: int) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$inc": {key: value}}, upsert=True)
+        await self.db.update_one({"_id": 1}, {"$inc": {key: value}}, upsert=True)
 
     async def delete(self, key: str) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$unset": {key: ""}})
+        await self.db.update_one({"_id": 1}, {"$unset": {key: ""}})
 
     async def put(self, key: str, value: int) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$set": {key: value}}, upsert=True)
+        await self.db.update_one({"_id": 1}, {"$set": {key: value}}, upsert=True)
 
     @command.filters(filters.dev_only & filters.private)
     async def cmd_stats(self, ctx: command.Context) -> None:

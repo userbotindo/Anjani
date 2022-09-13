@@ -88,15 +88,12 @@ class Notes(plugin.Plugin):
         chat = message.chat
         reply_to = message.reply_to_message.id if message.reply_to_message else message.id
 
-        data = await self.db.find_one({"chat_id": chat.id})
-        if not data or not data.get("notes"):
+        data = await self.db.find_one(
+            {"chat_id": chat.id, f"notes.{name}": {"$exists": True}}, {f"notes.{name}": True}
+        )
+        if not data:
             return
-
-        note: MutableMapping[str, Any]
-        try:
-            note = data["notes"][name]
-        except KeyError:
-            return
+        note = data["notes"][name]
 
         button = note.get("button", None)
         if noformat:
@@ -221,8 +218,8 @@ class Notes(plugin.Plugin):
 
         name = ctx.input
 
-        data = await self.db.find_one({"chat_id": chat.id})
-        if not data or not data.get("notes"):
+        data = await self.db.find_one({"chat_id": chat.id, f"notes.{name}": {"$exists": True}})
+        if not data:
             return await self.text(chat.id, "no-notes")
 
         notes: MutableMapping[str, Any] = data["notes"]
