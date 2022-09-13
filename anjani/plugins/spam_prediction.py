@@ -22,7 +22,7 @@ from functools import partial
 from hashlib import md5, sha256
 from pathlib import Path
 from random import randint
-from typing import Any, Callable, ClassVar, MutableMapping, Optional
+from typing import Any, Callable, ClassVar, List, MutableMapping, Optional
 
 from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
@@ -45,6 +45,7 @@ from pyrogram.types import (
 )
 
 try:
+    from scipy.stats import ttest_1samp
     from sklearn.pipeline import Pipeline
 
     _run_predict = True
@@ -54,6 +55,7 @@ except ImportError:
     _run_predict = False
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.misc import StopPropagation
 
 env = Path("config.env")
 try:
@@ -64,6 +66,21 @@ except (AttributeError, FileNotFoundError):
     token = ""
 
 del env
+
+
+def get_trust(sample: List[float]) -> Optional[float]:
+    """Compute the trust score of a user
+    Args:
+        sample (List[float]): A list of scores
+    Returns:
+        Optional[float]: The trust score of the user
+    """
+    if not _run_predict:
+        return None
+    if len(sample) < 3:
+        return None  # Not enough data
+    _, pred = ttest_1samp(sample, 0.5, alternative="greater")
+    return pred * 100
 
 
 class SpamPrediction(plugin.Plugin):
@@ -346,6 +363,7 @@ class SpamPrediction(plugin.Plugin):
             pass
 
     @listener.filters(filters.group)
+    @listener.priority(70)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
         setting = await self.setting_db.find_one({"chat_id": message.chat.id})
@@ -536,6 +554,7 @@ class SpamPrediction(plugin.Plugin):
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(button),
             )
+            raise StopPropagation
 
     async def mark_spam_ocr(
         self, content: str, user_id: Optional[int], chat_id: int, message_id: int

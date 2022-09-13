@@ -27,6 +27,8 @@ from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
 from anjani import command, plugin, util
 
+from .spam_prediction import get_trust
+
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
@@ -200,7 +202,12 @@ class Users(plugin.Plugin):
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:
             text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
-            text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
+            text += f"\n**Reputation:** `{user_db.get('reputation', 0)}`"
+            trust = get_trust(user_db.get("pred_sample", []))
+            if trust:
+                text += f"\n**Trust:** `{trust:.2f}`"
+            else:
+                text += "\n**Trust:** `N/A`"
 
         if user.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
