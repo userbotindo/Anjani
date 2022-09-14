@@ -44,7 +44,7 @@ class Restrictions(plugin.Plugin):
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
         data = await self.db.find_one(
-            {"chat_id": chat_id, "warn_list": {"$exists": True}}, {"_id": False, "warn_list": True}
+            {"chat_id": chat_id, "warn_list": {"$exists": True}}, {"_id": 0, "warn_list": 1}
         )
         try:
             return {self.name: data["warn_list"]} if data else {}
@@ -67,7 +67,7 @@ class Restrictions(plugin.Plugin):
             return await query.answer(await self.get_text(chat.id, "warn-keyboard-not-admins"))
 
         chat_data = await self.db.find_one(
-            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": True}
+            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": 1}
         )
         if not chat_data:
             return
@@ -229,7 +229,7 @@ class Restrictions(plugin.Plugin):
         warns: Optional[int] = None
         chat_data = await self.db.find_one(
             {"chat_id": chat.id, "warn_list": {"$exists": True}},
-            {"warn_list": True, "warn_threshold": True},
+            {"warn_list": 1, "warn_threshold": 1},
         )
         if chat_data:  # Get threshold and existing warns from chat data
             threshold = chat_data.get("warn_threshold", 3)
@@ -289,7 +289,7 @@ class Restrictions(plugin.Plugin):
 
         chat_data = await self.db.find_one(
             {"chat_id": chat.id, "warn_list": {"$exists": True}},
-            {"warn_list": True, "warn_threshold": True},
+            {"warn_list": 1, "warn_threshold": 1},
         )
         if not chat_data:
             return await ctx.get_text("warn-no-data", user.mention)
@@ -355,7 +355,7 @@ class Restrictions(plugin.Plugin):
             return await ctx.get_text("rmwarn-admin")
 
         chat_data = await self.db.find_one(
-            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": True}
+            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": 1}
         )
         if not chat_data:
             return await ctx.get_text("warn-no-data", user.mention)

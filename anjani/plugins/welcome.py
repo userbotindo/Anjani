@@ -163,26 +163,26 @@ class Greeting(plugin.Plugin):
 
     async def is_welcome(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
-        active = await self.db.find_one({"chat_id": chat_id}, {"should_welcome": True})
+        active = await self.db.find_one({"chat_id": chat_id}, {"should_welcome": 1})
         return active.get("should_welcome", True) if active else True
 
     async def is_goodbye(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
-        active = await self.db.find_one({"chat_id": chat_id}, {"should_goodbye": True})
+        active = await self.db.find_one({"chat_id": chat_id}, {"should_goodbye": 1})
         return active.get("should_goodbye", True) if active else True
 
     async def welc_message(
         self, chat_id: int
     ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]]]:
         """Get chat welcome string"""
-        message = await self.db.find_one({"chat_id": chat_id}, {"welcome": True, "button": True})
+        message = await self.db.find_one({"chat_id": chat_id}, {"welcome": 1, "button": 1})
         if message:
             return message.get("custom_welcome"), message.get("button")
 
         return await self.text(chat_id, "default-welcome", noformat=True), None
 
     async def left_message(self, chat_id: int) -> str:
-        message = await self.db.find_one({"chat_id": chat_id}, {"custom_goodbye": True})
+        message = await self.db.find_one({"chat_id": chat_id}, {"custom_goodbye": 1})
         return (
             message.get(
                 "custom_goodbye", await self.text(chat_id, "default-goodbye", noformat=True)
@@ -193,7 +193,7 @@ class Greeting(plugin.Plugin):
 
     async def clean_service(self, chat_id: int) -> bool:
         """Fetch clean service setting"""
-        clean = await self.db.find_one({"chat_id": chat_id}, {"clean_service": True})
+        clean = await self.db.find_one({"chat_id": chat_id}, {"clean_service": 1})
         if clean:
             return clean.get("clean_service", True)
 

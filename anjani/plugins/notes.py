@@ -89,7 +89,7 @@ class Notes(plugin.Plugin):
         reply_to = message.reply_to_message.id if message.reply_to_message else message.id
 
         data = await self.db.find_one(
-            {"chat_id": chat.id, f"notes.{name}": {"$exists": True}}, {f"notes.{name}": True}
+            {"chat_id": chat.id, f"notes.{name}": {"$exists": True}}, {f"notes.{name}": 1}
         )
         if not data:
             return

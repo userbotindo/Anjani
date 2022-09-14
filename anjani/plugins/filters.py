@@ -81,7 +81,7 @@ class Filters(plugin.Plugin):
     async def get_filter(self, chat_id: int, keyword: str) -> Optional[str]:
         data = await self.db.find_one(
             {"chat_id": chat_id, f"trigger.{keyword}": {"$exists": True}},
-            {f"trigger:{keyword}": True},
+            {f"trigger:{keyword}": 1},
         )
         return data["trigger"][keyword] if data else None
 
