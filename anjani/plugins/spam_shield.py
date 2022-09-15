@@ -108,9 +108,7 @@ class SpamShield(plugin.Plugin):
             return
 
         if self.spam_protection:
-            sample = await self.user_db.find_one(
-                {"_id": user.id}, {"pred_sample": True, "spam": True}
-            )
+            sample = await self.user_db.find_one({"_id": user.id}, {"pred_sample": 1, "spam": 1})
             if sample and not sample.get("spam", False):
                 trust = get_trust(sample.get("pred_sample", []))
                 if trust and trust < 5.0:
@@ -199,7 +197,7 @@ class SpamShield(plugin.Plugin):
     async def check_spam(self, uid: int) -> bool:
         if not self.spam_protection:
             return False
-        res = await self.user_db.find_one({"_id": uid}, {"spam": True})
+        res = await self.user_db.find_one({"_id": uid}, {"spam": 1})
         return res.get("spam", False) if res else False
 
     async def is_active(self, chat_id: int) -> bool:
