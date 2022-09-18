@@ -140,6 +140,15 @@ class Lockings(plugin.Plugin):
                 # Linked channel group
                 return
 
+        if user:
+            try:
+                target = await chat.get_member(user.id)
+            except UserNotParticipant:
+                pass
+            else:
+                if target.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
+                    return
+
         locked = await self.get_chat_restrictions(chat.id)
         for lock_type in locked:
             try:
