@@ -10,4 +10,4 @@ python-dotenv==0.21.0
 PyYAML==6.0
 scikit-learn==1.1.1
 tgcrypto==1.2.3
-uvloop==0.16.0
+uvloop==0.17.0
