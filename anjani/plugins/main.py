@@ -270,6 +270,13 @@ class Main(plugin.Plugin):
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
 
+    async def cmd_donate(self, ctx: command.Context) -> None:
+        """Bot donate command"""
+        await ctx.respond(
+            await self.text(ctx.chat.id, "donate"),
+            disable_web_page_preview=True,
+        )
+
     async def cmd_markdownhelp(self, ctx: command.Context) -> None:
         """Send markdown helper."""
         await ctx.respond(

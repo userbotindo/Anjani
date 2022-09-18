@@ -14,12 +14,18 @@ help-pm: |
   × /start: Starts me, can be used to check i'm alive or not.
   × /help: PM's you this message.
   × /setlang: Change your language preference.
+  × /donate: Get information on how to support me.
 start-chat: Sending you a warm hi & wishing your day is a happy one!
 help-chat: Contact me in PM to get the list of possible commands.
 add-to-group-button: Add to Group 👥
 start-help-button: Help & Commands ❔
 help-chat-button: Help
 back-button: ⬅️ Back
+donate: |
+  Hi, glad to see you want to donate!
+  You can donate to us on [our site](https://userbotindo.com/donate?ref=anjani).
+  Our team is fully handled by volunteers,, and every little helps to improve our services.
+  Thank you for your support!
 markdown-helper: |
   Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that saved messages are correctly parsed, and to allow you to create buttons.\n
   <b>Supported Markdown:</b>

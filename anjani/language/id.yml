@@ -14,12 +14,18 @@ help-pm: |
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
   × /setlang: Mengganti bahasa yang saya gunakan.
+  × /donate: Menampilkan informasi tentang cara mendukung saya.
 start-chat: Memberi anda salam hangat & berharap hari anda menyenangkan!
 help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
 add-to-group-button: Tambahkan saya
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
 back-button: ⬅️ Kembali
+donate: |
+  Hai, senang melihat Anda ingin berdonasi!
+  Anda dapat menyumbang kepada kami di [situs kami](https://userbotindo.com/donate?ref=anjani).
+  Tim kami sepenuhnya dijalankan oleh sukarelawan, dan setiap bantuan kecil membantu untuk meningkatkan layanan kami.
+  Terima kasih atas dukungan Anda!
 markdown-helper: |
   Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
   <b>Markdown yang didukung:</b>
