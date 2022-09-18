@@ -159,7 +159,13 @@ fed-delete-canceled: Federation deletion canceled
 fed-delete-done: I have deleted your Federation!\nAll groups that connect to **{}** are now federation-less.
 fed-cant-two-feds: You cannot join two federations in one chat!
 fed-invalid-id: Please enter a valid federation ID
-fed-invalid-user-id: "Please enter a valid user ID\nUsage: `/fstats <user_id> <fed_id>`"
+fed-invalid-user-id: |
+  Please enter a valid user ID
+  Usage:
+    - `/fstats <user_id> <fed_id>``: Check fban status of a user in a federation.
+    - `/fstats <user_id>`: check all fban stats for user in all federations.
+    - `/fstats <reply>`: check all fban stats for replied user in all federations.
+    - `/fstats`: check all fban stats for you in all federations.
 fed-already-connected: This group is already connected to that federation!
 fed-chat-joined-info: Chat joined to **{}** Federation!
 fed-not-connected: This chat isn't connected to that federation!

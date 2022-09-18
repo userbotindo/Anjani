@@ -768,8 +768,8 @@ class Federation(plugin.Plugin):
 
         return text
 
-    @command.filters(aliases=["fstats"])
-    async def cmd_fedstats(self, ctx: command.Context) -> str:
+    @command.filters(aliases=["fstats", "fedstats"])
+    async def cmd_fbanstats(self, ctx: command.Context) -> str:
         """Get user status"""
         chat = ctx.chat
         if len(ctx.args) > 1:  # <user_id> <fed_id>
@@ -812,8 +812,11 @@ class Federation(plugin.Plugin):
 
         reply_msg = ctx.msg.reply_to_message
         if len(ctx.args) == 1:  # <user_id>
+            try:
+                user_id = int(ctx.args[0])
+            except TypeError:
+                return await self.text(chat.id, "fed-invalid-user-id")
 
-            user_id = int(ctx.args[0])
             cursor = await self.check_fban(user_id)
             if not cursor:
                 return await self.text(chat.id, "fed-stat-multi-not-banned")
