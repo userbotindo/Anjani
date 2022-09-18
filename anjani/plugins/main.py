@@ -114,7 +114,7 @@ class Main(plugin.Plugin):
         if not status_msg:
             return
 
-        await self.db.find_one_and_update(
+        await self.db.update_one(
             {"_id": 5},
             {
                 "$set": {

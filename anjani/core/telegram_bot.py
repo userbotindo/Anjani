@@ -155,7 +155,7 @@ class TelegramBot(MixinBase):
         util.tg.STAFF.update(self.staff)
 
         # Update Language setting chat from db
-        async for data in self.db.get_collection("LANGUAGE").find():
+        async for data in self.db.get_collection("LANGUAGE").find({}, {"_id": False}):
             self.chats_languages[data["chat_id"]] = data["language"]
 
         # Load text from language file
