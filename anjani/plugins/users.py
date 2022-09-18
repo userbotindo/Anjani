@@ -40,8 +40,6 @@ class Users(plugin.Plugin):
     async def on_load(self) -> None:
         self.chats_db = self.bot.db.get_collection("CHATS")
         self.users_db = self.bot.db.get_collection("USERS")
-
-    async def on_start(self, _: int) -> None:
         self.predict_loaded = "SpamPredict" in self.bot.plugins
 
     def hash_id(self, id: int) -> str:
