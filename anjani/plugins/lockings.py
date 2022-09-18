@@ -27,30 +27,21 @@ from typing import (
     MutableMapping,
     Optional,
     Set,
+    Union,
 )
 
 from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
+from pyrogram.enums.chat_type import ChatType
 from pyrogram.enums.message_entity_type import MessageEntityType
 from pyrogram.errors import MessageDeleteForbidden, MessageIdInvalid, UserNotParticipant
 from pyrogram.types import ChatPermissions, Message
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, plugin, util
 
 
-async def anon(client: Client, message: Message) -> bool:
-    if not message.sender_chat:
-        return False
-
-    chat = message.chat
-    current_chat: Any = await client.get_chat(chat.id)
-    if (
-        current_chat.linked_chat and message.sender_chat.id == current_chat.linked_chat.id
-    ) or message.sender_chat.id == current_chat.id:
-        # Linked channel group or anonymous admin
-        return False
-
-    return True
+async def anon(_: Client, message: Message) -> bool:
+    return bool(message.sender_chat)
 
 
 async def button(_: Client, message: Message) -> bool:
@@ -63,10 +54,7 @@ async def rtl(_: Client, message: Message) -> bool:
         return False
 
     checkers = await Lockings.detect_alphabet(text)
-    if "arabic" in checkers:
-        return True
-
-    return False
+    return "arabic" in checkers or "hebrew" in checkers
 
 
 async def url(_: Client, message: Message) -> bool:
@@ -137,14 +125,30 @@ class Lockings(plugin.Plugin):
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
-    # skipcq: PYL-E1130
-    @listener.filters(~filters.admin_only_no_report & filters.group)
     async def on_message(self, message: Message) -> None:
         chat = message.chat
+        user = message.from_user
+        if not chat or chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
+            return
+
+        if not user and message.sender_chat:
+            if message.sender_chat.id == chat.id:  # anon admin
+                return
+
+            current_chat: Any = await self.bot.client.get_chat(chat.id)
+            if current_chat.linked_chat and message.sender_chat.id == current_chat.linked_chat.id:
+                # Linked channel group
+                return
+
         locked = await self.get_chat_restrictions(chat.id)
         for lock_type in locked:
             try:
-                func: Callable[..., Coroutine[Any, Any, bool]] = LOCK_TYPES[lock_type]
+                func: Union[
+                    str, Callable[[Client, Message], Coroutine[Any, Any, bool]]
+                ] = LOCK_TYPES[lock_type]
+                if not callable(func):
+                    continue
+
                 if await func(self.bot.client, message):
                     await message.delete()
             except MessageDeleteForbidden:
@@ -153,9 +157,7 @@ class Lockings(plugin.Plugin):
                     await self.get_text(chat.id, "lockings-failed-to-delete", lock_type=lock_type),
                     quote=True,
                 )
-            except (MessageIdInvalid, TypeError):
-                # MessageIdInvalid: Message was deleted
-                # TypeError: lock_type == "bots" is excpected
+            except MessageIdInvalid:
                 continue
             except Exception as e:  # skipcq: PYL-W0703
                 self.log.error(e, exc_info=e)
