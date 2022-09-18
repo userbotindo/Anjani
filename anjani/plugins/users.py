@@ -25,7 +25,7 @@ from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
-from anjani import command, plugin, util
+from anjani import command, listener, plugin, util
 
 from .spam_prediction import get_trust
 
@@ -113,6 +113,7 @@ class Users(plugin.Plugin):
 
         await self.users_db.update_one({"_id": user.id}, {"$set": set_content})
 
+    @listener.priority(50)
     async def on_message(self, message: Message) -> None:
         """Incoming message handler."""
         chat = message.chat

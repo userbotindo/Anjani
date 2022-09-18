@@ -181,14 +181,16 @@ class SpamShield(plugin.Plugin):
                     return None
             except (ContentTypeError, JSONDecodeError):
                 if retry == 5:
-                    raise
+                    self.log.debug("Error parsing CAS response")
+                    return None
 
                 retry += 1
                 await asyncio.sleep(1)
                 self.log.debug("Invalid data received from CAS server, retrying...")
             except ClientOSError:
                 if retry == 10:
-                    raise
+                    self.log.debug("Error connecting to CAS API")
+                    return None
 
                 retry += 1
                 await asyncio.sleep(0.5)
