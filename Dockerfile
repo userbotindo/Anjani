@@ -1,5 +1,5 @@
 # Set base image (host OS)
-FROM python:3.9.13-slim-bullseye
+FROM python:3.9.14-slim-bullseye
 
 # Set the working directory in the container
 WORKDIR /anjani/
