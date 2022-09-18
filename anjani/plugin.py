@@ -17,9 +17,8 @@
 import inspect
 import logging
 import os.path
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Optional
 
-from pyrogram.types import CallbackQuery, Message
 from typing_extensions import final
 
 from anjani.util.tg import get_text
@@ -116,69 +115,3 @@ class Plugin:
 
     def __repr__(self) -> str:
         return "<" + self.format_desc(self.comment) + ">"
-
-    # { Anjani plugin base methods
-
-    async def on_load(self) -> None:
-        """Called when the plugin is loaded."""
-
-    async def on_start(self, time_usec: int) -> None:
-        """Called when the bot is started.
-
-        Parameters:
-            time_usec (`int`): Time in microseconds when the bot is started.
-        """
-
-    async def on_stop(self) -> None:
-        """Called when the bot is stopped."""
-
-    async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:  # type: ignore
-        """Dispatched when /backup command is called in a group chat.
-
-        parameters:
-            chat_id (`int`): Id of the chat to backup.
-        returns:
-            `dict`: A dictionary that contains the data to be backed up.
-        """
-
-    async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        """Dispatched when /restore command is called in a group chat.
-
-        parameters:
-            chat_id (`int`): Id of the chat to restore.
-            data (`dict`): A dictionary that contains the data to be restored.
-        """
-
-    # }
-
-    # { Telegram event handler
-
-    async def on_callback_query(self, query: CallbackQuery) -> None:
-        """Called when the bot receives a callback query.
-
-        Parameters:
-            query (`CallbackQuery`): The callback query object.
-        """
-
-    async def on_message(self, message: Message) -> None:
-        """Called when the bot receives a message.
-
-        Parameters:
-            message (`Message`): The message received.
-        """
-
-    async def on_chat_migrate(self, message: Message) -> None:
-        """Called when a group chat is migrating to supergroup.
-
-        Parameters:
-            message (`Message`): Message object of the migrating chat.
-        """
-
-    async def on_chat_action(self, message: Message) -> None:
-        """Called when a user join or leaves a chat.
-
-        Parameters:
-            message (`Message`): Message object of the chat action.
-        """
-
-    # }
