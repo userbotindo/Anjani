@@ -51,8 +51,6 @@ class SpamShield(plugin.Plugin):
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")  # spamshield autoban
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
         self.user_db = self.bot.db.get_collection("USERS")
-
-    async def on_start(self, _) -> None:
         self.spam_protection = "SpamPredict" in self.bot.plugins
 
     async def on_chat_migrate(self, message: Message) -> None:
