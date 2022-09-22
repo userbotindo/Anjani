@@ -42,7 +42,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 ENV PATH="${PATH}:/root/.local/bin:$PATH"
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-dev -E all
+RUN poetry install --no-root --only main -E all
 
 # Command to run when container started
 CMD ["poetry", "run", "anjani"]
