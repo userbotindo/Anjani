@@ -371,7 +371,6 @@ class SpamPrediction(plugin.Plugin):
             return
 
         chat = message.chat
-        user = message.from_user
         text = (
             message.text
             if message.text
@@ -383,7 +382,7 @@ class SpamPrediction(plugin.Plugin):
                 partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
             )
 
-        if not chat or message.left_chat_member or not user or not text:
+        if not chat or message.left_chat_member or not text:
             return
 
         # Always check the spam probability
@@ -495,17 +494,28 @@ class SpamPrediction(plugin.Plugin):
                 await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
 
         if probability >= 0.8:
-            # Empty user big chances are anonymous admins
-            if user is None or message.sender_chat and message.sender_chat.id == message.chat.id:
-                return
-
-            try:
-                target = await message.chat.get_member(user)
-            except UserNotParticipant:
-                target = None
-            else:
-                if util.tg.is_staff_or_admin(target):
+            chat = message.chat
+            if not user and message.sender_chat:
+                if message.sender_chat.id == chat.id:  # anon admin
                     return
+
+                current_chat: Any = await self.bot.client.get_chat(chat.id)
+                if (
+                    current_chat.linked_chat
+                    and message.sender_chat.id == current_chat.linked_chat.id
+                ):
+                    # Linked channel group
+                    return
+
+            target = None
+            if user:
+                try:
+                    target = await message.chat.get_member(user)
+                except UserNotParticipant:
+                    pass
+                else:
+                    if util.tg.is_staff_or_admin(target):
+                        return
 
             if from_ocr:
                 alert = (
