@@ -152,6 +152,9 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "error-its-myself")
 
         bot, _ = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
+        if not bot:
+            return await self.text(chat.id, "promote-error-perm")
+
         try:
             await chat.promote_member(user_id=user.id, privileges=bot.privileges)
         except ChatAdminRequired:
