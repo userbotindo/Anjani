@@ -134,6 +134,9 @@ class SpamPrediction(plugin.Plugin):
             try:
                 fut.result()
             except Exception as e:  # skipcq: PYL-W0703
+                if isinstance(e, StopPropagation):
+                    raise e
+
                 self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
 
         text = future.result()
@@ -141,7 +144,7 @@ class SpamPrediction(plugin.Plugin):
             return
 
         f = self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True))
-        f.add_done_callback(done)
+        f.add_done_callback(partial(self.bot.loop.call_soon_threadsafe, done))
 
     @staticmethod
     def _build_hash(content: str) -> str:
