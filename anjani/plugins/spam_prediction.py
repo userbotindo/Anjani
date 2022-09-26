@@ -125,7 +125,7 @@ class SpamPrediction(plugin.Plugin):
             if now.time() > scheduled_time:
                 date = now.date() + timedelta(days=1)
             then = datetime.combine(date, scheduled_time)
-            self.log.info("Next model refresh at %s UTC", then)
+            self.log.debug("Next model refresh at %s UTC", then)
             await asyncio.sleep((then - now).total_seconds())
             await self.__load_model()
 
