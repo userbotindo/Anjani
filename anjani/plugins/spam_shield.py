@@ -138,29 +138,45 @@ class SpamShield(plugin.Plugin):
             async with self.bot.http.get(path, headers=headers) as resp:
                 if resp.status in {200, 201}:
                     return await resp.json()
-                if resp.status in {204, 404, 502}:
-                    return {}
-                if resp.status == 401:
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message="Make sure your Spamwatch API token is corret",
-                    )
-                if resp.status == 403:
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message="Forbidden, your token permissions is not valid",
-                    )
-                if resp.status == 429:
-                    until = (await resp.json()).get("until", 0)
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message=f"Too many requests. Try again in {until - datetime.now()}",
-                    )
 
-                raise ClientResponseError(resp.request_info, resp.history)
+                if resp.status == 401:
+                    self.log.error(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="Make sure your Spamwatch API token is corret",
+                        ),
+                    )
+                    return {}
+
+                if resp.status == 403:
+                    self.log.error(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="Forbidden, your token permissions is not valid",
+                        ),
+                    )
+                    return {}
+
+                if resp.status == 429:
+                    self.log.error(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="There were problems with request... Too many.",
+                        ),
+                    )
+                    return {}
+
+                self.log.error(
+                    "Unknown Spamwatch API error",
+                    exc_info=ClientResponseError(resp.request_info, resp.history),
+                )
+                return {}
         except ClientConnectorError:
             return {}
 
