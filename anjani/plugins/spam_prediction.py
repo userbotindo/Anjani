@@ -18,6 +18,7 @@ import asyncio
 import pickle
 import re
 import unicodedata
+from datetime import datetime, time, timedelta
 from functools import partial
 from hashlib import md5, sha256
 from pathlib import Path
@@ -99,6 +100,7 @@ class SpamPrediction(plugin.Plugin):
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
 
         await self.__load_model()
+        self.bot.loop.create_task(self.__refresh_model())
 
     async def on_chat_migrate(self, message: Message) -> None:
         await self.db.update_one(
@@ -114,6 +116,18 @@ class SpamPrediction(plugin.Plugin):
         await self.setting_db.update_one(
             {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
         )
+
+    async def __refresh_model(self) -> None:
+        scheduled_time = time(hour=17)  # Run at 00:00 WIB
+        while True:
+            now = datetime.utcnow()
+            date = now.date()
+            if now.time() > scheduled_time:
+                date = now.date() + timedelta(days=1)
+            then = datetime.combine(date, scheduled_time)
+            self.log.debug("Next model refresh at %s UTC", then)
+            await asyncio.sleep((then - now).total_seconds())
+            await self.__load_model()
 
     async def __load_model(self) -> None:
         self.log.info("Downloading spam prediction model!")
