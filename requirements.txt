@@ -5,7 +5,7 @@ colorlog==6.7.0
 dnspython==2.2.1
 meval==2.5
 pymongo==4.2.0
-pyrogram==2.0.56
+pyrogram==2.0.57
 python-dotenv==0.21.0
 PyYAML==6.0
 scikit-learn==1.1.1
