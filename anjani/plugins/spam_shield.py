@@ -139,6 +139,9 @@ class SpamShield(plugin.Plugin):
                 if resp.status in {200, 201}:
                     return await resp.json()
 
+                if resp.status == 404:
+                    return {}
+
                 if resp.status == 401:
                     self.log.error(
                         "Spamwatch API error",
@@ -162,7 +165,7 @@ class SpamShield(plugin.Plugin):
                     return {}
 
                 if resp.status == 429:
-                    self.log.error(
+                    self.log.warning(
                         "Spamwatch API error",
                         exc_info=ClientResponseError(
                             resp.request_info,
@@ -173,7 +176,7 @@ class SpamShield(plugin.Plugin):
                     return {}
 
                 self.log.error(
-                    "Unknown Spamwatch API error",
+                    f"Unknown Spamwatch API error: Received {resp.status}",
                     exc_info=ClientResponseError(resp.request_info, resp.history),
                 )
                 return {}
