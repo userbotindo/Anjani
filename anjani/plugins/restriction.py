@@ -27,6 +27,7 @@ from pyrogram.types import (
     Chat,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    Message,
     User,
 )
 
@@ -41,6 +42,15 @@ class Restrictions(plugin.Plugin):
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")
+
+    async def on_chat_migrate(self, message: Message) -> None:
+        new_chat = message.chat.id
+        old_chat = message.migrate_from_chat_id
+
+        await self.db.update_one(
+            {"chat_id": old_chat},
+            {"$set": {"chat_id": new_chat}},
+        )
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
         data = await self.db.find_one(
