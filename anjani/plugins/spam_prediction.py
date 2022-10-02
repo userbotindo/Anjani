@@ -157,8 +157,9 @@ class SpamPrediction(plugin.Plugin):
         if not text:
             return
 
-        f = self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True))
-        f.add_done_callback(partial(self.bot.loop.call_soon_threadsafe, done))
+        self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True)).add_done_callback(
+            partial(self.bot.loop.call_soon_threadsafe, done)
+        )
 
     @staticmethod
     def _build_hash(content: str) -> str:
@@ -394,8 +395,7 @@ class SpamPrediction(plugin.Plugin):
             else (message.caption if message.media and message.caption else None)
         )
         if message.photo:
-            future = self.bot.loop.create_task(self.run_ocr(message))
-            future.add_done_callback(
+            self.bot.loop.create_task(self.run_ocr(message)).add_done_callback(
                 partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
             )
 
