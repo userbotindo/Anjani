@@ -239,8 +239,8 @@ owner_only = _owner_only()
 
 
 # { admin_only
-async def _send_error(bot: "Anjani", chat: int, message: Message, string_key: str) -> None:
-    bot.loop.create_task(reply_and_delete(message, await get_text(bot, chat, string_key), 5))
+async def _send_error(bot: "Anjani", chat_id: int, message: Message, string_key: str) -> None:
+    bot.loop.create_task(reply_and_delete(message, await get_text(bot, chat_id, string_key), 5))
 
 
 def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
