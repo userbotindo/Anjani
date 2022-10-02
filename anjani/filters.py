@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable, Coroutine, Optional
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional
 
 from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
@@ -80,6 +80,10 @@ from pyrogram.types import Message
 
 from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
 from anjani.util.types import CustomFilter
+
+if TYPE_CHECKING:
+    from anjani.core import Anjani
+
 
 FilterFunc = Callable[[CustomFilter, Client, Message], Coroutine[Any, Any, bool]]
 __all__ = [
@@ -235,6 +239,10 @@ owner_only = _owner_only()
 
 
 # { admin_only
+async def _send_error(bot: "Anjani", chat: int, message: Message, string_key: str) -> None:
+    bot.loop.create_task(reply_and_delete(message, await get_text(bot, chat, string_key), 5))
+
+
 def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
@@ -257,7 +265,16 @@ def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilt
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
-        if not (bot_perm and member_perm):
+        if not bot_perm:
+            if send_error:
+                await _send_error(flt.anjani, message.chat.id, message, "err-im-not-admin")
+
+            return False
+
+        if not member_perm:
+            if send_error:
+                await _send_error(flt.anjani, message.chat.id, message, "err-not-admin")
+
             return False
 
         if bot_perm.status == ChatMemberStatus.ADMINISTRATOR and member_perm.status in {
@@ -267,11 +284,7 @@ def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilt
             return True
 
         if send_error:
-            flt.anjani.loop.create_task(
-                reply_and_delete(
-                    message, await get_text(flt.anjani, message.chat.id, "err-not-admin"), 5
-                )
-            )
+            await _send_error(flt.anjani, message.chat.id, message, "err-perm")
 
         return False
 
