@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, List, Mapping, Optional
 
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.types import Message
@@ -30,17 +30,17 @@ def _calc_pct(num1: int, num2: int) -> str:
     if not num2:
         return "0"
 
-    return "{:.1f}".format((num1 / num2) * 100).rstrip("0").rstrip(".")
+    return f"{(num1 / num2) * 100:.1f}".rstrip("0").rstrip(".")
 
 
 def _calc_ph(stat: int, uptime: int) -> str:
     up_hr = max(1, uptime) / USEC_PER_HOUR
-    return "{:.1f}".format(stat / up_hr).rstrip("0").rstrip(".")
+    return f"{stat / up_hr:.1f}".rstrip("0").rstrip(".")
 
 
 def _calc_pd(stat: int, uptime: int) -> str:
     up_day = max(1, uptime) / USEC_PER_DAY
-    return "{:.1f}".format(stat / up_day).rstrip("0").rstrip(".")
+    return f"{stat / up_day:.1f}".rstrip("0").rstrip(".")
 
 
 class PluginStats(plugin.Plugin):
@@ -50,6 +50,9 @@ class PluginStats(plugin.Plugin):
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("STATS")
+        self.chats_db = self.bot.db.get_collection("CHATS")
+        self.users_db = self.bot.db.get_collection("USERS")
+        self.feds_db = self.bot.db.get_collection("FEDERATIONS")
 
         if await self.get("stop_time_usec") or await self.get("uptime"):
             self.log.info("Migrating stats timekeeping format")
@@ -86,15 +89,15 @@ class PluginStats(plugin.Plugin):
         return collection.get(key) if collection else None
 
     async def inc(self, key: str, value: int) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$inc": {key: value}}, upsert=True)
+        await self.db.update_one({"_id": 1}, {"$inc": {key: value}}, upsert=True)
 
     async def delete(self, key: str) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$unset": {key: ""}})
+        await self.db.update_one({"_id": 1}, {"$unset": {key: ""}})
 
     async def put(self, key: str, value: int) -> None:
-        await self.db.find_one_and_update({"_id": 1}, {"$set": {key: value}}, upsert=True)
+        await self.db.update_one({"_id": 1}, {"$set": {key: value}}, upsert=True)
 
-    @command.filters(filters.dev_only)
+    @command.filters(filters.dev_only & filters.private)
     async def cmd_stats(self, ctx: command.Context) -> None:
         if ctx.input == "reset":
             await self.db.delete_many({})
@@ -117,21 +120,58 @@ class PluginStats(plugin.Plugin):
             self.get("spam_detected"),
             self.get("spam_deleted"),
             self.get("banned"),
+            self.users_db.count_documents({}),
+            self.chats_db.count_documents({}),
         )
         for index, stat in enumerate(resp):
             if stat is None:
                 resp[index] = 0
-        downtime, recv, processed, predicted, spam_detected, spam_deleted, banned = resp
-        text = f"""<b><i>Stats since last reset</i></b>\n
-<b>Total Uptime elapsed</b>: <b>{util.time.format_duration_us(uptime - downtime)}</b>
-<b>Total Downtime elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
-<b>Messages received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
-  • <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
-  • <b>{spam_detected}</b> messages were detected as spam - <b>{_calc_pct(spam_detected, predicted)}%</b> of predicted messages
-  • <b>{spam_deleted}</b> messages were deleted from spam - <b>{_calc_pct(spam_deleted, spam_detected)}%</b> of detected messages
-<b>Commands processed</b>: <b>{processed}</b> (<b><i>{_calc_ph(processed, uptime)}/h</i></b>)
-  • <b>{_calc_pct(processed, recv)}%</b> from received messages
-<b>Auto banned users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
+
+        (
+            downtime,
+            recv,
+            processed,
+            predicted,
+            spam_detected,
+            spam_deleted,
+            banned,
+            total_users,
+            total_chats,
+        ) = resp
+        total_federations = 0
+        total_fbanned = 0
+        total_chat_fbanned = 0
+        pipeline: List[Mapping[str, Any]] = [
+            {
+                "$project": {
+                    "_id": 1,
+                    "name": 1,
+                    "banned_user": {"$size": {"$objectToArray": {"$ifNull": ["$banned", {}]}}},
+                    "banned_chat": {"$size": {"$objectToArray": {"$ifNull": ["$banned_chat", {}]}}},
+                }
+            }
+        ]
+
+        async for opt in self.feds_db.aggregate(pipeline=pipeline):
+            total_federations += 1
+            total_fbanned += opt.get("banned_user", 0)
+            total_chat_fbanned += opt.get("banned_chat", 0)
+
+        text = f"""<b>STATS  SINCE  LAST  RESET</b>:\n
+  • <b>Total Uptime Elapsed</b>: <b>{util.time.format_duration_us(uptime - downtime)}</b>
+  • <b>Total Downtime Elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
+  • <b>Messages Received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
+     × <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
+     × <b>{spam_detected}</b> messages were detected as spam - <b>{_calc_pct(spam_detected, predicted)}%</b> of predicted messages
+     × <b>{spam_deleted}</b> messages were deleted from spam - <b>{_calc_pct(spam_deleted, spam_detected)}%</b> of detected messages
+  • <b>Commands Processed</b>: <b>{processed}</b> (<b><i>{_calc_ph(processed, uptime)}/h</i></b>)
+     × <b>{_calc_pct(processed, recv)}%</b> from received messages
+  • <b>Total Users</b>: <b>{total_users}</b>
+  • <b>Total Chats</b>: <b>{total_chats}</b>
+  • <b>Total Federations</b>: <b>{total_federations}</b>
+     × <b>Total Fbanned Users</b>: <b>{total_fbanned}</b>
+     × <b>Total Fbanned Chats</b>: <b>{total_chat_fbanned}</b>
+  • <b>Auto Banned Users</b>: <b>{banned}</b> (<b><i>{_calc_pd(banned, uptime)}/day</i></b>)
 """
         async with ctx.action():
             await ctx.respond(text, parse_mode=ParseMode.HTML)

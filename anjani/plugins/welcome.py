@@ -32,14 +32,8 @@ class Greeting(plugin.Plugin):
 
     db: util.db.AsyncCollection
 
-    # Late init
-    fed: Any
-
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
-
-    async def on_start(self, _: int) -> None:
-        self.fed = self.bot.plugins["SpamShield"]
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
@@ -103,11 +97,6 @@ class Greeting(plugin.Plugin):
                         reply_to_message_id=reply_to,
                     )
                 else:
-                    if await self.fed.is_active(chat.id) and await self.fed.is_banned(
-                        new_member.id
-                    ):
-                        continue
-
                     text, button = await self.welc_message(chat.id)
                     if not text:
                         string = await self.text(chat.id, "default-welcome", noformat=True)
@@ -174,26 +163,26 @@ class Greeting(plugin.Plugin):
 
     async def is_welcome(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
-        active = await self.db.find_one({"chat_id": chat_id})
+        active = await self.db.find_one({"chat_id": chat_id}, {"should_welcome": 1})
         return active.get("should_welcome", True) if active else True
 
     async def is_goodbye(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
-        active = await self.db.find_one({"chat_id": chat_id})
+        active = await self.db.find_one({"chat_id": chat_id}, {"should_goodbye": 1})
         return active.get("should_goodbye", True) if active else True
 
     async def welc_message(
         self, chat_id: int
     ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]]]:
         """Get chat welcome string"""
-        message = await self.db.find_one({"chat_id": chat_id})
+        message = await self.db.find_one({"chat_id": chat_id}, {"welcome": 1, "button": 1})
         if message:
             return message.get("custom_welcome"), message.get("button")
 
         return await self.text(chat_id, "default-welcome", noformat=True), None
 
     async def left_message(self, chat_id: int) -> str:
-        message = await self.db.find_one({"chat_id": chat_id})
+        message = await self.db.find_one({"chat_id": chat_id}, {"custom_goodbye": 1})
         return (
             message.get(
                 "custom_goodbye", await self.text(chat_id, "default-goodbye", noformat=True)
@@ -204,7 +193,7 @@ class Greeting(plugin.Plugin):
 
     async def clean_service(self, chat_id: int) -> bool:
         """Fetch clean service setting"""
-        clean = await self.db.find_one({"chat_id": chat_id})
+        clean = await self.db.find_one({"chat_id": chat_id}, {"clean_service": 1})
         if clean:
             return clean.get("clean_service", True)
 
@@ -246,13 +235,13 @@ class Greeting(plugin.Plugin):
         data = await self.db.find_one_and_update(
             {"chat_id": chat_id}, {"$set": {"prev_welc": msg_id}}, upsert=True
         )
-        return data.get("prev_welc", False) if data else False
+        return data.get("prev_welc", None) if data else None
 
     async def previous_goodbye(self, chat_id: int, msg_id: int) -> Optional[int]:
         data = await self.db.find_one_and_update(
             {"chat_id": chat_id}, {"$set": {"prev_gdby": msg_id}}, upsert=True
         )
-        return data.get("prev_gdby", False) if data else False
+        return data.get("prev_gdby", None) if data else None
 
     @command.filters(filters.admin_only)
     async def cmd_setwelcome(self, ctx: command.Context) -> str:

@@ -1,0 +1,24 @@
+name: Feature Request
+description: Create a feature request for Anjani
+labels: ["feature request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to propose a feature! Please fill out this form as completely as possible.
+        Feature request will be converted to the [Github Discussions (Ideas 💡)](https://github.com/userbotindo/Anjani/discussions/categories/ideas).
+  - type: textarea
+    attributes:
+      label: Describe the feature you'd like to request
+      description: A clear and concise description of what you want and what your use case is.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Contributing
+      multiple: false
+      options:
+        - "Yes I would like to contribute this feature in a PR"
+        - "No, I am afraid I can't contribute this feature"
+    validations:
+      required: true

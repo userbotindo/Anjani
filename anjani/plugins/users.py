@@ -17,6 +17,7 @@
 import asyncio
 import re
 from hashlib import md5
+from time import time
 from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 
 from pyrogram.enums.chat_action import ChatAction
@@ -24,7 +25,9 @@ from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
-from anjani import command, plugin, util
+from anjani import command, listener, plugin, util
+
+from .spam_prediction import get_trust
 
 
 class Users(plugin.Plugin):
@@ -37,8 +40,6 @@ class Users(plugin.Plugin):
     async def on_load(self) -> None:
         self.chats_db = self.bot.db.get_collection("CHATS")
         self.users_db = self.bot.db.get_collection("USERS")
-
-    async def on_start(self, _: int) -> None:
         self.predict_loaded = "SpamPredict" in self.bot.plugins
 
     def hash_id(self, id: int) -> str:
@@ -62,7 +63,7 @@ class Users(plugin.Plugin):
 
     async def build_user_task(self, user: User) -> asyncio.Task:
         data = await self.users_db.find_one({"_id": user.id})
-        content: MutableMapping[str, Any] = {"username": user.username}
+        content: MutableMapping[str, Any] = {"username": user.username, "last_seen": int(time())}
         if not data or "hash" not in data:
             content["hash"] = self.hash_id(user.id)
         if not data or "chats" not in data:
@@ -110,6 +111,7 @@ class Users(plugin.Plugin):
 
         await self.users_db.update_one({"_id": user.id}, {"$set": set_content})
 
+    @listener.priority(50)
     async def on_message(self, message: Message) -> None:
         """Incoming message handler."""
         chat = message.chat
@@ -119,7 +121,7 @@ class Users(plugin.Plugin):
             return
 
         tasks = []
-        set_content = {"username": user.username, "name": user.first_name}
+        set_content = {"username": user.username, "name": user.first_name, "last_seen": int(time())}
         user_data = await self.users_db.find_one({"_id": user.id})
 
         if chat.type == ChatType.PRIVATE:
@@ -138,7 +140,11 @@ class Users(plugin.Plugin):
 
         chat_data = await self.chats_db.find_one({"chat_id": chat.id})
         chat_update = {
-            "$set": {"chat_name": chat.title, "type": chat.type.name.lower()},
+            "$set": {
+                "chat_name": chat.title,
+                "type": chat.type.name.lower(),
+                "last_update": int(time()),
+            },
             "$addToSet": {"member": user.id},
         }
         if self.predict_loaded:
@@ -156,7 +162,7 @@ class Users(plugin.Plugin):
             if usr := message.forward_from:
                 tasks.append(await self.build_user_task(usr))
         else:
-            update = {"$set": {"username": user.username}, "$addToSet": {"chats": chat.id}}
+            update = {"$set": set_content, "$addToSet": {"chats": chat.id}}
 
         await asyncio.gather(
             self.users_db.update_one({"_id": user.id}, update, upsert=True),
@@ -195,7 +201,12 @@ class Users(plugin.Plugin):
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:
             text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
-            text += f"\n**Reputation: **`{user_db.get('reputation', 0)}`"
+            text += f"\n**Reputation:** `{user_db.get('reputation', 0)}`"
+            trust = get_trust(user_db.get("pred_sample", []))
+            if trust:
+                text += f"\n**Trust:** `{trust:.2f}`"
+            else:
+                text += "\n**Trust:** `N/A`"
 
         if user.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):

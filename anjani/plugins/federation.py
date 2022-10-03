@@ -232,21 +232,38 @@ class Federation(plugin.Plugin):
             {"_id": fid}, {"$unset": {f"banned_chat.{chat}": None}}, upsert=True
         )
 
-    async def check_fban(self, target: int) -> Tuple[Optional[util.db.AsyncCursor], bool]:
+    async def check_fban(self, target: int) -> util.db.AsyncCursor:
         """Check user banned list"""
-        query = {f"banned.{target}": {"$exists": True}}
-        query_chat = {f"banned_chat.{target}": {"$exists": True}}
-        projection = {f"banned.{target}": 1, "name": 1, "chats": 1}
-        projection_chat = {f"banned_chat.{target}": 1, "name": 1, "chats": 1}
-
-        if await self.db.count_documents(query) != 0:
-            return self.db.find(query, projection=projection), False
-        if await self.db.count_documents(query_chat) != 0:
-            return self.db.find(query_chat, projection=projection_chat), True
-        return None, False
+        return self.db.find(
+            {
+                "$or": [
+                    {f"banned.{target}": {"$exists": True}},
+                    {f"banned_chat.{target}": {"$exists": True}},
+                ]
+            },
+            {
+                "_id": 1,
+                "name": 1,
+                f"banned.{target}": 1,
+                f"banned_chat.{target}": 1,
+            },
+        )
 
     async def is_fbanned(self, chat: int, target: int) -> Optional[MutableMapping[str, Any]]:
-        data = await self.get_fed_bychat(chat)
+        data = await self.db.find_one(
+            {
+                "chats": chat,
+                "$or": [
+                    {f"banned.{target}": {"$exists": True}},
+                    {f"banned_chat.{target}": {"$exists": True}},
+                ],
+            },
+            {
+                f"banned.{target}": 1,
+                f"banned_chat.{target}": 1,
+                "name": 1,
+            },
+        )
         if not data:
             return None
 
@@ -823,8 +840,8 @@ class Federation(plugin.Plugin):
 
         return text
 
-    @command.filters(aliases=["fstats"])
-    async def cmd_fedstats(self, ctx: command.Context) -> str:
+    @command.filters(aliases=["fstats", "fedstats"])
+    async def cmd_fbanstats(self, ctx: command.Context) -> str:
         """Get user status"""
         chat = ctx.chat
         if len(ctx.args) > 1:  # <user_id> <fed_id>
@@ -867,9 +884,12 @@ class Federation(plugin.Plugin):
 
         reply_msg = ctx.msg.reply_to_message
         if len(ctx.args) == 1:  # <user_id>
+            try:
+                user_id = int(ctx.args[0])
+            except TypeError:
+                return await self.text(chat.id, "fed-invalid-user-id")
 
-            user_id = int(ctx.args[0])
-            cursor, is_channel = await self.check_fban(user_id)
+            cursor = await self.check_fban(user_id)
             if not cursor:
                 return await self.text(chat.id, "fed-stat-multi-not-banned")
 
@@ -880,7 +900,9 @@ class Federation(plugin.Plugin):
                     "fed-stat-multi-info",
                     bans["name"],
                     bans["_id"],
-                    bans["banned_chat" if is_channel else "banned"][str(user_id)]["reason"],
+                    bans["banned_chat" if bans.get("banned_chat") else "banned"][str(user_id)][
+                        "reason"
+                    ],
                 )
             return text
 
@@ -892,7 +914,7 @@ class Federation(plugin.Plugin):
         if not user:
             return ""
 
-        cursor, is_channel = await self.check_fban(user.id)
+        cursor = await self.check_fban(user.id)
         if cursor:
             text = await self.text(chat.id, "fed-stat-multi")
             async for bans in cursor:
@@ -901,7 +923,9 @@ class Federation(plugin.Plugin):
                     "fed-stat-multi-info",
                     bans["name"],
                     bans["_id"],
-                    bans["banned_chat" if is_channel else "banned"][str(user.id)]["reason"],
+                    bans["banned_chat" if bans.get("banned_chat") else "banned"][str(user.id)][
+                        "reason"
+                    ],
                 )
         else:
             text = await self.text(chat.id, "fed-stat-multi-not-banned")
@@ -983,7 +1007,7 @@ class Federation(plugin.Plugin):
                 + f"\n- `{data['_id']}`: {data['name']}"
             )
 
-        cursor = self.db.find({"admins": user.id})
+        cursor = self.db.find({"admins": user.id}, {"_id": 1, "name": 1})
         fed_list = await cursor.to_list()
         if fed_list:
             text = await self.text(chat.id, "fed-myfeds-admin") + "\n"

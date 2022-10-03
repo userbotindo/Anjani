@@ -70,13 +70,13 @@ class Command:
         name: str,
         plugin: Any,
         func: CommandFunc,
-        cmdFilter: Optional[Union[Filter, CustomFilter]],
+        cmd_filter: Optional[Union[Filter, CustomFilter]],
         aliases: Iterable[str],
     ) -> None:
         self.name = name
         self.plugin = plugin
         self.func = func
-        self.filters = cmdFilter
+        self.filters = cmd_filter
         self.aliases = aliases
 
     def __repr__(self) -> str:

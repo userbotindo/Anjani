@@ -17,7 +17,7 @@
 import inspect
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Union
 
-from pyrogram import errors
+from pyrogram import ContinuePropagation, errors
 from pyrogram.client import Client
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
@@ -167,10 +167,9 @@ class CommandDispatcher(MixinBase):
     async def on_command(
         self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
     ) -> None:
-        cmd = None
-
+        # cmd never raises KeyError because we checked on command_predicate
+        cmd = self.commands[message.command[0]]
         try:
-            cmd = self.commands[message.command[0]]
             # Construct invocation context
             ctx = command.Context(
                 self,
@@ -227,20 +226,22 @@ class CommandDispatcher(MixinBase):
             constructor_handler = CommandHandlerError(
                 f"raised from {type(e).__name__}: {str(e)}"
             ).with_traceback(e.__traceback__)
-            if cmd is not None:
-                chat = message.chat
-                user = message.from_user
-                cmd.plugin.log.error(
-                    "Error in command handler\n"
-                    "  Data:\n"
-                    "    • Chat    -> %s (%d)\n"
-                    "    • Invoker -> %s (%d)\n"
-                    "    • Input   -> %s\n",
-                    cmd.name,
-                    chat.title if chat else None,
-                    chat.id if chat else None,
-                    user.first_name if user else None,
-                    user.id if user else None,
-                    message.command,
-                    exc_info=constructor_handler,
-                )
+            chat = message.chat
+            user = message.from_user
+            cmd.plugin.log.error(
+                "Error in command handler\n"
+                "  Data:\n"
+                "    • Chat    -> %s (%d)\n"
+                "    • Invoker -> %s (%d)\n"
+                "    • Input   -> %s\n",
+                cmd.name,
+                chat.title if chat else None,
+                chat.id if chat else None,
+                user.first_name if user else None,
+                user.id if user else None,
+                message.command,
+                exc_info=constructor_handler,
+            )
+        finally:
+            # Continue processing handler of on_message
+            raise ContinuePropagation

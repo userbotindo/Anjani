@@ -180,6 +180,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
 
     def batch_size(self, batch_size: int) -> "AsyncLatentCommandCursor":
         self.kwargs["batchSize"] = batch_size
+
         return self
 
     def _get_more(self) -> Union[asyncio.Future[int], Coroutine[Any, Any, int]]:
@@ -190,6 +191,8 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
             future.add_done_callback(
                 partial(self.loop.call_soon_threadsafe, self._on_started, original_future)
             )
+
+            self.start, self.args, self.kwargs = lambda _: None, (), {}
 
             return original_future
 
@@ -217,17 +220,16 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
                 )
             else:
                 # Send a getMore.
-                fut = super()._get_more()
-                if isinstance(fut, asyncio.Future):
+                fut = self.loop.create_task(super()._get_more())
 
-                    def copy(f: asyncio.Future) -> None:
-                        if original_future.done():
-                            return
+                def copy(f: asyncio.Future[int]) -> None:
+                    if original_future.done():
+                        return
 
-                        exc = f.exception()
-                        if exc is not None:
-                            original_future.set_exception(exc)
-                        else:
-                            original_future.set_result(f.result())
+                    exc = f.exception()
+                    if exc is not None:
+                        original_future.set_exception(exc)
+                    else:
+                        original_future.set_result(f.result())
 
-                    fut.add_done_callback(copy)
+                fut.add_done_callback(copy)

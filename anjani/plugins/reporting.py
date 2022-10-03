@@ -63,9 +63,12 @@ class Reporting(plugin.Plugin):
         if not user:
             return
 
-        invoker = await chat.get_member(user.id)
-        if invoker.status in {ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR}:
-            return  # ignore command from admins
+        try:
+            invoker = await chat.get_member(user.id)
+            if invoker.status in {ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR}:
+                return  # ignore command from admins
+        except UserNotParticipant:
+            pass  # keep going when user is not a member
 
         if not message.reply_to_message:
             await message.reply(await self.text(chat.id, "no-report-user"))
@@ -131,6 +134,7 @@ class Reporting(plugin.Plugin):
 
         return data.get("setting", True)
 
+    @command.filters(filters.group)
     async def cmd_report(self, ctx: command.Context) -> None:
         return await self.on_message(ctx.message)
 
@@ -156,7 +160,10 @@ class Reporting(plugin.Plugin):
             return await self.text(chat.id, "err-yes-no-args")
 
         _, member = await util.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
-        if member.status not in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
+        if not member or member.status not in {
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        }:
             return None
 
         if setting is True:

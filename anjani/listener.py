@@ -55,13 +55,13 @@ class Listener:
         func: ListenerFunc,
         plugin: Any,
         prio: int,
-        listenerFilter: Optional[Filter] = None,
+        listener_filter: Optional[Filter] = None,
     ) -> None:
         self.event = event
         self.func = func
         self.plugin = plugin
         self.priority = prio
-        self.filters = listenerFilter
+        self.filters = listener_filter
 
     def __lt__(self, other: "Listener") -> bool:
         return self.priority < other.priority

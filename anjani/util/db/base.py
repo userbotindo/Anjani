@@ -67,11 +67,14 @@ class AsyncBase(Generic[_DocumentType]):
         if (
             isinstance(other, self.__class__)
             and hasattr(self, "dispatch")
-            and hasattr(self, "dispatch")
+            and hasattr(other, "dispatch")
         ):
             return self.dispatch == other.dispatch
 
         return NotImplemented
+
+    def __hash__(self):
+        return hash(self.dispatch)
 
     def __repr__(self) -> str:
         return type(self).__name__ + f"({self.dispatch!r})"

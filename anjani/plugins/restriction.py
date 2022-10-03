@@ -27,6 +27,7 @@ from pyrogram.types import (
     Chat,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    Message,
     User,
 )
 
@@ -42,8 +43,19 @@ class Restrictions(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")
 
+    async def on_chat_migrate(self, message: Message) -> None:
+        new_chat = message.chat.id
+        old_chat = message.migrate_from_chat_id
+
+        await self.db.update_one(
+            {"chat_id": old_chat},
+            {"$set": {"chat_id": new_chat}},
+        )
+
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
-        data = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
+        data = await self.db.find_one(
+            {"chat_id": chat_id, "warn_list": {"$exists": True}}, {"_id": 0, "warn_list": 1}
+        )
         try:
             return {self.name: data["warn_list"]} if data else {}
         except KeyError:
@@ -61,10 +73,12 @@ class Restrictions(plugin.Plugin):
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
         invoker = await chat.get_member(query.from_user.id)
-        if not invoker.privileges.can_restrict_members:
+        if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "warn-keyboard-not-admins"))
 
-        chat_data = await self.db.find_one({"chat_id": chat.id})
+        chat_data = await self.db.find_one(
+            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": 1}
+        )
         if not chat_data:
             return
 
@@ -223,7 +237,10 @@ class Restrictions(plugin.Plugin):
 
         threshold = 3
         warns: Optional[int] = None
-        chat_data = await self.db.find_one({"chat_id": chat.id})
+        chat_data = await self.db.find_one(
+            {"chat_id": chat.id, "warn_list": {"$exists": True}},
+            {"warn_list": 1, "warn_threshold": 1},
+        )
         if chat_data:  # Get threshold and existing warns from chat data
             threshold = chat_data.get("warn_threshold", 3)
             try:
@@ -280,7 +297,10 @@ class Restrictions(plugin.Plugin):
         if target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return await ctx.get_text("rmwarn-admin")
 
-        chat_data = await self.db.find_one({"chat_id": chat.id})
+        chat_data = await self.db.find_one(
+            {"chat_id": chat.id, "warn_list": {"$exists": True}},
+            {"warn_list": 1, "warn_threshold": 1},
+        )
         if not chat_data:
             return await ctx.get_text("warn-no-data", user.mention)
         threshold = chat_data.get("warn_threshold", 3)
@@ -344,7 +364,9 @@ class Restrictions(plugin.Plugin):
         if target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
             return await ctx.get_text("rmwarn-admin")
 
-        chat_data = await self.db.find_one({"chat_id": chat.id})
+        chat_data = await self.db.find_one(
+            {"chat_id": chat.id, "warn_list": {"$exists": True}}, {"warn_list": 1}
+        )
         if not chat_data:
             return await ctx.get_text("warn-no-data", user.mention)
 

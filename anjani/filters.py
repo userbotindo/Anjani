@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable, Coroutine, Optional
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Optional
 
 from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
@@ -80,6 +80,10 @@ from pyrogram.types import Message
 
 from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
 from anjani.util.types import CustomFilter
+
+if TYPE_CHECKING:
+    from anjani.core import Anjani
+
 
 FilterFunc = Callable[[CustomFilter, Client, Message], Coroutine[Any, Any, bool]]
 __all__ = [
@@ -165,7 +169,7 @@ def _create_filter_permission(name: str, *, include_bot: bool = True) -> Filter:
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
-        if not bot_perm.privileges or not member_perm.privileges:
+        if not (bot_perm and member_perm) or not (bot_perm.privileges and member_perm.privileges):
             return False
 
         try:
@@ -235,42 +239,59 @@ owner_only = _owner_only()
 
 
 # { admin_only
-def _admin_only(include_bot: bool = True) -> CustomFilter:
+async def _send_error(bot: "Anjani", chat_id: int, message: Message, string_key: str) -> None:
+    bot.loop.create_task(reply_and_delete(message, await get_text(bot, chat_id, string_key), 5))
+
+
+def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
-        if priv or not message.chat or not target:
+        if priv or not message.chat:
             return False
 
-        if message.sender_chat:
-            if message.sender_chat.id == message.chat.id:  # Anonymous Admin
-                return True
+        if not target:
+            if message.sender_chat:
+                if message.sender_chat.id == message.chat.id:  # Anonymous Admin
+                    return True
 
-            curr_chat: Any = await client.get_chat(message.chat.id)
-            if (
-                curr_chat.linked_chat
-                and message.sender_chat.id == curr_chat.linked_chat.id
-                and not message.forward_from_chat
-            ):  # Linked Channel Owner
-                return True
+                curr_chat: Any = await client.get_chat(message.chat.id)
+                if (
+                    curr_chat.linked_chat
+                    and message.sender_chat.id == curr_chat.linked_chat.id
+                    and not message.forward_from_chat
+                ):  # Linked Channel Owner
+                    return True
 
             return False
 
         bot_perm, member_perm = await fetch_permissions(client, message.chat.id, target.id)
+        if not bot_perm:
+            if send_error:
+                await _send_error(flt.anjani, message.chat.id, message, "err-im-not-admin")
+
+            return False
+
+        if not member_perm:
+            if send_error:
+                await _send_error(flt.anjani, message.chat.id, message, "err-not-admin")
+
+            return False
+
         if bot_perm.status == ChatMemberStatus.ADMINISTRATOR and member_perm.status in {
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.OWNER,
         }:
             return True
 
-        flt.anjani.loop.create_task(
-            reply_and_delete(
-                message, await get_text(flt.anjani, message.chat.id, "err-not-admin"), 5
-            )
-        )
+        if send_error:
+            await _send_error(flt.anjani, message.chat.id, message, "err-perm")
+
         return False
 
     return create(func, "admin_only", include_bot=include_bot)
 
 
 admin_only = _admin_only()
+admin_only_no_report = _admin_only(send_error=False)
+"""Set filter to admin only but without sending error message"""
 # }

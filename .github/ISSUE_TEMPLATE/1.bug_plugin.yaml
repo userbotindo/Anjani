@@ -1,0 +1,29 @@
+name: Bug Report
+description: Create a bug report for Anjani
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please fill out this form as completely as possible.
+        *If you leave out some section or providing insufficent/incorect information there is likehood that the issue may be closed or converting to a discussion.
+  - type: input
+    attributes:
+      label: What command did you use to create the bug? (if relevant)
+      description: "For example: /info"
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: Any additional information you would like to share.

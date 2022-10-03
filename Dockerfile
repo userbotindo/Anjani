@@ -1,5 +1,5 @@
 # Set base image (host OS)
-FROM python:3.9.13-slim-bullseye
+FROM python:3.9.14-slim-bullseye
 
 # Set the working directory in the container
 WORKDIR /anjani/
@@ -42,7 +42,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 ENV PATH="${PATH}:/root/.local/bin:$PATH"
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-dev -E all
+RUN poetry install --no-root --only main -E all
 
 # Command to run when container started
-CMD ["python3", "-m", "anjani"]
+CMD ["poetry", "run", "anjani"]

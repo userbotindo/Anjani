@@ -18,9 +18,12 @@ import asyncio
 import pickle
 import re
 import unicodedata
+from datetime import datetime, time, timedelta
 from functools import partial
 from hashlib import md5, sha256
-from typing import Any, Callable, ClassVar, MutableMapping, Optional
+from pathlib import Path
+from random import randint
+from typing import Any, Callable, ClassVar, List, MutableMapping, Optional
 
 from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
@@ -30,6 +33,7 @@ from pyrogram.errors import (
     MessageDeleteForbidden,
     MessageIdInvalid,
     MessageNotModified,
+    PeerIdInvalid,
     QueryIdInvalid,
     UserAdminInvalid,
     UserNotParticipant,
@@ -42,6 +46,7 @@ from pyrogram.types import (
 )
 
 try:
+    from scipy.stats import ttest_1samp
     from sklearn.pipeline import Pipeline
 
     _run_predict = True
@@ -51,12 +56,38 @@ except ImportError:
     _run_predict = False
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.misc import StopPropagation
+
+env = Path("config.env")
+try:
+    token = re.search(r'^(?!#)\s+?SP_TOKEN="(\w+)"', env.read_text().strip(), re.MULTILINE).group(  # type: ignore
+        1
+    )
+except (AttributeError, FileNotFoundError):
+    token = ""
+
+del env
+
+
+def get_trust(sample: List[float]) -> Optional[float]:
+    """Compute the trust score of a user
+    Args:
+        sample (List[float]): A list of scores
+    Returns:
+        Optional[float]: The trust score of the user
+    """
+    if not _run_predict:
+        return None
+    if len(sample) < 3:
+        return None  # Not enough data
+    _, pred = ttest_1samp(sample, 0.5, alternative="greater")
+    return pred * 100
 
 
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
     helpable: ClassVar[bool] = True
-    disabled: ClassVar[bool] = not _run_predict
+    disabled: ClassVar[bool] = not _run_predict or not token
 
     db: util.db.AsyncCollection
     user_db: util.db.AsyncCollection
@@ -64,18 +95,12 @@ class SpamPrediction(plugin.Plugin):
     model: Pipeline
 
     async def on_load(self) -> None:
-        token = self.bot.config.get("sp_token")
-        url = self.bot.config.get("sp_url")
-        if not (token and url):
-            return self.bot.unload_plugin(self)
-
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
 
-        # Avoid race conditions with on_message listener
-        async with asyncio.Lock():
-            await self.__load_model(token, url)
+        await self.__load_model()
+        self.bot.loop.create_task(self.__refresh_model())
 
     async def on_chat_migrate(self, message: Message) -> None:
         await self.db.update_one(
@@ -84,7 +109,7 @@ class SpamPrediction(plugin.Plugin):
         )
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
-        setting = await self.setting_db.find_one({"chat_id": chat_id})
+        setting = await self.setting_db.find_one({"chat_id": chat_id}, {"_id": False})
         return {self.name: setting} if setting else {}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
@@ -92,14 +117,23 @@ class SpamPrediction(plugin.Plugin):
             {"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True
         )
 
-    async def __load_model(self, token: str, url: str) -> None:
+    async def __refresh_model(self) -> None:
+        scheduled_time = time(hour=17)  # Run at 00:00 WIB
+        while True:
+            now = datetime.utcnow()
+            date = now.date()
+            if now.time() > scheduled_time:
+                date = now.date() + timedelta(days=1)
+            then = datetime.combine(date, scheduled_time)
+            self.log.debug("Next model refresh at %s UTC", then)
+            await asyncio.sleep((then - now).total_seconds())
+            await self.__load_model()
+
+    async def __load_model(self) -> None:
         self.log.info("Downloading spam prediction model!")
-        async with self.bot.http.get(
-            url,
-            headers={
-                "Authorization": f"token {token}",
-                "Accept": "application/vnd.github.v3.raw",
-            },
+        async with self.bot.http.post(
+            "https://spamdetect.userbotindo.com",
+            headers={"Authorization": f"Bearer {token}"},
         ) as res:
             if res.status == 200:
                 self.model = await util.run_sync(pickle.loads, await res.read())
@@ -114,14 +148,18 @@ class SpamPrediction(plugin.Plugin):
             try:
                 fut.result()
             except Exception as e:  # skipcq: PYL-W0703
+                if isinstance(e, StopPropagation):
+                    raise e
+
                 self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
 
         text = future.result()
         if not text:
             return
 
-        f = self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True))
-        f.add_done_callback(done)
+        self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True)).add_done_callback(
+            partial(self.bot.loop.call_soon_threadsafe, done)
+        )
 
     @staticmethod
     def _build_hash(content: str) -> str:
@@ -150,6 +188,15 @@ class SpamPrediction(plugin.Plugin):
     async def _is_spam(self, text: str) -> bool:
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
+    async def _collect_random_sample(self, proba: float, uid: Optional[int]) -> None:
+        if not uid:
+            return
+        if randint(1, 3) == 2:  # 33% chance to collect a sample
+            await self.user_db.update_one(
+                {"_id": uid},
+                {"$push": {"pred_sample": proba}},
+            )  # Do not upsert
+
     async def run_ocr(self, message: Message) -> Optional[str]:
         """Run tesseract"""
         try:
@@ -165,6 +212,8 @@ class SpamPrediction(plugin.Plugin):
             stdout, _, exitCode = await util.system.run_command(
                 "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
             )
+        except FileNotFoundError:
+            return
         except Exception as e:  # skipcq: PYL-W0703
             return self.log.error("Unexpected error occured when running OCR", exc_info=e)
         finally:
@@ -199,7 +248,18 @@ class SpamPrediction(plugin.Plugin):
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "spampredict-ban-no-perm"))
 
-        target = await self.bot.client.get_users(int(user))
+        keyboard = query.message.reply_markup
+        if not isinstance(keyboard, InlineKeyboardMarkup):
+            raise ValueError("Reply markup must be an InlineKeyboardMarkup")
+
+        try:
+            target = await self.bot.client.get_users(int(user))
+        except PeerIdInvalid:
+            await query.answer("Error while fetching user!")
+            await query.edit_message_reply_markup(
+                reply_markup=InlineKeyboardMarkup(keyboard.inline_keyboard[:-1])
+            )
+            return
         if isinstance(target, list):
             target = target[0]
 
@@ -209,10 +269,6 @@ class SpamPrediction(plugin.Plugin):
                 chat.id, "spampredict-ban", user=target.username or target.first_name
             )
         )
-
-        keyboard = query.message.reply_markup
-        if not isinstance(keyboard, InlineKeyboardMarkup):
-            raise ValueError("Reply markup must be an InlineKeyboardMarkup")
 
         await query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(keyboard.inline_keyboard[:-1])
@@ -325,6 +381,7 @@ class SpamPrediction(plugin.Plugin):
             pass
 
     @listener.filters(filters.group)
+    @listener.priority(70)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
         setting = await self.setting_db.find_one({"chat_id": message.chat.id})
@@ -332,19 +389,17 @@ class SpamPrediction(plugin.Plugin):
             return
 
         chat = message.chat
-        user = message.from_user
         text = (
             message.text
             if message.text
             else (message.caption if message.media and message.caption else None)
         )
         if message.photo:
-            future = self.bot.loop.create_task(self.run_ocr(message))
-            future.add_done_callback(
+            self.bot.loop.create_task(self.run_ocr(message)).add_done_callback(
                 partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
             )
 
-        if not chat or message.left_chat_member or not user or not text:
+        if not chat or message.left_chat_member or not text:
             return
 
         # Always check the spam probability
@@ -358,107 +413,126 @@ class SpamPrediction(plugin.Plugin):
             user = None
 
         text_norm = self._normalize_text(text)
+        if len(text_norm.split()) < 5:  # Skip short messages
+            return
+
         response = await self._predict(text_norm)
         if response.size == 0:
             return
 
         probability = response[0][1]
+
+        await self._collect_random_sample(probability, user)
+
         if probability <= 0.5:
             return
 
         content_hash = self._build_hash(text)
         identifier = self._build_hex(user)
         proba_str = self.prob_to_string(probability)
-
-        notice = (
-            "#SPAM_PREDICTION\n\n"
-            f"**Prediction Result**: {proba_str}\n"
-            f"**Identifier**: `{identifier}`\n"
-        )
-        if ch := message.forward_from_chat:
-            notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
-
-        if from_ocr:
-            notice += (
-                f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-            )
-        else:
-            notice += (
-                f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-            )
-
-        l_spam, l_ham = 0, 0
-        _, data = await asyncio.gather(
-            self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
-        )
-        if data:
-            l_spam = len(data["spam"])
-            l_ham = len(data["ham"])
-
-        keyb = [
-            [
-                InlineKeyboardButton(text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"),
-                InlineKeyboardButton(text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"),
-            ]
-        ]
+        msg = None
 
         if message.chat.username:
-            keyb.append(
-                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")]
-            )
 
-        if message.forward_from_chat and message.forward_from_chat.username:
-            raw_btn = InlineKeyboardButton(
-                text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+            notice = (
+                "#SPAM_PREDICTION\n\n"
+                f"**Prediction Result**: {proba_str}\n"
+                f"**Identifier**: `{identifier}`\n"
             )
-            if message.chat.username:
-                keyb[1].append(raw_btn)
+            if ch := message.forward_from_chat:
+                notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
+
+            if from_ocr:
+                notice += (
+                    f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+                )
             else:
-                keyb.append([raw_btn])
+                notice += f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
 
-        while True:
+            l_spam, l_ham = 0, 0
+            _, data = await asyncio.gather(
+                self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
+            )
+            if data:
+                l_spam = len(data["spam"])
+                l_ham = len(data["ham"])
+
+            keyb = [
+                [
+                    InlineKeyboardButton(
+                        text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"
+                    ),
+                    InlineKeyboardButton(
+                        text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"
+                    ),
+                ],
+                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
+            ]
+
+            if message.forward_from_chat and message.forward_from_chat.username:
+                raw_btn = InlineKeyboardButton(
+                    text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+                )
+                if message.chat.username:
+                    keyb[1].append(raw_btn)
+                else:
+                    keyb.append([raw_btn])
+
+            while True:
+                try:
+                    msg = await self.bot.client.send_message(
+                        chat_id=-1001314588569,
+                        text=notice,
+                        disable_web_page_preview=True,
+                        reply_markup=InlineKeyboardMarkup(keyb),
+                    )
+                except FloodWait as flood:
+                    await asyncio.sleep(flood.value)  # type: ignore
+                    continue
+
+                await asyncio.sleep(0.1)
+                break
+
             try:
-                msg = await self.bot.client.send_message(
-                    chat_id=-1001314588569,
-                    text=notice,
-                    disable_web_page_preview=True,
-                    reply_markup=InlineKeyboardMarkup(keyb),
-                )
-            except FloodWait as flood:
-                await asyncio.sleep(flood.value)  # type: ignore
-                continue
-
-            await asyncio.sleep(0.1)
-            break
-
-        try:
-            async with asyncio.Lock():
-                await self.db.insert_one(
-                    {
-                        "_id": content_hash,
-                        "text": text_norm,
-                        "spam": [],
-                        "ham": [],
-                        "proba": probability,
-                        "msg_id": [msg.id],
-                        "date": util.time.sec(),
-                    }
-                )
-        except DuplicateKeyError:
-            await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
+                async with asyncio.Lock():
+                    await self.db.insert_one(
+                        {
+                            "_id": content_hash,
+                            "user": identifier,
+                            "text": text_norm,
+                            "spam": [],
+                            "ham": [],
+                            "proba": probability,
+                            "msg_id": [msg.id],
+                            "date": util.time.sec(),
+                        }
+                    )
+            except DuplicateKeyError:
+                await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
 
         if probability >= 0.8:
-            # Empty user big chances are anonymous admins
-            if user is None or message.sender_chat:
-                return
-
-            try:
-                target = await message.chat.get_member(user)
-            except UserNotParticipant:
-                target = None
-            else:
-                if util.tg.is_staff_or_admin(target):
+            chat = message.chat
+            if not user and message.sender_chat:
+                if message.sender_chat.id == chat.id:  # anon admin
                     return
+
+                current_chat: Any = await self.bot.client.get_chat(chat.id)
+                if (
+                    current_chat.linked_chat
+                    and message.sender_chat.id == current_chat.linked_chat.id
+                ):
+                    # Linked channel group
+                    return
+
+            target = None
+            if user:
+                try:
+                    target = await message.chat.get_member(user)
+                except UserNotParticipant:
+                    pass
+                else:
+                    if util.tg.is_staff_or_admin(target):
+                        return
 
             if from_ocr:
                 alert = (
@@ -487,15 +561,18 @@ class SpamPrediction(plugin.Plugin):
                 reply_id = 0
 
             chat = message.chat
+            button = []
             me = await chat.get_member(self.bot.uid)
-            button = [[InlineKeyboardButton("View Message", url=msg.link)]]
+            if message.chat.username and msg:
+                button.append([InlineKeyboardButton("View Message", url=msg.link)])
+
             if me.privileges and me.privileges.can_restrict_members and target is not None:
                 button.append(
                     [
                         InlineKeyboardButton(
                             "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
                         )
-                    ],
+                    ]
                 )
 
             await self.bot.client.send_message(
@@ -504,6 +581,7 @@ class SpamPrediction(plugin.Plugin):
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(button),
             )
+            raise StopPropagation
 
     async def mark_spam_ocr(
         self, content: str, user_id: Optional[int], chat_id: int, message_id: int
@@ -552,12 +630,7 @@ class SpamPrediction(plugin.Plugin):
 
     @command.filters(filters.staff_only)
     async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
-        token = self.bot.config.get("sp_token")
-        url = self.bot.config.get("sp_url")
-        if not (token and url):
-            return "No token provided!"
-
-        await self.__load_model(token, url)
+        await self.__load_model()
         await ctx.respond("Done", delete_after=5)
 
     @command.filters(filters.staff_only)
@@ -643,14 +716,12 @@ class SpamPrediction(plugin.Plugin):
 
         replied = ctx.msg.reply_to_message
         if not replied:
-            await ctx.respond(
-                await ctx.get_text("error-reply-to-message"), delete_after=5
-            )
+            await ctx.respond(await ctx.get_text("error-reply-to-message"), delete_after=5)
             return None
 
         content = replied.text or replied.caption
 
-        photoPrediction = None
+        photo_prediction = None
         if replied.photo:
             await ctx.respond(
                 await ctx.get_text("spampredict-photo"),
@@ -661,7 +732,7 @@ class SpamPrediction(plugin.Plugin):
             if ocr_result:
                 ocr_prediction = await self._predict(ocr_result)
                 if ocr_prediction.size != 0:
-                    photoPrediction = (
+                    photo_prediction = (
                         "**Result Photo Text**\n\n"
                         f"**Is Spam**: {await self._is_spam(ocr_result)}\n"
                         f"**Spam Prediction**: `{self.prob_to_string(ocr_prediction[0][1])}`\n"
@@ -671,11 +742,11 @@ class SpamPrediction(plugin.Plugin):
                     if not content:
                         await asyncio.gather(
                             self.bot.log_stat("predicted"),
-                            ctx.respond(photoPrediction),
+                            ctx.respond(photo_prediction),
                         )
                         return None
             else:
-                photoPrediction = await ctx.get_text("spampredict-photo-failed")
+                photo_prediction = await ctx.get_text("spampredict-photo-failed")
 
         if not content:
             return await ctx.get_text("spampredict-empty")
@@ -693,8 +764,8 @@ class SpamPrediction(plugin.Plugin):
         await asyncio.gather(
             self.bot.log_stat("predicted"),
             ctx.respond(
-                photoPrediction + "**Result Caption Text**\n\n" + textPrediction
-                if photoPrediction
+                photo_prediction + "**Result Caption Text**\n\n" + textPrediction
+                if photo_prediction
                 else "**Result**\n\n" + textPrediction,
                 reply_to_message_id=None if replied.photo else replied.id,
             ),

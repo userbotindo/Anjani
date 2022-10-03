@@ -115,8 +115,6 @@ def start() -> None:
         "db_uri": os.environ.get("DB_URI"),
         "download_path": os.environ.get("DOWNLOAD_PATH"),
         "owner_id": os.environ.get("OWNER_ID"),
-        "sp_token": os.environ.get("SP_TOKEN"),
-        "sp_url": os.environ.get("SP_URL"),
         "sw_api": os.environ.get("SW_API"),
         "log_channel": os.environ.get("LOG_CHANNEL"),
     }

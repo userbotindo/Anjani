@@ -13,10 +13,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-__version__ = "2.3"
+__version__ = "2.4.2"
 
-__description__ = (
-    "Telegram group management bot with spam protection powered by Machine Learning and tesseract."
-)
+__description__ = "Telegram group management bot with spam protection."
 
 DEFAULT_CONFIG_PATH = "config.env"

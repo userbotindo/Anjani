@@ -14,12 +14,18 @@ help-pm: |
   × /start: Starts me, can be used to check i'm alive or not.
   × /help: PM's you this message.
   × /setlang: Change your language preference.
+  × /donate: Get information on how to support me.
 start-chat: Sending you a warm hi & wishing your day is a happy one!
 help-chat: Contact me in PM to get the list of possible commands.
 add-to-group-button: Add to Group 👥
 start-help-button: Help & Commands ❔
 help-chat-button: Help
 back-button: ⬅️ Back
+donate: |
+  Hi, glad to see you want to donate!
+  You can donate to us on [our site](https://userbotindo.com/donate?ref=anjani).
+  Our team is fully handled by volunteers,, and every little helps to improve our services.
+  Thank you for your support!
 markdown-helper: |
   Markdown is a very powerful formatting tool supported by telegram. {} has some enhancements, to make sure that saved messages are correctly parsed, and to allow you to create buttons.\n
   <b>Supported Markdown:</b>
@@ -162,7 +168,13 @@ fed-delete-canceled: Federation deletion canceled
 fed-delete-done: I have deleted your Federation!\nAll groups that connect to **{}** are now federation-less.
 fed-cant-two-feds: You cannot join two federations in one chat!
 fed-invalid-id: Please enter a valid federation ID
-fed-invalid-user-id: "Please enter a valid user ID\nUsage: `/fstats <user_id> <fed_id>`"
+fed-invalid-user-id: |
+  Please enter a valid user ID
+  Usage:
+    - `/fstats <user_id> <fed_id>``: Check fban status of a user in a federation.
+    - `/fstats <user_id>`: check all fban stats for user in all federations.
+    - `/fstats <reply>`: check all fban stats for replied user in all federations.
+    - `/fstats`: check all fban stats for you in all federations.
 fed-already-connected: This group is already connected to that federation!
 fed-chat-joined-info: Chat joined to **{}** Federation!
 fed-not-connected: This chat isn't connected to that federation!
@@ -259,7 +271,7 @@ filters-help: |
   Filters also support markdown and formatters (check /formathelp).
 filters-added: "Successfully added `{}` as filters."
 filters-removed: "Successfully removed `{}` from filters."
-filter-help: "Usage: `/filters <trigger> <text>`."
+filter-help: "Usage: `/filter <trigger> <text>`."
 filter-stop-help: "Usage: `/stop <trigger>`."
 filters-chat-nofilter: This chat has no filters.
 filters-chat-nokeyword: "No filters named `{}` on this chat."
@@ -536,6 +548,30 @@ view-goodbye: |
   `Clean service message` = `{}`
   And the goodbye message of this chat is:
 #endregion
+#region lockings
+lockings-button: Lockings
+lockings-help: |
+  This plugin will help you to lock/unlock your group's permissions/types for non-admins.\n
+  **Admin Commands:**
+  × /lock <types/permissions>: Will lock the group's permissions/types for non-admins.\n
+  × /unlock <types/permissions>: Will unlock the group's locked types/permissions.\n
+  × /locktypes : See available types/permissions to lock/unlock.\n
+  × /locks : See locked types/permissions.\n
+lockings-types-available: "**Locks permissions/types available**:\n"
+lockings-types-perm: "**Current locked chat permissions in this chat for non admins**:\n"
+lockings-types-list: "**Current locked types in this chat for non admins**:\n"
+lockings-types-list-empty: "**No active lock in this chat.**"
+lockings-type-required: Please provide a type of lock.
+lockings-type-locked: "'`{lock_type}`' already locked."
+lockings-type-invalid: "'`{lock_type}`' invalid lock type."
+lockings-type-done: Successfully locked '`{lock_type}`'.
+lockings-bots-not-admin: I see a bot added by not the owner and it's locked.\nBut i can't kicked it because i'm not an admin.
+lockings-failed-to-delete: "'`{lock_type}`' is locked but i can't delete the message.\nIt's probably i'm not an admin."
+unlockings-type-required: Please provide a type of unlock.
+unlockings-type-unlocked: "'`{unlock_type}`' is not locked."
+unlockings-type-invalid: "'`{unlock_type}`' invalid unlock type."
+unlockings-type-done: Successfully unlocked '`{unlock_type}`'.
+#endregion
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"
 err-chat-groups: This command is specific to the group, not to the PM!
@@ -552,7 +588,8 @@ err-group-creator-cmd: Only group creator can use this command!
 err-invalid-pid: Invalid identifier!
 err-anonymous: You are on anonymous mode...\n\n__Disable it first.__
 err-not-admin: You are not an Administrator of this group...
-err-perm: You and I need permission of __{}__, to be able to use the command.
+err-perm: We are not administrator of this group.
 err-unexpected: "An unexpected error occurred.! \n\n**Error:** `{}`"
 err-msg-format-parsing: "**Message format parsing error!**\n**Error on key:** `{err}`."
+err-im-not-admin: "I'm not an admin here!"
 #endregion

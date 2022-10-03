@@ -14,12 +14,18 @@ help-pm: |
   × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
   × /help: Menampilkan anda pesan bantuan ini.
   × /setlang: Mengganti bahasa yang saya gunakan.
+  × /donate: Menampilkan informasi tentang cara mendukung saya.
 start-chat: Memberi anda salam hangat & berharap hari anda menyenangkan!
 help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
 add-to-group-button: Tambahkan saya
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
 back-button: ⬅️ Kembali
+donate: |
+  Hai, senang melihat Anda ingin berdonasi!
+  Anda dapat menyumbang kepada kami di [situs kami](https://userbotindo.com/donate?ref=anjani).
+  Tim kami sepenuhnya dijalankan oleh sukarelawan, dan setiap bantuan kecil membantu untuk meningkatkan layanan kami.
+  Terima kasih atas dukungan Anda!
 markdown-helper: |
   Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
   <b>Markdown yang didukung:</b>
@@ -160,7 +166,13 @@ fed-delete-canceled: Penghapus federasi dibatalkan
 fed-delete-done: Saya sudah menghapus federasi kamu!\nSemua grup yang terhubung dengan **{}** sekarang tanpa federasi.
 fed-cant-two-feds: Anda tidak dapat bergabung dengan dua federasi dalam satu grup!
 fed-invalid-id: Tolong masukkan ID federasi yang sah dan benar
-fed-invalid-user-id: "Harap masukkan ID pengguna yang sah dan benar\nContoh: `/fstats <user_id> <fed_id>`"
+fed-invalid-user-id: |
+  Harap masukkan ID pengguna yang sah dan benar
+  Contoh:
+    - `/fstats <user_id> <fed_id>`: Untuk melihat larangan pengguna di federasi tertentu
+    - `/fstats <user_id>`: Untuk melihat larangan pengguna di semua federasi
+    - `/fstats <balas ke pesan>`: Untuk melihat larangan pengguna yang dibalas di semua federasi
+    - `/fstats`: Untuk melihat larangan anda di semua federasi
 fed-already-connected: Grup ini sudah terhubung ke federasi itu!
 fed-chat-joined-info: Grup ini sekarang bergabung dalam **{}** Federation!
 fed-not-connected: Grup ini tidak terhubung ke federasi itu!
@@ -279,7 +291,7 @@ filters-help: |
   Filter mendukung markdown dan formatting (cek /formathelp).
 filters-added: "Berhasil menambahkan `{}` sebagai filter."
 filters-removed: "Berhasil menghapus `{}` dari filter."
-filter-help: "Contoh: `/filters <kata kunci> <teks>`"
+filter-help: "Contoh: `/filter <kata kunci> <teks>`"
 filter-stop-help: "Contoh: `/stop <kata kunci>`"
 filters-chat-nofilter: Grup ini tidak memiliki filter.
 filters-chat-nokeyword: "Tidak ada filter dengan kata kunci `{}` di grup ini."
@@ -556,6 +568,30 @@ view-goodbye: |
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
 #endregion
+#region lockings
+lockings-button: Lockings
+lockings-help: |
+  Plugin ini akan membantu anda untuk mengunci/membuka pengaturan hak/tipe pesan untuk anggota yang bukan admin pada grup.\n
+  **Hanya Administrator yang bisa menggunakan:**
+  × /lock <tipe pesan/hak>: Akan mengunci hak/tipe pesan pada grup.\n
+  × /unlock <tipe pesan/hak>: Akan membuka tipe pesan/hak yang terkunci pada grup.\n
+  × /locktypes : Melihat tipe pesan/hak yang tersedia untuk dikunci/dibuka.\n
+  × /locks : Melihat tipe pesan/hak yang terkunci.\n
+lockings-types-available: "**Tipe pesan atau hak kunci yang tersedia**:\n"
+lockings-types-perm: "**Hak grup yang terkunci saat ini untuk anggota yang bukan admin**:\n"
+lockings-types-list: "**Tipe pesan yang terkunci saat ini untuk anggota yang bukan admin**:\n"
+lockings-types-list-empty: "**Tidak ada yang terkunci saat ini pada grup.**"
+lockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
+lockings-type-locked: "'`{lock_type}`' sudah terkunci."
+lockings-type-invalid: "'`{lock_type}`' tipe pesan tidak sah."
+lockings-type-done: Berhasil mengunci '`{lock_type}`'.
+lockings-bots-not-admin: Saya melihat bot ditambahkan selain pemilik grup dan pengaturan tipe bot dikunci.\nAkan tetapi saya tidak bisa mengeluarkannya karena saya bukan administrator.
+lockings-failed-to-delete: "'`{lock_type}`' dikunci tetapi saya tidak bisa menghapusnya.\nKemungkinan saya bukan administrator."
+unlockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
+unlockings-type-unlocked: "'`{unlock_type}`' tidak terkunci."
+unlockings-type-invalid: "'`{unlock_type}`' tipe pesan tidak sah."
+unlockings-type-done: Berhasil membuka kunci '`{unlock_type}`'.
+#endregion
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
 err-chat-groups: Perintah ini khusus untuk grup, bukan untuk PM!
@@ -572,7 +608,8 @@ err-group-creator-cmd: Hanya pemilik grup yang dapat menggunakan perintah ini!
 err-invalid-pid: Identifier tidak sah atau tidak benar!
 err-anonymous: Anda sedang dalam mode anonim...\n__Matikan dulu mode tersebut.__
 err-not-admin: Anda bukan Administartor group ini...
-err-perm: Saya dan Anda butuh izin __{}__, untuk menggunakan perintah ini.
+err-perm: Saya dan Anda bukan administrator pada group ini.
 err-unexpected: "Telah terjadi kesalahan yang tak terduga!\n\n**Error:** `{}`"
 err-msg-format-parsing: "**Terjadi kesalahan penguraian format pesan!**\n**Kesalahan pada kunci:** `{err}`."
+err-im-not-admin: Saya bukan administrator di sini!
 #endregion

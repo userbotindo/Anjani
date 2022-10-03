@@ -34,7 +34,7 @@ from pyrogram.types import CallbackQuery, InlineQuery, Message, User
 from yaml import full_load
 
 from anjani import util
-from anjani.language import getLangFile
+from anjani.language import get_lang_file
 
 from .anjani_mixin_base import MixinBase
 
@@ -123,19 +123,17 @@ class TelegramBot(MixinBase):
         await self.dispatch_event("load")
         self.loaded = True
 
-        # Start Telegram client
-        try:
-            await self.client.start()
-        except AttributeError:
-            self.log.error(
-                "Unable to get input for authorization! Make sure all configuration are done before running the bot."
-            )
-            raise
+        async with asyncio.Lock():
+            # Start Telegram client
+            try:
+                await self.client.start()
+            except AttributeError:
+                self.log.error(
+                    "Unable to get input for authorization! Make sure all configuration are done before running the bot."
+                )
+                raise
 
-        # Get info
-        async with asyncio.Lock():  # Lock to avoid race condition with command_dispatcher
             user = await self.client.get_me()
-
             if not isinstance(user, User):
                 raise TypeError("Missing full self user information")
 
@@ -157,11 +155,11 @@ class TelegramBot(MixinBase):
         util.tg.STAFF.update(self.staff)
 
         # Update Language setting chat from db
-        async for data in self.db.get_collection("LANGUAGE").find():
+        async for data in self.db.get_collection("LANGUAGE").find({}, {"_id": False}):
             self.chats_languages[data["chat_id"]] = data["language"]
 
         # Load text from language file
-        async for language_file in getLangFile():
+        async for language_file in get_lang_file():
             self.languages[language_file.stem] = await util.run_sync(
                 full_load, await language_file.read_text()
             )
@@ -264,9 +262,11 @@ class TelegramBot(MixinBase):
         self.update_plugin_event(
             "chat_action", MessageHandler, filters=flt.new_chat_members | flt.left_chat_member
         )
-        self.update_plugin_event("chat_member_update", ChatMemberUpdatedHandler)
-        self.update_plugin_event("chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id)
-        self.update_plugin_event("inline_query", InlineQueryHandler)
+        self.update_plugin_event("chat_member_update", ChatMemberUpdatedHandler, group=1)
+        self.update_plugin_event(
+            "chat_migrate", MessageHandler, filters=flt.migrate_from_chat_id, group=1
+        )
+        self.update_plugin_event("inline_query", InlineQueryHandler, group=1)
         self.update_plugin_event(
             "message",
             MessageHandler,
@@ -274,6 +274,7 @@ class TelegramBot(MixinBase):
             & ~flt.left_chat_member
             & ~flt.migrate_from_chat_id
             & ~flt.migrate_to_chat_id,
+            group=-1,
         )
 
     @property

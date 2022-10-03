@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
+import time as t  # skipcq: PYL-W0406
 from typing import Union
 
 
 def usec() -> int:
     """Returns the current time in microseconds since the Unix epoch."""
 
-    return int(time.time() * 1000000)
+    return int(t.time() * 1000000)
 
 
 def msec() -> int:
@@ -33,12 +33,11 @@ def msec() -> int:
 def sec() -> int:
     """Returns the current time in seconds since the Unix epoch."""
 
-    return int(time.time())
+    return int(t.time())
 
 
 def format_duration_us(t_us: Union[int, float]) -> str:
     """Formats the given microsecond duration as a string."""
-
     t_us = int(t_us)
 
     t_ms = t_us / 1000
@@ -49,23 +48,23 @@ def format_duration_us(t_us: Union[int, float]) -> str:
 
     if t_d >= 1:
         rem_h = t_h % 24
-        return "%dd %dh" % (t_d, rem_h)
+        return f"{int(t_d)}d {int(rem_h)}h"
 
     if t_h >= 1:
         rem_m = t_m % 60
-        return "%dh %dm" % (t_h, rem_m)
+        return f"{int(t_h)}h {int(rem_m)}m"
 
     if t_m >= 1:
         rem_s = t_s % 60
-        return "%dm %ds" % (t_m, rem_s)
+        return f"{int(t_m)}m {int(rem_s)}s"
 
     if t_s >= 1:
-        return "%d sec" % t_s
+        return f"{int(t_s)}s"
 
     if t_ms >= 1:
-        return "%d ms" % t_ms
+        return f"{int(t_ms)}ms"
 
-    return "%d μs" % t_us
+    return f"{int(t_us)}us"
 
 
 def extract_time(time_text: str) -> Union[int, bool]:
@@ -77,12 +76,12 @@ def extract_time(time_text: str) -> Union[int, bool]:
             return False
 
         if unit == "m":
-            return int(time.time() + int(time_num) * 60)
+            return int(t.time() + int(time_num) * 60)
 
         if unit == "h":
-            return int(time.time() + int(time_num) * 60 * 60)
+            return int(t.time() + int(time_num) * 60 * 60)
 
         if unit == "d":
-            return int(time.time() + int(time_num) * 24 * 60 * 60)
+            return int(t.time() + int(time_num) * 24 * 60 * 60)
 
     return False

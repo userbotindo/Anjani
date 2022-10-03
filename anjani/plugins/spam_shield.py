@@ -17,7 +17,7 @@
 import asyncio
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, List, MutableMapping, Optional
 
 from aiohttp import (
     ClientConnectorError,
@@ -29,6 +29,9 @@ from pyrogram.errors import ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.misc import StopPropagation
+
+from .spam_prediction import get_trust
 
 
 class SpamShield(plugin.Plugin):
@@ -38,6 +41,7 @@ class SpamShield(plugin.Plugin):
     db: util.db.AsyncCollection
     federation_db: util.db.AsyncCollection
     token: Optional[str]
+    spam_protection: bool
 
     async def on_load(self) -> None:
         self.token = self.bot.config.get("sw_api")
@@ -46,6 +50,8 @@ class SpamShield(plugin.Plugin):
 
         self.db = self.bot.db.get_collection("GBAN_SETTINGS")  # spamshield autoban
         self.federation_db = self.bot.db.get_collection("FEDERATIONS")
+        self.user_db = self.bot.db.get_collection("USERS")
+        self.spam_protection = "SpamPredict" in self.bot.plugins
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -75,11 +81,18 @@ class SpamShield(plugin.Plugin):
             if not me.privileges or not me.privileges.can_restrict_members:
                 return
 
+            tasks = set()
             for member in message.new_chat_members:
-                await self.check(member, chat)
+                tasks.add(self.bot.loop.create_task(self.check(member, chat)))
+
+            res: List[bool] = await asyncio.gather(*tasks)
+            # Assume only one member is added at a time, so raise StopPropagation
+            if all(res):
+                raise StopPropagation
         except ChannelPrivate:
             return
 
+    @listener.priority(65)
     @listener.filters(filters.group)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
@@ -93,10 +106,19 @@ class SpamShield(plugin.Plugin):
         if not chat or not user or not text or not await self.is_active(chat.id):
             return
 
+        if self.spam_protection:
+            sample = await self.user_db.find_one({"_id": user.id}, {"pred_sample": 1, "spam": 1})
+            if sample and not sample.get("spam", False):
+                trust = get_trust(sample.get("pred_sample", []))
+                if trust and trust < 5.0:
+                    self.log.debug(f"{user.id} has low trust score, flaging as spam")
+                    await self.user_db.update_one({"_id": user.id}, {"$set": {"spam": True}})
+
         try:
             me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
             if (
-                not me.privileges
+                not (me and target)
+                or not me.privileges
                 or not me.privileges.can_restrict_members
                 or util.tg.is_staff_or_admin(target)
             ):
@@ -116,33 +138,50 @@ class SpamShield(plugin.Plugin):
             async with self.bot.http.get(path, headers=headers) as resp:
                 if resp.status in {200, 201}:
                     return await resp.json()
-                if resp.status in {204, 404, 502}:
-                    return {}
-                if resp.status == 401:
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message="Make sure your Spamwatch API token is corret",
-                    )
-                if resp.status == 403:
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message="Forbidden, your token permissions is not valid",
-                    )
-                if resp.status == 429:
-                    until = (await resp.json()).get("until", 0)
-                    raise ClientResponseError(
-                        resp.request_info,
-                        resp.history,
-                        message=f"Too many requests. Try again in {until - datetime.now()}",
-                    )
 
-                raise ClientResponseError(resp.request_info, resp.history)
+                if resp.status == 404:
+                    return {}
+
+                if resp.status == 401:
+                    self.log.error(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="Make sure your Spamwatch API token is corret",
+                        ),
+                    )
+                    return {}
+
+                if resp.status == 403:
+                    self.log.error(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="Forbidden, your token permissions is not valid",
+                        ),
+                    )
+                    return {}
+
+                if resp.status == 429:
+                    self.log.warning(
+                        "Spamwatch API error",
+                        exc_info=ClientResponseError(
+                            resp.request_info,
+                            resp.history,
+                            message="There were problems with request... Too many.",
+                        ),
+                    )
+                    return {}
+
+                self.log.error(
+                    f"Unknown Spamwatch API error: Received {resp.status}",
+                    exc_info=ClientResponseError(resp.request_info, resp.history),
+                )
+                return {}
         except ClientConnectorError:
             return {}
-
-        raise OSError("Failed to connect to SpamWatch API")
 
     async def cas_check(self, user: User) -> Optional[str]:
         """Check on CAS"""
@@ -160,28 +199,31 @@ class SpamShield(plugin.Plugin):
                     return None
             except (ContentTypeError, JSONDecodeError):
                 if retry == 5:
-                    raise
+                    self.log.debug("Error parsing CAS response")
+                    return None
 
                 retry += 1
                 await asyncio.sleep(1)
                 self.log.debug("Invalid data received from CAS server, retrying...")
             except ClientOSError:
                 if retry == 10:
-                    raise
+                    self.log.debug("Error connecting to CAS API")
+                    return None
 
                 retry += 1
                 await asyncio.sleep(0.5)
                 self.log.debug(f"Retrying CAS check for {user.id}")
 
+    async def check_spam(self, uid: int) -> bool:
+        if not self.spam_protection:
+            return False
+        res = await self.user_db.find_one({"_id": uid}, {"spam": 1})
+        return res.get("spam", False) if res else False
+
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
         data = await self.db.find_one({"chat_id": chat_id})
         return data["setting"] if data else True
-
-    async def is_banned(self, user_id: int) -> bool:
-        """Check if user already banned"""
-        data = await self.federation_db.find_one({"_id": "AnjaniSpamShield"})
-        return str(user_id) in data["banned"] if data else False
 
     async def ban(self, chat: Chat, user: User, reason: str) -> None:
         fullname = user.first_name + user.last_name if user.last_name else user.first_name
@@ -208,11 +250,13 @@ class SpamShield(plugin.Plugin):
         else:
             await self.db.delete_one({"chat_id": chat_id})
 
-    async def check(self, user: User, chat: Chat) -> None:
+    async def check(self, user: User, chat: Chat) -> bool:
         """Shield checker action."""
-        cas, sw = await asyncio.gather(self.cas_check(user), self.get_ban(user.id))
-        if not cas and not sw and not user.is_scam:
-            return
+        cas, sw, spam = await asyncio.gather(
+            self.cas_check(user), self.get_ban(user.id), self.check_spam(user.id)
+        )
+        if not (cas or sw or spam):
+            return False
 
         userlink = user.mention
         chat_link = f"[{chat.id}](https://t.me/{chat.username})" if chat.username else str(chat.id)
@@ -231,6 +275,9 @@ class SpamShield(plugin.Plugin):
         if user.is_scam:  # overwrite banner and reason if user is flagged by telegram
             banner = "Telegram Server"
             reason = "Flagged as a scammer."
+        if spam:
+            banner = "Anjani Spam Protection"
+            reason = "Flagged as a spammer."
 
         await asyncio.gather(
             self.bot.log_stat("banned"),
@@ -252,6 +299,8 @@ class SpamShield(plugin.Plugin):
                 disable_web_page_preview=True,
             ),
         )
+
+        return True
 
     @command.filters(filters.admin_only)
     async def cmd_spamshield(self, ctx: command.Context, enable: Optional[bool] = None) -> str:

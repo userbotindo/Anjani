@@ -28,6 +28,9 @@ class Backups(plugin.Plugin):
     name: ClassVar[str] = "Backups"
     helpable: ClassVar[bool] = True
 
+    async def on_load(self) -> None:
+        self.db = self.bot.db.get_collection("MIGRATED_BACKUPS")
+
     @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
         """Backup chat data from file"""
@@ -37,25 +40,13 @@ class Backups(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "backup-progress"))
 
-        tasks = await self.bot.dispatch_event("plugin_backup", chat.id, get_tasks=True)
-        if not tasks:
+        results = await self.bot.dispatch_event("plugin_backup", chat.id)
+        if not results or len(results) <= 1:
             return await self.text(chat.id, "backup-null")
 
-        task: asyncio.Task[MutableMapping[str, Any]]
-        for task in tasks:
-            # Make sure all plugin backup are done
-            if not task.done():
-                await task
-
-            # skip adding to data if result is empty map
-            result = task.result()
-            if not result:
-                continue
-
+        result: MutableMapping[str, Any]
+        for result in results:
             data.update(result)
-
-        if len(data) <= 1:
-            return await self.text(chat.id, "backup-null")
 
         await file.write_text(json.dumps(data, indent=2))
 
@@ -71,8 +62,9 @@ class Backups(plugin.Plugin):
                 caption=await self.text(chat.id, "backup-doc", chat.title, chat.id, date, saved),
             ),
             ctx.response.delete(),
-            file.unlink(),
         )
+        await file.unlink()
+
         return None
 
     @command.filters(filters.admin_only)
@@ -102,14 +94,12 @@ class Backups(plugin.Plugin):
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
-        tasks = await self.bot.dispatch_event(
-            "plugin_restore", chat.id, data, wait=False, get_tasks=True
-        )
-        for task in tasks or []:
-            try:
-                await task
-            except KeyError:
-                continue
+        if data.get("_migrated", False):
+            await ctx.respond(
+                await self.text(chat.id, "restore-progress") + "\nMigrate file detected..."
+            )
+            await self.db.insert_one({"chat_id": chat.id, "on": datetime.now()})
 
+        await self.bot.dispatch_event("plugin_restore", chat.id, data)
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
         return None
