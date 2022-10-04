@@ -1148,7 +1148,7 @@ class Federation(plugin.Plugin):
         except PeerIdInvalid:
             self.log.warning("Failed to send fed-subs message to log channel")
 
-        return f"Federation {curr_fed['name']} has subscribed to {to_subs['name']}"
+        return await self.text(ctx.chat.id, "fed-subs-join", curr_fed["name"], to_subs["name"])
 
     async def cmd_unsubfed(self, ctx: command.Context, fid: Optional[str] = None):
         """Unsubscribe from a federation"""
@@ -1166,4 +1166,4 @@ class Federation(plugin.Plugin):
         except PeerIdInvalid:
             self.log.warning("Failed to send unsubs message to log channel")
 
-        return f"Federation **{curr_fed['name']}** has unsubscribed from **{to_unsubs['name']}**"
+        return await self.text(ctx.chat.id, "fed-subs-leave", curr_fed["name"], to_unsubs["name"])

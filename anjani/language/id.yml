@@ -277,6 +277,8 @@ fed-autoban-subfed: "Pengguna {} dilarang dalam subfederasi (**{}**), dan sudah 
 fed-autoban-chat-subfed: "Channel {} dilarang dalam subfederasi (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
 fed-owner-cmd: "Perintah ini hanya bisa digunakan oleh pemilik federasi."
+fed-subs-join: "Federasi **{}** telah mengikuti federasi **{}**"
+fed-subs-leave: "Federasi **{}** berhenti mengikuti federasi **{}**"
 #endregion
 #region filters
 filters-button: Filter

@@ -258,6 +258,8 @@ fed-autoban-subfed: "User {} is banned in subfederation (**{}**) and has been re
 fed-autoban-chat-subfed: "Channel {} is banned in subfederation (**{}**) and has been removed\n**Reason:** {}\n**Banned on:** {}"
 fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
 fed-owner-cmd: "This command is only for federation owner!"
+fed-subs-join: "Federation **{}** has subscribed to **{}**"
+fed-subs-leave: "Federation **{}** has unsubscribed from **{}**"
 #endregion
 #region filters
 filters-button: Filters
