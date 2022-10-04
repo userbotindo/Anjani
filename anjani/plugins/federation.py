@@ -24,7 +24,6 @@ from typing import (
     Mapping,
     MutableMapping,
     Optional,
-    Tuple,
     Union,
 )
 from uuid import uuid4
