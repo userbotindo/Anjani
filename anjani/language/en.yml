@@ -138,6 +138,9 @@ federations-help: |
   × /feddemote | /fdemote: Demote a federation admin from your fed.
   × /fedbackup: Get a backup of banned user on federation in CSV (PM Only).
   × /fedrestore: export a federation backup file to restore banned users (PM Only).
+  × /subfed <fedID>: Subscribe to other federation. Users banned in the subscribed federation will be banned in your federation too.
+  Note: This doesn't affect your federation banlist. It only inherits the bans from the subscribed federation.
+  × /unsubfed <fedID>: Unsubscribe your federation from another. Bans from the other fed will no longer take effect.
   × /setfedlog: Sets the current chat as the federation log. All federation events will be logged here.
   × /unsetfedlog: Unset the federation log. Federation events will no longer be logged.
 
@@ -196,6 +199,8 @@ fed-info-text: |
   **Total banned user: ** `{}`
   **Total banned channel: ** `{}`
   **Total groups connected: ** `{}`
+  **Total fed subscribers: ** `{}`
+fed-info-subscription: "\nSubscribed to the following feds:\n"
 fed-admin-only: Only federation admin can do this!
 fed-admin-text: |
   **{} admins:**
@@ -248,7 +253,13 @@ fed-log-set-chnl: "This channel has been set as the fed log for **{}**\nall fed 
 fed-invalid-identity: The user who clicked confirmation button was not the fed creator.\nOnly the federation creator can set the fed log.
 fed-log-unset: Federation log of **{}** is unset.
 fed-autoban: "User {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
+fed-autoban-chat: "Channel {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
+fed-autoban-subfed: "User {} is banned in subfederation (**{}**) and has been removed\n**Reason:** {}\n**Banned on:** {}"
+fed-autoban-chat-subfed: "Channel {} is banned in subfederation (**{}**) and has been removed\n**Reason:** {}\n**Banned on:** {}"
 fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
+fed-owner-cmd: "This command is only for federation owner!"
+fed-subs-join: "Federation **{}** has subscribed to **{}**"
+fed-subs-leave: "Federation **{}** has unsubscribed from **{}**"
 #endregion
 #region filters
 filters-button: Filters
