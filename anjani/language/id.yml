@@ -332,8 +332,8 @@ miscs-help: |
           [-s, spacebin] = menggunakan spacebin.
 paste-wait: "`Menyalin ke {}...`"
 paste-succes: "**Berhasil Ditempel ke {}..!**"
-paste-fail: "`Gagal untuk menyalin ke {}!`\nGunakan flag [-h, -k] untuk menggunakan layanan lain."
-paste-invalid: "Flag '**{}**' tidak cocok.\nFlag tersedia: __[-h, -k, -s, hastebin, katbin, spacebin]__"
+paste-fail: "`Gagal untuk menyalin ke {}!`\nGunakan flag __[-s, stashbin, hastebin, -h, spacebin]__ untuk menggunakan layanan lain."
+paste-invalid: "Flag '**{}**' tidak cocok.\nFlag tersedia:__[-s, stashbin, hastebin, -h, spacebin]__"
 #endregion
 #region mute
 muting-button: Membisukan
