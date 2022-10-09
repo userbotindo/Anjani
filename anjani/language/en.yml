@@ -312,8 +312,8 @@ miscs-help: |
           [-s, spacebin] = use spacebin.
 paste-wait: "`Pasting to {}...`"
 paste-succes: "**Pasted to {} successfully..!**"
-paste-fail: "`Failed to reach {}!`\nYou can use flag [-h, -k] to use other services."
-paste-invalid: "Invalid '**{}**' flag.\nAvailable flags: __[-h, -k, -s, hastebin, katbin, spacebin]__"
+paste-fail: "`Failed to reach {}!`\nYou can use flag __[-s, stashbin, hastebin, -h, spacebin]__ to use other services."
+paste-invalid: "Invalid '**{}**' flag.\nAvailable flags: __[-s, stashbin, hastebin, -h, spacebin]__"
 #endregion
 #region mute
 muting-button: Muting
