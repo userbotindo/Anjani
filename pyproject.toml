@@ -44,7 +44,7 @@ meval = "^2.5"
 [tool.poetry.dev-dependencies]
 black = "^22.10"
 pre-commit = "^2.20.0"
-pylint = "^2.15.3"
+pylint = "^2.15.4"
 isort = "^5.10.1"
 
 [tool.poetry.extras]
