@@ -15,8 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import time
-from datetime import datetime
 from typing import Any, ClassVar, MutableMapping, Optional, Union
 
 from bson.objectid import ObjectId
@@ -138,9 +136,13 @@ class Restrictions(plugin.Plugin):
             if util.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-kick")
 
-        await self.bot.client.ban_chat_member(
-            chat.id, target.id, until_date=datetime.fromtimestamp(int(time.time() + 30))
-        )
+        await self.bot.client.ban_chat_member(chat.id, target.id)
+
+        async def unban():
+            await asyncio.sleep(5)
+            await self.bot.client.unban_chat_member(chat.id, target.id)
+
+        asyncio.create_task(unban())
 
         ret = await self.text(
             chat.id, "kick-done", target.first_name if isinstance(target, User) else target.title
