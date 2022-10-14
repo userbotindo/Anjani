@@ -18,12 +18,14 @@ import asyncio
 from html import escape
 from typing import Any, ClassVar, MutableMapping, Optional, Tuple
 
+from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
 from anjani import command, filters, plugin, util
+from anjani.core.telegram_bot import TelegramBot
 
 
 class Greeting(plugin.Plugin):
@@ -65,7 +67,7 @@ class Greeting(plugin.Plugin):
         if not text:
             text = await self.text(chat.id, "default-goodbye", noformat=True)
 
-        formatted_text = self._build_text(text, left_member, chat)
+        formatted_text = await self._build_text(text, left_member, chat, self.bot.client)
         try:
             msg = await self.bot.client.send_message(
                 chat.id,
@@ -103,7 +105,9 @@ class Greeting(plugin.Plugin):
                     else:
                         string = text
 
-                    formatted_text = self._build_text(string, new_member, chat)
+                    formatted_text = await self._build_text(
+                        string, new_member, chat, self.bot.client
+                    )
 
                     if button:
                         button = util.tg.build_button(button)
@@ -146,17 +150,20 @@ class Greeting(plugin.Plugin):
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     @staticmethod
-    def _build_text(text: str, user: User, chat: Chat) -> str:
+    async def _build_text(
+        text: str, user: User, chat: Chat, client: Optional[Client] = None
+    ) -> str:
         first_name = user.first_name or ""  # Ensure first name is not None
         last_name = user.last_name
         full_name = first_name + last_name if last_name else first_name
+        count = await client.get_chat_members_count(chat.id) if client else "N/A"
         return text.format(
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
             username=f"@{user.username}" if user.username else user.mention,
             mention=user.mention,
-            count=chat.members_count,
+            count=count,
             chatname=escape(chat.title),
             id=user.id,
         )
@@ -252,7 +259,7 @@ class Greeting(plugin.Plugin):
 
         reply_msg = ctx.msg.reply_to_message
         try:  # Try to build a text first to check message validity
-            self._build_text(reply_msg.text, ctx.author, chat)
+            await self._build_text(reply_msg.text, ctx.author, chat, self.bot.client)
         except KeyError as e:
             return await self.text(chat.id, "err-msg-format-parsing", err=e)
 
