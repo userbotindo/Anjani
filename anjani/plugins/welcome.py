@@ -175,7 +175,7 @@ class Greeting(plugin.Plugin):
         self, chat_id: int
     ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]]]:
         """Get chat welcome string"""
-        message = await self.db.find_one({"chat_id": chat_id}, {"welcome": 1, "button": 1})
+        message = await self.db.find_one({"chat_id": chat_id}, {"custom_welcome": 1, "button": 1})
         if message:
             return message.get("custom_welcome"), message.get("button")
 
@@ -202,7 +202,6 @@ class Greeting(plugin.Plugin):
     async def set_custom_welcome(self, chat_id: int, text: Str) -> None:
         """Set custom welcome"""
         msg, button = util.tg.parse_button(text.markdown)
-        # print(msg)
         await self.db.update_one(
             {"chat_id": chat_id},
             {"$set": {"custom_welcome": msg, "button": button}},
