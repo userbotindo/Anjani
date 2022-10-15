@@ -1,5 +1,6 @@
 aiohttp==3.8.3
-aiopath==0.5.12
+aiopath==0.5.12; python_version < "3.10"
+aiopath==0.6.10; python_version >= "3.10"
 aiorun==2022.4.1
 colorlog==6.7.0
 dnspython==2.2.1
