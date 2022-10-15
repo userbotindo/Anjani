@@ -41,6 +41,32 @@ EventType = (
 )
 
 
+def _get_event_data(event: Any) -> MutableMapping[str, Any]:
+    if isinstance(event, Message):
+        return {
+            "chat_title": event.chat.title,
+            "chat_id": event.chat.id,
+            "user_name": event.from_user.first_name if event.from_user else event.sender_chat.title,
+            "user_id": event.from_user.id if event.from_user else event.sender_chat.id,
+            "input": event.text,
+        }
+    if isinstance(event, CallbackQuery):
+        return {
+            "chat_title": event.message.chat.title,
+            "chat_id": event.message.chat.id,
+            "user_name": event.from_user.first_name,
+            "user_id": event.from_user.id,
+            "input": event.data,
+        }
+    if isinstance(event, InlineQuery):
+        return {
+            "user_name": event.from_user.first_name,
+            "user_id": event.from_user.id,
+            "input": event.query,
+        }
+    return {}
+
+
 class EventDispatcher(MixinBase):
     # Initialized during instantiation
     listeners: MutableMapping[str, MutableSequence[Listener]]
@@ -132,10 +158,12 @@ class EventDispatcher(MixinBase):
 
         match = None
         index = None
+        is_tg_event = False
         for lst in listeners:
             if lst.filters:
                 for idx, arg in enumerate(args):
-                    if isinstance(arg, EventType):
+                    is_tg_event = isinstance(arg, EventType)
+                    if is_tg_event:
                         permitted: bool = await lst.filters(self.client, arg)
                         if not permitted:
                             continue
@@ -162,13 +190,30 @@ class EventDispatcher(MixinBase):
                 dispatcher_error = EventDispatchError(
                     f"raised from {type(err).__name__}: {str(err)}"
                 ).with_traceback(err.__traceback__)
-                self.log.error(
-                    "Error dispatching event '%s' on %s",
-                    event,
-                    lst.func.__qualname__,
-                    exc_info=dispatcher_error,
-                )
-
+                if is_tg_event and args[0] is not None:
+                    data = _get_event_data(args[0])
+                    self.log.error(
+                        "Error dispatching event '%s' on %s\n"
+                        "  Data:\n"
+                        "    • Chat    -> %s (%d)\n"
+                        "    • Invoker -> %s (%d)\n"
+                        "    • Input   -> %s",
+                        event,
+                        lst.func.__qualname__,
+                        data.get("chat_title", "Unknown"),
+                        data.get("chat_id", -1),
+                        data.get("user_name", "Unknown"),
+                        data.get("user_id", -1),
+                        data.get("input", None),
+                        exc_info=dispatcher_error,
+                    )
+                else:
+                    self.log.error(
+                        "Error dispatching event '%s' on %s",
+                        event,
+                        lst.func.__qualname__,
+                        exc_info=dispatcher_error,
+                    )
                 continue
             finally:
                 if result:
