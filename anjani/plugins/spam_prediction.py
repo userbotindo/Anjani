@@ -189,12 +189,19 @@ class SpamPrediction(plugin.Plugin):
         return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
     async def _collect_random_sample(self, proba: float, uid: Optional[int]) -> None:
-        if not uid:
+        if not uid or uid == self.bot.uid:
             return
-        if randint(1, 3) == 2:  # 33% chance to collect a sample
+        if randint(1, 2) == 2:  # 50% chance to collect a sample
             await self.user_db.update_one(
                 {"_id": uid},
-                {"$push": {"pred_sample": proba}},
+                {
+                    "$push": {
+                        "pred_sample": {
+                            "$each": [proba],
+                            "$slice": -10,  # Only keep the last 10 samples
+                        }
+                    }
+                },
             )  # Do not upsert
 
     async def run_ocr(self, message: Message) -> Optional[str]:
