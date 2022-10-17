@@ -34,7 +34,12 @@ from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.enums.message_entity_type import MessageEntityType
-from pyrogram.errors import MessageDeleteForbidden, MessageIdInvalid, UserNotParticipant
+from pyrogram.errors import (
+    ChannelPrivate,
+    MessageDeleteForbidden,
+    MessageIdInvalid,
+    UserNotParticipant,
+)
 from pyrogram.types import ChatPermissions, Message
 
 from anjani import command, filters, plugin, util
@@ -146,7 +151,7 @@ class Lockings(plugin.Plugin):
         if user:
             try:
                 target = await chat.get_member(user.id)
-            except UserNotParticipant:
+            except (ChannelPrivate, UserNotParticipant):
                 pass
             else:
                 if target.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
