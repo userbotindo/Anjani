@@ -140,9 +140,10 @@ class Federation(plugin.Plugin):
             raise ValueError("Invalid callback data command")
 
     async def on_message(self, message: Message) -> None:
-        chat = message.chat
-        if not chat:
+        if message.outgoing or not message.chat:
             return
+
+        chat = message.chat
         if chat.type == ChatType.CHANNEL and message.text and message.text.startswith("/setfedlog"):
             return await self.channel_setlog(message)
 

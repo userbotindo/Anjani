@@ -114,6 +114,9 @@ class Users(plugin.Plugin):
     @listener.priority(50)
     async def on_message(self, message: Message) -> None:
         """Incoming message handler."""
+        if message.outgoing:
+            return
+
         chat = message.chat
         user = message.from_user
 

@@ -387,7 +387,7 @@ class SpamPrediction(plugin.Plugin):
         except QueryIdInvalid:
             pass
 
-    @listener.filters(filters.group)
+    @listener.filters(filters.group & ~filters.outgoing)
     @listener.priority(70)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""

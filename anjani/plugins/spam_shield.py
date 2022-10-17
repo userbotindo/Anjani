@@ -93,12 +93,9 @@ class SpamShield(plugin.Plugin):
             return
 
     @listener.priority(65)
-    @listener.filters(filters.group)
+    @listener.filters(filters.group & ~filters.outgoing)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
-        if message.from_user and message.from_user.is_self:
-            return
-
         chat = message.chat
         user = message.from_user
         text = (

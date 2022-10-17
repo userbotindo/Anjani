@@ -126,6 +126,9 @@ class Lockings(plugin.Plugin):
         await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     async def on_message(self, message: Message) -> None:
+        if message.outgoing:
+            return
+
         chat = message.chat
         user = message.from_user
         if not chat or chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
