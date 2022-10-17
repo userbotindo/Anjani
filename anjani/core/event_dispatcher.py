@@ -204,7 +204,7 @@ class EventDispatcher(MixinBase):
                         data.get("chat_id", -1),
                         data.get("user_name", "Unknown"),
                         data.get("user_id", -1),
-                        data.get("input", None),
+                        data.get("input"),
                         exc_info=dispatcher_error,
                     )
                 else:
