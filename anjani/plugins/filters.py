@@ -53,6 +53,9 @@ class Filters(plugin.Plugin):
         )
 
     async def on_message(self, message: Message) -> None:
+        if message.outgoing:
+            return
+
         chat = message.chat
         text = message.text or message.caption
 

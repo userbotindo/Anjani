@@ -25,7 +25,6 @@ from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
 from anjani import command, filters, plugin, util
-from anjani.core.telegram_bot import TelegramBot
 
 
 class Greeting(plugin.Plugin):
