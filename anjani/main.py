@@ -91,7 +91,7 @@ def start() -> None:
 
     _setup_log()
     log.info(
-        "Running in Python %s.%s.%s",
+        "Running on Python %s.%s.%s",
         sys.version_info.major,
         sys.version_info.minor,
         sys.version_info.micro,
