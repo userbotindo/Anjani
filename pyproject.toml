@@ -48,7 +48,7 @@ typing-extensions = "^4.4.0"
 [tool.poetry.dev-dependencies]
 black = "^22.10"
 pre-commit = "^2.20.0"
-pylint = "^2.15.4"
+pylint = "^2.15.5"
 isort = "^5.10.1"
 
 [tool.poetry.extras]
