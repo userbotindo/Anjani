@@ -90,6 +90,12 @@ def start() -> None:
         dotenv.load_dotenv(config_path)
 
     _setup_log()
+    log.info(
+        "Running on Python %s.%s.%s",
+        sys.version_info.major,
+        sys.version_info.minor,
+        sys.version_info.micro,
+    )
     log.info("Loading code")
 
     if sys.platform == "win32":

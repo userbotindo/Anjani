@@ -11,7 +11,7 @@ Anjani is a modern, easy-to-develop, fully async Telegram group managing bot for
 
 ## Requirements
 
--   Python 3.9.
+-   Python 3.9 or higher.
 -   [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
 -   [Telegram Bot Token](https://t.me/botfather)
 -   [MongoDB Database](https://cloud.mongodb.com/).
