@@ -20,6 +20,7 @@ from typing import (
     AsyncGenerator,
     FrozenSet,
     List,
+    Literal,
     Mapping,
     Optional,
     Set,
@@ -158,9 +159,7 @@ class AsyncClient(AsyncBaseProperty):
         }
         return AsyncCommandCursor(CommandCursor(database["$cmd"], cursor, None))
 
-    async def server_info(
-        self, session: Optional[AsyncClientSession] = None
-    ) -> Mapping[str, Any]:
+    async def server_info(self, session: Optional[AsyncClientSession] = None) -> Mapping[str, Any]:
         return await util.run_sync(
             self.dispatch.server_info, session=session.dispatch if session else session
         )
@@ -197,7 +196,8 @@ class AsyncClient(AsyncBaseProperty):
         start_at_operation_time: Optional[Timestamp] = None,
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
+        full_document_before_change: Optional[Literal["required", "whenAvailable"]] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -210,7 +210,8 @@ class AsyncClient(AsyncBaseProperty):
             start_at_operation_time,
             session,
             start_after,
-            comment
+            comment,
+            full_document_before_change,
         )
 
     @property

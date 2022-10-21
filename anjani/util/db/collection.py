@@ -14,7 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, Generic, List, Mapping, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from bson.codec_options import CodecOptions
 from bson.timestamp import Timestamp
@@ -489,6 +499,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
         comment: Optional[str] = None,
+        full_document_before_change: Optional[Literal["required", "whenAvailable"]] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -502,6 +513,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
             session,
             start_after,
             comment,
+            full_document_before_change,
         )
 
     def with_options(

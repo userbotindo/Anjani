@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Mapping, Optional, Union
 
 from bson.timestamp import Timestamp
 from pymongo.change_stream import ChangeStream
@@ -53,7 +53,8 @@ class AsyncChangeStream(AsyncBase):
         start_at_operation_time: Optional[Timestamp],
         session: Optional[AsyncClientSession],
         start_after: Optional[Any],
-        comment: Optional[str]
+        comment: Optional[str],
+        full_document_before_change: Optional[Literal["required", "whenAvailable"]] = None,
     ) -> None:
         self._target = target
         self._options: Mapping[str, Any] = {
@@ -66,7 +67,8 @@ class AsyncChangeStream(AsyncBase):
             "start_at_operation_time": start_at_operation_time,
             "session": session.dispatch if session else session,
             "start_after": start_after,
-            "comment": comment
+            "comment": comment,
+            "full_document_before_change": full_document_before_change,
         }
 
         super().__init__(None)  # type: ignore

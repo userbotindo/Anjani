@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Mapping, Optional, Union
 
 from bson.codec_options import CodecOptions
 from bson.dbref import DBRef
@@ -242,6 +242,7 @@ class AsyncDatabase(AsyncBaseProperty):
         session: Optional[AsyncClientSession] = None,
         start_after: Optional[Any] = None,
         comment: Optional[str] = None,
+        full_document_before_change: Optional[Literal["required", "whenAvailable"]] = None,
     ) -> AsyncChangeStream:
         return AsyncChangeStream(
             self,
@@ -255,6 +256,7 @@ class AsyncDatabase(AsyncBaseProperty):
             session,
             start_after,
             comment,
+            full_document_before_change,
         )
 
     def with_options(
