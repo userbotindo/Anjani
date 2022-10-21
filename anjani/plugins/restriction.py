@@ -70,7 +70,14 @@ class Restrictions(plugin.Plugin):
         chat = query.message.chat
         user = query.matches[0].group(1)
         uid = query.matches[0].group(2)
-        invoker = await chat.get_member(query.from_user.id)
+
+        try:
+            invoker = await chat.get_member(query.from_user.id)
+        except UserNotParticipant:
+            return await query.answer(
+                await self.get_text(chat.id, "error-no-rights"), show_alert=True
+            )
+
         if not invoker.privileges or not invoker.privileges.can_restrict_members:
             return await query.answer(await self.get_text(chat.id, "warn-keyboard-not-admins"))
 
