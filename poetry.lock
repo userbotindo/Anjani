@@ -46,6 +46,18 @@ anyio = ">=3.2.0,<4"
 typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
 
 [[package]]
+name = "aiopath"
+version = "0.6.10"
+description = "📁 Async pathlib for Python"
+category = "main"
+optional = false
+python-versions = ">=3.10"
+
+[package.dependencies]
+aiofile = ">=3.5.0,<4"
+anyio = ">=3.2.0,<4"
+
+[[package]]
 name = "aiorun"
 version = "2022.4.1"
 description = "Boilerplate for asyncio applications"
@@ -154,6 +166,14 @@ python-versions = ">=3.5, <4"
 
 [package.extras]
 develop = ["aiomisc", "pytest", "pytest-cov"]
+
+[[package]]
+name = "certifi"
+version = "2022.9.24"
+description = "Python package for providing Mozilla's CA Bundle."
+category = "main"
+optional = false
+python-versions = ">=3.6"
 
 [[package]]
 name = "cfgv"
@@ -650,7 +670,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9, <=3.11"
-content-hash = "1ea6c4d00868a4fced4d9fb540ba8d5f929db21b74bf8f3ff05898ff7f7767a7"
+content-hash = "480ec5a456dd368052efa5b276ca410a0913bf25f8514874fed92d36fc5518a6"
 
 [metadata.files]
 aiofile = [
@@ -748,6 +768,8 @@ aiohttp = [
 aiopath = [
     {file = "aiopath-0.5.12-py2.py3-none-any.whl", hash = "sha256:9d85fd17ef1cbc75c0e81619acb3a1632cf5e15ead459e57fef5ec85e0b7a1da"},
     {file = "aiopath-0.5.12.tar.gz", hash = "sha256:de2f9401dd098b9a279afb265df5a6eb5b78f39c2c4f3871f671fc1dd4b21d64"},
+    {file = "aiopath-0.6.10-py2.py3-none-any.whl", hash = "sha256:44a5376de098b4875eefa4b4599f5ac99fd9451b88c314f237716571e16ccce2"},
+    {file = "aiopath-0.6.10.tar.gz", hash = "sha256:6ca97a864fe32478d53af6c40e1951de64ab01d6b402d88524ce72d80362eb7a"},
 ]
 aiorun = [
     {file = "aiorun-2022.4.1-py3-none-any.whl", hash = "sha256:3a7925d66c394f6812a0150495fda8d359b4cdf24cf0c223f005b61ad02baaa7"},
@@ -807,6 +829,10 @@ caio = [
     {file = "caio-0.9.8-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:0ab003c48679d00b83992d68012c1126e4b91d6c27d16f363d0e5c9a499898e9"},
     {file = "caio-0.9.8-py3-none-any.whl", hash = "sha256:c3704fba1781c252d5dcfce4e81dc5af2d50a61062f00fc74dd252a419af8918"},
     {file = "caio-0.9.8.tar.gz", hash = "sha256:70c9556dc003df1e3ea8dca5cc32ef0bb9213cfbc5a2b80003ba37018689326f"},
+]
+certifi = [
+    {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
+    {file = "certifi-2022.9.24.tar.gz", hash = "sha256:0d9c601124e5a6ba9712dbc60d9c53c21e34f5f641fe83002317394311bdce14"},
 ]
 cfgv = [
     {file = "cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
