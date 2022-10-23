@@ -251,7 +251,7 @@ class Users(plugin.Plugin):
             text += f"**ID:** `{chat.id}`\n"
             if chat.dc_id:
                 text += f"**DC ID:** `{chat.dc_id}`\n"
-            text += f"**Chat Type:** `{chat.type}`\n"
+            text += f"**Chat Type:** `{chat.type.__dict__['_name_']}`\n"
             text += f"**Title:** `{chat.title}`\n"
             if chat.username:
                 text += f"**Chat Username:** @{chat.username}\n"
