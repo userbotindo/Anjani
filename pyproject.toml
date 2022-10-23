@@ -35,7 +35,6 @@ aiopath = [
 aiorun = "^2022.4.1"
 certifi = {version = "^2022.9.24", platform = "windows"}
 colorlog = "^6.7.0"
-dnspython = "^2.2.1"
 meval = "^2.5"
 pymongo = "^4.3.2"
 Pyrogram = "^2.0.59"

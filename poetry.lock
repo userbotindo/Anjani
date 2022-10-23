@@ -670,7 +670,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9, <=3.11"
-content-hash = "480ec5a456dd368052efa5b276ca410a0913bf25f8514874fed92d36fc5518a6"
+content-hash = "72ff2a85fb8001ad8ddcf746ce7959416e976ee5f0ddcc28fb02df814f25957e"
 
 [metadata.files]
 aiofile = [
