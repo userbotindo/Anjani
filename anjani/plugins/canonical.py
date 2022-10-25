@@ -20,8 +20,10 @@ from pathlib import Path
 from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
+from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.message_media_type import MessageMediaType
-from pyrogram.types import Message
+from pyrogram.errors import UserNotParticipant
+from pyrogram.types import Chat, ChatMemberUpdated, Message, User
 
 from anjani import listener, plugin, util
 
@@ -55,6 +57,7 @@ class Canonical(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("TEST")
         self.db_analytics = self.bot.db.get_collection("ANALYTICS")
+        self.chats_db = self.bot.db.get_collection("CHATS")
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
@@ -65,16 +68,9 @@ class Canonical(plugin.Plugin):
         self.__task.cancel()
 
     def get_type(self, message: Message) -> str:
+        return self._mt.get(message.media, "t") if message.media else "t"
 
-        if message.media and message.media in self._mt:
-            return self._mt[message.media]
-        return "t"
-
-    @listener.priority(65)
-    async def on_message(self, message: Message) -> None:
-        if message.outgoing:
-            return
-
+    async def save_message_type(self, message: Message) -> None:
         today = util.time.sec()
         timestamp = today - (today % 86400)  # truncate to day
         await self.db_analytics.update_one(
@@ -82,6 +78,44 @@ class Canonical(plugin.Plugin):
             {"$inc": {f"data.{str(timestamp)}.{self.get_type(message)}": 1}},
             upsert=True,
         )
+
+    async def update_admin_chat(self, chat: Chat, user: User) -> None:
+        try:
+            target = await chat.get_member(user.id)
+        except UserNotParticipant:
+            return
+
+        if target.status not in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
+            return
+
+        await self.chats_db.update_one(
+            {"chat_id": chat.id}, {"$addToSet": {"admins": user.id}}, upsert=True
+        )
+
+    @listener.priority(65)
+    async def on_message(self, message: Message) -> None:
+        if message.outgoing:
+            return
+
+        chat = message.chat
+        user = message.from_user
+        # Temporary for dashboard testing
+        if chat.id in {-1001146706314, -1001294181499} and user:
+            self.bot.loop.create_task(self.update_admin_chat(chat, user))
+
+        # Analytics
+        self.bot.loop.create_task(self.save_message_type(message))
+
+    async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
+        old_data = update.old_chat_member
+        new_data = update.new_chat_member
+        if old_data.status != new_data.status and new_data.status not in {
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        }:
+            await self.chats_db.update_one(
+                {"chat_id": update.chat.id}, {"$pull": {"admins": new_data.user.id}}
+            )
 
     async def watch_streams(self) -> None:
         try:
