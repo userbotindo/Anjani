@@ -82,6 +82,7 @@ cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluar
 zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
 promote-error-invalid: "**ID Pengguna tidak sah atau tidak benar**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
+promote-error-privacy-restricted: "**Pengguna ini memiliki pengaturan privasi yang mencegah tindakan ini**\n`pastikan dia adalah anggota di sini, dan Anda memasukkan id/username yang benar!`"
 demote-success: "`Menurunkan sudah berhasil`"
 demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
 no-demote-user: "`Beritahu saya, siapa yang mau kamu turunkan?"

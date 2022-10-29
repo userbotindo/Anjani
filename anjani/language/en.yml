@@ -83,6 +83,7 @@ finding-zombie: "`Finding zombies account...`"
 cleaning-zombie: "**{}** `zombies found and has been removed..!` 🚮"
 zombie-clean: "`Zombies not found, group are clean..` "
 promote-error-invalid: "**User id invalid**\n`make sure he is a member here, and you enter the correct id/username!`"
+promote-error-privacy-restricted: "**The user has privacy settings that prevent to perform this action**\n`make sure he is a member here, and you enter the correct id/username!`"
 promote-error-self: "__You can't promote yourself__"
 demote-success: "`Demoted successfully..`"
 demote-error-perm: "`I don't have permission to demote, I can only demote the ones I promote..`"
@@ -256,7 +257,7 @@ fed-autoban: "User {} is banned in the current federation (**{}**), and has been
 fed-autoban-chat: "Channel {} is banned in the current federation (**{}**), and has been removed.\n**Reason:** {}\n**Banned on:** {}"
 fed-autoban-subfed: "User {} is banned in subfederation (**{}**) and has been removed\n**Reason:** {}\n**Banned on:** {}"
 fed-autoban-chat-subfed: "Channel {} is banned in subfederation (**{}**) and has been removed\n**Reason:** {}\n**Banned on:** {}"
-fed-autoleave: "I no longger have permission to ban members in this chat. Leaving fed \"{}\"(`{}`)"
+fed-autoleave: 'I no longger have permission to ban members in this chat. Leaving fed "{}"(`{}`)'
 fed-owner-cmd: "This command is only for federation owner!"
 fed-subs-join: "Federation **{}** has subscribed to **{}**"
 fed-subs-leave: "Federation **{}** has unsubscribed from **{}**"
@@ -350,7 +351,7 @@ notes-help: |
   × /save <notename> <note text>: Save a new note named "<notename>". Replying to a message will save the replied message.
   × /clear <notename> | /delnote <notename>: Delete the matched note if exist.
   \nCheck /markdownhelp for more notes formatting info.
-notes-invalid-args : |
+notes-invalid-args: |
   Reply to a message with text or provide text after notes name.
   E.g.: /save <notename> <msg/reply to msg>
 note-saved: "Notes saved as `{}`."
@@ -467,7 +468,7 @@ rules-clear: Successfully cleared chat rules!
 rules-none: Failed to get chat rules! No records found.
 rules-view-caption: Click this button to view the chat rules!
 rules-view-pm: "The rules for **{}** are:\n\n"
-rules-invalid-button: "Invalid chat_id: \"{}\". (__Invalid Syntax__)"
+rules-invalid-button: 'Invalid chat_id: "{}". (__Invalid Syntax__)'
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediction
@@ -581,7 +582,7 @@ err-chat-private: This command is specific to PM's only!
 error-no-rights: "You don't have rights to use this command!"
 err-not-participant: "This user is not a member of this chat!"
 err-invalid-option: Invalid option!
-err-invalid-username-id : "`Invalid username or userid!`"
+err-invalid-username-id: "`Invalid username or userid!`"
 error-reply-to-message: Reply to a message!
 err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: "**PEER_ID_INVALID**\nLooks like I don't have an access to this user, or the ID isn't a valid one."

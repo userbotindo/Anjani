@@ -24,6 +24,7 @@ from pyrogram.errors import (
     FloodWait,
     UserAdminInvalid,
     UserIdInvalid,
+    UserPrivacyRestricted,
 )
 from pyrogram.types import Chat, User
 
@@ -161,6 +162,8 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "promote-error-perm")
         except UserIdInvalid:
             return await self.text(chat.id, "promote-error-invalid")
+        except UserPrivacyRestricted:
+            return await self.text(chat.id, "promote-error-privacy-restricted")
 
         return await self.text(chat.id, "promote-success")
 
