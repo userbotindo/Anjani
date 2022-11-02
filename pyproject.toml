@@ -30,7 +30,7 @@ python = ">=3.9, <=3.11"
 aiohttp = "^3.8.3"
 aiopath = [
     {version = "^0.5.12", python = "<3.10"},
-    {version = "^0.6.10", python = ">=3.10"},
+    {version = "^0.6.11", python = ">=3.10"},
 ]
 aiorun = "^2022.4.1"
 certifi = {version = "^2022.9.24", markers="platform_system == 'Windows'"}
