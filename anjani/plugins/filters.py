@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from typing import Any, ClassVar, List, MutableMapping, Optional, Tuple
+from typing import Any, ClassVar, MutableMapping, Optional, Set, Tuple
 
 from pyrogram.types import Message
 
@@ -27,14 +27,14 @@ class Filters(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
-    trigger: MutableMapping[int, List[str]] = {}
+    trigger: MutableMapping[int, Set[str]] = {}
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FILTERS")
 
     async def on_start(self, _: int) -> None:
         async for chat in self.db.find({}):
-            self.trigger[chat["chat_id"]] = list(chat["trigger"].keys())
+            self.trigger[chat["chat_id"]] = set(chat["trigger"].keys())
 
     async def on_plugin_backup(self, chat_id: int) -> MutableMapping[str, Any]:
         data = await self.db.find_one({"chat_id": chat_id}, {"_id": False})
@@ -66,9 +66,9 @@ class Filters(plugin.Plugin):
         if not chat_trigger:
             return
 
-        await self.reply_filter(message, chat_trigger, text)
+        await self.reply_filter(message, set(chat_trigger), text)
 
-    async def reply_filter(self, message: Message, trigger: List[str], text: str):
+    async def reply_filter(self, message: Message, trigger: Set[str], text: str):
         if not text or text.startswith("/filter") or text.startswith("/stop"):
             return  # Igonore when command triggered
         for i in trigger:
@@ -94,9 +94,9 @@ class Filters(plugin.Plugin):
         )
 
         if self.trigger.get(chat_id):
-            self.trigger[chat_id].append(keyword)
+            self.trigger[chat_id].add(keyword)
         else:
-            self.trigger[chat_id] = [keyword]
+            self.trigger[chat_id] = set(keyword)
 
     async def del_filter(self, chat_id: int, keyword: str) -> Tuple[bool, str]:
         filt = self.trigger.get(chat_id)
