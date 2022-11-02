@@ -147,5 +147,5 @@ class Filters(plugin.Plugin):
             return await self.text(ctx.chat.id, "filters-chat-nofilter")
 
         output = await self.text(ctx.chat.id, "filters-list", ctx.chat.title)
-        output += "\n".join([f"× `{i}`" for i in data])
+        output += "\n".join([f"× `{i}`" for i in sorted(data)])
         return output

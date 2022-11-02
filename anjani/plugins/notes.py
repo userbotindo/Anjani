@@ -205,7 +205,7 @@ class Notes(plugin.Plugin):
             return await self.text(chat.id, "no-notes")
 
         notes = await self.text(chat.id, "note-list", chat.title)
-        for key in data["notes"].keys():
+        for key in sorted(data["notes"].keys()):
             notes += f"× `{key}`\n"
         return notes
 
