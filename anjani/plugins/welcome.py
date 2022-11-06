@@ -249,35 +249,40 @@ class Greeting(plugin.Plugin):
         return data.get("prev_gdby", None) if data else None
 
     @command.filters(filters.admin_only)
-    async def cmd_setwelcome(self, ctx: command.Context) -> str:
+    async def cmd_setwelcome(self, ctx: command.Context, *, welc_text: Optional[str]) -> str:
         """Set chat welcome message"""
         chat = ctx.chat
+        if welc_text:
+            welc_text = Str(welc_text).init(ctx.msg.entities)
+        elif ctx.msg.reply_to_message:
+            welc_text = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
+        else:
+            return await self.text(chat.id, "greetings-no-input")
 
-        if not ctx.msg.reply_to_message:
-            return await self.text(chat.id, "error-reply-to-message")
-
-        reply_msg = ctx.msg.reply_to_message
         try:  # Try to build a text first to check message validity
-            await self._build_text(reply_msg.text, ctx.author, chat, self.bot.client)
+            await self._build_text(welc_text or "", ctx.author, chat, self.bot.client)
         except KeyError as e:
             return await self.text(chat.id, "err-msg-format-parsing", err=e)
 
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "cust-welcome-set"), self.set_custom_welcome(chat.id, reply_msg.text)
+            self.text(chat.id, "cust-welcome-set"), self.set_custom_welcome(chat.id, welc_text)
         )
         return ret
 
     @command.filters(filters.admin_only)
-    async def cmd_setgoodbye(self, ctx: command.Context) -> str:
+    async def cmd_setgoodbye(self, ctx: command.Context, *, gby_text: Optional[str]) -> str:
         """Set chat goodbye message"""
         chat = ctx.chat
 
-        if not ctx.msg.reply_to_message:
-            return await self.text(chat.id, "error-reply-to-message")
+        if gby_text:
+            gby_text = Str(gby_text).init(ctx.msg.entities)
+        elif ctx.msg.reply_to_message:
+            gby_text = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
+        else:
+            return await self.text(chat.id, "greetings-no-input")
 
-        reply_msg = ctx.msg.reply_to_message
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "cust-goodbye-set"), self.set_custom_goodbye(chat.id, reply_msg.text)
+            self.text(chat.id, "cust-goodbye-set"), self.set_custom_goodbye(chat.id, gby_text)
         )
         return ret
 

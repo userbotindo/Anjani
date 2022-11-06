@@ -515,11 +515,11 @@ greetings-button: Greetings
 greetings-help: |
   your group's welcome messages that can be personalised in multiple ways.\n
   **Admin Commands:**
-  × /setwelcome <reply> : Sets a custom welcome message.
+  × /setwelcome <text> | <reply> : Sets a custom welcome message.
   × /resetwelcome : Resets to bot default welcome message.
   × /welcome <on/off> : enable/disable Welcome messages.
   × /welcome : Display current welcome message and settings.\n
-  × /setgoodbye <reply> : Sets a custom goodbye message.
+  × /setgoodbye <text> | <reply> : Sets a custom goodbye message.
   × /resetgoodbye : Resets to bot default goodbye message.
   × /goodbye <on/off> : enable/disable goodbye messages.
   × /goodbye : Display current goodbye message and settings.\n
@@ -528,6 +528,7 @@ greetings-help: |
   Example: `/welcome noformat`
 
   Check /markdownhelp and /fillinghelp for formatting details.
+greetings-no-input: Please provide the text you want to set!
 bot-added: |
   Hi... Thanks for inviting me.
   To see available commands type /help.

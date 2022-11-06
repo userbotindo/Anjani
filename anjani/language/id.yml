@@ -548,6 +548,7 @@ greetings-help: |
   Contoh: `/welcome noformat`
 
   Cek /markdownhelp dan /fillinghelp untuk detail pemformatan.
+greetings-no-input: Berikan text yang ingin di setel!
 bot-added: |
   Hai salam kenal. Terima kasih telah mengundang saya ke grup anda.
   Untuk melihat perintah yang bisa anda gunakan. Silahkan ketik /help.
