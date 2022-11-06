@@ -26,7 +26,7 @@ from pyrogram.errors import (
     UserIdInvalid,
     UserPrivacyRestricted,
 )
-from pyrogram.types import Chat, User
+from pyrogram.types import Chat, ChatPrivileges, User
 
 from anjani import command, filters, plugin, util
 
@@ -193,7 +193,22 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "error-its-myself")
 
         try:
-            await chat.promote_member(user_id=user.id)
+            await chat.promote_member(
+                user_id=user.id,
+                privileges=ChatPrivileges(
+                    can_manage_chat=False,
+                    can_delete_messages=False,
+                    can_manage_video_chats=False,
+                    can_restrict_members=False,
+                    can_promote_members=False,
+                    can_change_info=False,
+                    can_post_messages=False,
+                    can_edit_messages=False,
+                    can_invite_users=False,
+                    can_pin_messages=False,
+                    is_anonymous=False,
+                ),
+            )
         except ChatAdminRequired:
             return await self.text(chat.id, "demote-error-perm")
 
