@@ -19,7 +19,7 @@ from typing import Any, ClassVar, MutableMapping, Optional, Set, Tuple
 
 from pyrogram.types import Message
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, listener, plugin, util
 
 
 class Filters(plugin.Plugin):
@@ -52,6 +52,7 @@ class Filters(plugin.Plugin):
             {"$set": {"chat_id": new_chat}},
         )
 
+    @listener.priority(95)
     async def on_message(self, message: Message) -> None:
         if message.outgoing:
             return
