@@ -535,11 +535,11 @@ greetings-button: Pesan Sambutan
 greetings-help: |
   Pesan selamat datang di grup anda yang dapat diatur dengan berbagai cara yang anda mau.\n
   **Hanya Administrator yang bisa menggunakan:**
-  × /setwelcome <balas pesan>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
+  × /setwelcome <teks> | <balas pesan>: Akan menjadikan pesan anda menjadi pesan sambutan jika ada orang yang bergabung pada grup anda. Silahkan membalas dengan pesan sambutan yang anda inginkan!
   × /resetwelcome: Mengubah pesan sambutan anda kepada pesan sambutan bawaan saya.
   × /welcome <on/off>: Menghidupkan atau mematikan pesan sambutan.
   × /welcome: Menampilkan pesan sambutan anda saat ini dan pengaturannya saat ini.
-  × /setgoodbye <balas pesan>: Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
+  × /setgoodbye <teks> | <balas pesan>: Akan menjadikan pesan anda menjadi pesan selamat tinggal jika ada anggota yang keluar.
   × /resetgoodbye: Mengubah pesan selamat tinggal anda kepada pesan selamat tinggal bawaan saya.
   × /goodbye <on/off>: Menghidupkan atau mematikan pesan selamat tinggal.
   × /goodbye: Menampilkan pesan selamat tinggal anda saat ini dan pengaturannya saat ini.\n
@@ -615,5 +615,5 @@ err-not-admin: Anda bukan Administartor group ini...
 err-perm: Saya dan Anda bukan administrator pada group ini.
 err-unexpected: "Telah terjadi kesalahan yang tak terduga!\n\n**Error:** `{}`"
 err-msg-format-parsing: "**Terjadi kesalahan penguraian format pesan!**\n**Kesalahan pada kunci:** `{err}`."
-err-im-not-admin: Saya bukan administrator di sini!
+err-im-not-admin: Saya bukan administrator di sini! Saya membutuhkan hak administrator untuk melakukan ini.
 #endregion

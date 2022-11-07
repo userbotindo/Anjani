@@ -76,7 +76,7 @@ from pyrogram.filters import (  # skipcq: PY-W2000
     video_note,
     web_page,
 )
-from pyrogram.types import Message
+from pyrogram.types import ChatMember, Message
 
 from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
 from anjani.util.types import CustomFilter
@@ -243,6 +243,10 @@ async def _send_error(robot: "Anjani", chat_id: int, message: Message, string_ke
     robot.loop.create_task(reply_and_delete(message, await get_text(robot, chat_id, string_key), 5))
 
 
+def is_admin(target: ChatMember) -> bool:
+    return target.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
+
+
 def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilter:
     async def func(flt: CustomFilter, client: Client, message: Message) -> bool:
         target, priv = message.from_user, message.chat and message.chat.type == ChatType.PRIVATE
@@ -277,14 +281,17 @@ def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilt
 
             return False
 
-        if bot_perm.status == ChatMemberStatus.ADMINISTRATOR and member_perm.status in {
-            ChatMemberStatus.ADMINISTRATOR,
-            ChatMemberStatus.OWNER,
-        }:
+        user_admin = is_admin(member_perm)
+        bot_admin = is_admin(bot_perm)
+        if bot_admin and user_admin:
             return True
 
         if send_error:
-            await _send_error(flt.anjani, message.chat.id, message, "err-perm")
+            if not bot_admin and user_admin:
+                # Bot is not admin, but user is
+                await _send_error(flt.anjani, message.chat.id, message, "err-im-not-admin")
+            else:
+                await _send_error(flt.anjani, message.chat.id, message, "err-perm")
 
         return False
 
