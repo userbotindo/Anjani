@@ -16,3 +16,6 @@ downloads/
 .idea/
 .vscode/
 *.sw*
+
+# Generated files
+CHANGELOG.md

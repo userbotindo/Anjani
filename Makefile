@@ -39,12 +39,16 @@ up-nc: build-nc stop run
 bump:
 	@echo "Updating version"
 	@echo "Current version: v$(VERSION)"
-	@read -p "New version: v" NEW_VERSION
-
+	NEW_VERSION=$(shell convco version --bump)
 	@echo "Bumping version to v$$NEW_VERSION"
+
 	sed -i "s/version = \"$(VERSION)\"/version = \"$$NEW_VERSION\"/g" pyproject.toml > /dev/null; \
 	sed -i "s/__version__ = \"$(VERSION)\"/__version__ = \"$$NEW_VERSION\"/g" anjani/__init__.py > /dev/null; \
 	git add pyproject.toml anjani/__init__.py > /dev/null
+
+	@echo "Generating changelog"
+	convco changelog -m 1 > CHANGELOG.md
+	@echo "Changelog saved to CHANGELOG.md"
 
 	@echo "Commiting changes"
 	git checkout staging > /dev/null
@@ -53,3 +57,7 @@ bump:
 	git checkout master
 	git merge staging
 	git push --atomic origin master staging "v$$NEW_VERSION"
+
+changelog:
+	# https://convco.github.io/
+	convco changelog -m 1 > CHANGELOG.md

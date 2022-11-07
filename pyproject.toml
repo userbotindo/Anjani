@@ -45,18 +45,17 @@ TgCrypto = "^1.2.4"
 typing-extensions = "^4.4.0"
 uvloop = {version ="^0.17.0", optional = true, markers="platform_system == 'Linux'"}
 
-[tool.poetry.dev-dependencies]
-black = "^22.10"
-isort = "^5.10.1"
-pre-commit = "^2.20.0"
-pylint = "^2.15.5"
-flake8 = "^5.0.4"
-
 [tool.poetry.extras]
 all = ["scikit-learn", "uvloop"]
 ml = ["scikit-learn"]
 uvloop = ["uvloop"]
 
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+isort = "^5.10.1"
+pre-commit = "^2.20.0"
+pylint = "^2.15.5"
+flake8 = "^5.0.4"
 
 #
 # Black config
@@ -109,6 +108,9 @@ known_third_party = [
     [tool.pylint.design]
     max-args = 15
 
+# Semantic Release Config
+[tool.semantic_release]
+version_variable = "anjani/__init__.py:__version__"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
