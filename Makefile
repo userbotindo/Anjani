@@ -46,10 +46,6 @@ bump:
 	sed -i "s/__version__ = \"$(VERSION)\"/__version__ = \"$$NEW_VERSION\"/g" anjani/__init__.py > /dev/null; \
 	git add pyproject.toml anjani/__init__.py > /dev/null
 
-	@echo "Generating changelog"
-	convco changelog -m 1 > CHANGELOG.md
-	@echo "Changelog saved to CHANGELOG.md"
-
 	@echo "Commiting changes"
 	git checkout staging > /dev/null
 	git commit -m "Bump version to v$$NEW_VERSION"
@@ -57,6 +53,12 @@ bump:
 	git checkout master
 	git merge staging
 	git push --atomic origin master staging "v$$NEW_VERSION"
+
+	@echo "Generating changelog"
+	convco changelog -m 1 > CHANGELOG.md
+	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
+	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
+	@echo "Changelog saved to CHANGELOG.md"
 
 changelog:
 	# https://convco.github.io/
