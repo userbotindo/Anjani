@@ -486,7 +486,7 @@ spampredict-empty: message/photo text nor caption is empty to predict...
 spampredict-photo: "Reading photo text with ocr...\nThis might take a while."
 spampredict-photo-failed: "__Failed to read photo text with ocr.__\n\n"
 spampredict-unauthorized: |
-  Your reputation point is not enough to use this command! ({}/100)
+  Your reputation point is not enough to use this command! ({}/{})
   To get a reputation point cast a vote on @SpamPredictionLog.
 spampredict-failed: Prediction failed...
 spampredict-ban: "{user} has been banned!"
