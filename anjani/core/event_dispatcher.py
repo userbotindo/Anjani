@@ -208,9 +208,10 @@ class EventDispatcher(MixinBase):
                     )
                 else:
                     self.log.error(
-                        "Error dispatching event '%s' on %s",
+                        "Error dispatching event '%s' on %s with data\n%s",
                         event,
                         lst.func.__qualname__,
+                        args,
                         exc_info=dispatcher_error,
                     )
                 continue
