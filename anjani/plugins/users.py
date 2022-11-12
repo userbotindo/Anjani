@@ -217,11 +217,13 @@ class Users(plugin.Plugin):
                 if not file:
                     return text
 
-                await self.bot.client.send_photo(
-                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
-                )
-
-            return None
+                try:
+                    await self.bot.client.send_photo(
+                        ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
+                    )
+                except ValueError:  # Wierd case where the photo id exist but have 0 bytes
+                    return text
+            return
 
         return text
 
