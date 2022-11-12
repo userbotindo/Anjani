@@ -17,11 +17,13 @@
 import asyncio
 import re
 from hashlib import md5
+from html import escape
 from time import time
 from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
+from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
@@ -173,118 +175,133 @@ class Users(plugin.Plugin):
             *tasks,
         )
 
-    async def _user_info(self, ctx: command.Context, user: User) -> Optional[str]:
+    async def _user_info(self, ctx: command.Context, user: User) -> None:
         """User Info"""
-        text = f"**{'Bot' if user.is_bot else 'User'} Info**\n\n"
-        text += f"**ID:** `{user.id}`\n"
-        text += f"**DC ID: **`{user.dc_id if user.dc_id else 'N/A'}`\n"
-        text += f"**First Name: **{user.first_name}\n"
+        text = f"<b>{'Bot' if user.is_bot else 'User'} Info</b>\n\n"
+        text += f"<b>ID:</b> <code>{user.id}</code>\n"
+        text += f"<b>DC ID: </b><code>{user.dc_id if user.dc_id else 'N/A'}</code>\n"
+        text += f"<b>First Name: </b>{escape(user.first_name)}\n"
         if user.last_name:
-            text += f"**Last Name: **`{user.last_name}`\n"
+            text += f"<b>Last Name: </b><code>{escape(user.last_name)}</code>\n"
 
         if user.username:
-            text += f"**Username: **@{user.username}\n"
+            text += f"<b>Username: </b>@{user.username}\n"
 
-        text += f"**Permanent user link: **{user.mention}\n"
+        self.bot.client.parse_mode = ParseMode.HTML
+        text += f"<b>Permanent user link: </b>{user.mention}\n"
+        self.bot.client.parse_mode = ParseMode.MARKDOWN  # telegram_bot.py#L108
+
         text += (
-            "**Number of profile pics: **"
-            f"`{await self.bot.client.get_chat_photos_count(user.id)}`\n"
+            "<b>Number of profile pics: </b>"
+            f"<code>{await self.bot.client.get_chat_photos_count(user.id)}</code>\n"
         )
         if user.status:
-            text += f"**Last seen: ** `{user.status.value}`\n"
+            text += f"<b>Last seen: </b> <code>{user.status.value}</code>\n"
 
         if user.id in self.bot.staff:
-            text += "\nThis person is one of my **Staff**!\n"
+            text += "\nThis person is one of my <b>Staff</b>!\n"
         elif user.is_self:
             text += "\nI've seen them in every chats... wait it's me!!\nWow you're stalking me? 😂"
 
         if user.is_scam:
-            text += "**\n⚠️Warning this user is flagged as a scammer by Telegram⚠️**\n"
+            text += "<b>\n⚠️Warning this user is flagged as a scammer by Telegram⚠️</b>\n"
 
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:
-            text += f"\n**Identifier:** `{user_db.get('hash', 'unknown')}`"
-            text += f"\n**Reputation:** `{user_db.get('reputation', 0)}`"
+            if user_db.get("spam", False):
+                text += "<b>\n⚠️Warning I flag this user as a scammer⚠️</b>\n"
+
+            text += f"\n<b>Identifier:</b> <code>{user_db.get('hash', 'unknown')}</code>"
+            text += f"\n<b>Reputation:</b> <code>{user_db.get('reputation', 0)}</code>"
             trust = get_trust(user_db.get("pred_sample", []))
             if trust:
-                text += f"\n**Trust:** `{trust:.2f}`"
+                text += f"\n<b>Trust:</b> <code>{trust:.2f}</code>"
             else:
-                text += "\n**Trust:** `N/A`"
+                text += "\n<b>Trust:</b> <code>N/A</code>"
 
         if user.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
                 file = await self.bot.client.download_media(user.photo.big_file_id)
                 if not file:
-                    return text
+                    await ctx.respond(text, parse_mode=ParseMode.HTML)
+                    return
 
                 try:
                     await self.bot.client.send_photo(
-                        ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
+                        ctx.chat.id,
+                        file,
+                        text,
+                        reply_to_message_id=ctx.message.id,
+                        parse_mode=ParseMode.HTML,
                     )
                 except ValueError:  # Wierd case where the photo id exist but have 0 bytes
-                    return text
+                    await ctx.respond(text, parse_mode=ParseMode.HTML)
             return
 
-        return text
+        await ctx.respond(text, parse_mode=ParseMode.HTML)
 
     async def _old_user_info(self, data: Mapping[str, Any]) -> str:
-        text = "**Old User Info**\n\n"
-        text += f"**ID**: `{data['_id']}`\n"
+        text = "<b>Old User Info</b>\n\n"
+        text += f"<b>ID</b>: <code>{data['_id']}</code>\n"
         if data.get("name"):
-            text += f"**Name**: {data['name']}\n"
+            text += f"<b>Name</b>: {escape(data['name'])}\n"
         if data.get("username"):
-            text += f"**Username**: @{data['username']}\n"
+            text += f"<b>Username</b>: @{data['username']}\n"
         if self.predict_loaded:
-            text += f"\n**Identifier**: `{data.get('hash', 'unknown')}`"
-            text += f"\n**Reputation**: `{data.get('reputation', 0)}`"
+            text += f"\n<b>Identifier</b>: <code>{data.get('hash', 'unknown')}</code>"
+            text += f"\n<b>Reputation</b>: <code>{data.get('reputation', 0)}</code>"
         text += f"\nI've seen them on {len(data.get('chats', []))} chats."
         return text
 
-    async def _chat_info(
-        self, ctx: command.Context, chat: Union[Chat, ChatPreview]
-    ) -> Optional[str]:
+    async def _chat_info(self, ctx: command.Context, chat: Union[Chat, ChatPreview]) -> None:
         """Chat Info"""
-        text = "**Chat Info**\n\n"
+        text = "<b>Chat Info</b>\n\n"
         if isinstance(chat, ChatPreview):
-            text += f"**Chat Type:** `{chat.type}`\n"
-            text += f"**Title:** `{chat.title}`\n"
-            text += f"**Member Count:** `{chat.members_count}`\n"
+            text += f"<b>Chat Type:</b> <code>{chat.type}</code>\n"
+            text += f"<b>Title:</b> <code>{escape(chat.title)}</code>\n"
+            text += f"<b>Member Count:</b> <code>{chat.members_count}</code>\n"
         else:
-            text += f"**ID:** `{chat.id}`\n"
+            text += f"<b>ID:</b> <code>{chat.id}</code>\n"
             if chat.dc_id:
-                text += f"**DC ID:** `{chat.dc_id}`\n"
-            text += f"**Chat Type:** `{chat.type.__dict__['_name_']}`\n"
-            text += f"**Title:** `{chat.title}`\n"
+                text += f"<b>DC ID:</b> <code>{chat.dc_id}</code>\n"
+            text += f"<b>Chat Type:</b> <code>{chat.type.__dict__['_name_']}</code>\n"
+            text += f"<b>Title:</b> <code>{chat.title}</code>\n"
             if chat.username:
-                text += f"**Chat Username:** @{chat.username}\n"
-            text += f"**Member Count:** `{chat.members_count}`\n"
+                text += f"<b>Chat Username:</b> @{chat.username}\n"
+            text += f"<b>Member Count:</b> <code>{chat.members_count}</code>\n"
             if chat.linked_chat:
-                text += f"**Linked Chat:** `{chat.linked_chat.title}`\n"
+                text += f"<b>Linked Chat:</b> <code>{chat.linked_chat.title}</code>\n"
 
             if self.predict_loaded:
                 chat_data = await self.chats_db.find_one({"chat_id": chat.id})
                 if chat_data:
-                    text += f"**Identifier:** `{chat_data.get('hash', 'unknown')}`\n"
+                    text += f"<b>Identifier:</b> <code>{chat_data.get('hash', 'unknown')}</code>\n"
 
         if chat.photo:
             async with ctx.action(ChatAction.UPLOAD_PHOTO):
                 file = await self.bot.client.download_media(chat.photo.big_file_id)  # type: ignore
                 if not file:
-                    return text
+                    await ctx.respond(text, parse_mode=ParseMode.HTML)
+                    return
 
                 await self.bot.client.send_photo(
-                    ctx.chat.id, file, text, reply_to_message_id=ctx.message.id
+                    ctx.chat.id,
+                    file,
+                    text,
+                    reply_to_message_id=ctx.message.id,
+                    parse_mode=ParseMode.HTML,
                 )
-            return None
+            return
 
-        return text
+        await ctx.respond(text, parse_mode=ParseMode.HTML)
+        return
 
     async def _old_chat_info(self, data: Mapping[str, Any]) -> str:
-        text = "**Old Chat Info**\n\n"
-        text += f"**ID:** `{data['chat_id']}`\n"
-        text += f"**Chat Name:** {data['chat_name']}\n"
+        text = "<b>Old Chat Info</b>\n\n"
+        text += f"<b>ID:</b> <code>{data['chat_id']}</code>\n"
+        text += f"<b>Chat Name:</b> {escape(data['chat_name'])}\n"
         if self.predict_loaded:
-            text += f"\n**Identifier:** `{data.get('hash', 'unknown')}`"
+            text += f"\n<b>Identifier:</b> <code>{data.get('hash', 'unknown')}</code>"
         return text
 
     async def cmd_info(self, ctx: command.Context, args: Optional[str] = None) -> Optional[str]:
@@ -318,7 +335,10 @@ class Users(plugin.Plugin):
 
                     return await self._user_info(ctx, user)
                 except PeerIdInvalid:
-                    return await self._old_user_info(user_data)
+                    text = await self._old_user_info(user_data)
+                    if text:
+                        await ctx.respond(text, parse_mode=ParseMode.HTML)
+                        return
 
             chat_data = await self.chats_db.find_one({"hash": id_match.group(0)})
             if chat_data:
@@ -326,7 +346,10 @@ class Users(plugin.Plugin):
                     chat = await ctx.bot.client.get_chat(chat_data["chat_id"])
                     return await self._chat_info(ctx, chat)
                 except (PeerIdInvalid, ChannelInvalid):
-                    return await self._old_chat_info(chat_data)
+                    text = await self._old_chat_info(chat_data)
+                    if text:
+                        await ctx.respond(text, parse_mode=ParseMode.HTML)
+                        return
 
             return await self.text(ctx.chat.id, "err-invalid-pid")
 
@@ -348,11 +371,17 @@ class Users(plugin.Plugin):
                 except BadRequest:
                     user = await self.users_db.find_one({"_id": uid})
                     if user:
-                        return await self._old_user_info(user)
+                        text = await self._old_user_info(user)
+                        if text:
+                            await ctx.respond(text, parse_mode=ParseMode.HTML)
+                            return
 
                     chat = await self.chats_db.find_one({"chat_id": uid})
                     if chat:
-                        return await self._old_chat_info(chat)
+                        text = await self._old_chat_info(chat)
+                        if text:
+                            await ctx.respond(text, parse_mode=ParseMode.HTML)
+                            return
         except KeyError:  # Rare case username expired, so make it recursively
             return await self.cmd_info(ctx, args)
 
