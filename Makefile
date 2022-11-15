@@ -63,3 +63,6 @@ bump:
 changelog:
 	# https://convco.github.io/
 	convco changelog -m 1 > CHANGELOG.md
+
+build-req:
+	poetry export -E all -f requirements.txt -o requirements.txt --without-hashes
