@@ -3,7 +3,10 @@ name = "anjani"
 version = "2.6.0"
 description = "Telegram group management bot"
 license = "GPL-3.0-or-later"
-authors = ["UserbotIndo Team"]
+authors = [
+    "Gaung Ramadhan <hi@mrmiss.my.id>",
+    "Adek Maulana <adekzmaulana@gmail.com>"
+]
 readme = "README.md"
 homepage = "https://github.com/userbotindo/anjani#readme"
 repository = "https://github.com/userbotindo/anjani"

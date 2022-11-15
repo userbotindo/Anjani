@@ -4,6 +4,9 @@ __pycache__/
 *.env
 !sample_config.env
 
+# Build folder
+dist/
+
 # file
 .DS_Store
 *.pyc
