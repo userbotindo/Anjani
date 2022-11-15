@@ -411,7 +411,10 @@ class SpamPrediction(plugin.Plugin):
             return
 
         # Always check the spam probability
-        return await self.spam_check(message, text)
+        try:
+            await self.spam_check(message, text)
+        except StopPropagation:
+            raise
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
         text = text.strip()
