@@ -35,7 +35,7 @@ aiopath = [
     {version = "^0.5.12", python = "<3.10"},
     {version = "^0.6.11", python = ">=3.10"},
 ]
-aiorun = "^2022.4.1"
+aiorun = "^2022.11.1"
 certifi = {version = "^2022.9.24", markers="platform_system == 'Windows'"}
 colorlog = "^6.7.0"
 meval = "^2.5"
