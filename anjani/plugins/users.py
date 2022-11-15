@@ -24,7 +24,7 @@ from typing import Any, ClassVar, List, Mapping, MutableMapping, Optional, Union
 from pyrogram.enums.chat_action import ChatAction
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.enums.parse_mode import ParseMode
-from pyrogram.errors import BadRequest, ChannelInvalid, PeerIdInvalid
+from pyrogram.errors import BadRequest, ChannelInvalid, ChannelPrivate, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
 from anjani import command, listener, plugin, util
@@ -345,7 +345,7 @@ class Users(plugin.Plugin):
                 try:
                     chat = await ctx.bot.client.get_chat(chat_data["chat_id"])
                     return await self._chat_info(ctx, chat)
-                except (PeerIdInvalid, ChannelInvalid):
+                except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
                     text = await self._old_chat_info(chat_data)
                     if text:
                         await ctx.respond(text, parse_mode=ParseMode.HTML)
