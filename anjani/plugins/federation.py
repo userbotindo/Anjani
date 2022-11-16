@@ -31,7 +31,13 @@ from uuid import uuid4
 from aiopath import AsyncPath
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
-from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden, PeerIdInvalid
+from pyrogram.errors import (
+    BadRequest,
+    ChannelPrivate,
+    ChatAdminRequired,
+    Forbidden,
+    PeerIdInvalid,
+)
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -722,14 +728,14 @@ class Federation(plugin.Plugin):
         else:
             return await self.text(chat.id, "err-peer-invalid")
 
-        failed: Dict[int, str] = {}
+        failed: Dict[int, Optional[str]] = {}
         for chat in data["chats"]:
             try:
                 await self.bot.client.ban_chat_member(chat, target.id)
             except BadRequest as br:
                 self.log.warning(f"Failed to fban {target.username} on {chat} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE
-            except Forbidden as err:
+            except (Forbidden, ChannelPrivate) as err:
                 self.log.warning(
                     f"Can't to fban {target.username} on {chat} caused by {err.MESSAGE}"
                 )
@@ -756,7 +762,7 @@ class Federation(plugin.Plugin):
                         self.log.warning(
                             f"Failed to send fban on subfed {subs_data['_id']} of {data['_id']} at {chat} due to {br.MESSAGE}"
                         )
-                    except Forbidden as err:
+                    except (Forbidden, ChannelPrivate) as err:
                         self.log.warning(
                             f"Can't to fban on subfed {subs_data['_id']} of {data['_id']} at {chat} caused by {err.MESSAGE}"
                         )
@@ -827,7 +833,7 @@ class Federation(plugin.Plugin):
         for chat in data["chats"]:
             try:
                 await self.bot.client.unban_chat_member(chat, target.id)
-            except (BadRequest, Forbidden) as err:
+            except (BadRequest, Forbidden, ChannelPrivate) as err:
                 self.log.warning(f"Failed to unfban on {data['_id']} due to {err.MESSAGE}")
 
         if data.get("subscribers", []):
@@ -838,7 +844,7 @@ class Federation(plugin.Plugin):
                 for chat in subs_data.get("chats", []):
                     try:
                         await self.bot.client.unban_chat_member(chat, target.id)
-                    except (BadRequest, Forbidden) as err:
+                    except (BadRequest, Forbidden, ChannelPrivate) as err:
                         self.log.warning(
                             f"Failed to unfban on subfed {subs_data['_id']} of {data['_id']} due to {err.MESSAGE}"
                         )
