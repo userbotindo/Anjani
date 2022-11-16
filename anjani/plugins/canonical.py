@@ -92,7 +92,7 @@ class Canonical(plugin.Plugin):
             self.log.error("Error", exc_info=e)
 
     async def dispatch_change(self, doc: MutableMapping[str, Any]) -> None:
-        chat_id = doc["_id"]
+        chat_id = int(doc["_id"])
         message = doc["message"]
         pin = doc.get("pin", False)
         disable_preview = doc.get("disable_preview", False)
