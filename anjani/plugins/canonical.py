@@ -109,6 +109,10 @@ class Canonical(plugin.Plugin):
     async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
         old_data = update.old_chat_member
         new_data = update.new_chat_member
+
+        if not old_data or not new_data:  # Rare case
+            return
+
         if old_data.status != new_data.status and new_data.status not in {
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.OWNER,
