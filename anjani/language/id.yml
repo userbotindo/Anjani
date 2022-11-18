@@ -1,22 +1,22 @@
 #region Main
 start-pm: |
-  Hai! Salam kenal nama saya adalah **{}**.
-  Saya dibuat untuk mengelola grup anda dengan menyenangkan dan mudah!
+  Hai! Salam kenal, nama saya adalah **{}**.
+  Saya dibuat untuk membantu dalam mengelola grup anda dengan mudah dan menyenangkan.
   **Dikelola dengan ❤️ oleh:** [Tim UserbotIndo](https://t.me/userbotindo)\n
-  Apakah anda bingung bagaimana menggunakan saya? Silahkan anda menggunakan /help untuk melihat perintah yang dapat anda gunakan.\n
-  Silahkan anda bergabung ke [Grup Support](https://t.me/userbotindo) jika kamu ada pertanyaan dan masalah dalam menggunakan saya ya!\n
-  Ingin menambahkan saya ke grup? Silahkan klik tombol di bawah ini!
+  Anda bingung bagaimana menggunakan saya? Silahkan kirim /help untuk melihat perintah yang tersedia.\n
+  Jika ada pertanyaan atau masalah, silahkan anda bergabung dan diskusikan ke-[Grup Support](https://t.me/userbotindo)\n
+  Tertarik menggunakan saya dalam mengelola grup Anda? Silahkan klik tombol di bawah, untuk menambahkan saya.
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
-  Saya adalah bot manajemen grup dengan beberapa tambahan kemampuan yang bertujuan untuk membantu anda dalam mengelola grup anda!\n
-  Lihatlah daftar berikut ini untuk mendapatkan gambaran tentang beberapa hal-hal yang dapat saya lakukan...
+  Saya adalah bot manajemen grup dengan beberapa beberapa fitur yang bertujuan untuk membantu dalam mengelola grup Anda.\n
+  Berikut adalah daftar yang tersedia untuk mendapatkan gambaran beberapa hal yang dapat saya lakukan.
   perintah yang tersedia:
-  × /start: Perintah untuk memeriksa apakah saya masih hidup atau tidak.
-  × /help: Menampilkan anda pesan bantuan ini.
-  × /setlang: Mengganti bahasa yang saya gunakan.
+  × /start: Perintah untuk memulai dan memeriksa status aktif.
+  × /help: Menampilkan daftar pesan bantuan.
+  × /setlang: Mengubah bahasa yang saya gunakan.
   × /donate: Menampilkan informasi tentang cara mendukung saya.
-start-chat: Memberi anda salam hangat & berharap hari anda menyenangkan!
-help-chat: Hubungi saya di pesan pribadi untuk mendapatkan daftar perintah saya.
+start-chat: Salam hangat! Semoga hari anda menyenangkan!
+help-chat: Hubungi saya secara pribadi untuk mendapatkan daftar perintah.
 add-to-group-button: Tambahkan saya
 start-help-button: Bantuan & Perintah ❔
 help-chat-button: Bantuan
