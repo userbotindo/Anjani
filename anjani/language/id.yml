@@ -65,8 +65,8 @@ filling-format-helper: |
 #region admin
 admins-button: Administrator
 admins-help: |
-  Ini adalah daftar perintah yang dapat saya lakukan
-  Untuk anda yang merupakan seorang Administrator di suatu grup.\n
+  Berikut adalah daftar perintah yang dapat saya lakukan.
+  Perintah berikut hanya dapat dilakukan oleh Administrator Grup.\n
   × /adminlist: Untuk menampilkan daftar semua Administartor di grup anda.\n
   **Hanya Administrator yang bisa menggunakan:**
   × /pin: Untuk menyematkan suatu pesan pada grup anda.
@@ -76,19 +76,19 @@ admins-help: |
   × /promote <ID Pengguna/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
   × /demote <ID Pengguna/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
 gpic-no-photo: Berikan saya sebuah foto!
-gpic-success-changed: Gambar grup berhasil diganti!.
-finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
-cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
-zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
-promote-error-invalid: "**ID Pengguna tidak sah atau tidak benar**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
+gpic-success-changed: Gambar profil grup berhasil diganti.
+finding-zombie: "`Mencari akun terhapus yang masih berada di grup.`"
+cleaning-zombie: "**{}** `Akun terhapus ditemukan, dan telah dikeluarkan dari grup.` 🚮"
+zombie-clean: "`Akun terhapus tidak ditemukan pada grup, Grup bersih` 🙌"
+promote-error-invalid: "**ID Pengguna tidak sesuai atau tidak benar**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
 promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
 promote-error-privacy-restricted: "**Pengguna ini memiliki pengaturan privasi yang mencegah tindakan ini**\n`pastikan dia adalah anggota di sini, dan Anda memasukkan id/username yang benar!`"
-demote-success: "`Menurunkan sudah berhasil`"
-demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
-no-demote-user: "`Beritahu saya, siapa yang mau kamu turunkan?"
-demote-error-self: "__Apakah kamu yakin akan menurunkan dirimu sendiri?__"
+demote-success: "`Mendemosi pengguna berhasil`"
+demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk demosi, saya hanya bisa mendemosi pengguna yang saya angkat.`"
+no-demote-user: "`Beritahu saya, pengguna mana yang ingin didemosi?"
+demote-error-self: "__Apakah kamu yakin mendemosi dirimu sendiri?__"
 promote-success: "`Berhasil diangkat menjadi Administrator`"
-promote-error-perm: "`Orang ini sudah menjadi Administrator!`"
+promote-error-perm: "`Pengguna ini sudah menjadi Administrator!`"
 no-promote-user: "`Siapa yang harus saya angkat menjadi Administrator?\nBerikan saya orang tersebut!`"
 no-pinned-message: "__Tidak ada pesan yang disematkan__"
 #endregion
