@@ -62,7 +62,11 @@ bump:
 
 changelog:
 	# https://convco.github.io/
+	@echo "Generating changelog"
 	convco changelog -m 1 > CHANGELOG.md
+	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
+	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
+	@echo "Changelog saved to CHANGELOG.md"
 
-build-req:
+requirements:
 	poetry export -E all -f requirements.txt -o requirements.txt --without-hashes
