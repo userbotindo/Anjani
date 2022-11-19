@@ -1,7 +1,7 @@
 #region Main
 start-pm: |
   Hai! Salam kenal, nama saya adalah **{}**.
-  Saya dibuat untuk membantu dalam mengelola grup anda dengan mudah dan menyenangkan.
+  Saya dibuat untuk membantu mengelola grup anda dengan mudah dan menyenangkan.
   **Dikelola dengan ❤️ oleh:** [Tim UserbotIndo](https://t.me/userbotindo)\n
   Anda bingung bagaimana menggunakan saya? Silahkan kirim /help untuk melihat perintah yang tersedia.\n
   Jika ada pertanyaan atau masalah, silahkan anda bergabung dan diskusikan ke-[Grup Support](https://t.me/userbotindo)\n
@@ -27,27 +27,27 @@ donate: |
   Tim kami sepenuhnya dijalankan oleh sukarelawan, dan setiap bantuan kecil membantu untuk meningkatkan layanan kami.
   Terima kasih atas dukungan Anda!
 markdown-helper: |
-  Markdown adalah alat pemformatan yang sangat berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat tombol-tombol.\n
+  Markdown adalah alat pemformatan berguna yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan anda untuk membuat beberapa tombol.\n
   <b>Markdown yang didukung:</b>
   - <code>__italic__</code>: Dua garis bawah di antara kata akan menghasilkan teks <i>italic</i>.
-  - <code>**bold**</code>: Dua tanda bintang di antara kata akan menghasilkan teks <b>bold</b>.
+  - <code>**bold**</code>: Dua simbol bintang di antara kata akan menghasilkan teks <b>bold</b>.
   - <code>`code`</code>: Tanda kutip terbalik di antara kata akan menghasilkan teks <code>monospace</code>.
-  - <code>~~strike~~</code>: Dua tanda gelombang di antara kata akan menghasilkan teks <del>strikethrough</del>.
+  - <code>~~strike~~</code>: Dua tanda penghubung bergelombang di antara kata akan menghasilkan teks <del>strikethrough</del>.
   - <code>--underline--</code>: Dua tanda penghubung di antara kata akan menghasilkan teks <u>underline</u>.
   - <code>||spoiler||</code>: Dua tanda garis vertikal di antara kata akan menghasilkan teks <spoiler>spoiler</spoiler>.
   - <code>[sometext](someURL)</code>: Ini akan membuat tautan. pesan hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
   Contoh: <code>[test](example.com)</code>
-  - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkanmu ke url tersebut.
+  - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext kata yang ditampilkan pada tombol, dan url akan langsung mengarahkanmu ke url saat menekan tombol.
   Contoh: <code>[This is a button](buttonurl:google.com)</code>
 
-  Jika anda ingin beberapa tombol pada baris yang sama, gunakan :same, maka akan seperti berikut ini:
+  Untuk beberapa tombol pada baris yang sama, tambahkan :same pada akhir url, seperti contoh berikut ini:
   <code>[one](buttonurl://example.com)</code>
   <code>[two](buttonurl://google.com:same)</code>
-  Ini akan membuat dua tombol pada satu baris, bukan satu tombol per baris.
+  Ini akan membuat dua tombol pada satu baris (bukan satu tombol per baris).
 
-  Ingatlah bahwa pesan anda <b>HARUS</b> berisi beberapa teks selain hanya sebuah tombol!
+  Pesan anda <b>HARUS</b> berisi setidaknya satu huruf sebelum membuat tombol!
 filling-format-helper: |
-  Anda dapat menyesuaikan konten teks dengan konteks acara juga. Misalnya, Anda ingin melakukan mention pengguna yang bergabung dengan obrolan.
+  Anda pun dapat menyesuaikan konten teks dengan konteks acara. Misalnya, Anda ingin melakukan mention pengguna yang baru bergabung dalam obrolan grup.
 
   Format pengisian yang didukung:
   - `{first}`: Nama depan pengguna.
@@ -60,7 +60,7 @@ filling-format-helper: |
   - `{count}`: Menghitung anggota chat.
 
   Contoh
-  -> `Hei {first}, apa kabar? Selamat datang di {chatname}`
+  -> `Hei {first}, apa kabar? Selamat datang di {chatname}.`
 #endregion
 #region admin
 admins-button: Administrator
