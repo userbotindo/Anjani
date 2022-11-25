@@ -23,9 +23,15 @@ from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
 from pyrogram.enums.message_media_type import MessageMediaType
-from pyrogram.types import ChatMemberUpdated, Message
+from pyrogram.types import (
+    ChatMemberUpdated,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    LoginUrl,
+    Message,
+)
 
-from anjani import command, listener, plugin, util
+from anjani import command, filters, listener, plugin, util
 
 env = Path("config.env")
 try:
@@ -79,6 +85,7 @@ class Canonical(plugin.Plugin):
             upsert=True,
         )
 
+    @command.filters(filters.admin_only & filters.group)
     async def cmd_r(self, ctx: command.Context) -> None:
         """Refresh chat data"""
         admins = []
@@ -91,6 +98,7 @@ class Canonical(plugin.Plugin):
         await self.chats_db.update_one(
             {"chat_id": ctx.chat.id}, {"$set": {"admins": admins}}, upsert=True
         )
+        await ctx.respond("Done", delete_after=5)
 
     @listener.priority(65)
     async def on_message(self, message: Message) -> None:
@@ -165,3 +173,27 @@ class Canonical(plugin.Plugin):
             self.log.error(f"Error sending message to {chat_id}", exc_info=e)
         finally:
             await self.db.delete_one({"_id": chat_id})
+
+    @command.filters(filters.private & filters.staff_only)  # currently on testing
+    async def cmd_login(self, ctx: command.Context):
+        """Login to https://userbotindo.com"""
+        if not self.bot.config["login_url"]:
+            return
+
+        await ctx.respond(
+            "Click this button to login to Anjani Dashboard",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "Login",
+                            login_url=LoginUrl(
+                                url=self.bot.config["login_url"],
+                                forward_text="Login to https://userbotindo.com",
+                                request_write_access="True",
+                            ),
+                        )
+                    ]
+                ]
+            ),
+        )
