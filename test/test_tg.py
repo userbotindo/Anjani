@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from anjani.util.tg import parse_button, revert_button, truncate
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from anjani.util.tg import build_button, parse_button, revert_button, truncate
 
 
 class TestTgUtils:
@@ -65,3 +67,22 @@ class TestTgUtils:
             ("Button 2", "youtube.com", True),
             ("Button 3", "reddit.com", False),
         ]
+
+    def test_build_button(self):
+        button = [
+            ("Button 1", "https://google.com", False),
+            ("Button 2", "youtube.com", True),
+            ("Button 3", "reddit.com", False),
+        ]
+        expected = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("Button 1", url="https://google.com"),
+                    InlineKeyboardButton("Button 2", url="youtube.com"),
+                ],
+                [
+                    InlineKeyboardButton("Button 3", url="reddit.com"),
+                ],
+            ]
+        )
+        assert build_button(button) == expected
