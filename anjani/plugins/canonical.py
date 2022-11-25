@@ -21,11 +21,11 @@ from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
+from pyrogram.enums.chat_members_filter import ChatMembersFilter
 from pyrogram.enums.message_media_type import MessageMediaType
-from pyrogram.errors import UserNotParticipant
-from pyrogram.types import Chat, ChatMemberUpdated, Message, User
+from pyrogram.types import ChatMemberUpdated, Message
 
-from anjani import listener, plugin, util
+from anjani import command, listener, plugin, util
 
 env = Path("config.env")
 try:
@@ -79,17 +79,17 @@ class Canonical(plugin.Plugin):
             upsert=True,
         )
 
-    async def update_admin_chat(self, chat: Chat, user: User) -> None:
-        try:
-            target = await chat.get_member(user.id)
-        except UserNotParticipant:
-            return
-
-        if target.status not in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}:
-            return
+    async def cmd_r(self, ctx: command.Context) -> None:
+        """Refresh chat data"""
+        admins = []
+        async for member in self.bot.client.get_chat_members(
+            ctx.chat.id, filter=ChatMembersFilter.ADMINISTRATORS
+        ):  # type: ignore
+            if not member.user.is_bot and member.privileges.can_manage_chat:
+                admins.append(member.user.id)
 
         await self.chats_db.update_one(
-            {"chat_id": chat.id}, {"$addToSet": {"admins": user.id}}, upsert=True
+            {"chat_id": ctx.chat.id}, {"$set": {"admins": admins}}, upsert=True
         )
 
     @listener.priority(65)
@@ -97,14 +97,20 @@ class Canonical(plugin.Plugin):
         if message.outgoing:
             return
 
-        chat = message.chat
-        user = message.from_user
-        # Temporary for dashboard testing
-        if chat.id in {-1001146706314, -1001294181499} and user:
-            self.bot.loop.create_task(self.update_admin_chat(chat, user))
-
         # Analytics
         self.bot.loop.create_task(self.save_message_type(message))
+
+    async def on_chat_action(self, message: Message) -> None:
+        """Delete admins data from chats"""
+        if message.new_chat_members:
+            return
+
+        chat = message.chat
+        user = message.left_chat_member
+        if user.id == self.bot.uid:
+            await asyncio.gather(
+                self.chats_db.update_one({"chat_id": chat.id}, {"$set": {"admins": []}}),
+            )
 
     async def on_chat_member_update(self, update: ChatMemberUpdated) -> None:
         old_data = update.old_chat_member
@@ -113,12 +119,24 @@ class Canonical(plugin.Plugin):
         if not old_data or not new_data:  # Rare case
             return
 
-        if old_data.status != new_data.status and new_data.status not in {
+        if old_data.status == new_data.status:
+            return
+
+        if new_data.status not in {
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.OWNER,
         }:
             await self.chats_db.update_one(
                 {"chat_id": update.chat.id}, {"$pull": {"admins": new_data.user.id}}
+            )
+        elif (
+            new_data.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
+            and new_data.privileges.can_manage_chat
+        ):  # type: ignore
+            await self.chats_db.update_one(
+                {"chat_id": update.chat.id},
+                {"$addToSet": {"admins": new_data.user.id}},
+                upsert=True,
             )
 
     async def watch_streams(self) -> None:
