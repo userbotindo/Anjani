@@ -235,9 +235,9 @@ async def parse_arguments(
             # Consume remaining text to the kwargs
             kwargs[name] = " ".join(to_convert[idx:]).strip()
             break
-        elif param.kind == param.VAR_POSITIONAL:
+        elif param.kind in {param.VAR_POSITIONAL, param.VAR_KEYWORD}:
             raise BadArgument(
-                "Unsuported Variable Positional Argument conversion "
+                f"Unsuported {param.kind} parameter conversion "
                 f"Found '*{name}' on '{func.__name__}'"
             )
     return args, kwargs
