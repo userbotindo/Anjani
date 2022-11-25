@@ -2,7 +2,7 @@ IMAGE_NAME=anjani
 CONTAINER_NAME=anjaniBot
 VERSION:=$(shell grep -m 1 version pyproject.toml | cut -d '"' -f 2)
 
-.PHONY: help
+.PHONY: help test
 
 help:
 	@echo "Userbotindo - Anjani v$(VERSION)"
@@ -34,6 +34,9 @@ stop:
 up: build stop run
 
 up-nc: build-nc stop run
+
+test:
+	poetry run pytest -v
 
 .ONESHELL:
 bump:
