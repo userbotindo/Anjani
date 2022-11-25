@@ -61,14 +61,16 @@ async def var_positional(ctx, *args):
     ...
 
 
+async def var_keyword(ctx, **kwargs):
+    ...
+
+
 class TestBaseConverter:
     async def __parse_arguments(self, func):
-        sig = signature(func)
-        return await parse_arguments(sig, context, func)  # type: ignore
+        return await parse_arguments(signature(func), context, func)  # type: ignore
 
     async def __parse_arguments_no_args(self, func):
-        sig = signature(func)
-        return await parse_arguments(sig, no_args_context, func)  # type: ignore
+        return await parse_arguments(signature(func), no_args_context, func)  # type: ignore
 
     @pytest.mark.asyncio
     async def test_no_args(self):
@@ -137,3 +139,9 @@ class TestBaseConverter:
         with pytest.raises(BadArgument):
             await self.__parse_arguments(var_positional)
             await self.__parse_arguments_no_args(var_positional)
+
+    @pytest.mark.asyncio
+    async def test_var_keyword(self):
+        with pytest.raises(BadArgument):
+            await self.__parse_arguments(var_keyword)
+            await self.__parse_arguments_no_args(var_keyword)
