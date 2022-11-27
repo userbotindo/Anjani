@@ -123,6 +123,7 @@ def start() -> None:
         "owner_id": os.environ.get("OWNER_ID"),
         "sw_api": os.environ.get("SW_API"),
         "log_channel": os.environ.get("LOG_CHANNEL"),
+        "login_url": os.environ.get("LOGIN_URL"),
     }
     config: TelegramConfig[str, str] = TelegramConfig(config_data)
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):

@@ -222,11 +222,23 @@ class Main(plugin.Plugin):
                     plug: "Rules" = self.bot.plugins["Rules"]  # type: ignore
                     return await plug.start_rules(ctx)
 
+            permission = [
+                "change_info",
+                "post_messages",
+                "edit_messages",
+                "delete_messages",
+                "restrict_members",
+                "invite_users",
+                "pin_messages",
+                "promote_members",
+                "manage_video_chats",
+                "manage_chat",
+            ]
             buttons = [
                 [
                     InlineKeyboardButton(
                         text=await self.text(chat.id, "add-to-group-button"),
-                        url=f"t.me/{self.bot.user.username}?startgroup=true",
+                        url=f"t.me/{self.bot.user.username}?startgroup=true&admin={'+'.join(permission)}",
                     ),
                     InlineKeyboardButton(
                         text=await self.text(chat.id, "start-help-button"),
