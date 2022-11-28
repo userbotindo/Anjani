@@ -20,10 +20,8 @@ from yaml import full_load
 from anjani.language import get_lang_file
 
 
-class TestLanguage:
-    @pytest.mark.asyncio
-    async def test_language(self):
-        """Check if language file is valid."""
-        task = []
-        async for language_file in get_lang_file():
-            full_load(await language_file.read_text())
+@pytest.mark.asyncio
+async def test_language():
+    """Check if language file is valid."""
+    async for language_file in get_lang_file():
+        full_load(await language_file.read_text())

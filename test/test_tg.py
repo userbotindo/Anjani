@@ -19,70 +19,73 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from anjani.util.tg import build_button, parse_button, revert_button, truncate
 
 
-class TestTgUtils:
-    def test_truncate(self):
-        text = "Hello World"
-        long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit." * 1000
-        assert text == truncate(text)
-        assert long_text != truncate(long_text)
-        assert truncate(long_text).endswith("... (truncated)")
+def test_truncate():
+    text = "Hello World"
+    long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit." * 1000
+    assert text == truncate(text)
+    assert long_text != truncate(long_text)
+    assert truncate(long_text).endswith("... (truncated)")
 
-    def test_parse_button(self):
-        text = """Normal text
+
+def test_parse_button():
+    text = """Normal text
 [Button 1](buttonurl:https://google.com)
 [Button 2](buttonurl:youtube.com:same)
 [Button 3](buttonurl://reddit.com)"""
-        parsed_text, button = parse_button(text)
-        assert parsed_text == "Normal text"
-        assert button == [
-            ("Button 1", "https://google.com", False),
-            ("Button 2", "youtube.com", True),
-            ("Button 3", "reddit.com", False),
-        ]
+    parsed_text, button = parse_button(text)
+    assert parsed_text == "Normal text"
+    assert button == [
+        ("Button 1", "https://google.com", False),
+        ("Button 2", "youtube.com", True),
+        ("Button 3", "reddit.com", False),
+    ]
 
-    def test_revert_button(self):
-        button = [
-            ("Button 1", "https://google.com", False),
-            ("Button 2", "youtube.com", True),
-            ("Button 3", "reddit.com", False),
-        ]
-        reverted_text = revert_button(button)
-        assert (
-            reverted_text
-            == """
+
+def test_revert_button():
+    button = [
+        ("Button 1", "https://google.com", False),
+        ("Button 2", "youtube.com", True),
+        ("Button 3", "reddit.com", False),
+    ]
+    reverted_text = revert_button(button)
+    assert (
+        reverted_text
+        == """
 [Button 1](buttonurl://https://google.com)
 [Button 2](buttonurl://youtube.com:same)
 [Button 3](buttonurl://reddit.com)"""
-        )
+    )
 
-    def test_parse_reverted_button(self):
-        text = """
+
+def test_parse_reverted_button():
+    text = """
 [Button 1](buttonurl://https://google.com)
 [Button 2](buttonurl://youtube.com:same)
 [Button 3](buttonurl://reddit.com)"""
-        parsed_text, button = parse_button(text)
-        assert parsed_text == ""
-        assert button == [
-            ("Button 1", "https://google.com", False),
-            ("Button 2", "youtube.com", True),
-            ("Button 3", "reddit.com", False),
-        ]
+    parsed_text, button = parse_button(text)
+    assert parsed_text == ""
+    assert button == [
+        ("Button 1", "https://google.com", False),
+        ("Button 2", "youtube.com", True),
+        ("Button 3", "reddit.com", False),
+    ]
 
-    def test_build_button(self):
-        button = [
-            ("Button 1", "https://google.com", False),
-            ("Button 2", "youtube.com", True),
-            ("Button 3", "reddit.com", False),
-        ]
-        expected = InlineKeyboardMarkup(
+
+def test_build_button():
+    button = [
+        ("Button 1", "https://google.com", False),
+        ("Button 2", "youtube.com", True),
+        ("Button 3", "reddit.com", False),
+    ]
+    expected = InlineKeyboardMarkup(
+        [
             [
-                [
-                    InlineKeyboardButton("Button 1", url="https://google.com"),
-                    InlineKeyboardButton("Button 2", url="youtube.com"),
-                ],
-                [
-                    InlineKeyboardButton("Button 3", url="reddit.com"),
-                ],
-            ]
-        )
-        assert build_button(button) == expected
+                InlineKeyboardButton("Button 1", url="https://google.com"),
+                InlineKeyboardButton("Button 2", url="youtube.com"),
+            ],
+            [
+                InlineKeyboardButton("Button 3", url="reddit.com"),
+            ],
+        ]
+    )
+    assert build_button(button) == expected
