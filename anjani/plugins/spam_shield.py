@@ -25,7 +25,7 @@ from aiohttp import (
     ClientResponseError,
     ContentTypeError,
 )
-from pyrogram.errors import ChannelPrivate, UserNotParticipant
+from pyrogram.errors import BadRequest, ChannelPrivate, UserNotParticipant
 from pyrogram.types import Chat, Message, User
 
 from anjani import command, filters, listener, plugin, util
@@ -279,26 +279,32 @@ class SpamShield(plugin.Plugin):
             banner = "Anjani Spam Protection"
             reason = "Flagged as a spammer."
 
-        await asyncio.gather(
-            self.bot.log_stat("banned"),
-            self.ban(chat, user, reason),
-            self.bot.client.send_message(
-                chat.id,
-                text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
-                disable_web_page_preview=True,
-            ),
-            self.bot.client.send_message(
-                int(self.bot.config.log_channel),
-                text=(
-                    "#LOG #SPAM_SHIELD\n"
-                    f"**User**: {userlink}\n"
-                    f"**Banned On**: {chat_link}\n"
-                    f"**ID**: {user.id}\n"
-                    f"**Reason**: {reason}"
+        try:
+            await asyncio.gather(
+                self.bot.log_stat("banned"),
+                self.ban(chat, user, reason),
+                self.bot.client.send_message(
+                    chat.id,
+                    text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
+                    disable_web_page_preview=True,
                 ),
-                disable_web_page_preview=True,
-            ),
-        )
+                self.bot.client.send_message(
+                    int(self.bot.config.log_channel),
+                    text=(
+                        "#LOG #SPAM_SHIELD\n"
+                        f"**User**: {userlink}\n"
+                        f"**Banned On**: {chat_link}\n"
+                        f"**ID**: {user.id}\n"
+                        f"**Reason**: {reason}"
+                    ),
+                    disable_web_page_preview=True,
+                ),
+            )
+        except BadRequest as err:
+            self.log.warning(
+                f"Exception raise on {user.id} ({reason} | {banner}) in {chat.id}:{err}",
+                exc_info=err,
+            )
 
         return True
 
