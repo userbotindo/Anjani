@@ -368,7 +368,7 @@ class Users(plugin.Plugin):
                 try:
                     chat = await ctx.bot.client.get_chat(uid)
                     return await self._chat_info(ctx, chat)
-                except BadRequest:
+                except (BadRequest, ChannelPrivate):
                     user = await self.users_db.find_one({"_id": uid})
                     if user:
                         text = await self._old_user_info(user)
