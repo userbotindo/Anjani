@@ -222,6 +222,29 @@ class Main(plugin.Plugin):
                     plug: "Rules" = self.bot.plugins["Rules"]  # type: ignore
                     return await plug.start_rules(ctx)
 
+                help_re = re.compile(r"help_(.*)").match(ctx.input)
+                if help_re:
+                    text_lang = await self.text(chat.id, f"{help_re.group(1)}-help")
+                    text = (
+                        f"Here is the help for the **{ctx.input.capitalize()}** "
+                        f"plugin:\n\n{text_lang}"
+                    )
+                    await ctx.respond(
+                        text,
+                        reply_markup=InlineKeyboardMarkup(
+                            [
+                                [
+                                    InlineKeyboardButton(
+                                        await self.text(chat.id, "back-button"),
+                                        callback_data="help_back",
+                                    )
+                                ]
+                            ]
+                        ),
+                        parse_mode=ParseMode.MARKDOWN,
+                    )
+                    return
+
             permission = [
                 "change_info",
                 "post_messages",
