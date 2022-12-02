@@ -143,7 +143,9 @@ class Notes(plugin.Plugin):
                 )
         except MediaEmpty:
             await self.bot.client.send_message(
-                chat.id, await self.get_text(chat.id, "notes-expired")
+                chat.id,
+                await self.get_text(chat.id, "notes-expired"),
+                message_thread_id=message.message_thread_id,
             )
         except MessageEmpty:
             pass
