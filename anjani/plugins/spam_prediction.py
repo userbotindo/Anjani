@@ -591,11 +591,17 @@ class SpamPrediction(plugin.Plugin):
                 alert,
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(button),
+                message_thread_id=message.message_thread_id,
             )
             raise StopPropagation
 
     async def mark_spam_ocr(
-        self, content: str, user_id: Optional[int], chat_id: int, message_id: int
+        self,
+        content: str,
+        user_id: Optional[int],
+        chat_id: int,
+        message_id: int,
+        thread_id: Optional[int],
     ) -> bool:
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
@@ -629,6 +635,7 @@ class SpamPrediction(plugin.Plugin):
             self.bot.log_stat("spam_detected"),
             self.bot.log_stat("predicted"),
         )
+
         await self.bot.client.send_message(
             chat_id,
             "Message photo logged as spam!",
@@ -636,6 +643,7 @@ class SpamPrediction(plugin.Plugin):
                 [[InlineKeyboardButton("View Message", url=res[0].link)]]
             ),
             reply_to_message_id=message_id,
+            message_thread_id=thread_id,  # type: ignore
         )
         return True
 
@@ -662,7 +670,13 @@ class SpamPrediction(plugin.Plugin):
             ocr_result = await self.run_ocr(reply_msg)
             if ocr_result:
                 try:
-                    await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.id)
+                    await self.mark_spam_ocr(
+                        ocr_result,
+                        user_id,
+                        ctx.chat.id,
+                        reply_msg.id,
+                        ctx.message.message_thread_id,
+                    )
                 except Exception as e:  # skipcq: PYL-W0703
                     self.log.error("Failed to marked OCR results as spam", exc_info=e)
 
