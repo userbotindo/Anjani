@@ -32,9 +32,11 @@ class Greeting(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
+    chat_dg: util.db.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
+        self.chat_db = self.bot.db.get_collection("CHATS")
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
@@ -50,13 +52,20 @@ class Greeting(plugin.Plugin):
                 pass
             reply_to = 0
 
+        thread_id = await self.get_action_topic(chat)
+        if message.chat.is_forum and not thread_id:
+            self.log.warning(f"Chat {message.chat.id} is forum but no action topic set!")
+            return
+
         if message.new_chat_members:
-            return await self._member_join(message, reply_to)
+            return await self._member_join(message, reply_to, thread_id)
 
         if message.left_chat_member:
-            return await self._member_leave(message, reply_to)
+            return await self._member_leave(message, reply_to, thread_id)
 
-    async def _member_leave(self, message: Message, reply_to: int) -> None:
+    async def _member_leave(
+        self, message: Message, reply_to: int, thread_id: Optional[int]
+    ) -> None:
         chat = message.chat
         if not await self.is_goodbye(chat.id):
             return
@@ -71,7 +80,8 @@ class Greeting(plugin.Plugin):
             msg = await self.bot.client.send_message(
                 chat.id,
                 formatted_text,
-                reply_to_message_id=reply_to,
+                reply_to_message_id=reply_to if not thread_id else None,  # type: ignore
+                message_thread_id=thread_id,  # type: ignore
             )
         except ChatWriteForbidden:
             return
@@ -83,7 +93,7 @@ class Greeting(plugin.Plugin):
             except MessageDeleteForbidden:
                 pass
 
-    async def _member_join(self, message: Message, reply_to: int) -> None:
+    async def _member_join(self, message: Message, reply_to: int, thread_id: Optional[int]) -> None:
         chat = message.chat
         if not await self.is_welcome(chat.id):
             return
@@ -110,18 +120,14 @@ class Greeting(plugin.Plugin):
 
                     if button:
                         button = util.tg.build_button(button)
-                        msg = await self.bot.client.send_message(
-                            chat.id,
-                            formatted_text,
-                            reply_to_message_id=reply_to,
-                            reply_markup=button,
-                        )
-                    else:
-                        msg = await self.bot.client.send_message(
-                            chat.id,
-                            formatted_text,
-                            reply_to_message_id=reply_to,
-                        )
+
+                    msg = await self.bot.client.send_message(
+                        chat.id,
+                        formatted_text,
+                        reply_to_message_id=reply_to if not thread_id else None,  # type: ignore
+                        message_thread_id=thread_id,  # type: ignore
+                        reply_markup=button,  # type: ignore
+                    )
 
                     previous = await self.previous_welcome(chat.id, msg.id)
                     if previous:
@@ -166,6 +172,12 @@ class Greeting(plugin.Plugin):
             chatname=escape(chat.title),
             id=user.id,
         )
+
+    async def get_action_topic(self, chat: Chat) -> Optional[int]:
+        if not chat.is_forum:
+            return None
+        data = await self.chat_db.find_one({"chat_id": chat.id}, {"action_topic": True})
+        return data.get("action_topic") if data else None
 
     async def is_welcome(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
@@ -309,6 +321,9 @@ class Greeting(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_welcome(self, ctx: command.Context) -> Optional[str]:
         """View current welcome message"""
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            return "Greetings disabled in forums with action topic, use /setactiontopic first to setup a default topic for Greetings messages"
+
         chat = ctx.chat
         param = ctx.input.lower()
         noformat = param == "noformat"
@@ -366,6 +381,9 @@ class Greeting(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:
         """View current goodbye message"""
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            return "Greetings disabled in forums with action topic, use /setactiontopic first to setup a default topic for Greetings messages"
+
         chat = ctx.chat
         param = ctx.input.lower()
         noformat = param == "noformat"
