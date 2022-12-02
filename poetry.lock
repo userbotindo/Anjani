@@ -551,16 +551,23 @@ python-versions = ">=3.6.8"
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
-name = "pyrogram"
+name = "Pyrogram"
 version = "2.0.63"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
 python-versions = "~=3.7"
+develop = false
 
 [package.dependencies]
 pyaes = "1.6.1"
 pysocks = "1.7.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/wulan17/pyrogram.git"
+reference = "dev/topics"
+resolved_reference = "a647a397dcd77187966abe7b7bc770676d948e4f"
 
 [[package]]
 name = "pysocks"
@@ -786,7 +793,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9, <=3.11"
-content-hash = "246c9379b5b45c840eaf11212ff7eae7f02f30c954ec76c0668ebb7bbc64e03d"
+content-hash = "42c354795c0f5c7c747a722a91963dfd94967996d8f6ddfc15045b8e8ee30465"
 
 [metadata.files]
 aiofile = [
@@ -1318,10 +1325,7 @@ pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
-pyrogram = [
-    {file = "Pyrogram-2.0.63-py3-none-any.whl", hash = "sha256:16f66487a34d80d03c4fbfa14635cdbf586b5e184e74542433bacb2ec008730f"},
-    {file = "Pyrogram-2.0.63.tar.gz", hash = "sha256:34327714de3813ba01f592e66c1583aa477c5591c47ffa9f1cb69d3d6e525d7a"},
-]
+Pyrogram = []
 pysocks = [
     {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},
     {file = "PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5"},
