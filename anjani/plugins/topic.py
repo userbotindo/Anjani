@@ -27,7 +27,7 @@ class Topics(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")
 
-    @command.filters(filters.admin_only, aliases=["setdefaulttopic"])
+    @command.filters(filters.can_manage_topic, aliases=["setdefaulttopic"])
     async def cmd_setactiontopic(self, ctx: command.Context) -> Optional[str]:
         """Set action topic"""
         if not ctx.chat.is_forum:
@@ -39,3 +39,5 @@ class Topics(plugin.Plugin):
             upsert=True,
         )
         return "This topic will be used for action topic."
+
+    # TODO: Add command to create topic
