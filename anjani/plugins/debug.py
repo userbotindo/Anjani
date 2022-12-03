@@ -146,10 +146,10 @@ class Debug(plugin.Plugin):
 
         await ctx.respond(
             f"""{prefix}<b>In:</b>
-<pre>{escape(code)}</pre>
+<pre language="python">{escape(code)}</pre>
 
 <b>Out:</b>
-<pre>{escape(out)}</pre>
+<pre language="python">{escape(out)}</pre>
 
 Time: {el_str}""",
             parse_mode=pyrogram.enums.parse_mode.ParseMode.HTML,
