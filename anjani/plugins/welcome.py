@@ -322,7 +322,11 @@ class Greeting(plugin.Plugin):
     async def cmd_welcome(self, ctx: command.Context) -> Optional[str]:
         """View current welcome message"""
         if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
-            return "Greetings disabled in forums with action topic, use /setactiontopic first to setup a default topic for Greetings messages"
+            return await self.text(
+                ctx.chat.id,
+                "greetings-topic-disabled",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
 
         chat = ctx.chat
         param = ctx.input.lower()
@@ -382,7 +386,11 @@ class Greeting(plugin.Plugin):
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:
         """View current goodbye message"""
         if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
-            return "Greetings disabled in forums with action topic, use /setactiontopic first to setup a default topic for Greetings messages"
+            return await self.text(
+                ctx.chat.id,
+                "greetings-topic-disabled",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
 
         chat = ctx.chat
         param = ctx.input.lower()

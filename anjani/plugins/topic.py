@@ -20,7 +20,7 @@ from anjani import command, filters, plugin, util
 
 
 class Topics(plugin.Plugin):
-    name: ClassVar[str] = "Topics"
+    name: ClassVar[str] = "Topic"
 
     db: util.db.AsyncCollection
 
@@ -31,13 +31,13 @@ class Topics(plugin.Plugin):
     async def cmd_setactiontopic(self, ctx: command.Context) -> Optional[str]:
         """Set action topic"""
         if not ctx.chat.is_forum:
-            return "This is not a forum chat."
+            return await self.text(ctx.chat.id, "topic-non-topic")
 
         await self.db.update_one(
             {"chat_id": ctx.chat.id},
             {"$set": {"action_topic": ctx.msg.message_thread_id}},
             upsert=True,
         )
-        return "This topic will be used for action topic."
+        return await self.text(ctx.chat.id, "topic-set")
 
-    # TODO: Add command to create topic
+    # TODO: Add command to create, delete, edit topic
