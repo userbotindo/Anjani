@@ -226,7 +226,7 @@ class Main(plugin.Plugin):
                 if help_re:
                     text_lang = await self.text(chat.id, f"{help_re.group(1)}-help")
                     text = (
-                        f"Here is the help for the **{ctx.input.capitalize()}** "
+                        f"Here is the help for the **{ctx.input.capitalize().replace('help_', '')}** "
                         f"plugin:\n\n{text_lang}"
                     )
                     await ctx.respond(

@@ -21,6 +21,7 @@ from anjani import command, filters, plugin, util
 
 class Topics(plugin.Plugin):
     name: ClassVar[str] = "Topic"
+    helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
 
