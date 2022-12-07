@@ -392,8 +392,7 @@ class SpamPrediction(plugin.Plugin):
     @listener.priority(70)
     async def on_message(self, message: Message) -> None:
         """Checker service for message"""
-        setting = await self.setting_db.find_one({"chat_id": message.chat.id})
-        if setting and not setting.get("setting"):
+        if not await self.is_active(message.chat.id):
             return
 
         chat = message.chat
@@ -804,17 +803,14 @@ class SpamPrediction(plugin.Plugin):
 
     async def setting(self, chat_id: int, setting: bool) -> None:
         """Turn on/off spam prediction in chats"""
-        if setting:
-            await self.setting_db.update_one(
-                {"chat_id": chat_id}, {"$set": {"setting": True}}, upsert=True
-            )
-        else:
-            await self.setting_db.delete_one({"chat_id": chat_id})
+        await self.setting_db.update_one(
+            {"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
+        )
 
     async def is_active(self, chat_id: int) -> bool:
         """Return SpamShield setting"""
         data = await self.setting_db.find_one({"chat_id": chat_id})
-        return data["setting"] if data else True
+        return data.get("setting", True) if data else True
 
     @command.filters(filters.admin_only, aliases=["spampredict", "spam_predict"])
     async def cmd_spam_prediction(self, ctx: command.Context, enable: Optional[bool] = None) -> str:
