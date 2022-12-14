@@ -321,13 +321,6 @@ class Greeting(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_welcome(self, ctx: command.Context) -> Optional[str]:
         """View current welcome message"""
-        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
-            return await self.text(
-                ctx.chat.id,
-                "greetings-topic-disabled",
-                f"https://t.me/{self.bot.user.username}?start=help_topic",
-            )
-
         chat = ctx.chat
         param = ctx.input.lower()
         noformat = param == "noformat"
@@ -366,7 +359,15 @@ class Greeting(plugin.Plugin):
             if button:
                 button = util.tg.build_button(button)
 
-        await ctx.respond(await self.text(chat.id, "view-welcome", setting, clean_service))
+        view_welc = await self.text(chat.id, "view-welcome", setting, clean_service)
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            view_welc += "\n\n" + await self.text(
+                chat.id,
+                "greetings-topic-default",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
+
+        await ctx.respond(view_welc)
         await ctx.respond(
             text
             if text
@@ -385,13 +386,6 @@ class Greeting(plugin.Plugin):
     @command.filters(filters.admin_only)
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:
         """View current goodbye message"""
-        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
-            return await self.text(
-                ctx.chat.id,
-                "greetings-topic-disabled",
-                f"https://t.me/{self.bot.user.username}?start=help_topic",
-            )
-
         chat = ctx.chat
         param = ctx.input.lower()
         noformat = param == "noformat"
@@ -420,7 +414,15 @@ class Greeting(plugin.Plugin):
         else:
             parse_mode = ParseMode.MARKDOWN
 
-        await ctx.respond(await self.text(chat.id, "view-goodbye", setting, clean_service))
+        view_gby = await self.text(chat.id, "view-goodbye", setting, clean_service)
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            view_gby += "\n\n" + await self.text(
+                chat.id,
+                "greetings-topic-default",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
+
+        await ctx.respond(view_gby)
         await ctx.respond(
             text,
             mode="reply",

@@ -541,9 +541,9 @@ greetings-help: |
   Example: `/welcome noformat`
 
   Check /markdownhelp and /fillinghelp for formatting details.
-greetings-topic-disabled: |
-  Greetings in this chat is currently disabled because of some missing configuration.
-  To enable greetings, please set a default action topic as mentioned in this [topic help]({}).
+greetings-topic-default: |
+  Forum chat detected. Bot will use the default action topic for greetings.
+  To set a default action topic, please set a default action topic as mentioned in this [topic help]({}).
 greetings-no-input: Please provide the text you want to set!
 bot-added: |
   Hi... Thanks for inviting me.
