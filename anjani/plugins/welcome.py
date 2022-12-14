@@ -54,8 +54,8 @@ class Greeting(plugin.Plugin):
 
         thread_id = await self.get_action_topic(chat)
         if message.chat.is_forum and not thread_id:
-            self.log.warning(f"Chat {message.chat.id} is forum but no action topic set!")
-            return
+            self.log.debug(f"Chat {message.chat.id} is forum but no action topic set!")
+            # continue try to send on default (general) topic
 
         if message.new_chat_members:
             return await self._member_join(message, reply_to, thread_id)
