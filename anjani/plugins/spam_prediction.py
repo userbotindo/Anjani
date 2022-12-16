@@ -412,8 +412,11 @@ class SpamPrediction(plugin.Plugin):
         # Always check the spam probability
         try:
             await self.spam_check(message, text)
-        except StopPropagation:
-            raise
+        except Exception as e:  # skipcq: PYL-W0703
+            if isinstance(e, StopPropagation):
+                raise
+
+            self.log.error("Error while checking message", exc_info=e)
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
         text = text.strip()
