@@ -51,19 +51,19 @@ class Language(plugin.Plugin):
         while self._running:
             try:
                 document = await self._db_stream(resume_token=token)
-                self.log.info(document)
             except PyMongoError as e:
-                self.log.error("MongoDB error: ", exc_info=e)
+                self.log.error("MongoDB error:", exc_info=e)
                 if document:
                     token = document["_id"]
 
                 await asyncio.sleep(1)
                 continue
 
-            self.bot.chats_languages[document["fullDocument"]["chat_id"]] = document[
-                "fullDocument"
-            ]["language"]
-            token = document["_id"]
+            data = document.get("fullDocument")
+            if data:
+                self.bot.chats_languages[data["chat_id"]] = data["language"]
+
+            token = document.get("_id")
             await asyncio.sleep(0.3)
 
     async def _db_stream(
