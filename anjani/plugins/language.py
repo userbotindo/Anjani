@@ -15,8 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, Mapping, MutableMapping, Optional
 
+from pymongo.errors import PyMongoError
 from pyrogram import emoji
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import MessageNotModified
@@ -42,9 +43,52 @@ class Language(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
+    _running: bool
+
+    async def _watcher(self) -> None:
+        token = None
+        document = None
+        while self._running:
+            try:
+                document = await self._db_stream(resume_token=token)
+            except PyMongoError as e:
+                self.log.error("MongoDB error:", exc_info=e)
+                if document:
+                    token = document["_id"]
+
+                await asyncio.sleep(1)
+                continue
+
+            data = document.get("fullDocument")
+            if data:
+                self.bot.chats_languages[data["chat_id"]] = data["language"]
+
+            token = document.get("_id")
+            await asyncio.sleep(0.3)
+
+    async def _db_stream(
+        self, resume_token: Optional[Mapping[str, str]] = None
+    ) -> Mapping[str, Any]:
+        cursor = None
+        try:
+            cursor = self.db.watch(resume_after=resume_token, full_document="updateLookup")
+            document = await cursor.next()
+            return document
+        except PyMongoError as e:
+            if cursor:
+                return {"_id": cursor.resume_token}
+
+            raise e
+        except StopAsyncIteration:
+            return {"_id": cursor.resume_token} if cursor else {}
 
     async def on_load(self) -> None:
+        self._running = True
         self.db = self.bot.db.get_collection("LANGUAGE")
+        self.bot.loop.create_task(self._watcher())
+
+    async def on_stop(self) -> None:
+        self._running = False
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -93,15 +137,11 @@ class Language(plugin.Plugin):
 
     async def switch_lang(self, chat_id: int, language: str) -> None:
         """Change chat language setting."""
-        if language == "en":
-            await self.db.delete_one({"chat_id": int(chat_id)})
-        else:
-            await self.db.update_one(
-                {"chat_id": int(chat_id)},
-                {"$set": {"language": language}},
-                upsert=True,
-            )
-        self.bot.chats_languages[chat_id] = language
+        await self.db.update_one(
+            {"chat_id": int(chat_id)},
+            {"$set": {"language": language}},
+            upsert=True,
+        )
 
     @command.filters(aliases=["lang", "language"])
     async def cmd_setlang(self, ctx: command.Context) -> Optional[str]:
