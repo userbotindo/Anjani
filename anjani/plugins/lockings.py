@@ -239,7 +239,6 @@ class Lockings(plugin.Plugin):
                     "messages": {"can_send_messages": self.get_mode(mode)},
                     "media": {"can_send_media_messages": self.get_mode(mode)},
                     "polls": {"can_send_polls": self.get_mode(mode)},
-                    "other": {"can_send_other_messages": self.get_mode(mode)},
                     "previews": {"can_add_web_page_previews": self.get_mode(mode)},
                     "info": {"can_change_info": self.get_mode(mode)},
                     "invite": {"can_invite_users": self.get_mode(mode)},
