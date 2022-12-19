@@ -48,7 +48,7 @@ from .change_stream import AsyncChangeStream
 from .client_session import AsyncClientSession
 from .command_cursor import AsyncCommandCursor, CommandCursor
 from .db import AsyncDatabase
-from .types import ReadPreferences
+from .typings import ReadPreferences
 
 
 class AsyncClient(AsyncBaseProperty):

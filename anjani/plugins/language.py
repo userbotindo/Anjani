@@ -126,6 +126,7 @@ class Language(plugin.Plugin):
 
         await self.switch_lang(chat.id, lang_match)
         try:
+            await query.answer()
             await query.edit_message_text(
                 text=await self.text(chat.id, "language-set-succes", lang),
             )
