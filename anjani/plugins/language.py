@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import Any, ClassVar, Mapping, MutableMapping, Optional
+from functools import partial
+from typing import Any, ClassVar, MutableMapping, Optional
 
 from pymongo.errors import PyMongoError
 from pyrogram import emoji
@@ -43,52 +44,42 @@ class Language(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
-    _running: bool
+    _db_stream: asyncio.Task[None]
 
-    async def _watcher(self) -> None:
-        token = None
-        document = None
-        while self._running:
-            try:
-                document = await self._db_stream(resume_token=token)
-            except PyMongoError as e:
-                self.log.error("MongoDB error:", exc_info=e)
-                if document:
-                    token = document["_id"]
-
-                await asyncio.sleep(1)
-                continue
-
-            data = document.get("fullDocument")
-            if data:
-                self.bot.chats_languages[data["chat_id"]] = data["language"]
-
-            token = document.get("_id")
-            await asyncio.sleep(0.3)
-
-    async def _db_stream(
-        self, resume_token: Optional[Mapping[str, str]] = None
-    ) -> Mapping[str, Any]:
-        cursor = None
+    def _start_db_stream(self) -> None:
+        # Cancel previous task if exists and it's not done
         try:
-            cursor = self.db.watch(resume_after=resume_token, full_document="updateLookup")
-            document = await cursor.next()
-            return document
-        except PyMongoError as e:
-            if cursor:
-                return {"_id": cursor.resume_token}
+            if not self._db_stream.done():
+                self._db_stream.cancel()
+        except AttributeError:
+            pass
 
-            raise e
-        except StopAsyncIteration:
-            return {"_id": cursor.resume_token} if cursor else {}
+        self._db_stream = self.bot.loop.create_task(self.db_stream())
+        self._db_stream.add_done_callback(
+            partial(self.bot.loop.call_soon_threadsafe, self._db_stream_callback)
+        )
+
+    def _db_stream_callback(self, future: asyncio.Future) -> None:
+        try:
+            future.result()
+        except asyncio.CancelledError:
+            pass
+        except PyMongoError as e:
+            self.log.error("MongoDB error:", exc_info=e)
+            self._start_db_stream()
+
+    async def db_stream(self) -> None:
+        async with self.db.watch(full_document="updateLookup") as cursor:
+            async for change in cursor:
+                document = change["fullDocument"]
+                self.bot.chats_languages[document["chat_id"]] = document["language"]
 
     async def on_load(self) -> None:
-        self._running = True
         self.db = self.bot.db.get_collection("LANGUAGE")
-        self.bot.loop.create_task(self._watcher())
+        self._start_db_stream()
 
     async def on_stop(self) -> None:
-        self._running = False
+        self._db_stream.cancel()
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
