@@ -35,7 +35,7 @@ from anjani import util
 
 from .base import AsyncBase
 from .errors import OperationFailure, PyMongoError
-from .types import ReadPreferences, Results
+from .typings import ReadPreferences, Results
 
 if TYPE_CHECKING:
     from .client import AsyncClient

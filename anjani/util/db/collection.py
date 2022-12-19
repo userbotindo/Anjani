@@ -50,7 +50,7 @@ from .change_stream import AsyncChangeStream
 from .client_session import AsyncClientSession
 from .command_cursor import AsyncLatentCommandCursor
 from .cursor import AsyncCursor, AsyncRawBatchCursor, Cursor
-from .types import ReadPreferences, Request
+from .typings import ReadPreferences, Request
 
 if TYPE_CHECKING:
     from .db import AsyncDatabase

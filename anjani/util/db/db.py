@@ -32,7 +32,7 @@ from .change_stream import AsyncChangeStream
 from .client_session import AsyncClientSession
 from .collection import AsyncCollection
 from .command_cursor import AsyncCommandCursor, AsyncLatentCommandCursor, CommandCursor
-from .types import ReadPreferences
+from .typings import ReadPreferences
 
 if TYPE_CHECKING:
     from .client import AsyncClient
