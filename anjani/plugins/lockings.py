@@ -87,7 +87,6 @@ LOCK_TYPES = OrderedDict(
             "location": filters.location,
             "venue": filters.venue,
             "game": filters.game,
-            "poll": filters.poll,
             "dice": filters.dice,
             "button": button,
             "inline": filters.via_bot,
@@ -333,7 +332,9 @@ class Lockings(plugin.Plugin):
         for types in sorted(list(LOCK_TYPES) + list(self.restrictions["lock"])):
             text += f"\n × `{types}`"
 
-        return await ctx.get_text("lockings-types-available") + text
+        return (
+            await ctx.get_text("lockings-types-available") + text + await ctx.get_text("types-note")
+        )
 
     @command.filters(filters.admin_only)
     async def cmd_unlock(self, ctx: command.Context, unlock_type: Optional[str] = None) -> str:
