@@ -249,11 +249,11 @@ class Greeting(plugin.Plugin):
         return data.get("prev_gdby", None) if data else None
 
     @command.filters(filters.admin_only)
-    async def cmd_setwelcome(self, ctx: command.Context, *, welc_text: Optional[str]) -> str:
+    async def cmd_setwelcome(self, ctx: command.Context) -> str:
         """Set chat welcome message"""
         chat = ctx.chat
-        if welc_text:
-            welc_text = Str(welc_text).init(ctx.msg.entities)
+        if ctx.input:
+            welc_text = Str(ctx.input).init(ctx.msg.entities[1:])
         elif ctx.msg.reply_to_message:
             welc_text = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
         else:
@@ -270,12 +270,11 @@ class Greeting(plugin.Plugin):
         return ret
 
     @command.filters(filters.admin_only)
-    async def cmd_setgoodbye(self, ctx: command.Context, *, gby_text: Optional[str]) -> str:
+    async def cmd_setgoodbye(self, ctx: command.Context) -> str:
         """Set chat goodbye message"""
         chat = ctx.chat
-
-        if gby_text:
-            gby_text = Str(gby_text).init(ctx.msg.entities)
+        if ctx.input:
+            gby_text = Str(ctx.input).init(ctx.msg.entities[1:])
         elif ctx.msg.reply_to_message:
             gby_text = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
         else:
