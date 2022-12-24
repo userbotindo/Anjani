@@ -1,8 +1,23 @@
 #region Main
 start-pm: |
-  Hai!\nSalam kenal, nama saya adalah **{}**. Dihadirkan untuk membantu Anda dalam mengelola grup dengan mudah dan menyenangkan.\nSilahkan kirim /help untuk melihat perintah yang tersedia.\n\nJika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [**Support Group**](https://t.me/userbotindo)\nDikelola oleh: [**Tim UserbotIndo**](https://userbotindo.com/)\n\nTertarik menggunakan saya dalam mengelola grup Anda?\n Silahkan klik tombol di bawah, untuk menambahkan saya ke grup Anda.
+  Hai!
+  Salam kenal, nama saya adalah **{}**. Dihadirkan untuk membantu Anda dalam mengelola grup dengan mudah dan menyenangkan.
+  Silahkan kirim /help untuk melihat perintah yang tersedia.
+  
+  Jika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [**Support Group**](https://t.me/userbotindo)
+  Dikelola oleh: [**Tim UserbotIndo**](https://userbotindo.com/)
+  Tertarik menggunakan saya dalam mengelola grup Anda?
+  Silahkan klik tombol di bawah, untuk menambahkan saya ke grup Anda.
 help-pm: |
-  Berikut daftar bantuan dan perintah yang tersedia.\n Untuk mendapatkan keterangan lebih lanjut silahkan klik salah satu tombol di bawah.
+  Hai salam kenal! Nama saya adalah **{}**.
+  Saya adalah bot manajemen grup dengan beberapa beberapa fitur yang bertujuan untuk membantu dalam mengelola grup Anda.
+  
+  Berikut adalah daftar yang tersedia untuk mendapatkan gambaran beberapa hal yang dapat saya lakukan.
+  perintah yang tersedia:
+  × /start: Perintah untuk memulai dan memeriksa status aktif.
+  × /help: Menampilkan daftar pesan bantuan.
+  × /setlang: Mengubah bahasa yang saya gunakan.
+  × /donate: Menampilkan informasi tentang cara mendukung saya.
 start-chat:  Hai! Salam hangat, semoga hari Anda menyenangkan.
 help-chat: Hubungi saya secara personal untuk mendapatkan daftar perintah yang tersedia.
 add-to-group-button: Tambahkan Saya
@@ -10,13 +25,16 @@ start-help-button: Bantuan & Perintah
 help-chat-button: Bantuan
 back-button: Kembali
 donate: |
-  Anda dapat mendukung kami dengan berdonasi. Silahkan kunjungi [Situs Kami](https://userbotindo.com/donate?ref=anjani) untuk keterangan lebih lanjut.\n\nTim dijalankan oleh sukarelawan, dan setiap bantuan kecil dapat membantu untuk meningkatkan layanan kami.\nTerima kasih atas dukungan Anda!
+  Anda dapat mendukung kami dengan berdonasi. Silahkan kunjungi [Situs Kami](https://userbotindo.com/donate?ref=anjani) untuk keterangan lebih lanjut.
+  
+  Tim dijalankan oleh sukarelawan, dan setiap bantuan kecil dapat membantu untuk meningkatkan layanan kami.
+  Terima kasih atas dukungan Anda!
 markdown-helper: |
   Markdown adalah alat pemformatan yang didukung oleh telegram. {} memiliki beberapa penyempurnaan, untuk memastikan bahwa pesan yang tersimpan diurai dengan benar, dan memungkinkan untuk anda membuat beberapa tombol.\n
   <b>Markdown yang didukung:</b>
   - <code>__italic__</code>: Dua garis bawah di antara kata akan menghasilkan teks <i>italic</i>.
   - <code>**bold**</code>: Dua simbol bintang di antara kata akan menghasilkan teks <b>tebal</b>.
-  - <code>`lintang`</code>: Tanda kutip terbalik di antara kata akan menghasilkan teks <code>lintang</code>.
+  - <code>`monospace`</code>: Tanda kutip terbalik di antara kata akan menghasilkan teks <code>monospace</code>.
   - <code>~~strike~~</code>: Dua tanda gelombang di antara kata akan menghasilkan teks <del>strikethrough</del>.
   - <code>--underline--</code>: Dua tanda penghubung di antara kata akan menghasilkan teks <u>underline</u>.
   - <code>||spoiler||</code>: Dua tanda garis vertikal di antara kata akan menghasilkan teks <spoiler>spoiler</spoiler>.
