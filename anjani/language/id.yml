@@ -3,22 +3,22 @@ start-pm: |
   Hai!
   Salam kenal, nama saya adalah **{}**. Dihadirkan untuk membantu Anda dalam mengelola grup dengan mudah dan menyenangkan.
   Silahkan kirim /help untuk melihat perintah yang tersedia.
-  
-  Jika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [**Support Group**](https://t.me/userbotindo)
-  Dikelola oleh: [**Tim UserbotIndo**](https://userbotindo.com/)
+
+  Jika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [Support Group](https://t.me/userbotindo)
+  Dikelola oleh: [Tim UserbotIndo](https://userbotindo.com/)
   Tertarik menggunakan saya dalam mengelola grup Anda?
   Silahkan klik tombol di bawah, untuk menambahkan saya ke grup Anda.
 help-pm: |
   Hai salam kenal! Nama saya adalah **{}**.
   Saya adalah bot manajemen grup dengan beberapa beberapa fitur yang bertujuan untuk membantu dalam mengelola grup Anda.
-  
+
   Berikut adalah daftar yang tersedia untuk mendapatkan gambaran beberapa hal yang dapat saya lakukan.
   perintah yang tersedia:
   × /start: Perintah untuk memulai dan memeriksa status aktif.
   × /help: Menampilkan daftar pesan bantuan.
   × /setlang: Mengubah bahasa yang saya gunakan.
   × /donate: Menampilkan informasi tentang cara mendukung saya.
-start-chat:  Hai! Salam hangat, semoga hari Anda menyenangkan.
+start-chat: Hai! Salam hangat, semoga hari Anda menyenangkan.
 help-chat: Hubungi saya secara personal untuk mendapatkan daftar perintah yang tersedia.
 add-to-group-button: Tambahkan Saya
 start-help-button: Bantuan & Perintah
@@ -26,7 +26,7 @@ help-chat-button: Bantuan
 back-button: Kembali
 donate: |
   Anda dapat mendukung kami dengan berdonasi. Silahkan kunjungi [Situs Kami](https://userbotindo.com/donate?ref=anjani) untuk keterangan lebih lanjut.
-  
+
   Tim dijalankan oleh sukarelawan, dan setiap bantuan kecil dapat membantu untuk meningkatkan layanan kami.
   Terima kasih atas dukungan Anda!
 markdown-helper: |
@@ -40,7 +40,7 @@ markdown-helper: |
   - <code>||spoiler||</code>: Dua tanda garis vertikal di antara kata akan menghasilkan teks <spoiler>spoiler</spoiler>.
   - <code>[sometext](someURL)</code>: Ini akan membuat tautan pesan yang hanya akan menampilkan beberapa teks, dan mengetuknya akan membuka halaman suatu url atau website.
   Contoh: <code>[test](example.com)</code>
-  
+
   - <code>[buttontext](buttonurl:someURL)</code>: Ini adalah format untuk membuat tombol telegram. buttontext akan menjadi apa yang ditampilkan pada tombol, dan suatu url akan langsung mengarahkan ke url tersebut.
   Contoh: <code>[This is a button](buttonurl:google.com)</code>
   Jika anda ingin beberapa tombol pada baris yang sama, gunakan :same, seperti contoh berikut ini:
@@ -280,7 +280,7 @@ fed-autoban: "Pengguna {} dilarang dalam federasi ini (**{}**), dan sudah dikelu
 fed-autoban-chat: "Channel {} dilarang dalam federasi ini (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoban-subfed: "Pengguna {} dilarang dalam subfederasi (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
 fed-autoban-chat-subfed: "Channel {} dilarang dalam subfederasi (**{}**), dan sudah dikeluarkan.\n**Alasan:** {}\n**Dilarang pada:** {}"
-fed-autoleave: "Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi \"{}\"(`{}`)"
+fed-autoleave: 'Saya tidak lagi memiliki izin untuk melarang anggota dalam obrolan ini. Meninggalkan federasi "{}"(`{}`)'
 fed-owner-cmd: "Perintah ini hanya bisa digunakan oleh pemilik federasi."
 fed-subs-join: "Federasi **{}** telah mengikuti federasi **{}**"
 fed-subs-leave: "Federasi **{}** berhenti mengikuti federasi **{}**"
@@ -375,7 +375,7 @@ notes-help: |
   × /save <nama catatan> <isi catatan>: Menyimpan catatan baru dengan nama "<nama catatan>". Dengan cara membalas pesan yang akan disimpan pesannya.
   × /clear <nama catatan> | /delnote <nama catatan>: Hapus catatan yang tersimpan jika ada dan tersimpan.
   \nCek /markdownhelp untuk detail pemformatan.
-notes-invalid-args : |
+notes-invalid-args: |
   Balas pesan yang akan disimpan atau berikan isi setelah nama catatan.
   Contoh: /save <nama catatan> <isi catatan/balas ke pesan>
 note-saved: "Pesan disimpan dengan nama `{}`."
@@ -492,7 +492,7 @@ rules-clear: Berhasil menghapus aturan dalam grup!
 rules-none: Gagal mendapatkan aturan obrolan! Tidak ada catatan yang ditemukan.
 rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
-rules-invalid-button: "Chat_id tidak valid: \"{}\". (__Invalid Syntax__)"
+rules-invalid-button: 'Chat_id tidak valid: "{}". (__Invalid Syntax__)'
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediksi
@@ -519,9 +519,9 @@ spampredict-ban-no-perm: "Kamu tidak punya izin untuk melakukan ini!"
 #region spam shield
 spamshield-button: Spam Shield
 spamshield-help: |
- **Hanya Administrator yang bisa menggunakan:**
-  /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.\n
-  Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
+  **Hanya Administrator yang bisa menggunakan:**
+   /spamshield <on/off/yes/no>: Akan mematikan atau menyalakan pengaruh dari perlindungan spam di grup anda.\n
+   Spam shield menggunakan Combot Anti Spam, API @Spamwatch, dan larangan global untuk menghapus sebanyak mungkin orang yang melakukan spam dari ruang obrolan anda!
 banned-text: |
   #SPAM_SHIELD\n
   **Nama:** {}
@@ -610,7 +610,7 @@ err-chat-private: Perintah ini khusus untuk PM!
 error-no-rights: "Anda tidak memiliki hak untuk menggunakan perintah ini!"
 err-not-participant: "Pengguna ini bukan anggota grup!"
 err-invalid-option: Pilihan ini tidak sah atau tidak benar!
-err-invalid-username-id : "`Tidak sah username atau id pengguna!`"
+err-invalid-username-id: "`Tidak sah username atau id pengguna!`"
 error-reply-to-message: Balas ke sebuah pesan!
 err-yes-no-args: Usage is on/yes or off/no
 err-peer-invalid: "**PEER_ID_INVALID**\nSepertinya saya tidak memiliki akses ke pengguna ini, mungkin IDnya tidak sah atau tidak benar."
