@@ -174,7 +174,7 @@ class Canonical(plugin.Plugin):
         finally:
             await self.db.delete_one({"_id": chat_id})
 
-    @command.filters(filters.private & filters.staff_only)  # currently on testing
+    @command.filters(filters.private)
     async def cmd_login(self, ctx: command.Context):
         """Login to https://userbotindo.com"""
         if not self.bot.config["login_url"]:
