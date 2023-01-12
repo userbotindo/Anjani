@@ -534,6 +534,19 @@ spamshield-view: |
   Spam shield setting: {}
   Spam shield adalah fitur yang digunakan untuk melindungi grup anda dari orang yang melakukan spam dan orang iseng.
 #endregion
+#region topic
+topic-button: Topik
+topic-help: |
+  Topik pada Telegram memungkinkan grup untuk dibagi menjadi beberapa chat di dalam grupnya (atau disebut forum).
+  Plugin ini membantu untuk mengelola topic menggunakan Anjani.
+
+  Sebuah group topik membutuhkan sebuah topik default yang berfungsi sebagai tempat sambutan dan aksi lain oleh Anjani.
+
+  **Hanya Administrator yang bisa menggunakan:**
+  × /setactiontopic | /setdefaulttopic: mengatur topik saat ini untuk menjadi topik default pada grup.
+topic-non-topic: Grup ini bukan sebuah forum (topik)!
+topic-set: Topik ini akan digunakan sebagai topik default Anjani.
+#endregion
 #region greetings
 greetings-button: Pesan Sambutan
 greetings-help: |
