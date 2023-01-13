@@ -209,7 +209,7 @@ class Notes(plugin.Plugin):
 
         notes = await self.text(chat.id, "note-list", chat.title)
         for key in sorted(data["notes"].keys()):
-            notes += f"× `{key}`\n"
+            notes += f"× `#{key}`\n"
         return notes
 
     @command.filters(filters.admin_only, aliases=["clear"])
