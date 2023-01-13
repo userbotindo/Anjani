@@ -267,8 +267,18 @@ class Main(plugin.Plugin):
                         text=await self.text(chat.id, "start-help-button"),
                         url=f"t.me/{self.bot.user.username}?start=help",
                     ),
-                ]
+                ],
             ]
+            if "Canonical" in self.bot.plugins:
+                buttons.append(
+                    [
+                        InlineKeyboardButton(
+                            text=await self.text(chat.id, "dashboard-button"),
+                            url=f"https://userbotindo.com/dashboard",
+                        )
+                    ]
+                )
+
             await ctx.respond(
                 await self.text(chat.id, "start-pm", self.bot_name),
                 reply_markup=InlineKeyboardMarkup(buttons),
