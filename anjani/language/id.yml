@@ -18,10 +18,13 @@ help-pm: |
   × /help: Menampilkan daftar pesan bantuan.
   × /setlang: Mengubah bahasa yang saya gunakan.
   × /donate: Menampilkan informasi tentang cara mendukung saya.
+
+  Pengaturan Anjani juga dapat dikonfigurasi di dashboard kami, [klik di sini](https://userbotindo.com/dashboard?ref=anjani) untuk membuka dashboard.
 start-chat: Hai! Salam hangat, semoga hari Anda menyenangkan.
 help-chat: Hubungi saya secara personal untuk mendapatkan daftar perintah yang tersedia.
 add-to-group-button: Tambahkan Saya
 start-help-button: Bantuan & Perintah
+dashboard-button: Dashboard
 help-chat-button: Bantuan
 back-button: Kembali
 donate: |
