@@ -26,5 +26,5 @@ from pymongo.read_preferences import (
 )
 
 ReadPreferences = Union[Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest]
-Request = Union[DeleteOne, InsertOne, ReplaceOne]
+Request = TypeVar("Request", DeleteOne, InsertOne, ReplaceOne)
 Results = TypeVar("Results")
