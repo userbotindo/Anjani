@@ -19,7 +19,6 @@ import pickle
 import re
 import unicodedata
 from datetime import datetime, time, timedelta
-from functools import partial
 from hashlib import md5, sha256
 from pathlib import Path
 from random import randint
@@ -142,26 +141,6 @@ class SpamPrediction(plugin.Plugin):
                 self.log.warning("Failed to download prediction model!")
                 self.bot.unload_plugin(self)
 
-    def _check_spam_results_ocr(
-        self, message: Message, future: asyncio.Future[Optional[str]]
-    ) -> None:
-        def done(fut: asyncio.Future[None]) -> None:
-            try:
-                fut.result()
-            except Exception as e:  # skipcq: PYL-W0703
-                if isinstance(e, StopPropagation):
-                    raise e
-
-                self.log.error("Unexpected error occured when checking OCR results", exc_info=e)
-
-        text = future.result()
-        if not text:
-            return
-
-        self.bot.loop.create_task(self.spam_check(message, text, from_ocr=True)).add_done_callback(
-            partial(self.bot.loop.call_soon_threadsafe, done)
-        )
-
     @staticmethod
     def _build_hash(content: str) -> str:
         return sha256(content.strip().encode()).hexdigest()
@@ -242,7 +221,10 @@ class SpamPrediction(plugin.Plugin):
             "user": self._spam_ban_handler,
         }
         for handle in data.keys():
-            await handler[handle](query, data[handle])
+            try:
+                await handler[handle](query, data[handle])
+            except QueryIdInvalid:
+                pass
 
     async def _spam_ban_handler(self, query: CallbackQuery, user: str) -> None:
         chat = query.message.chat
@@ -355,38 +337,31 @@ class SpamPrediction(plugin.Plugin):
                 button.append(old_btn[1])
 
         for i in data["msg_id"]:
-            try:
-                while True:
-                    try:
-                        await self.bot.client.edit_message_reply_markup(
-                            -1001314588569, i, InlineKeyboardMarkup(button)
-                        )
-                    except MessageIdInvalid:
-                        pass
-                    except MessageNotModified:
-                        await query.answer(
-                            "You already voted this content, "
-                            "this happened because there are multiple same of contents exists.",
-                            show_alert=True,
-                        )
-                    except FloodWait as flood:
-                        await query.answer(
-                            "Please wait i'm updating the content for you.",
-                            show_alert=True,
-                        )
-                        await asyncio.sleep(flood.value)  # type: ignore
-                        continue
+            while True:
+                try:
+                    await self.bot.client.edit_message_reply_markup(
+                        -1001314588569, i, InlineKeyboardMarkup(button)
+                    )
+                except MessageIdInvalid:
+                    pass
+                except MessageNotModified:
+                    await query.answer(
+                        "You already voted this content, "
+                        "this happened because there are multiple same of contents exists.",
+                        show_alert=True,
+                    )
+                except FloodWait as flood:
+                    await query.answer(
+                        "Please wait i'm updating the content for you.",
+                        show_alert=True,
+                    )
+                    await asyncio.sleep(flood.value)  # type: ignore
+                    continue
 
-                    await asyncio.sleep(0.1)
-                    break
-            except QueryIdInvalid:
-                self.log.debug("Can't edit message, invalid query id '%s'", query.id)
-                continue
+                await asyncio.sleep(0.1)
+                break
 
-        try:
-            await query.answer()
-        except QueryIdInvalid:
-            pass
+        await query.answer()
 
     @listener.filters(filters.group & ~filters.outgoing)
     @listener.priority(70)
@@ -401,22 +376,29 @@ class SpamPrediction(plugin.Plugin):
             if message.text
             else (message.caption if message.media and message.caption else None)
         )
+        task = None
         if message.photo:
-            self.bot.loop.create_task(self.run_ocr(message)).add_done_callback(
-                partial(self.bot.loop.call_soon_threadsafe, self._check_spam_results_ocr, message)
-            )
+            ocr_result = await self.run_ocr(message)
+            if ocr_result:
+                task = self.bot.loop.create_task(
+                    self.spam_check(message, ocr_result, from_ocr=True)
+                )
 
-        if not chat or message.left_chat_member or not text:
+        if not chat or message.left_chat_member:
+            return
+
+        if not text:
+            if task and not task.done():
+                await task
+
             return
 
         # Always check the spam probability
         try:
             await self.spam_check(message, text)
-        except Exception as e:  # skipcq: PYL-W0703
-            if isinstance(e, StopPropagation):
-                raise
-
-            self.log.error("Error while checking message", exc_info=e)
+        finally:
+            if task and not task.done():
+                await task
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
         text = text.strip()
@@ -663,10 +645,7 @@ class SpamPrediction(plugin.Plugin):
         if reply_msg and reply_msg.photo:
             ocr_result = await self.run_ocr(reply_msg)
             if ocr_result:
-                try:
-                    await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.id)
-                except Exception as e:  # skipcq: PYL-W0703
-                    self.log.error("Failed to marked OCR results as spam", exc_info=e)
+                await self.mark_spam_ocr(ocr_result, user_id, ctx.chat.id, reply_msg.id)
 
                 # Return early if content is empty, so error message not shown
                 if not content:
