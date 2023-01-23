@@ -274,7 +274,7 @@ class Main(plugin.Plugin):
                     [
                         InlineKeyboardButton(
                             text=await self.text(chat.id, "dashboard-button"),
-                            url=f"https://userbotindo.com/dashboard",
+                            url="https://userbotindo.com/dashboard",
                         )
                     ]
                 )
