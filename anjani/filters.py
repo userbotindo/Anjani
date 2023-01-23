@@ -290,6 +290,9 @@ def _admin_only(include_bot: bool = True, send_error: bool = True) -> CustomFilt
             if not bot_admin and user_admin:
                 # Bot is not admin, but user is
                 await _send_error(flt.anjani, message.chat.id, message, "err-im-not-admin")
+            elif bot_admin and not user_admin:
+                # Bot is admin, but user is not
+                await _send_error(flt.anjani, message.chat.id, message, "err-not-admin")
             else:
                 await _send_error(flt.anjani, message.chat.id, message, "err-perm")
 
