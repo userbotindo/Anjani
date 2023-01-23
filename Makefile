@@ -9,10 +9,13 @@ help:
 	@echo ""
 	@echo "Makefile commands:"
 	@echo "  fetch-origin: Fetch the latest changes from the origin"
-	@echo "  build: Build the docker image"
+	@echo "  build(*-nc): Build the docker image"
 	@echo "  run: Run the docker container"
 	@echo "  stop: Stop the docker container"
-	@echo "  up: Update latest changes and restart the docker container"
+	@echo "  up(*-nc): Update latest changes and restart the docker container"
+	@echo "  test: Run the tests"
+	@echo "  restart: Restart the docker container"
+	@echo "\n* nc = no-cache (optional e.g: make build-nc)"
 
 fetch-origin:
 	git pull origin
@@ -37,6 +40,8 @@ up-nc: build-nc stop run
 
 test:
 	poetry run pytest -v
+
+restart: stop run
 
 .ONESHELL:
 bump:
