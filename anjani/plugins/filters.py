@@ -105,7 +105,6 @@ class Filters(plugin.Plugin):
                     )
                     types: int = filt["type"]
                     button = filt.get("button", None)
-                    btn_text = ""
                     if button:
                         keyb = build_button(button)
                     else:
