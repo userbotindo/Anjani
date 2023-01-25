@@ -148,7 +148,6 @@ class Filters(plugin.Plugin):
             {"chat_id": chat_id, f"trigger.{keyword}": {"$exists": True}},
             {f"trigger.{keyword}": 1},
         )
-        print(data)
         return data["trigger"][keyword] if data else None
 
     async def del_filter(self, chat_id: int, keyword: str) -> Tuple[bool, str]:
