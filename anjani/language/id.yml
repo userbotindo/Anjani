@@ -306,7 +306,7 @@ filter-stop-help: "Contoh: `/stop <kata kunci>`"
 filters-chat-nofilter: Grup ini tidak memiliki filter.
 filters-chat-nokeyword: "Tidak ada filter dengan kata kunci `{}` di grup ini."
 filters-rmall: "Berhasil menghapus {} filter pada grup ini."
-filters-list: "Filter pada **{}**:"
+filters-list: "Filter pada **{}**:\n"
 #endregion
 #region language
 language-button: Bahasa

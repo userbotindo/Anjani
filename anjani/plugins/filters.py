@@ -14,12 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import re
-from typing import Any, ClassVar, MutableMapping, Optional, Set, Tuple
+from typing import Any, ClassVar, MutableMapping, Optional, Set, Tuple, Coroutine, Callable
 
 from pyrogram.types import Message
+from pyrogram.errors import MediaEmpty, MessageEmpty
 
 from anjani import command, filters, listener, plugin, util
+from anjani.util.tg import Types, get_message_info, build_button
 
 
 class Filters(plugin.Plugin):
@@ -28,9 +31,22 @@ class Filters(plugin.Plugin):
 
     db: util.db.AsyncCollection
     trigger: MutableMapping[int, Set[str]] = {}
+    SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FILTERS")
+        self.SEND = {
+            Types.TEXT.value: self.bot.client.send_message,
+            Types.BUTTON_TEXT.value: self.bot.client.send_message,
+            Types.DOCUMENT.value: self.bot.client.send_document,
+            Types.PHOTO.value: self.bot.client.send_photo,
+            Types.VIDEO.value: self.bot.client.send_video,
+            Types.STICKER.value: self.bot.client.send_sticker,
+            Types.AUDIO.value: self.bot.client.send_audio,
+            Types.VOICE.value: self.bot.client.send_voice,
+            Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
+            Types.ANIMATION.value: self.bot.client.send_animation,
+        }
 
     async def on_start(self, _: int) -> None:
         async for chat in self.db.find({}):
@@ -79,7 +95,52 @@ class Filters(plugin.Plugin):
                 if not filt:
                     return
 
-                await message.reply_text(filt)
+                # This checks data for old filters schema
+                # TODO: deprecate old schema on v3
+                if isinstance(filt, str):
+                    await message.reply_text(filt)
+                else:
+                    reply_to = (
+                        message.reply_to_message.id if message.reply_to_message else message.id
+                    )
+                    types: int = filt["type"]
+                    button = filt.get("button", None)
+                    btn_text = ""
+                    if button:
+                        keyb = build_button(button)
+                    else:
+                        keyb = button
+
+                    try:
+                        if types in {Types.TEXT, Types.BUTTON_TEXT}:
+                            await self.SEND[types](
+                                message.chat.id,
+                                filt["text"],
+                                reply_to_message_id=reply_to,
+                                reply_markup=keyb,
+                            )
+                        elif types in {Types.STICKER, Types.ANIMATION}:
+                            await self.SEND[types](
+                                message.chat.id,
+                                filt["content"],
+                                reply_to_message_id=reply_to,
+                            )
+                        else:
+                            await self.SEND[types](
+                                message.chat.id,
+                                filt["content"],
+                                caption=filt["text"],
+                                reply_to_message_id=reply_to,
+                                reply_markup=keyb,
+                            )
+                    except MediaEmpty:
+                        await self.bot.client.send_message(
+                            message.chat.id, await self.text(message.chat.id, "notes-expired")
+                        )
+                    except MessageEmpty:
+                        self.log.warning(
+                            "Filter message empty on %s with data %s", message.chat.id, filt
+                        )
                 break
 
     async def get_filter(self, chat_id: int, keyword: str) -> Optional[str]:
@@ -87,17 +148,8 @@ class Filters(plugin.Plugin):
             {"chat_id": chat_id, f"trigger.{keyword}": {"$exists": True}},
             {f"trigger.{keyword}": 1},
         )
+        print(data)
         return data["trigger"][keyword] if data else None
-
-    async def save_filter(self, chat_id: int, keyword: str, content: str):
-        await self.db.update_one(
-            {"chat_id": chat_id}, {"$set": {f"trigger.{keyword}": content}}, upsert=True
-        )
-
-        if self.trigger.get(chat_id):
-            self.trigger[chat_id].add(keyword)
-        else:
-            self.trigger[chat_id] = set(keyword)
 
     async def del_filter(self, chat_id: int, keyword: str) -> Tuple[bool, str]:
         filt = self.trigger.get(chat_id)
@@ -114,12 +166,42 @@ class Filters(plugin.Plugin):
         return True, ""
 
     @command.filters(filters.admin_only)
-    async def cmd_filter(self, ctx: command.Context, trigger: str, *, text: str) -> str:
-        if not trigger or not text:
-            return await self.text(ctx.chat.id, "filter-help")
+    async def cmd_filter(self, ctx: command.Context) -> str:
+        chat = ctx.chat
+        if (
+            len(ctx.args) < 2
+            and not ctx.message.reply_to_message
+            or ctx.msg.reply_to_message
+            and len(ctx.args) < 1
+        ):
+            return await self.text(chat.id, "filter-help")
 
-        await self.save_filter(ctx.chat.id, trigger, text)
-        return await self.text(ctx.chat.id, "filters-added", trigger)
+        trigger = ctx.args[0]
+        text, types, content, buttons = get_message_info(ctx.msg)
+        _, ret = await asyncio.gather(
+            self.db.update_one(
+                {"chat_id": chat.id},
+                {
+                    "$set": {
+                        f"trigger.{trigger}": {
+                            "text": text,
+                            "type": types,
+                            "content": content,
+                            "buttons": buttons,
+                        }
+                    }
+                },
+                upsert=True,
+            ),
+            self.text(chat.id, "filters-added", trigger),
+        )
+
+        if self.trigger.get(chat.id):
+            self.trigger[chat.id].add(trigger)
+        else:
+            self.trigger[chat.id] = {trigger}
+
+        return ret
 
     @command.filters(filters.admin_only)
     async def cmd_stop(self, ctx: command.Context, trigger: str) -> str:
