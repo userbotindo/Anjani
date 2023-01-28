@@ -118,6 +118,7 @@ def start() -> None:
         "api_id": os.environ.get("API_ID"),
         "api_hash": os.environ.get("API_HASH"),
         "bot_token": os.environ.get("BOT_TOKEN"),
+        "workers": os.environ.get("WORKERS"),
         "db_uri": os.environ.get("DB_URI"),
         "download_path": os.environ.get("DOWNLOAD_PATH"),
         "owner_id": os.environ.get("OWNER_ID"),

@@ -16,7 +16,7 @@
 
 import asyncio
 import logging
-from typing import Any, Optional
+from typing import Optional
 
 import aiohttp
 import pyrogram
@@ -76,8 +76,9 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
             if self.client.is_connected:
                 await self.client.stop()
         await self.http.close()
-        await self.db.close()
 
         self.log.info("Running post-stop hooks")
         if self.loaded:
             await self.dispatch_event("stopped")
+
+        await self.db.close()

@@ -105,6 +105,7 @@ class TelegramBot(MixinBase):
             api_hash=api_hash,
             bot_token=bot_token,
             workdir="anjani",
+            workers=int(self.config.get("workers", Client.WORKERS)),
             parse_mode=ParseMode.MARKDOWN,
         )
 
