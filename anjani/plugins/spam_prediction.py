@@ -408,7 +408,7 @@ class SpamPrediction(plugin.Plugin):
             user = None
 
         text_norm = self._normalize_text(text)
-        if len(text_norm.split()) < 5:  # Skip short messages
+        if len(text_norm.split()) < 4:  # Skip short messages
             return
 
         response = await self._predict(text_norm)
