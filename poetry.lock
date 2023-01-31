@@ -1138,25 +1138,21 @@ snappy = ["python-snappy"]
 zstd = ["zstandard"]
 
 [[package]]
-name = "PyroFork"
-version = "2.1.2"
+name = "pyrofork"
+version = "2.1.3"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
 python-versions = "~=3.7"
-files = []
-develop = false
+files = [
+    {file = "PyroFork-2.1.3-py3-none-any.whl", hash = "sha256:96ec0461271261ba524da5f355c4bfe179215268e21d3761fb34175f05c098c5"},
+    {file = "PyroFork-2.1.3.tar.gz", hash = "sha256:32ee8e28d201a321c0d4de51052c711251da20f6595018d4b743f69db95cc339"},
+]
 
 [package.dependencies]
 pyaes = "1.6.1"
 pymediainfo = "6.0.1"
 pysocks = "1.7.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/Mayuri-Chan/pyrofork.git"
-reference = "master"
-resolved_reference = "e338c1a5936b4c6af37218094e75d108e319ac97"
 
 [[package]]
 name = "pysocks"
@@ -1740,4 +1736,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <=3.11"
-content-hash = "602dcc485795b123377c48d442db4352b9b22dbb90aafa019dce7c3151c656b8"
+content-hash = "f35f12d32d54e4d50ccb24261ebe9f8df45623b0254bcb85bcfa7cd04310bf6f"
