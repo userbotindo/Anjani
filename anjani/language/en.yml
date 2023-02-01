@@ -282,7 +282,7 @@ filter-stop-help: "Usage: `/stop <trigger>`."
 filters-chat-nofilter: This chat has no filters.
 filters-chat-nokeyword: "No filters named `{}` on this chat."
 filters-rmall: "Successfully removed {} filters in this chat."
-filters-list: "Filters in **{}**:"
+filters-list: "Filters in **{}**:\n"
 #endregion
 #region language
 language-button: Language
