@@ -64,6 +64,8 @@ class Misc(plugin.Plugin):
         """Display ID's"""
         msg = ctx.msg.reply_to_message or ctx.msg
         out_str = f"👥 **Chat ID :** `{(msg.forward_from_chat or msg.chat).id}`\n"
+        if msg.is_topic_message:
+            out_str += f"🗨️ **Topic ID :** `{msg.topics.id}`\n"
         out_str += f"💬 **Message ID :** `{msg.forward_from_message_id or msg.id}`\n"
         if msg.from_user:
             out_str += f"🙋‍♂️ **From User ID :** `{msg.from_user.id}`\n"
