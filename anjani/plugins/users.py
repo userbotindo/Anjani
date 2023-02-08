@@ -209,7 +209,7 @@ class Users(plugin.Plugin):
         user_db = await self.users_db.find_one({"_id": user.id})
         if user_db and self.predict_loaded:
             if user_db.get("spam", False):
-                text += "<b>\n⚠️Warning I flag this user as a scammer⚠️</b>\n"
+                text += "<b>\n⚠️Warning I flag this user as a spammer⚠️</b>\n"
 
             text += f"\n<b>Identifier:</b> <code>{user_db.get('hash', 'unknown')}</code>"
             text += f"\n<b>Reputation:</b> <code>{user_db.get('reputation', 0)}</code>"

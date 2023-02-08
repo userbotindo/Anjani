@@ -180,7 +180,7 @@ class Restrictions(plugin.Plugin):
             if isinstance(target, User) and util.tg.is_staff_or_admin(
                 await chat.get_member(target.id)
             ):
-                return await self.text(chat.id, "admin-kick")
+                return await self.text(chat.id, "admin-ban")
         except UserNotParticipant:
             # Not a participant in the chat (replying from channel discussion)
             if util.tg.is_staff(target.id):

@@ -282,7 +282,7 @@ filter-stop-help: "Usage: `/stop <trigger>`."
 filters-chat-nofilter: This chat has no filters.
 filters-chat-nokeyword: "No filters named `{}` on this chat."
 filters-rmall: "Successfully removed {} filters in this chat."
-filters-list: "Filters in **{}**:"
+filters-list: "Filters in **{}**:\n"
 #endregion
 #region language
 language-button: Language
@@ -479,8 +479,11 @@ spampredict-help: |
   For addition we currently developing a spam protection using a machine learning. The bot will detect and delete spam messages from your chats.
   You can also help us to train our model by casting a vote on @SpamPredictionLog. You will earn a reputation point with some benefit in the future 😉.\n
   **Admin Commands:**
-  /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in your group.\n
-  If enabled, the bot will automaticaly delete and log the message to @SpamPredictionLog.
+  × /spampredict <on/off/yes/no>: Will disable or enable the message spam prediction in your group.\n
+  If enabled, the bot will automaticaly delete and log the message to @SpamPredictionLog.\n
+  **User Commands:**
+  × /predict <reply>: Will predict the message if it's a spam or not*.
+  *this will consume 10 reputation point.
 spampredict-set: "Chat spam prediction turned {}."
 spampredict-view: |
   Spam Prediction Setting: **{}**.
@@ -488,9 +491,10 @@ spampredict-view: |
 spampredict-empty: message/photo text nor caption is empty to predict...
 spampredict-photo: "Reading photo text with ocr...\nThis might take a while."
 spampredict-photo-failed: "__Failed to read photo text with ocr.__\n\n"
-spampredict-unauthorized: |
-  Your reputation point is not enough to use this command! ({}/{})
-  To get a reputation point cast a vote on @SpamPredictionLog.
+spampredict-insuficent: |
+  Insuficent reputation to run prediction! ({}/{}).
+  Prediction will consume {} reputation point.
+  You can earn reputation by voting on @SpamPredictionLog.
 spampredict-failed: Prediction failed...
 spampredict-ban: "{user} has been banned!"
 spampredict-ban-no-perm: You don't have permission to ban users!

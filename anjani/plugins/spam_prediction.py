@@ -92,7 +92,7 @@ class SpamPrediction(plugin.Plugin):
     user_db: util.db.AsyncCollection
     setting_db: util.db.AsyncCollection
     model: Pipeline
-    __min_reputation: int = 300
+    __predict_cost: int = 10
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("SPAM_DUMP")
@@ -408,7 +408,7 @@ class SpamPrediction(plugin.Plugin):
             user = None
 
         text_norm = self._normalize_text(text)
-        if len(text_norm.split()) < 5:  # Skip short messages
+        if len(text_norm.split()) < 4:  # Skip short messages
             return
 
         response = await self._predict(text_norm)
@@ -713,12 +713,12 @@ class SpamPrediction(plugin.Plugin):
         if not user:
             return None
 
-        if user.get("reputation", 0) < self.__min_reputation:
+        if user.get("reputation", 0) < self.__predict_cost:
             return await self.text(
                 chat.id,
                 "spampredict-unauthorized",
                 user.get("reputation", 0),
-                self.__min_reputation,
+                self.__predict_cost,
             )
 
         replied = ctx.msg.reply_to_message
@@ -750,6 +750,10 @@ class SpamPrediction(plugin.Plugin):
                         await asyncio.gather(
                             self.bot.log_stat("predicted"),
                             ctx.respond(photo_prediction),
+                            self.user_db.update_one(
+                                {"_id": ctx.author.id},
+                                {"$inc": {"reputation": -self.__predict_cost}},
+                            ),
                         )
                         return None
             else:
@@ -775,6 +779,9 @@ class SpamPrediction(plugin.Plugin):
                 if photo_prediction
                 else "**Result**\n\n" + textPrediction,
                 reply_to_message_id=None if replied.photo else replied.id,
+            ),
+            self.user_db.update_one(
+                {"_id": ctx.author.id}, {"$inc": {"reputation": -self.__predict_cost}}
             ),
         )
         return None
