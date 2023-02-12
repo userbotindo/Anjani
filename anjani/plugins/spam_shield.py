@@ -28,6 +28,7 @@ from aiohttp import (
 from pyrogram.errors import (
     BadRequest,
     ChannelPrivate,
+    ChatAdminRequired,
     PeerIdInvalid,
     UserNotParticipant,
 )
@@ -130,7 +131,7 @@ class SpamShield(plugin.Plugin):
                 return
 
             await self.check(target.user, chat)
-        except (ChannelPrivate, PeerIdInvalid, UserNotParticipant):
+        except (ChannelPrivate, ChatAdminRequired, PeerIdInvalid, UserNotParticipant):
             return
 
     async def get_ban(self, user_id: int) -> MutableMapping[str, Any]:
