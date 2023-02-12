@@ -292,8 +292,12 @@ class EventDispatcher(MixinBase):
 
                     await asyncio.wait(
                         (
-                            send_missed_message(diff.new_messages, users, chats),
-                            send_missed_update(diff.other_updates, users, chats),
+                            self.loop.create_task(
+                                send_missed_message(diff.new_messages, users, chats)
+                            ),
+                            self.loop.create_task(
+                                send_missed_update(diff.other_updates, users, chats)
+                            ),
                         )
                     )
                 elif isinstance(diff, raw.types.updates.difference_empty.DifferenceEmpty):
