@@ -39,6 +39,7 @@ from pyrogram.errors import (
     ChatAdminRequired,
     MessageDeleteForbidden,
     MessageIdInvalid,
+    PeerIdInvalid,
     UserNotParticipant,
 )
 from pyrogram.types import ChatPermissions, Message
@@ -151,7 +152,7 @@ class Lockings(plugin.Plugin):
         if user:
             try:
                 target = await chat.get_member(user.id)
-            except (ChatAdminRequired, ChannelPrivate, UserNotParticipant):
+            except (ChatAdminRequired, ChannelPrivate, PeerIdInvalid, UserNotParticipant):
                 pass
             else:
                 if target.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):

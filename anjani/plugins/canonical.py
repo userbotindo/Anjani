@@ -139,6 +139,7 @@ class Canonical(plugin.Plugin):
             )
         elif (
             new_data.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
+            and new_data.privileges
             and new_data.privileges.can_manage_chat
         ):  # type: ignore
             await self.chats_db.update_one(

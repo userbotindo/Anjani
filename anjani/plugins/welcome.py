@@ -161,7 +161,11 @@ class Greeting(plugin.Plugin):
         first_name = user.first_name or ""  # Ensure first name is not None
         last_name = user.last_name
         full_name = first_name + last_name if last_name else first_name
-        count = await client.get_chat_members_count(chat.id) if client else "N/A"
+        try:
+            count = await client.get_chat_members_count(chat.id) if client else "N/A"
+        except ChannelPrivate:
+            count = "N/A"
+
         return text.format(
             first=escape(first_name),
             last=escape(last_name) if last_name else "",

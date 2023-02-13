@@ -19,7 +19,7 @@ from typing import Any, ClassVar, MutableMapping, Optional, Union
 
 from bson.objectid import ObjectId
 from pyrogram.enums.chat_member_status import ChatMemberStatus
-from pyrogram.errors import PeerIdInvalid, UserNotParticipant
+from pyrogram.errors import BadRequest, PeerIdInvalid, UserNotParticipant
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -213,8 +213,14 @@ class Restrictions(plugin.Plugin):
 
         try:
             await chat.unban_member(user.id)
-        except PeerIdInvalid:
-            return await self.text(chat.id, "err-peer-invalid")
+        except (BadRequest, PeerIdInvalid) as e:
+            if isinstance(e.value, str) and "PARTICIPANT_ID_INVALID" in e.value:
+                return await self.text(chat.id, "err-invalid-pid")
+
+            if isinstance(e, PeerIdInvalid):
+                return await self.text(chat.id, "err-peer-invalid")
+
+            raise e from BadRequest
 
         return await self.text(
             chat.id, "unban-done", user.first_name if isinstance(user, User) else user.title
