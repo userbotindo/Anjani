@@ -716,9 +716,9 @@ class SpamPrediction(plugin.Plugin):
         if user.get("reputation", 0) < self.__predict_cost:
             return await self.text(
                 chat.id,
-                "spampredict-unauthorized",
-                user.get("reputation", 0),
+                "spampredict-insuficent",
                 self.__predict_cost,
+                user.get("reputation", 0),
             )
 
         replied = ctx.msg.reply_to_message
