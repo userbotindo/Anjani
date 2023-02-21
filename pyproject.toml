@@ -31,7 +31,7 @@ classifiers = [
 anjani = "anjani.main:start"
 
 [tool.poetry.dependencies]
-python = ">=3.9, <=3.11"
+python = "~=3.9"
 aiohttp = "^3.8.3"
 aiopath = [
     {version = "^0.5.12", python = "<3.10"},
