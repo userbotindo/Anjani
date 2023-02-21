@@ -20,9 +20,11 @@ from typing import ClassVar, Optional
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import (
+    BotChannelsNa,
     ChatAdminRequired,
     FloodWait,
     UserAdminInvalid,
+    UserCreator,
     UserIdInvalid,
     UserPrivacyRestricted,
 )
@@ -138,15 +140,12 @@ class Admins(plugin.Plugin):
             if ctx.input:
                 return await self.text(chat.id, "err-peer-invalid")
 
-            if not ctx.msg.reply_to_message:
+            if not ctx.msg.reply_to_message or not ctx.msg.reply_to_message.from_user:
                 return await self.text(chat.id, "no-promote-user")
 
             user = ctx.msg.reply_to_message.from_user
 
-        if not user:  # Check again
-            return await self.text(chat.id, "no-promote-user")
-
-        if user.id == ctx.author.id and ctx.input:
+        if user.id == ctx.author.id:
             return await self.text(chat.id, "promote-error-self")
 
         if user.id == self.bot.uid:
@@ -178,15 +177,12 @@ class Admins(plugin.Plugin):
             if ctx.input:
                 return await self.text(chat.id, "err-peer-invalid")
 
-            if not ctx.msg.reply_to_message:
+            if not ctx.msg.reply_to_message or not ctx.msg.reply_to_message.from_user:
                 return await self.text(chat.id, "no-demote-user")
 
             user = ctx.msg.reply_to_message.from_user
 
-        if not user:  # Check again
-            return await self.text(chat.id, "no-demote-user")
-
-        if user.id == ctx.author.id and ctx.input:
+        if user.id == ctx.author.id:
             return await self.text(chat.id, "demote-error-self")
 
         if user.id == self.bot.uid:
@@ -209,7 +205,9 @@ class Admins(plugin.Plugin):
                     is_anonymous=False,
                 ),
             )
-        except ChatAdminRequired:
+        except (BotChannelsNa, ChatAdminRequired):
             return await self.text(chat.id, "demote-error-perm")
+        except UserCreator:
+            return await self.text(chat.id, "demote-error-creator")
 
         return await self.text(chat.id, "demote-success")
