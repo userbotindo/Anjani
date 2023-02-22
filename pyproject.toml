@@ -57,7 +57,7 @@ uvloop = ["uvloop"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
-isort = "^5.10.1"
+isort = "^5.12.0"
 pre-commit = "^2.21.0"
 pylint = "^2.16.2"
 flake8 = "^5.0.4"
