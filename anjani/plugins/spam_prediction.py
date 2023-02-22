@@ -24,7 +24,6 @@ from pathlib import Path
 from random import randint
 from typing import Any, Callable, ClassVar, List, MutableMapping, Optional
 
-from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
@@ -183,34 +182,6 @@ class SpamPrediction(plugin.Plugin):
                     }
                 },
             )  # Do not upsert
-
-    async def run_ocr(self, message: Message) -> Optional[str]:
-        """Run tesseract"""
-        # try:
-        #     image = AsyncPath(await message.download())
-        # except Exception:  # skipcq: PYL-W0703
-        #     return self.log.warning(
-        #         "Failed to download image from MessageID %s in Chat %s",
-        #         message.id,
-        #         message.chat.id,
-        #     )
-
-        # try:
-        #     stdout, _, exitCode = await util.system.run_command(
-        #         "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
-        #     )
-        # except FileNotFoundError:
-        #     return
-        # except Exception as e:  # skipcq: PYL-W0703
-        #     return self.log.error("Unexpected error occured when running OCR", exc_info=e)
-        # finally:
-        #     await image.unlink()
-
-        # if exitCode != 0:
-        #     return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
-
-        # return stdout
-        return ""
 
     @listener.filters(
         filters.regex(r"spam_check_(?P<value>t|f)") | filters.regex(r"spam_ban_(?P<user>.*)")
@@ -377,31 +348,16 @@ class SpamPrediction(plugin.Plugin):
             if message.text
             else (message.caption if message.media and message.caption else None)
         )
-        task = None
-        if message.photo:
-            ocr_result = await self.run_ocr(message)
-            if ocr_result:
-                task = self.bot.loop.create_task(
-                    self.spam_check(message, ocr_result, from_ocr=True)
-                )
-
         if not chat or message.left_chat_member:
             return
 
         if not text:
-            if task and not task.done():
-                await task
-
             return
 
         # Always check the spam probability
-        try:
-            await self.spam_check(message, text)
-        finally:
-            if task and not task.done():
-                await task
+        await self.spam_check(message, text)
 
-    async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
+    async def spam_check(self, message: Message, text: str) -> None:
         text = text.strip()
         try:
             user = message.from_user.id
@@ -438,13 +394,9 @@ class SpamPrediction(plugin.Plugin):
             if ch := message.forward_from_chat:
                 notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
 
-            if from_ocr:
-                notice += (
-                    f"**Photo Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-                )
-            else:
-                notice += f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-
+            notice += (
+                f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+            )
             l_spam, l_ham = 0, 0
             _, data = await asyncio.gather(
                 self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
@@ -530,20 +482,12 @@ class SpamPrediction(plugin.Plugin):
                     if util.tg.is_staff_or_admin(target):
                         return
 
-            if from_ocr:
-                alert = (
-                    f"❗️**PHOTO SPAM ALERT**❗️\n\n"
-                    f"**User**: `{identifier}`\n"
-                    f"**Photo Text Hash**: `{content_hash}`\n"
-                    f"**Spam Probability**: `{proba_str}%`"
-                )
-            else:
-                alert = (
-                    f"❗️**MESSAGE SPAM ALERT**❗️\n\n"
-                    f"**User**: `{identifier}`\n"
-                    f"**Message Text Hash**: `{content_hash}`\n"
-                    f"**Spam Probability**: `{proba_str}%`"
-                )
+            alert = (
+                f"❗️**MESSAGE SPAM ALERT**❗️\n\n"
+                f"**User**: `{identifier}`\n"
+                f"**Message Text Hash**: `{content_hash}`\n"
+                f"**Spam Probability**: `{proba_str}%`"
+            )
 
             await self.bot.log_stat("spam_detected")
             try:
@@ -580,58 +524,6 @@ class SpamPrediction(plugin.Plugin):
             )
             raise StopPropagation
 
-    async def mark_spam_ocr(
-        self,
-        content: str,
-        user_id: Optional[int],
-        chat_id: int,
-        message_id: int,
-        thread_id: Optional[int],
-    ) -> bool:
-        identifier = self._build_hex(user_id)
-        content_hash = self._build_hash(content)
-        pred = await self._predict(content)
-        if pred.size == 0:
-            return False
-
-        proba = pred[0][1]
-        text = f"#SPAM\n\n**CPU Prediction**: `{self.prob_to_string(proba)}`\n"
-        if identifier:
-            text += f"**Identifier**: `{identifier}`\n"
-
-        text += f"**Photo Text Hash**: `{content_hash}`\n\n**======= CONTENT =======**\n\n{content}"
-        res = await asyncio.gather(
-            self.bot.client.send_message(
-                chat_id=-1001314588569,
-                text=text,
-                disable_web_page_preview=True,
-            ),
-            self.db.update_one(
-                {"_id": content_hash},
-                {
-                    "$set": {
-                        "text": content,
-                        "spam": 1,
-                        "ham": 0,
-                    }
-                },
-                upsert=True,
-            ),
-            self.bot.log_stat("spam_detected"),
-            self.bot.log_stat("predicted"),
-        )
-
-        await self.bot.client.send_message(
-            chat_id,
-            "Message photo logged as spam!",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("View Message", url=res[0].link)]]
-            ),
-            reply_to_message_id=message_id,
-            message_thread_id=thread_id,  # type: ignore
-        )
-        return True
-
     @command.filters(filters.staff_only)
     async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
         await self.__load_model()
@@ -650,17 +542,6 @@ class SpamPrediction(plugin.Plugin):
                 user_id = reply_msg.forward_from.id
         else:
             content = ctx.input
-
-        if reply_msg and reply_msg.photo:
-            ocr_result = await self.run_ocr(reply_msg)
-            if ocr_result:
-                await self.mark_spam_ocr(
-                    ocr_result, user_id, ctx.chat.id, reply_msg.id, ctx.msg.message_thread_id
-                )
-
-                # Return early if content is empty, so error message not shown
-                if not content:
-                    return None
 
         if not content:
             return await ctx.get_text("spampredict-empty")
@@ -728,38 +609,6 @@ class SpamPrediction(plugin.Plugin):
             return None
 
         content = replied.text or replied.caption
-
-        photo_prediction = None
-        if replied.photo:
-            await ctx.respond(
-                await ctx.get_text("spampredict-photo"),
-                reply_to_message_id=replied.id,
-            )
-
-            ocr_result = await self.run_ocr(replied)
-            if ocr_result:
-                ocr_prediction = await self._predict(ocr_result)
-                if ocr_prediction.size != 0:
-                    photo_prediction = (
-                        "**Result Photo Text**\n\n"
-                        f"**Is Spam**: {await self._is_spam(ocr_result)}\n"
-                        f"**Spam Prediction**: `{self.prob_to_string(ocr_prediction[0][1])}`\n"
-                        f"**Ham Prediction**: `{self.prob_to_string(ocr_prediction[0][0])}`\n\n"
-                    )
-                    # Return early if content is empty, so error message not shown
-                    if not content:
-                        await asyncio.gather(
-                            self.bot.log_stat("predicted"),
-                            ctx.respond(photo_prediction),
-                            self.user_db.update_one(
-                                {"_id": ctx.author.id},
-                                {"$inc": {"reputation": -self.__predict_cost}},
-                            ),
-                        )
-                        return None
-            else:
-                photo_prediction = await ctx.get_text("spampredict-photo-failed")
-
         if not content:
             return await ctx.get_text("spampredict-empty")
 
@@ -776,10 +625,8 @@ class SpamPrediction(plugin.Plugin):
         await asyncio.gather(
             self.bot.log_stat("predicted"),
             ctx.respond(
-                photo_prediction + "**Result Caption Text**\n\n" + textPrediction
-                if photo_prediction
-                else "**Result**\n\n" + textPrediction,
-                reply_to_message_id=None if replied.photo else replied.id,
+                "**Result**\n\n" + textPrediction,
+                reply_to_message_id=replied.id,
             ),
             self.user_db.update_one(
                 {"_id": ctx.author.id}, {"$inc": {"reputation": -self.__predict_cost}}
