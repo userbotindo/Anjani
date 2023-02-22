@@ -32,7 +32,7 @@ anjani = "anjani.main:start"
 
 [tool.poetry.dependencies]
 python = "~=3.9"
-aiohttp = "^3.8.3"
+aiohttp = "^3.8.4"
 aiopath = [
     {version = "^0.5.12", python = "<3.10"},
     {version = "^0.6.11", python = ">=3.10"},
