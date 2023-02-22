@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
 import time
 import unicodedata as ud
 from collections import OrderedDict
@@ -38,7 +37,6 @@ from pyrogram.enums.message_entity_type import MessageEntityType
 from pyrogram.errors import (
     ChannelPrivate,
     ChatAdminRequired,
-    FloodWait,
     MessageDeleteForbidden,
     MessageIdInvalid,
     PeerIdInvalid,
@@ -146,29 +144,17 @@ class Lockings(plugin.Plugin):
             if message.sender_chat.id == chat.id:  # anon admin
                 return
 
-            while True:
-                try:
-                    current_chat: Any = await self.bot.client.get_chat(chat.id)
-                except FloodWait as e:
-                    await asyncio.sleep(e.value)  # type: ignore
-                    continue
-
-                break
-
+            current_chat: Any = await self.bot.client.get_chat(chat.id)
             if current_chat.linked_chat and message.sender_chat.id == current_chat.linked_chat.id:
                 # Linked channel group
                 return
 
         if user:
-            while True:
-                try:
-                    target = await chat.get_member(user.id)
-                except FloodWait as e:
-                    await asyncio.sleep(e.value)  # type: ignore
-                    continue
-                except (ChatAdminRequired, ChannelPrivate, PeerIdInvalid, UserNotParticipant):
-                    break
-
+            try:
+                target = await chat.get_member(user.id)
+            except (ChatAdminRequired, ChannelPrivate, PeerIdInvalid, UserNotParticipant):
+                pass
+            else:
                 if target.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
                     return
 
