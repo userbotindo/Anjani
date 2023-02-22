@@ -186,30 +186,31 @@ class SpamPrediction(plugin.Plugin):
 
     async def run_ocr(self, message: Message) -> Optional[str]:
         """Run tesseract"""
-        try:
-            image = AsyncPath(await message.download())
-        except Exception:  # skipcq: PYL-W0703
-            return self.log.warning(
-                "Failed to download image from MessageID %s in Chat %s",
-                message.id,
-                message.chat.id,
-            )
+        # try:
+        #     image = AsyncPath(await message.download())
+        # except Exception:  # skipcq: PYL-W0703
+        #     return self.log.warning(
+        #         "Failed to download image from MessageID %s in Chat %s",
+        #         message.id,
+        #         message.chat.id,
+        #     )
 
-        try:
-            stdout, _, exitCode = await util.system.run_command(
-                "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
-            )
-        except FileNotFoundError:
-            return
-        except Exception as e:  # skipcq: PYL-W0703
-            return self.log.error("Unexpected error occured when running OCR", exc_info=e)
-        finally:
-            await image.unlink()
+        # try:
+        #     stdout, _, exitCode = await util.system.run_command(
+        #         "tesseract", str(image), "stdout", "-l", "eng+ind", "--psm", "6"
+        #     )
+        # except FileNotFoundError:
+        #     return
+        # except Exception as e:  # skipcq: PYL-W0703
+        #     return self.log.error("Unexpected error occured when running OCR", exc_info=e)
+        # finally:
+        #     await image.unlink()
 
-        if exitCode != 0:
-            return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
+        # if exitCode != 0:
+        #     return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
 
-        return stdout
+        # return stdout
+        return ""
 
     @listener.filters(
         filters.regex(r"spam_check_(?P<value>t|f)") | filters.regex(r"spam_ban_(?P<user>.*)")
