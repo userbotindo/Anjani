@@ -42,7 +42,7 @@ certifi = {version = "^2022.12.7", platform = "windows"}
 colorlog = "^6.7.0"
 meval = "^2.5"
 pymongo = "^4.3.3"
-Pyrogram = "^2.0.93"
+Pyrogram = "^2.0.99"
 python-dotenv = "^0.21.0"
 PyYAML = "^6.0"
 scikit-learn = {version = "1.2.0", optional = true}
