@@ -1,7 +1,7 @@
 __pycache__/
 
 # environment file
-*.env
+config.env*
 !sample_config.env
 
 # Build folder
