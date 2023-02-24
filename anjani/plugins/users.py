@@ -32,7 +32,7 @@ from anjani import command, listener, plugin, util
 try:
     from userbotindo import get_trust
 except ImportError:
-    get_trust = lambda *_: None
+    from anjani.util.misc import do_nothing as get_trust
 
 
 class Users(plugin.Plugin):
