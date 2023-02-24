@@ -29,7 +29,7 @@ class TelegramConfig(MutableMapping[_KT, _VT]):
             super().__setattr__(key, value)
 
     def is_plugin_disabled(self, name: str) -> bool:
-        return name not in self.__getattribute__("plugin_flag")
+        return name in self.__getattribute__("plugin_flag")
 
     def __contains__(self, k: _KT) -> bool:
         return k in self.__dict__

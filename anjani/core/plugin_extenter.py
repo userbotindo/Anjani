@@ -70,7 +70,7 @@ class PluginExtender(MixinBase):
                 cls = getattr(plug, sym)
                 if inspect.isclass(cls) and issubclass(cls, plugin.Plugin) and not cls.disabled:
                     name = cls.name.lower().replace(" ", "_")
-                    if self.config.is_plugin_disabled(f"disable_{name}_plugin"):
+                    if not self.config.is_plugin_disabled(f"disable_{name}_plugin"):
                         self.load_plugin(cls, comment=comment)
 
     # noinspection PyTypeChecker,PyTypeChecker
