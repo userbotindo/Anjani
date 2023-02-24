@@ -48,7 +48,7 @@ try:
 
     _run_predict = True
 except ImportError:
-    from util.types import Classifier
+    from anjani.util.types import Classifier
 
     _run_predict = False
 
