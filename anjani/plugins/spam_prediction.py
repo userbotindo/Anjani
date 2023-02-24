@@ -16,7 +16,6 @@
 
 import asyncio
 import re
-import unicodedata
 from datetime import datetime, time, timedelta
 from hashlib import md5, sha256
 from pathlib import Path
