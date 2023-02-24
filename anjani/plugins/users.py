@@ -29,7 +29,10 @@ from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
 from anjani import command, listener, plugin, util
 
-from .spam_prediction import get_trust
+try:
+    from userbotindo import get_trust
+except ImportError:
+    get_trust = lambda *_: None
 
 
 class Users(plugin.Plugin):
