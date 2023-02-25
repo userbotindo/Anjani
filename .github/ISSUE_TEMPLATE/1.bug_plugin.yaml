@@ -1,6 +1,6 @@
 name: Bug Report
 description: Create a bug report for Anjani
-labels: [bug]
+labels: ["type: bug", "scope: general", "status: triage"]
 body:
   - type: markdown
     attributes:

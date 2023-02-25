@@ -1,6 +1,6 @@
 name: Bug Report (core)
 description: Create a bug report specific for Anjani-core
-labels: [bug, core]
+labels: ["type: bug", "scope: core", "status: triage"]
 body:
   - type: markdown
     attributes:
