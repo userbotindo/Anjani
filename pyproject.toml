@@ -45,7 +45,7 @@ meval = "^2.5"
 multidict = "^6.0.4"
 pymongo = "^4.3.3"
 Pyrogram = "^2.0.99"
-python-dotenv = "^0.21.1"
+python-dotenv = ">=0.21.1,<1.1.0"
 PyYAML = "^6.0"
 scikit-learn = {version = "1.2.1", optional = true}
 TgCrypto = "^1.2.5"
