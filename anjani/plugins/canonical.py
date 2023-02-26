@@ -15,8 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import re
-from pathlib import Path
 from typing import Any, ClassVar, MutableMapping
 
 from pymongo.errors import PyMongoError
@@ -31,15 +29,16 @@ from pyrogram.types import (
     Message,
 )
 
-from anjani import command, filters, listener, plugin, util
-
-env = Path("config.env")
 try:
-    token = re.search(r'^(?!#)\s+?SP_TOKEN="(\w+)"', env.read_text().strip(), re.MULTILINE)
-except (AttributeError, FileNotFoundError):
-    token = ""
+    import userbotindo
 
-del env
+    _run_canonical = True
+    del userbotindo
+except ImportError:
+    _run_canonical = False
+
+
+from anjani import command, filters, listener, plugin, util
 
 
 class Canonical(plugin.Plugin):
@@ -49,7 +48,7 @@ class Canonical(plugin.Plugin):
     """
 
     name: ClassVar[str] = "Canonical"
-    disabled: ClassVar[bool] = not token
+    disabled: ClassVar[bool] = not _run_canonical
 
     # Private
     __task: asyncio.Task[None]

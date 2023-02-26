@@ -18,7 +18,6 @@ import asyncio
 import re
 from datetime import datetime, time, timedelta
 from hashlib import md5, sha256
-from pathlib import Path
 from random import randint
 from typing import Any, Callable, ClassVar, MutableMapping, Optional
 
@@ -53,21 +52,11 @@ except ImportError:
 from anjani import command, filters, listener, plugin, util
 from anjani.util.misc import StopPropagation
 
-env = Path("config.env")
-try:
-    token = re.search(r'^(?!#)\s+?SP_TOKEN="(\w+)"', env.read_text().strip(), re.MULTILINE).group(  # type: ignore
-        1
-    )
-except (AttributeError, FileNotFoundError):
-    token = ""
-
-del env
-
 
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
     helpable: ClassVar[bool] = True
-    disabled: ClassVar[bool] = not _run_predict or not token
+    disabled: ClassVar[bool] = not _run_predict
 
     db: util.db.AsyncCollection
     user_db: util.db.AsyncCollection
@@ -76,7 +65,7 @@ class SpamPrediction(plugin.Plugin):
     __predict_cost: int = 10
 
     async def on_load(self) -> None:
-        self.model = Classifier(token)
+        self.model = Classifier()
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
