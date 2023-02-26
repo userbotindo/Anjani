@@ -75,6 +75,3 @@ changelog:
 	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
 	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
 	@echo "Changelog saved to CHANGELOG.md"
-
-requirements:
-	poetry export -E all -f requirements.txt -o requirements.txt --without-hashes
