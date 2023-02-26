@@ -511,7 +511,7 @@ class SpamPrediction(plugin.Plugin):
                 if message.sender_chat.id == chat.id:  # anon admin
                     return
 
-                current_chat: Any = await self.bot.client.get_chat(chat.id)
+                current_chat: Any = await self.bot.get_chat(chat.id)
                 if (
                     current_chat.linked_chat
                     and message.sender_chat.id == current_chat.linked_chat.id

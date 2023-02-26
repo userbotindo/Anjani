@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Typ
 
 import pyrogram.filters as flt
 from aiopath import AsyncPath
+from cache import AsyncTTL
 from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.filters import Filter
@@ -30,7 +31,15 @@ from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
 from pyrogram.handlers.chat_member_updated_handler import ChatMemberUpdatedHandler
 from pyrogram.handlers.inline_query_handler import InlineQueryHandler
 from pyrogram.handlers.message_handler import MessageHandler
-from pyrogram.types import CallbackQuery, InlineQuery, Message, User
+from pyrogram.types import (
+    CallbackQuery,
+    Chat,
+    ChatMember,
+    ChatPreview,
+    InlineQuery,
+    Message,
+    User,
+)
 from yaml import full_load
 
 from anjani import util
@@ -352,3 +361,13 @@ class TelegramBot(MixinBase):
             return await response.edit(text, **kwargs)
 
         raise ValueError(f"Unknown response mode {mode}")
+
+    @AsyncTTL(time_to_live=60, maxsize=1024)
+    async def get_chat(self: "Anjani", chat_id: int) -> Union[Chat, ChatPreview]:
+        """Wrapper for `Client.get_chat` with a TTL cache."""
+        return await self.client.get_chat(chat_id)
+
+    @AsyncTTL(time_to_live=60, maxsize=1024)
+    async def get_chat_member(self: "Anjani", chat_id: int, user_id: int) -> ChatMember:
+        """Wrapper for `Client.get_chat_member` with a TTL cache."""
+        return await self.client.get_chat_member(chat_id, user_id)
