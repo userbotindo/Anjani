@@ -231,6 +231,17 @@ wrapt = [
 ]
 
 [[package]]
+name = "async-cache"
+version = "1.1.1"
+description = "An asyncio Cache"
+category = "main"
+optional = false
+python-versions = ">=3.3"
+files = [
+    {file = "async-cache-1.1.1.tar.gz", hash = "sha256:81aa9ccd19fb06784aaf30bd5f2043dc0a23fc3e998b93d0c2c17d1af9803393"},
+]
+
+[[package]]
 name = "async-timeout"
 version = "4.0.2"
 description = "Timeout context manager for asyncio programs"
@@ -1659,4 +1670,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.9"
-content-hash = "bf4395b4f9620de5e3d5b776b880fdcd51173111367cf4eb87050108853bf5fb"
+content-hash = "a6604286e7d70ad6e2d8059cbc9d0370cc74367f94d2589203929237e19ae940"

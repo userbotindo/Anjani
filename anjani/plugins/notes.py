@@ -175,7 +175,10 @@ class Notes(plugin.Plugin):
             )
             return
 
-        name = ctx.args[0]
+        trigger = ctx.args[0]
+        if trigger.startswith("#") or "." in trigger or "$" in trigger:
+            return await self.text(chat.id, "err-illegal-trigger")
+
         text, types, content, buttons = get_message_info(ctx.msg)
         _, ret = await asyncio.gather(
             self.db.update_one(
@@ -183,7 +186,7 @@ class Notes(plugin.Plugin):
                 {
                     "$set": {
                         "chat_name": chat.title,
-                        f"notes.{name}": {
+                        f"notes.{trigger}": {
                             "text": text,
                             "type": types,
                             "content": content,
@@ -193,7 +196,7 @@ class Notes(plugin.Plugin):
                 },
                 upsert=True,
             ),
-            self.text(chat.id, "note-saved", name),
+            self.text(chat.id, "note-saved", trigger),
         )
         return ret
 

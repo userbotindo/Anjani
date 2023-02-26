@@ -16,13 +16,22 @@
 
 import asyncio
 import re
-from typing import Any, ClassVar, MutableMapping, Optional, Set, Tuple, Coroutine, Callable
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    MutableMapping,
+    Optional,
+    Set,
+    Tuple,
+)
 
-from pyrogram.types import Message
 from pyrogram.errors import MediaEmpty, MessageEmpty
+from pyrogram.types import Message
 
 from anjani import command, filters, listener, plugin, util
-from anjani.util.tg import Types, get_message_info, build_button
+from anjani.util.tg import Types, build_button, get_message_info
 
 
 class Filters(plugin.Plugin):
@@ -175,6 +184,10 @@ class Filters(plugin.Plugin):
             return await self.text(chat.id, "filter-help")
 
         trigger = ctx.args[0]
+
+        if "." in trigger or "$" in trigger:
+            return await self.text(chat.id, "err-illegal-trigger")
+
         text, types, content, buttons = get_message_info(ctx.msg)
         _, ret = await asyncio.gather(
             self.db.update_one(
