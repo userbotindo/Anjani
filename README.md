@@ -3,7 +3,6 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 [![DeepSource](https://deepsource.io/gh/userbotindo/Anjani.svg/?label=active+issues)](https://deepsource.io/gh/userbotindo/Anjani/?ref=repository-badge)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/23d2794692ad47a18849e06823aeaf6f)](https://www.codacy.com/gh/userbotindo/Anjani/dashboard?utm_source=github.com&utm_medium=referral&utm_content=userbotindo/Anjani&utm_campaign=Badge_Grade)
 
 Can be found on Telegram as [Anjani](https://t.me/dAnjani_bot).
 
