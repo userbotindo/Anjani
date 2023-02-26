@@ -53,5 +53,10 @@ def find_prefixed_funcs(obj: Any, prefix: str) -> Set[Tuple[str, Callable[..., A
     return results
 
 
+def do_nothing(*args: Any, **kwargs: Any) -> None:
+    """Do nothing function"""
+    return None
+
+
 class StopPropagation(Exception):
     """Exception that raised to stop propagating an event"""

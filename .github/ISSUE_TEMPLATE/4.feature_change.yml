@@ -1,23 +1,27 @@
-name: Feature Proposal
-description: Create a feature request for Anjani
-labels: ["type: feature", "feature: addition", "status: triage"]
+name: Feature Change
+description: Create a feature change for Anjani
+labels: ["type: feature", "feature: enhancement", "status: triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to propose a feature! Please fill out this form as completely as possible.
+        Thanks for taking the time to propose a feature changes! Please fill out this form as completely as possible.
         Feature request will be converted to the [Github Discussions (Ideas 💡)](https://github.com/userbotindo/Anjani/discussions/categories/ideas)
         and will be mentioned on a new issue if the feature is accepted.
   - type: textarea
     attributes:
-      label: Describe the feature you'd like to request
-      description: A clear and concise description of what you want, what your use case is and what problem are you trying to solve.
+      label: Summary
+      description: A clear and concise what are you trying to do.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Describe the solution you'd like
-      description: A clear and concise description of what you want to happen.
+      label: How the feature works currently?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: How the feature should work?
     validations:
       required: true
   - type: dropdown

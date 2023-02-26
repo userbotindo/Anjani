@@ -15,8 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import abstractmethod, abstractproperty
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Protocol, TypeVar
 
+from aiohttp import ClientSession
 from pyrogram.filters import Filter
 
 if TYPE_CHECKING:
@@ -44,11 +45,25 @@ class NDArray(Protocol[TypeData]):
         raise NotImplementedError
 
 
-class Pipeline(Protocol):
+class Classifier(Protocol):
     @abstractmethod
-    def predict(self, X: Iterable[Any], **predict_params: Any) -> NDArray[Any]:
+    async def predict(self, text: str, **predict_params: Any) -> NDArray[Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def predict_proba(self, X: Iterable[Any]) -> NDArray[Any]:
+    async def load_model(self, http_client: ClientSession) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def is_spam(self, text: str) -> bool:
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def normalize(text: str) -> str:
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def prob_to_string(value: float) -> float:
         raise NotImplementedError

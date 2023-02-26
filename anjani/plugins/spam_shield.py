@@ -34,10 +34,13 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, Message, User
 
+try:
+    from userbotindo import get_trust
+except ImportError:
+    from anjani.util.misc import do_nothing as get_trust
+
 from anjani import command, filters, listener, plugin, util
 from anjani.util.misc import StopPropagation
-
-from .spam_prediction import get_trust
 
 
 class SpamShield(plugin.Plugin):

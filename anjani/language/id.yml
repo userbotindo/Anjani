@@ -644,4 +644,5 @@ err-perm: Saya dan Anda bukan administrator pada group ini.
 err-unexpected: "Telah terjadi kesalahan yang tak terduga!\n\n**Error:** `{}`"
 err-msg-format-parsing: "**Terjadi kesalahan penguraian format pesan!**\n**Kesalahan pada kunci:** `{err}`."
 err-im-not-admin: Saya bukan administrator di sini! Saya membutuhkan hak administrator untuk melakukan ini.
+err-illegal-trigger: "Karakter ilegal pada kata kunci!\n'.' dan '$' tidak diperbolehkan"
 #endregion
