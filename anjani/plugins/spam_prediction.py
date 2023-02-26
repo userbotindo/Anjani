@@ -15,14 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import pickle
 import re
-import unicodedata
 from datetime import datetime, time, timedelta
 from hashlib import md5, sha256
 from pathlib import Path
 from random import randint
-from typing import Any, Callable, ClassVar, List, MutableMapping, Optional
+from typing import Any, Callable, ClassVar, MutableMapping, Optional
 
 from aiopath import AsyncPath
 from pymongo.errors import DuplicateKeyError
@@ -45,12 +43,11 @@ from pyrogram.types import (
 )
 
 try:
-    from scipy.stats import ttest_1samp
-    from sklearn.pipeline import Pipeline
+    from userbotindo import Classifier
 
     _run_predict = True
 except ImportError:
-    from anjani.util.types import Pipeline
+    from anjani.util.types import Classifier
 
     _run_predict = False
 
@@ -68,21 +65,6 @@ except (AttributeError, FileNotFoundError):
 del env
 
 
-def get_trust(sample: List[float]) -> Optional[float]:
-    """Compute the trust score of a user
-    Args:
-        sample (List[float]): A list of scores
-    Returns:
-        Optional[float]: The trust score of the user
-    """
-    if not _run_predict:
-        return None
-    if len(sample) < 3:
-        return None  # Not enough data
-    _, pred = ttest_1samp(sample, 0.5, alternative="greater")
-    return pred * 100
-
-
 class SpamPrediction(plugin.Plugin):
     name: ClassVar[str] = "SpamPredict"
     helpable: ClassVar[bool] = True
@@ -91,10 +73,11 @@ class SpamPrediction(plugin.Plugin):
     db: util.db.AsyncCollection
     user_db: util.db.AsyncCollection
     setting_db: util.db.AsyncCollection
-    model: Pipeline
+    model: Classifier
     __predict_cost: int = 10
 
     async def on_load(self) -> None:
+        self.model = Classifier(token)
         self.db = self.bot.db.get_collection("SPAM_DUMP")
         self.user_db = self.bot.db.get_collection("USERS")
         self.setting_db = self.bot.db.get_collection("SPAM_PREDICT_SETTING")
@@ -131,15 +114,11 @@ class SpamPrediction(plugin.Plugin):
 
     async def __load_model(self) -> None:
         self.log.info("Downloading spam prediction model!")
-        async with self.bot.http.post(
-            "https://spamdetect.userbotindo.com",
-            headers={"Authorization": f"Bearer {token}"},
-        ) as res:
-            if res.status == 200:
-                self.model = await util.run_sync(pickle.loads, await res.read())
-            else:
-                self.log.warning("Failed to download prediction model!")
-                self.bot.unload_plugin(self)
+        try:
+            await self.model.load_model(self.bot.http)
+        except RuntimeError:
+            self.log.warning("Failed to download prediction model!")
+            self.bot.unload_plugin(self)
 
     @staticmethod
     def _build_hash(content: str) -> str:
@@ -150,23 +129,6 @@ class SpamPrediction(plugin.Plugin):
             id = self.bot.uid
         # skipcq: PTC-W1003
         return md5((str(id) + self.bot.user.username).encode()).hexdigest()  # skipcq: BAN-B324
-
-    @staticmethod
-    def _normalize_text(text: str) -> str:
-        """Normalize text to remove accents and other non-ASCII characters."""
-        return (
-            unicodedata.normalize("NFKD", text).encode("utf-8", "ignore").decode("utf-8", "ignore")
-        ).lower()
-
-    @staticmethod
-    def prob_to_string(value: float) -> str:
-        return str(value * 10**2)[0:7]
-
-    async def _predict(self, text: str) -> util.types.NDArray[float]:
-        return await util.run_sync(self.model.predict_proba, [text])
-
-    async def _is_spam(self, text: str) -> bool:
-        return (await util.run_sync(self.model.predict, [text]))[0] == "spam"
 
     async def _collect_random_sample(self, proba: float, uid: Optional[int]) -> None:
         if not uid or uid == self.bot.uid:
@@ -407,11 +369,11 @@ class SpamPrediction(plugin.Plugin):
         except AttributeError:
             user = None
 
-        text_norm = self._normalize_text(text)
+        text_norm = self.model.normalize(text)
         if len(text_norm.split()) < 4:  # Skip short messages
             return
 
-        response = await self._predict(text_norm)
+        response = await self.model.predict(text_norm)
         if response.size == 0:
             return
 
@@ -424,7 +386,7 @@ class SpamPrediction(plugin.Plugin):
 
         content_hash = self._build_hash(text)
         identifier = self._build_hex(user)
-        proba_str = self.prob_to_string(probability)
+        proba_str = self.model.prob_to_string(probability)
         msg = None
 
         if message.chat.username:
@@ -583,12 +545,13 @@ class SpamPrediction(plugin.Plugin):
     ) -> bool:
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
-        pred = await self._predict(content)
+        pred = await self.model.predict(content)
+
         if pred.size == 0:
             return False
 
         proba = pred[0][1]
-        text = f"#SPAM\n\n**CPU Prediction**: `{self.prob_to_string(proba)}`\n"
+        text = f"#SPAM\n\n**CPU Prediction**: `{self.model.prob_to_string(proba)}`\n"
         if identifier:
             text += f"**Identifier**: `{identifier}`\n"
 
@@ -656,13 +619,13 @@ class SpamPrediction(plugin.Plugin):
 
         identifier = self._build_hex(user_id)
         content_hash = self._build_hash(content)
-        content_normalized = self._normalize_text(content.strip())
-        pred = await self._predict(content_normalized)
+        content_normalized = self.model.normalize(content.strip())
+        pred = await self.model.predict(content_normalized)
         if pred.size == 0:
             return "Prediction failed"
 
         proba = pred[0][1]
-        text = f"#SPAM\n\n**CPU Prediction**: `{self.prob_to_string(proba)}`\n"
+        text = f"#SPAM\n\n**CPU Prediction**: `{self.model.prob_to_string(proba)}`\n"
         if identifier:
             text += f"**Identifier**: `{identifier}`\n"
 
@@ -727,13 +690,13 @@ class SpamPrediction(plugin.Plugin):
 
             ocr_result = await self.run_ocr(replied)
             if ocr_result:
-                ocr_prediction = await self._predict(ocr_result)
+                ocr_prediction = await self.model.predict(ocr_result)
                 if ocr_prediction.size != 0:
                     photo_prediction = (
                         "**Result Photo Text**\n\n"
-                        f"**Is Spam**: {await self._is_spam(ocr_result)}\n"
-                        f"**Spam Prediction**: `{self.prob_to_string(ocr_prediction[0][1])}`\n"
-                        f"**Ham Prediction**: `{self.prob_to_string(ocr_prediction[0][0])}`\n\n"
+                        f"**Is Spam**: {await self.model.is_spam(ocr_result)}\n"
+                        f"**Spam Prediction**: `{self.model.prob_to_string(ocr_prediction[0][1])}`\n"
+                        f"**Ham Prediction**: `{self.model.prob_to_string(ocr_prediction[0][0])}`\n\n"
                     )
                     # Return early if content is empty, so error message not shown
                     if not content:
@@ -751,16 +714,15 @@ class SpamPrediction(plugin.Plugin):
 
         if not content:
             return await ctx.get_text("spampredict-empty")
-
-        content = self._normalize_text(content.strip())
-        pred = await self._predict(content)
+        content = self.model.normalize(content.strip())
+        pred = await self.model.predict(content)
         if pred.size == 0:
             return await ctx.get_text("spampredict-failed")
 
         textPrediction = (
-            f"**Is Spam**: {await self._is_spam(content)}\n"
-            f"**Spam Prediction**: `{self.prob_to_string(pred[0][1])}`\n"
-            f"**Ham Prediction**: `{self.prob_to_string(pred[0][0])}`"
+            f"**Is Spam**: {await self.model.is_spam(content)}\n"
+            f"**Spam Prediction**: `{self.model.prob_to_string(pred[0][1])}`\n"
+            f"**Ham Prediction**: `{self.model.prob_to_string(pred[0][0])}`"
         )
         await asyncio.gather(
             self.bot.log_stat("predicted"),
