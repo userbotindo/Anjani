@@ -21,31 +21,31 @@ pull: # Pull latest changes from git
 
 build: # Build docker images
 	@echo "> $(CYAN)Building images$(END)"
-	@docker-compose build
+	@docker compose build
 
 start: # Start docker containers
 	@echo "> $(CYAN)Creating containers$(END)"
-	@docker-compose create
+	@docker compose create
 	@echo "> $(CYAN)Starting containers$(END)"
-	@docker-compose start
+	@docker compose start
 
 stop: # Stop docker containers
 	@echo "> $(CYAN)Stopping containers$(END)"
-	@docker-compose stop
+	@docker compose stop
 
 down: # Stop and remove docker containers
 	@echo "> $(CYAN)Stopping and removing containers$(END)"
-	@docker-compose down
+	@docker compose down
 
 restart: # Restart docker containers
 	@echo "> $(CYAN)Restarting containers$(END)"
-	@docker-compose restart
+	@docker compose restart
 
 logs: # View docker logs
-	@docker-compose logs -f
+	@docker compose logs -f
 
 status: # View docker status
-	@docker-compose ps
+	@docker compose ps
 
 up: all  # Pull latest changes, build docker images, stop and start docker containers
 
