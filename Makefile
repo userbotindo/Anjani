@@ -1,77 +1,80 @@
-IMAGE_NAME=anjani
-CONTAINER_NAME=anjaniBot
-VERSION:=$(shell grep -m 1 version pyproject.toml | cut -d '"' -f 2)
+VERSION	:=	$(shell grep -m 1 version pyproject.toml | cut -d '"' -f 2)
 
-.PHONY: help test
+CHANGELOG_FILE := CHANGELOG.md
 
-help:
-	@echo "Userbotindo - Anjani v$(VERSION)"
-	@echo ""
-	@echo "Makefile commands:"
-	@echo "  fetch-origin: Fetch the latest changes from the origin"
-	@echo "  build(*-nc): Build the docker image"
-	@echo "  run: Run the docker container"
-	@echo "  stop: Stop the docker container"
-	@echo "  up(*-nc): Update latest changes and restart the docker container"
-	@echo "  test: Run the tests"
-	@echo "  restart: Restart the docker container"
-	@echo "\n* nc = no-cache (optional e.g: make build-nc)"
+# Colors
+GREEN	:=	\033[0;32m
+CYAN	:= 	\033[0;36m
+RED 	:=	\033[0;31m
+END		:=	\033[0m
 
-fetch-origin:
-	git pull origin
+.PHONY: help pull build start down restart logs status up changelog bump
 
-build: fetch-origin
-	docker build . -t $(IMAGE_NAME)
+all: pull build stop start
 
-build-nc: fetch-origin
-	docker build . -t $(IMAGE_NAME) --no-cache
+help: # Show help for each of the Makefile recipes.
+	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done
 
-run:
-	@echo "Starting Anjani(v$(VERSION))"
-	docker run -d --restart unless-stopped --name $(CONTAINER_NAME) $(IMAGE_NAME)
+pull: # Pull latest changes from git
+	@echo "> $(GREEN)Pulling latest changes from git$(END)"
+	@git pull origin
 
-stop:
-	docker container stop $(CONTAINER_NAME) || true
-	docker container rm $(CONTAINER_NAME) || true
+build: # Build docker images
+	@echo "> $(CYAN)Building images$(END)"
+	@docker-compose build
 
-up: build stop run
+start: # Start docker containers
+	@echo "> $(CYAN)Creating containers$(END)"
+	@docker-compose create
+	@echo "> $(CYAN)Starting containers$(END)"
+	@docker-compose start
 
-up-nc: build-nc stop run
+stop: # Stop docker containers
+	@echo "> $(CYAN)Stopping containers$(END)"
+	@docker-compose stop
 
-test:
-	poetry run pytest -v
+down: # Stop and remove docker containers
+	@echo "> $(CYAN)Stopping and removing containers$(END)"
+	@docker-compose down
 
-restart: stop run
+restart: # Restart docker containers
+	@echo "> $(CYAN)Restarting containers$(END)"
+	@docker-compose restart
+
+logs: # View docker logs
+	@docker-compose logs -f
+
+status: # View docker status
+	@docker-compose ps
+
+up: all  # Pull latest changes, build docker images, stop and start docker containers
 
 .ONESHELL:
-bump:
-	@echo "Updating version"
-	@echo "Current version: v$(VERSION)"
+changelog: # Generate changelog https://convco.github.io/
+	@echo "$(GREEN)Generating changelog$(END)"
+	@convco changelog -m 1 > $(CHANGELOG_FILE)
+	@echo -e "\n### Version Contributor(s)\n" >> $(CHANGELOG_FILE)
+	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> $(CHANGELOG_FILE)
+	@echo "$(GREEN)Changelog saved to $(CHANGELOG_FILE)$(END)"
+
+.ONESHELL:
+_bump:
+	@echo "$(GREEN)Updating version$(END)"
+	@echo "$(GREEN)Current version: v$(VERSION)$(END)"
 	NEW_VERSION=$(shell convco version --bump)
-	@echo "Bumping version to v$$NEW_VERSION"
+	@echo "$(GREEN)Bumping version to v$$NEW_VERSION$(END)"
 
-	sed -i "s/version = \"$(VERSION)\"/version = \"$$NEW_VERSION\"/g" pyproject.toml > /dev/null; \
-	sed -i "s/__version__ = \"$(VERSION)\"/__version__ = \"$$NEW_VERSION\"/g" anjani/__init__.py > /dev/null; \
-	git add pyproject.toml anjani/__init__.py > /dev/null
+	@sed -i "s/version = \"$(VERSION)\"/version = \"$$NEW_VERSION\"/g" pyproject.toml > /dev/null;
+	@sed -i "s/__version__ = \"$(VERSION)\"/__version__ = \"$$NEW_VERSION\"/g" anjani/__init__.py > /dev/null;
+	@git add pyproject.toml anjani/__init__.py > /dev/null
 
-	@echo "Commiting changes"
-	git checkout staging > /dev/null
-	git commit -m "Bump version to v$$NEW_VERSION"
-	git tag -a "v$$NEW_VERSION" -m "Bump version to v$$NEW_VERSION"
-	git checkout master
-	git merge staging
-	git push --atomic origin master staging "v$$NEW_VERSION"
+	@echo "$(GREEN)Commiting changes$(END)"
+# @git checkout staging > /dev/null
+# @git commit -m "Bump version to v$$NEW_VERSION"
+# @git tag -a "v$$NEW_VERSION" -m "Bump version to v$$NEW_VERSION"
+# @git checkout master
+# @git merge staging
+# @git push --atomic origin master staging "v$$NEW_VERSION"
+# @git checkout staging
 
-	@echo "Generating changelog"
-	convco changelog -m 1 > CHANGELOG.md
-	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
-	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
-	@echo "Changelog saved to CHANGELOG.md"
-
-changelog:
-	# https://convco.github.io/
-	@echo "Generating changelog"
-	convco changelog -m 1 > CHANGELOG.md
-	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
-	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
-	@echo "Changelog saved to CHANGELOG.md"
+bump: _bump changelog # Bump version, generate changelog and push to git

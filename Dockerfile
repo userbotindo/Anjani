@@ -7,18 +7,16 @@ WORKDIR /anjani/
 # Install all required packages
 RUN apt-get -qq update && apt-get -qq upgrade -y
 RUN apt-get -qq install -y --no-install-recommends \
-    wget \
     curl \
     git \
-    gnupg2 \
-    imagemagick \
-    apt-transport-https \
-    libjpeg-turbo-progs \
-    libpng-dev \
-    libwebp-dev
+    gnupg2
 
 # Copy directory and install dependencies
 COPY . /anjani
+
+# ignore pip root user warning
+ENV PIP_ROOT_USER_ACTION=ignore
+
 RUN pip install --upgrade pip
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
 

@@ -1,24 +1,34 @@
-﻿version: '3.9'
+﻿version: "3.9"
 
 services:
   anjani:
+    image: anjani
+    container_name: anjaniBot
     build:
       context: .
-    restart: on-failure
-# From here you can remove it when using mongodb atlas
-    depends_on:
-      - mongo
-    environment:
-      DB_URI: 'mongodb://anjani:mypasswd@mongo'
+      dockerfile: Dockerfile
+    env_file:
+      - config.env
+    restart: unless-stopped
 
-  mongo:
-    image: 'mongo:latest'
-    volumes:
-      - 'mongo_anjani:/data/db'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: anjani
-      MONGO_INITDB_ROOT_PASSWORD: mypasswd
+# # Uncomment the following lines to use a local MongoDB database
+# # aware that some feature will not work as Anjani expect a MongoDB that support ReplicaSet!
+# # This lines bellow only uses a single MongoDB instance for simplicity
+# # Change it to your needs if you want to convert it to a ReplicaSet
 
-volumes:
-  mongo_anjani:
-# Leave one line, for coding style
+#     depends_on:
+#       - mongo
+#     environment:
+#       DB_URI: "mongodb://anjani:mypasswd@mongo"
+
+#   mongo:
+#     image: "mongo:latest"
+#     container_name: anjaniMongo
+#     volumes:
+#       - "mongo_anjani:/data/db"
+#     environment:
+#       MONGO_INITDB_ROOT_USERNAME: anjani
+#       MONGO_INITDB_ROOT_PASSWORD: mypasswd
+
+# volumes:
+#   mongo_anjani:
