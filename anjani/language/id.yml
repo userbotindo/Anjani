@@ -438,6 +438,7 @@ restriction-help: |
   **Hanya Administrator yang bisa menggunakan:**
   × /kick <Melalui id pengguna atau username> [alasan]: Mengeluarkan seorang anggota grup, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan)
   × /ban <Melalui id pengguna atau username> [alasan]: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
+  × /sban <Melalui id pengguna atau username>: Mengeluarkan seorang anggota grup dan melarangnya untuk dapat bergabung kembali secara mode bisu, (Melalui id pengguna, username atau balas pesan orang yang akan dikeluarkan dan akan dilarang untuk bergabung kembali)
   × /unban <Melalui id pengguna atau username>: Membatalkan larangan seseorang untuk tidak dapat bergabung kembali digrup anda (Melalui id pengguna, username atau balas pesan orang tersebut)
   × /kickme: Gunakan perintah ini, jika anda ingin ditendang dari grup!!
   × /warn <Melalui id pengguna atau username> [alasan]: Peringati pengguna. (Melalui id pengguna, username atau balas pesan orang yang akan diperingati)

@@ -414,6 +414,7 @@ restriction-help: |
   **Admin Only:**
   × /kick <userhandle> [reason]: Kicks a user. (via handle, or reply)
   × /ban <userhandle> [reason]: Bans a user. (via handle, or reply)
+  × /sban <userhandle>: Silently bans a user. (via handle, or reply)
   × /unban <userhandle>: Unbans a user. (via handle, or reply)
   × /kickme: If you're bored in the group? let the bot kick yourself.
   × /warn <userhandle> [reason]: Warn a user. (via handle, or reply)
