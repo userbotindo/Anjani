@@ -22,7 +22,8 @@ on:
 
 jobs:
   analyze:
-    if: ${{ github.actor != "dependabot[bot]" }}
+    # skip if the commit author is debendabot
+    if: ${{ !contains(github.event.head_commit.author.email, 'dependabot') }}
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
