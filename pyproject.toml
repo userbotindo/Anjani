@@ -60,7 +60,7 @@ uvloop = ["uvloop"]
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
 isort = "^5.12.0"
-pre-commit = "^2.21.0"
+pre-commit = ">=2.21,<4.0"
 pylint = "^2.16.2"
 flake8 = "^5.0.4"
 pytest = "^7.2.1"
