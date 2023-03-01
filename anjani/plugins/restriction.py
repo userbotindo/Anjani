@@ -156,13 +156,16 @@ class Restrictions(plugin.Plugin):
         )
         if reason:
             ret += await self.text(chat.id, "kick-reason", reason)
+
         return ret
 
-    @command.filters(filters.can_restrict)
-    async def cmd_ban(
-        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
-    ) -> str:
-        """Ban chat member"""
+    async def _ban(
+        self,
+        ctx: command.Context,
+        target: Union[User, Chat, None] = None,
+        reason: str = "",
+        silent: bool = False,
+    ) -> Optional[str]:
         chat = ctx.chat
         reply_msg = ctx.msg.reply_to_message
 
@@ -195,7 +198,27 @@ class Restrictions(plugin.Plugin):
         if reason:
             ret += await self.text(chat.id, "ban-reason", reason)
 
+        return ret if not silent else None
+
+    @command.filters(filters.can_restrict)
+    async def cmd_ban(
+        self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
+    ) -> str:
+        """Ban chat member"""
+        ret = await self._ban(ctx, target, reason)
+        if not ret:
+            raise ValueError
+
         return ret
+
+    @command.filters(filters.can_restrict)
+    async def cmd_sban(self, ctx: command.Context, target: Union[User, Chat, None] = None) -> None:
+        """Silently ban chat member"""
+        ret = await self._ban(ctx, target, silent=True)
+        if ret:
+            await ctx.respond(ret, delete_after=1)
+
+        await ctx.msg.delete()
 
     @command.filters(filters.can_restrict)
     async def cmd_unban(self, ctx: command.Context, user: Union[User, Chat, None] = None) -> str:
