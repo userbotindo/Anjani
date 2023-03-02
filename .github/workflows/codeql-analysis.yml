@@ -13,17 +13,16 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "staging", "master" ]
+    branches: [ staging, master ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "staging" ]
+    branches: [ staging ]
   schedule:
-    - cron: "25 22 * * 3"
+    - cron: '25 22 * * 3'
 
 jobs:
   analyze:
-    # skip if the commit author is debendabot
-    if: ${{ !contains(github.event.head_commit.author.email, 'dependabot') }}
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
@@ -34,8 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ "python" ]
-        python-version: ["3.9", "3.10", "3.11"]
+        language: [ 'python' ]
+        python-version: ['3.9', '3.10', '3.11']
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
