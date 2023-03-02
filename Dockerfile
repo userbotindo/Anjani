@@ -26,6 +26,6 @@ ENV PATH="${PATH}:/root/.local/bin:$PATH"
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --only main -E uvloop
 
-RUN chmod +x entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
