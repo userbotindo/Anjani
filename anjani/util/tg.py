@@ -143,48 +143,39 @@ def parse_button(text: str) -> Tuple[str, Button]:
 
 
 def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
-    """Parse recieved message and return all its content"""
+    """Parse received message and return its content."""
     types = None
     content = None
     text = ""
-    buttons = []  # type: Button
+    buttons = []
 
-    if msg.reply_to_message:
-        t = msg.reply_to_message.text or msg.reply_to_message.caption
-        if t:
-            text, buttons = parse_button(t.markdown)
+    reply_msg = msg.reply_to_message
 
-        if msg.reply_to_message.text:
+    if reply_msg:
+        text, buttons = parse_button(reply_msg.text or reply_msg.caption)
+
+        if reply_msg.text:
             types = Types.BUTTON_TEXT if buttons else Types.TEXT
-        elif msg.reply_to_message.sticker:
-            content = msg.reply_to_message.sticker.file_id
-            types = Types.STICKER
-        elif msg.reply_to_message.document:
-            content = msg.reply_to_message.document.file_id
-            types = Types.DOCUMENT
-        elif msg.reply_to_message.photo:
-            content = msg.reply_to_message.photo.file_id
-            types = Types.PHOTO
-        elif msg.reply_to_message.audio:
-            content = msg.reply_to_message.audio.file_id
-            types = Types.AUDIO
-        elif msg.reply_to_message.voice:
-            content = msg.reply_to_message.voice.file_id
-            types = Types.VOICE
-        elif msg.reply_to_message.video:
-            content = msg.reply_to_message.video.file_id
-            types = Types.VIDEO
-        elif msg.reply_to_message.video_note:
-            content = msg.reply_to_message.video_note.file_id
-            types = Types.VIDEO_NOTE
-        elif msg.reply_to_message.animation:
-            content = msg.reply_to_message.animation.file_id
-            types = Types.ANIMATION
+        elif reply_msg.sticker:
+            content, types = reply_msg.sticker.file_id, Types.STICKER
+        elif reply_msg.document:
+            content, types = reply_msg.document.file_id, Types.DOCUMENT
+        elif reply_msg.photo:
+            content, types = reply_msg.photo.file_id, Types.PHOTO
+        elif reply_msg.audio:
+            content, types = reply_msg.audio.file_id, Types.AUDIO
+        elif reply_msg.voice:
+            content, types = reply_msg.voice.file_id, Types.VOICE
+        elif reply_msg.video:
+            content, types = reply_msg.video.file_id, Types.VIDEO
+        elif reply_msg.video_note:
+            content, types = reply_msg.video_note.file_id, Types.VIDEO_NOTE
+        elif reply_msg.animation:
+            content, types = reply_msg.animation.file_id, Types.ANIMATION
         else:
             raise ValueError("Can't get message information")
     else:
-        args = msg.text.markdown.split(" ", 2)
-        text, buttons = parse_button(args[2])
+        text, buttons = parse_button(msg.text.markdown.split(" ", 2)[2])
         types = Types.BUTTON_TEXT if buttons else Types.TEXT
 
     return text, types, content, buttons
