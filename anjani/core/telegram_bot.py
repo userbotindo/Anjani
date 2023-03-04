@@ -196,29 +196,47 @@ class TelegramBot(MixinBase):
             for v, k in signal.__dict__.items()
             if v.startswith("SIG") and not v.startswith("SIG_")
         }
+        task: asyncio.Task
 
         if sys.platform == "win32":
 
-            def signal_handler_windows(signum: int, _: Any) -> None:
+            def clear_handler() -> None:
+                for signame in (signal.SIGINT, signal.SIGBREAK, signal.SIGABRT):
+                    signal.signal(signame, signal.SIG_DFL)
+
+            def signal_handler_windows(signum: int) -> None:
                 print(flush=True)
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
                 self.__running = False
+                clear_handler()
+                task.cancel()
 
-            for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+            for signame in (signal.SIGINT, signal.SIGBREAK, signal.SIGABRT):
                 signal.signal(signame, signal_handler_windows)
         else:
+
+            def clear_handler() -> None:
+                for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+                    self.loop.remove_signal_handler(signame)
 
             def signal_handler(signum: int) -> None:
                 print(flush=True)  # Separate signal and next log
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
                 self.__running = False
+                clear_handler()
+                task.cancel()
 
             for signame in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
                 self.loop.add_signal_handler(signame, partial(signal_handler, signame))
 
         self.__running = True
         while self.__running:
-            await asyncio.sleep(1)
+            task = self.loop.create_task(asyncio.sleep(150))
+
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
     async def run(self: "Anjani") -> None:
         if self.__running:

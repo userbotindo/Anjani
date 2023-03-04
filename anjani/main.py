@@ -98,6 +98,7 @@ def start() -> None:
     )
     log.info("Loading code")
 
+    _uvloop = False
     if sys.platform == "win32":
         policy = asyncio.WindowsProactorEventLoopPolicy()
         asyncio.set_event_loop_policy(policy)
@@ -108,6 +109,7 @@ def start() -> None:
             pass
         else:
             uvloop.install()
+            _uvloop = True
             log.info("Using uvloop event loop")
 
     log.info("Initializing bot")
@@ -131,4 +133,4 @@ def start() -> None:
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
         return log.error("Configuration must be done correctly before running the bot.")
 
-    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop)
+    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop if _uvloop else None)
