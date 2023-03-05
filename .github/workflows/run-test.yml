@@ -45,6 +45,7 @@ jobs:
           poetry run pytest -v
 
   run-asyncio:
+    timeout-minutes: 2
     needs: pytest
     runs-on: ubuntu-latest
     strategy:
@@ -79,6 +80,7 @@ jobs:
           IS_CI: "true"
 
   run-uvloop:
+    timeout-minutes: 2
     needs: run-asyncio
     runs-on: ubuntu-latest
     strategy:
