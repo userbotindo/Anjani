@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import os
 import signal
 import sys
 from functools import partial
@@ -241,6 +242,7 @@ class TelegramBot(MixinBase):
     async def run(self: "Anjani") -> None:
         if self.__running:
             raise RuntimeError("This bot instance is already running")
+        ci = os.getenv("IS_CI")
 
         try:
             # Start client
@@ -248,6 +250,10 @@ class TelegramBot(MixinBase):
                 await self.start()
             except KeyboardInterrupt:
                 self.log.warning("Received interrupt while connecting")
+                return
+
+            if ci and ci.lower() in {"true", "1", "enable"}:
+                self.log.info("Completed CI run, exiting")
                 return
 
             # Request updates, then idle until disconnected
