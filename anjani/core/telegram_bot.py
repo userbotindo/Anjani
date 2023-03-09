@@ -242,7 +242,6 @@ class TelegramBot(MixinBase):
     async def run(self: "Anjani") -> None:
         if self.__running:
             raise RuntimeError("This bot instance is already running")
-        ci = os.getenv("IS_CI")
 
         try:
             # Start client
@@ -252,7 +251,7 @@ class TelegramBot(MixinBase):
                 self.log.warning("Received interrupt while connecting")
                 return
 
-            if ci and ci.lower() in {"true", "1", "enable"}:
+            if self.config["is_ci"]:
                 self.log.info("Completed CI run, exiting")
                 return
 
