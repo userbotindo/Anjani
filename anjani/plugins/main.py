@@ -23,7 +23,12 @@ from aiopath import AsyncPath
 from bson.binary import Binary
 from pyrogram.enums.chat_type import ChatType
 from pyrogram.enums.parse_mode import ParseMode
-from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
+from pyrogram.errors import (
+    ChannelInvalid,
+    ChannelPrivate,
+    MessageDeleteForbidden,
+    MessageNotModified,
+)
 from pyrogram.raw.functions.updates.get_state import GetState
 from pyrogram.types import (
     CallbackQuery,
@@ -220,7 +225,10 @@ class Main(plugin.Plugin):
                 rules_re = re.compile(r"rules_(.*)")
                 if rules_re.search(ctx.input):
                     plug: "Rules" = self.bot.plugins["Rules"]  # type: ignore
-                    return await plug.start_rules(ctx)
+                    try:
+                        return await plug.start_rules(ctx)
+                    except (ChannelInvalid, ChannelPrivate):
+                        return await self.text(chat.id, "rules-channel-invalid")
 
                 help_re = re.compile(r"help_(.*)").match(ctx.input)
                 if help_re:

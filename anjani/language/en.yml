@@ -474,6 +474,7 @@ rules-none: Failed to get chat rules! No records found.
 rules-view-caption: Click this button to view the chat rules!
 rules-view-pm: "The rules for **{}** are:\n\n"
 rules-invalid-button: 'Invalid chat_id: "{}". (__Invalid Syntax__)'
+rules-channel-invalid: Chat is not accessible, it's probably because i've been banned.
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediction
