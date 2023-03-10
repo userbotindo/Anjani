@@ -498,6 +498,7 @@ rules-none: Gagal mendapatkan aturan obrolan! Tidak ada catatan yang ditemukan.
 rules-view-caption: Klik tombol ini untuk melihat aturan grup!
 rules-view-pm: "Aturan untuk **{}** adalah:\n\n"
 rules-invalid-button: 'Chat_id tidak valid: "{}". (__Invalid Syntax__)'
+rules-channel-invalid: Grup tidak dapat diakses, besar kemungkinan saya telah diblokir dari grup.
 #endregion
 #region spam prediction
 spampredict-button: Spam Prediksi
