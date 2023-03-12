@@ -607,7 +607,7 @@ err-anonymous: You are on anonymous mode...\n\n__Disable it first.__
 err-not-admin: You are not an Administrator of this group...
 err-perm: We are not administrator of this group.
 err-unexpected: "An unexpected error occurred.! \n\n**Error:** `{}`"
-err-msg-format-parsing: "**Message format parsing error!**\n**Error on key:** `{err}`."
+err-msg-format-parsing: "**Message format parsing error!**\n**Error on:** `{err}`."
 err-im-not-admin: "I'm not an admin here! I need to be an admin to do this."
 err-illegal-trigger: "Illegal character in trigger!\n'.' and '$' are not allowed"
 #endregion
