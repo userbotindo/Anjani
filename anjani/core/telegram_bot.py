@@ -250,7 +250,7 @@ class TelegramBot(MixinBase):
                 self.log.warning("Received interrupt while connecting")
                 return
 
-            if self.config["is_ci"]:
+            if self.config.get("is_ci", False):
                 self.log.info("Completed CI run, exiting")
                 return
 
