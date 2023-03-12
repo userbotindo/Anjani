@@ -98,6 +98,7 @@ def start() -> None:
     )
     log.info("Loading code")
 
+    _uvloop = False
     if sys.platform == "win32":
         policy = asyncio.WindowsProactorEventLoopPolicy()
         asyncio.set_event_loop_policy(policy)
@@ -108,6 +109,7 @@ def start() -> None:
             pass
         else:
             uvloop.install()
+            _uvloop = True
             log.info("Using uvloop event loop")
 
     log.info("Initializing bot")
@@ -126,9 +128,10 @@ def start() -> None:
         "log_channel": os.environ.get("LOG_CHANNEL"),
         "login_url": os.environ.get("LOGIN_URL"),
         "plugin_flag": [i.strip() for i in os.environ.get("PLUGIN_FLAG", "").split(";")],
+        "is_ci": os.environ.get("IS_CI", "false").lower() == "true",
     }
     config: TelegramConfig[str, str] = TelegramConfig(config_data)
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
         return log.error("Configuration must be done correctly before running the bot.")
 
-    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop)
+    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop if _uvloop else None)

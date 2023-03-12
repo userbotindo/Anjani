@@ -277,7 +277,7 @@ class Greeting(plugin.Plugin):
 
         try:  # Try to build a text first to check message validity
             await self._build_text(welc_text or "", ctx.author, chat, self.bot.client)
-        except KeyError as e:
+        except (KeyError, ValueError) as e:
             return await self.text(chat.id, "err-msg-format-parsing", err=e)
 
         ret, _ = await asyncio.gather(
