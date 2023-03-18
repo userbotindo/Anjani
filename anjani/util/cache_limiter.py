@@ -1,6 +1,5 @@
 from typing import Any, Optional
 
-import aiocache
 from aiocache import SimpleMemoryCache
 
 
