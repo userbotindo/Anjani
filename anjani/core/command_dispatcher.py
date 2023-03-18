@@ -40,6 +40,7 @@ class CommandDispatcher(MixinBase):
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         # Initialize command map
         self.commands = {}
+        self.limiter = util.cache_limiter.CacheLimiter(ttl=10, max_value=3)
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -167,6 +168,11 @@ class CommandDispatcher(MixinBase):
     async def on_command(
         self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
     ) -> None:
+        # Limiter checking here
+        user_id = message.from_user.id
+        if not await self.limiter.check_rate_limit(user_id):
+            return
+
         # cmd never raises KeyError because we checked on command_predicate
         cmd = self.commands[message.command[0]]
         try:
@@ -243,5 +249,8 @@ class CommandDispatcher(MixinBase):
                 exc_info=constructor_handler,
             )
         finally:
+            # Increment user count to cached
+            await self.limiter.increment_rate_limit(user_id)
+
             # Continue processing handler of on_message
             raise ContinuePropagation
