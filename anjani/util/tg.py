@@ -152,7 +152,9 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
     reply_msg = msg.reply_to_message
 
     if reply_msg:
-        text, buttons = parse_button(reply_msg.text or reply_msg.caption)
+        text = reply_msg.text or reply_msg.caption
+        if text:
+            text, buttons = parse_button(text.markdown)
 
         if reply_msg.text:
             types = Types.BUTTON_TEXT if buttons else Types.TEXT
