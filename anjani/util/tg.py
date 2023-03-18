@@ -102,8 +102,10 @@ def revert_button(button: Button) -> str:
     return res
 
 
-def parse_button(text: str) -> Tuple[str, Button]:
-    """Parse button to save"""
+def parse_button(text: str) -> Tuple[str, List[Tuple[str, str, bool]]]:
+    if text is None:
+        return "", []
+
     regex = re.compile(r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
 
     prev = 0
