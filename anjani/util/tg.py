@@ -102,10 +102,8 @@ def revert_button(button: Button) -> str:
     return res
 
 
-def parse_button(text: str) -> Tuple[str, List[Tuple[str, str, bool]]]:
-    if text is None:
-        return "", []
-
+def parse_button(text: str) -> Tuple[str, Button]:
+    """Parse button to save"""
     regex = re.compile(r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))")
 
     prev = 0
@@ -156,7 +154,7 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
     if reply_msg:
         text = reply_msg.text or reply_msg.caption
         if text:
-            text, buttons = parse_button(reply_msg.text or reply_msg.caption)
+            text, buttons = parse_button(text.markdown)
 
         if reply_msg.text:
             types = Types.BUTTON_TEXT if buttons else Types.TEXT
