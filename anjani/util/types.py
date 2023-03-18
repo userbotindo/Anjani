@@ -65,5 +65,5 @@ class Classifier(Protocol):
 
     @staticmethod
     @abstractmethod
-    def prob_to_string(value: float) -> string:
+    def prob_to_string(value: float) -> str:
         raise NotImplementedError
