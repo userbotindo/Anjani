@@ -21,7 +21,6 @@ from hashlib import md5, sha256
 from random import randint
 from typing import Any, Callable, ClassVar, List, MutableMapping, Optional, Tuple
 
-from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
