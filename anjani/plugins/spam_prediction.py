@@ -19,15 +19,13 @@ import re
 from datetime import datetime, time, timedelta
 from hashlib import md5, sha256
 from random import randint
-from typing import Any, Callable, ClassVar, MutableMapping, Optional
+from typing import Any, Callable, ClassVar, List, MutableMapping, Optional, Tuple
 
 from pymongo.errors import DuplicateKeyError
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
     MessageDeleteForbidden,
-    MessageIdInvalid,
-    MessageNotModified,
     PeerIdInvalid,
     QueryIdInvalid,
     UserAdminInvalid,
@@ -62,7 +60,9 @@ class SpamPrediction(plugin.Plugin):
     user_db: util.db.AsyncCollection
     setting_db: util.db.AsyncCollection
     model: Classifier
+
     __predict_cost: int = 10
+    __log_channel: int = -1001314588569
 
     async def on_load(self) -> None:
         self.model = Classifier()
@@ -199,7 +199,9 @@ class SpamPrediction(plugin.Plugin):
 
         data = await self.db.find_one({"_id": content_hash})
         if not data:
-            return await query.answer("The voting poll for this message has ended!")
+            return await query.answer(
+                "The voting poll for this message has ended!", show_alert=True
+            )
 
         users_on_correct = data["spam"]
         users_on_incorrect = data["ham"]
@@ -259,30 +261,9 @@ class SpamPrediction(plugin.Plugin):
             if len(old_btn) > 1:
                 button.append(old_btn[1])
 
-        for i in data["msg_id"]:
-            while True:
-                try:
-                    await self.bot.client.edit_message_reply_markup(
-                        -1001314588569, i, InlineKeyboardMarkup(button)
-                    )
-                except MessageIdInvalid:
-                    pass
-                except MessageNotModified:
-                    await query.answer(
-                        "You already voted this content, "
-                        "this happened because there are multiple same of contents exists.",
-                        show_alert=True,
-                    )
-                except FloodWait as flood:
-                    await query.answer(
-                        "Please wait i'm updating the content for you.",
-                        show_alert=True,
-                    )
-                    await asyncio.sleep(flood.value)  # type: ignore
-                    continue
-
-                await asyncio.sleep(0.1)
-                break
+        await self.bot.client.edit_message_reply_markup(
+            self.__log_channel, data["msg_id"], InlineKeyboardMarkup(button)
+        )
 
         await query.answer()
 
@@ -307,6 +288,45 @@ class SpamPrediction(plugin.Plugin):
 
         # Always check the spam probability
         await self.spam_check(message, text)
+
+    async def _build_notice(
+        self, message: Message, text: str, proba_str: str, identifier: str, content_hash: str
+    ) -> Tuple[str, List[List[InlineKeyboardButton]]]:
+        notice = (
+            "#SPAM_PREDICTION\n\n"
+            f"**Prediction Result**: {proba_str}\n"
+            f"**Identifier**: `{identifier}`\n"
+        )
+        if ch := message.forward_from_chat:
+            notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
+
+        notice += f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
+        l_spam, l_ham = 0, 0
+        _, data = await asyncio.gather(
+            self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
+        )
+        if data:
+            l_spam = len(data["spam"])
+            l_ham = len(data["ham"])
+
+        keyb = [
+            [
+                InlineKeyboardButton(text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"),
+                InlineKeyboardButton(text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"),
+            ],
+            [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
+        ]
+
+        if message.forward_from_chat and message.forward_from_chat.username:
+            raw_btn = InlineKeyboardButton(
+                text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+            )
+            if message.chat.username:
+                keyb[1].append(raw_btn)
+            else:
+                keyb.append([raw_btn])
+
+        return notice, keyb
 
     async def spam_check(self, message: Message, text: str) -> None:
         text = text.strip()
@@ -333,81 +353,44 @@ class SpamPrediction(plugin.Plugin):
         content_hash = self._build_hash(text)
         identifier = self._build_hex(user)
         proba_str = self.model.prob_to_string(probability)
-        msg = None
+        msg_id = None
 
+        # only log public chat
         if message.chat.username:
-
-            notice = (
-                "#SPAM_PREDICTION\n\n"
-                f"**Prediction Result**: {proba_str}\n"
-                f"**Identifier**: `{identifier}`\n"
+            notice, keyb = await self._build_notice(
+                message, text, proba_str, identifier, content_hash
             )
-            if ch := message.forward_from_chat:
-                notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
 
-            notice += (
-                f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-            )
-            l_spam, l_ham = 0, 0
-            _, data = await asyncio.gather(
-                self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
-            )
-            if data:
-                l_spam = len(data["spam"])
-                l_ham = len(data["ham"])
+            data = await self.db.find_one({"_id": content_hash})
 
-            keyb = [
-                [
-                    InlineKeyboardButton(
-                        text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"
-                    ),
-                    InlineKeyboardButton(
-                        text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"
-                    ),
-                ],
-                [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
-            ]
+            if not data:
+                while True:
+                    try:
+                        msg = await self.bot.client.send_message(
+                            chat_id=self.__log_channel,
+                            text=notice,
+                            disable_web_page_preview=True,
+                            reply_markup=InlineKeyboardMarkup(keyb),
+                        )
+                        msg_id = msg.id
+                    except FloodWait as flood:
+                        await asyncio.sleep(flood.value)  # type: ignore
+                        continue
 
-            if message.forward_from_chat and message.forward_from_chat.username:
-                raw_btn = InlineKeyboardButton(
-                    text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
+                    await asyncio.sleep(0.1)
+                    break
+
+                await self.db.insert_one(
+                    {
+                        "_id": content_hash,
+                        "user": identifier,
+                        "spam": [],
+                        "ham": [],
+                        "proba": probability,
+                        "msg_id": msg.id,
+                        "date": util.time.sec(),
+                    },
                 )
-                if message.chat.username:
-                    keyb[1].append(raw_btn)
-                else:
-                    keyb.append([raw_btn])
-
-            while True:
-                try:
-                    msg = await self.bot.client.send_message(
-                        chat_id=-1001314588569,
-                        text=notice,
-                        disable_web_page_preview=True,
-                        reply_markup=InlineKeyboardMarkup(keyb),
-                    )
-                except FloodWait as flood:
-                    await asyncio.sleep(flood.value)  # type: ignore
-                    continue
-
-                await asyncio.sleep(0.1)
-                break
-
-            try:
-                async with asyncio.Lock():
-                    await self.db.insert_one(
-                        {
-                            "_id": content_hash,
-                            "user": identifier,
-                            "text": text_norm,
-                            "spam": [],
-                            "ham": [],
-                            "proba": probability,
-                            "msg_id": [msg.id],
-                            "date": util.time.sec(),
-                        }
-                    )
-            except DuplicateKeyError:
-                await self.db.update_one({"_id": content_hash}, {"$push": {"msg_id": msg.id}})
 
         if probability >= 0.8:
             chat = message.chat
@@ -454,8 +437,14 @@ class SpamPrediction(plugin.Plugin):
             chat = message.chat
             button = []
             me = await chat.get_member(self.bot.uid)
-            if message.chat.username and msg:
-                button.append([InlineKeyboardButton("View Message", url=msg.link)])
+            if message.chat.username and msg_id:
+                button.append(
+                    [
+                        InlineKeyboardButton(
+                            "View Message", url=f"https://t.me/SpamPredictionLog/{msg_id}"
+                        )
+                    ]
+                )
 
             if me.privileges and me.privileges.can_restrict_members and target is not None:
                 button.append(
@@ -522,7 +511,7 @@ class SpamPrediction(plugin.Plugin):
                 upsert=True,
             ),
             self.bot.client.send_message(
-                chat_id=-1001314588569,
+                chat_id=self.__log_channel,
                 text=text,
                 disable_web_page_preview=True,
             ),
