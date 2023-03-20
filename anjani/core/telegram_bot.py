@@ -204,7 +204,7 @@ class TelegramBot(MixinBase):
                 for signame in (signal.SIGINT, signal.SIGBREAK, signal.SIGABRT):
                     signal.signal(signame, signal.SIG_DFL)
 
-            def signal_handler_windows(signum: int) -> None:
+            def signal_handler_windows(signum: int, *args: Any) -> None:
                 print(flush=True)
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
                 self.__running = False
