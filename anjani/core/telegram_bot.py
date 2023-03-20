@@ -204,7 +204,7 @@ class TelegramBot(MixinBase):
                 for signame in (signal.SIGINT, signal.SIGBREAK, signal.SIGABRT):
                     signal.signal(signame, signal.SIG_DFL)
 
-            def signal_handler_windows(signum: int) -> None:
+            def signal_handler_windows(signum: int, *args: Any) -> None:
                 print(flush=True)
                 self.log.info(f"Stop signal received ('{signals[signum]}').")
                 self.__running = False
@@ -384,12 +384,12 @@ class TelegramBot(MixinBase):
 
         raise ValueError(f"Unknown response mode {mode}")
 
-    @AsyncTTL(time_to_live=60, maxsize=1024)
+    @AsyncTTL(time_to_live=60, maxsize=1024)  # skipcq: PYL-E1123
     async def get_chat(self: "Anjani", chat_id: int) -> Union[Chat, ChatPreview]:
         """Wrapper for `Client.get_chat` with a TTL cache."""
         return await self.client.get_chat(chat_id)
 
-    @AsyncTTL(time_to_live=60, maxsize=1024)
+    @AsyncTTL(time_to_live=60, maxsize=1024)  # skipcq: PYL-E1123
     async def get_chat_member(self: "Anjani", chat_id: int, user_id: int) -> ChatMember:
         """Wrapper for `Client.get_chat_member` with a TTL cache."""
         return await self.client.get_chat_member(chat_id, user_id)
