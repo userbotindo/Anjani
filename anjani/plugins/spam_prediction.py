@@ -362,8 +362,9 @@ class SpamPrediction(plugin.Plugin):
 
             async with asyncio.Lock():
                 data = await self.db.find_one({"_id": content_hash})
-
-                if not data:
+                if data:
+                    msg_id = data["msg_id"]
+                else:
                     while True:
                         try:
                             msg = await self.bot.client.send_message(
@@ -389,6 +390,7 @@ class SpamPrediction(plugin.Plugin):
                             "proba": probability,
                             "msg_id": msg.id,
                             "date": util.time.sec(),
+                            "text": text,
                         },
                     )
 
