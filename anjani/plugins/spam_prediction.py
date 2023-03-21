@@ -360,36 +360,37 @@ class SpamPrediction(plugin.Plugin):
                 message, text, proba_str, identifier, content_hash
             )
 
-            data = await self.db.find_one({"_id": content_hash})
+            async with asyncio.Lock():
+                data = await self.db.find_one({"_id": content_hash})
 
-            if not data:
-                while True:
-                    try:
-                        msg = await self.bot.client.send_message(
-                            chat_id=self.__log_channel,
-                            text=notice,
-                            disable_web_page_preview=True,
-                            reply_markup=InlineKeyboardMarkup(keyb),
-                        )
-                        msg_id = msg.id
-                    except FloodWait as flood:
-                        await asyncio.sleep(flood.value)  # type: ignore
-                        continue
+                if not data:
+                    while True:
+                        try:
+                            msg = await self.bot.client.send_message(
+                                chat_id=self.__log_channel,
+                                text=notice,
+                                disable_web_page_preview=True,
+                                reply_markup=InlineKeyboardMarkup(keyb),
+                            )
+                            msg_id = msg.id
+                        except FloodWait as flood:
+                            await asyncio.sleep(flood.value)  # type: ignore
+                            continue
 
-                    await asyncio.sleep(0.1)
-                    break
+                        await asyncio.sleep(0.1)
+                        break
 
-                await self.db.insert_one(
-                    {
-                        "_id": content_hash,
-                        "user": identifier,
-                        "spam": [],
-                        "ham": [],
-                        "proba": probability,
-                        "msg_id": msg.id,
-                        "date": util.time.sec(),
-                    },
-                )
+                    await self.db.insert_one(
+                        {
+                            "_id": content_hash,
+                            "user": identifier,
+                            "spam": [],
+                            "ham": [],
+                            "proba": probability,
+                            "msg_id": msg.id,
+                            "date": util.time.sec(),
+                        },
+                    )
 
         if probability >= 0.8:
             chat = message.chat
