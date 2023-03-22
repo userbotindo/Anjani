@@ -67,6 +67,11 @@ def _get_event_data(event: Any) -> MutableMapping[str, Any]:
     return {}
 
 
+def _unpack_args(args: Tuple[Any, ...]) -> str:
+    """Unpack arguments into a string for logging purposes."""
+    return ", ".join([str(arg) for arg in args])
+
+
 class EventDispatcher(MixinBase):
     # Initialized during instantiation
     listeners: MutableMapping[str, MutableSequence[Listener]]
@@ -211,7 +216,7 @@ class EventDispatcher(MixinBase):
                         "Error dispatching event '%s' on %s with data\n%s",
                         event,
                         lst.func.__qualname__,
-                        args,
+                        _unpack_args(args),
                         exc_info=dispatcher_error,
                     )
                 continue
