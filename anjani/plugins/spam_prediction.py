@@ -219,6 +219,7 @@ class SpamPrediction(plugin.Plugin):
                     "You can't vote this anymore, because this was marked as a spam by our staff",
                     show_alert=True,
                 )
+            await query.answer("You voted this message as a spam!")
         elif value == "f":
             try:
                 # Check user in correct data
@@ -234,37 +235,13 @@ class SpamPrediction(plugin.Plugin):
                     "You can't vote this anymore, because this was marked as a spam by our staff",
                     show_alert=True,
                 )
+            await query.answer("You voted this message as non-spam!")
         else:
             return await query.answer("Invalid keyboard method!", show_alert=True)
 
         await self.db.update_one(
             {"_id": content_hash}, {"$set": {"spam": users_on_correct, "ham": users_on_incorrect}}
         )
-
-        total_correct, total_incorrect = len(users_on_correct), len(users_on_incorrect)
-        button = [
-            [
-                InlineKeyboardButton(
-                    text=f"✅ Correct ({total_correct})",
-                    callback_data="spam_check_t",
-                ),
-                InlineKeyboardButton(
-                    text=f"❌ Incorrect ({total_incorrect})",
-                    callback_data="spam_check_f",
-                ),
-            ],
-        ]
-
-        if isinstance(query.message.reply_markup, InlineKeyboardMarkup):
-            old_btn = query.message.reply_markup.inline_keyboard
-            if len(old_btn) > 1:
-                button.append(old_btn[1])
-
-        await self.bot.client.edit_message_reply_markup(
-            self.__log_channel, data["msg_id"], InlineKeyboardMarkup(button)
-        )
-
-        await query.answer()
 
     @listener.filters(filters.group & ~filters.outgoing)
     @listener.priority(70)
@@ -300,18 +277,11 @@ class SpamPrediction(plugin.Plugin):
             notice += f"**Channel ID**: `{self._build_hex(ch.id)}`\n"
 
         notice += f"**Message Text Hash**: `{content_hash}`\n\n**====== CONTENT =======**\n\n{text}"
-        l_spam, l_ham = 0, 0
-        _, data = await asyncio.gather(
-            self.bot.log_stat("predicted"), self.db.find_one({"_id": content_hash})
-        )
-        if data:
-            l_spam = len(data["spam"])
-            l_ham = len(data["ham"])
 
         keyb = [
             [
-                InlineKeyboardButton(text=f"✅ Correct ({l_spam})", callback_data="spam_check_t"),
-                InlineKeyboardButton(text=f"❌ Incorrect ({l_ham})", callback_data="spam_check_f"),
+                InlineKeyboardButton(text="✅ Correct", callback_data="spam_check_t"),
+                InlineKeyboardButton(text="❌ Incorrect", callback_data="spam_check_f"),
             ],
             [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
         ]
@@ -339,6 +309,7 @@ class SpamPrediction(plugin.Plugin):
             return
 
         response = await self.model.predict(text_norm)
+        await self.bot.log_stat("predicted")
         if response.size == 0:
             return
 
@@ -554,6 +525,7 @@ class SpamPrediction(plugin.Plugin):
             return await ctx.get_text("spampredict-empty")
         content = self.model.normalize(content.strip())
         pred = await self.model.predict(content)
+        await self.bot.log_stat("predicted")
         if pred.size == 0:
             return await ctx.get_text("spampredict-failed")
 
