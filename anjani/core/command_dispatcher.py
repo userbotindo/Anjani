@@ -26,6 +26,7 @@ from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
+from anjani.util.cache_limiter import CacheLimiter
 
 from .anjani_mixin_base import MixinBase
 
@@ -37,10 +38,14 @@ class CommandDispatcher(MixinBase):
     # Initialized during instantiation
     commands: MutableMapping[str, command.Command]
 
+    # Private
+    __limiter: CacheLimiter
+
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         # Initialize command map
         self.commands = {}
-        self.limiter = util.cache_limiter.CacheLimiter(ttl=10, max_value=3)
+
+        self.__limiter = CacheLimiter(ttl=10, max_value=3)
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -133,33 +138,42 @@ class CommandDispatcher(MixinBase):
                 return False  # ignore channel broadcasts
 
             if message.text is not None and message.text.startswith("/"):
-                parts = message.text.split()
-                parts[0] = parts[0][1:]
-
-                # Check if bot command contains a valid username
-                # eg: /ping@dAnjani_bot will return True
-                # If current bot instance is dAnjani_bot else False
-                if self.user.username and self.user.username in parts[0]:
-                    # Remove username from command
-                    parts[0] = parts[0].replace(f"@{self.user.username}", "")
-
-                # Filter if command is not in commands
-                try:
-                    cmd = self.commands[parts[0]]
-                except KeyError:
+                user = message.from_user or message.sender_chat
+                # check user limiter
+                if await self.__limiter.exceeded(user.id):
                     return False
 
-                # Check additional built-in filters
-                if cmd.filters:
-                    if inspect.iscoroutinefunction(cmd.filters.__call__):
-                        if not await cmd.filters(client, message):
-                            return False
-                    else:
-                        if not await util.run_sync(cmd.filters, client, message):
-                            return False
+                try:
+                    parts = message.text.split()
+                    parts[0] = parts[0][1:]
 
-                message.command = parts
-                return True
+                    # Check if bot command contains a valid username
+                    # eg: /ping@dAnjani_bot will return True
+                    # If current bot instance is dAnjani_bot else False
+                    if self.user.username and self.user.username in parts[0]:
+                        # Remove username from command
+                        parts[0] = parts[0].replace(f"@{self.user.username}", "")
+
+                    # Filter if command is not in commands
+                    try:
+                        cmd = self.commands[parts[0]]
+                    except KeyError:
+                        return False
+
+                    # Check additional built-in filters
+                    if cmd.filters:
+                        if inspect.iscoroutinefunction(cmd.filters.__call__):
+                            if not await cmd.filters(client, message):
+                                return False
+                        else:
+                            if not await util.run_sync(cmd.filters, client, message):
+                                return False
+
+                    message.command = parts
+                    return True
+                finally:
+                    # Increment user limit
+                    await self.__limiter.increment(user.id)
 
             return False
 
@@ -168,11 +182,6 @@ class CommandDispatcher(MixinBase):
     async def on_command(
         self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
     ) -> None:
-        # Limiter checking here
-        user_id = message.from_user.id
-        if not await self.limiter.check_rate_limit(user_id):
-            return
-
         # cmd never raises KeyError because we checked on command_predicate
         cmd = self.commands[message.command[0]]
         try:
@@ -249,8 +258,5 @@ class CommandDispatcher(MixinBase):
                 exc_info=constructor_handler,
             )
         finally:
-            # Increment user count to cached
-            await self.limiter.increment_rate_limit(user_id)
-
             # Continue processing handler of on_message
             raise ContinuePropagation

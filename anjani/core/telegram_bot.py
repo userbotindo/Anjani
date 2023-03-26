@@ -22,8 +22,8 @@ from hashlib import sha256
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt
+from aiocache import cached
 from aiopath import AsyncPath
-from cache import AsyncTTL
 from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.filters import Filter
@@ -384,12 +384,12 @@ class TelegramBot(MixinBase):
 
         raise ValueError(f"Unknown response mode {mode}")
 
-    @AsyncTTL(time_to_live=60, maxsize=1024)  # skipcq: PYL-E1123
+    @cached(ttl=60)
     async def get_chat(self: "Anjani", chat_id: int) -> Union[Chat, ChatPreview]:
         """Wrapper for `Client.get_chat` with a TTL cache."""
         return await self.client.get_chat(chat_id)
 
-    @AsyncTTL(time_to_live=60, maxsize=1024)  # skipcq: PYL-E1123
+    @cached(ttl=60)
     async def get_chat_member(self: "Anjani", chat_id: int, user_id: int) -> ChatMember:
         """Wrapper for `Client.get_chat_member` with a TTL cache."""
         return await self.client.get_chat_member(chat_id, user_id)
