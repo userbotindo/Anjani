@@ -280,8 +280,8 @@ class SpamPrediction(plugin.Plugin):
 
         keyb = [
             [
-                InlineKeyboardButton(text=f"✅ Correct", callback_data="spam_check_t"),
-                InlineKeyboardButton(text=f"❌ Incorrect", callback_data="spam_check_f"),
+                InlineKeyboardButton(text="✅ Correct", callback_data="spam_check_t"),
+                InlineKeyboardButton(text="❌ Incorrect", callback_data="spam_check_f"),
             ],
             [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
         ]
