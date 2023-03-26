@@ -10,7 +10,7 @@ class CacheLimiter(SimpleMemoryCache):
 
         self.max_value = max_value
 
-    async def increment(self, user_id: int) -> None:
+    async def increment(self, user_id: int) -> None:  # skipcq: PYL-W0221
         """
         Increment the rate limit of the user
         """
