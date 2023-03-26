@@ -32,6 +32,7 @@ from pyrogram.errors import (
 )
 from pyrogram.types import (
     CallbackQuery,
+    Chat,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -212,14 +213,16 @@ class SpamPrediction(plugin.Plugin):
 
                 if author in users_on_correct:
                     users_on_correct.remove(author)
+                    ans = "You have unvoted this message as a spam!"
                 else:
                     users_on_correct.append(author)
+                    ans = "You voted this message as a spam!"
             except TypeError:
                 return await query.answer(
                     "You can't vote this anymore, because this was marked as a spam by our staff",
                     show_alert=True,
                 )
-            await query.answer("You voted this message as a spam!")
+            await query.answer(ans)
         elif value == "f":
             try:
                 # Check user in correct data
@@ -228,14 +231,16 @@ class SpamPrediction(plugin.Plugin):
 
                 if author in users_on_incorrect:
                     users_on_incorrect.remove(author)
+                    ans = "You have unvoted this message as non-spam!"
                 else:
                     users_on_incorrect.append(author)
+                    ans = "You voted this message as non-spam!"
             except TypeError:
                 return await query.answer(
                     "You can't vote this anymore, because this was marked as a spam by our staff",
                     show_alert=True,
                 )
-            await query.answer("You voted this message as non-spam!")
+            await query.answer(ans)
         else:
             return await query.answer("Invalid keyboard method!", show_alert=True)
 
@@ -371,7 +376,7 @@ class SpamPrediction(plugin.Plugin):
                 if message.sender_chat.id == chat.id:  # anon admin
                     return
 
-                current_chat: Any = await self.bot.get_chat(chat.id)
+                current_chat: Chat = await self.bot.get_chat(chat.id)
                 if (
                     current_chat.linked_chat
                     and message.sender_chat.id == current_chat.linked_chat.id
