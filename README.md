@@ -3,6 +3,7 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 [![DeepSource](https://deepsource.io/gh/userbotindo/Anjani.svg/?label=active+issues)](https://deepsource.io/gh/userbotindo/Anjani/?ref=repository-badge)
+[![PyPI](https://img.shields.io/pypi/v/anjani.svg)](https://pypi.org/project/anjani/)
 
 Can be found on Telegram as [Anjani](https://t.me/dAnjani_bot).
 
