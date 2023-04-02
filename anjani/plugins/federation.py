@@ -680,6 +680,34 @@ class Federation(plugin.Plugin):
             reason,
         )
 
+    async def _propagate_fban(
+        self,
+        target: Union[User, Chat],
+        chats: List[int],
+        host_fed: str,
+        sub_fed: Optional[str] = None,
+    ) -> Mapping[int, str]:
+        """Propagate fban to each chat in the list"""
+        failed = {}
+        for chat in chats:
+            try:
+                await self.bot.client.ban_chat_member(chat, target.id)
+            except BadRequest as br:
+                self.log.warning(
+                    f"Failed to send fban on subfed {sub_fed} of {host_fed} at {chat} due to {br.MESSAGE}"
+                    if sub_fed
+                    else f"Failed to fban {target.username} on {chat} due to {br.MESSAGE}"
+                )
+                failed[chat] = br.MESSAGE
+            except (Forbidden, ChannelPrivate) as err:
+                self.log.warning(
+                    f"Can't fban on subfed {sub_fed} of {host_fed} at {chat} caused by {err.MESSAGE}"
+                    if sub_fed
+                    else f"Can't fban {target.username} on {chat} caused by {err.MESSAGE}"
+                )
+                failed[chat] = err.MESSAGE
+        return failed
+
     async def cmd_fban(
         self, ctx: command.Context, target: Union[User, Chat, None] = None, *, reason: str = ""
     ) -> Optional[str]:
@@ -731,18 +759,8 @@ class Federation(plugin.Plugin):
         else:
             return await self.text(chat.id, "err-peer-invalid")
 
-        failed: Dict[int, Optional[str]] = {}
-        for chat in data["chats"]:
-            try:
-                await self.bot.client.ban_chat_member(chat, target.id)
-            except BadRequest as br:
-                self.log.warning(f"Failed to fban {target.username} on {chat} due to {br.MESSAGE}")
-                failed[chat] = br.MESSAGE
-            except (Forbidden, ChannelPrivate) as err:
-                self.log.warning(
-                    f"Can't to fban {target.username} on {chat} caused by {err.MESSAGE}"
-                )
-                failed[chat] = err.MESSAGE
+        await ctx.respond(f"Starting a federation ban for {target.id} in federation {data['name']}")
+        failed = await self._propagate_fban(target, data["chats"], data["_id"])
 
         text = ""
         if failed:
@@ -758,17 +776,9 @@ class Federation(plugin.Plugin):
                 subs_data = await self.get_fed(fed_id)
                 if not subs_data:
                     continue
-                for chat in subs_data.get("chats", []):
-                    try:
-                        await self.bot.client.ban_chat_member(chat, target.id)
-                    except BadRequest as br:
-                        self.log.warning(
-                            f"Failed to send fban on subfed {subs_data['_id']} of {data['_id']} at {chat} due to {br.MESSAGE}"
-                        )
-                    except (Forbidden, ChannelPrivate) as err:
-                        self.log.warning(
-                            f"Can't to fban on subfed {subs_data['_id']} of {data['_id']} at {chat} caused by {err.MESSAGE}"
-                        )
+                await self._propagate_fban(
+                    target, subs_data.get("chats", []), data["_id"], subs_data["_id"]
+                )
 
         await ctx.respond(string)
 
@@ -779,6 +789,24 @@ class Federation(plugin.Plugin):
                 await self.bot.client.send_message(log, text)
 
         return None
+
+    async def _propagate_unfban(
+        self,
+        target: Union[User, Chat],
+        chats: List[int],
+        host_fed: str,
+        sub_fed: Optional[str] = None,
+    ) -> None:
+        for chat in chats:
+            try:
+                await self.bot.client.unban_chat_member(chat, target.id)
+                await asyncio.sleep(0.5)
+            except (BadRequest, Forbidden, ChannelPrivate) as err:
+                self.log.warning(
+                    f"Failed to unfban on subfed {sub_fed} of {host_fed} due to {err.MESSAGE}"
+                    if sub_fed
+                    else f"Failed to unfban on {host_fed} due to {err.MESSAGE}"
+                )
 
     async def cmd_unfban(self, ctx: command.Context, target: Union[User, Chat, None] = None) -> str:
         """Unban a user on federation"""
@@ -833,24 +861,18 @@ class Federation(plugin.Plugin):
         else:
             return ""
 
-        for chat in data["chats"]:
-            try:
-                await self.bot.client.unban_chat_member(chat, target.id)
-            except (BadRequest, Forbidden, ChannelPrivate) as err:
-                self.log.warning(f"Failed to unfban on {data['_id']} due to {err.MESSAGE}")
+        await ctx.respond(f"Removing federation ban for {target.id} in federation {data['name']}")
+        await self._propagate_unfban(target, data["chats"], data["_id"])
 
         if data.get("subscribers", []):
             for fed_id in data["subscribers"]:
                 subs_data = await self.get_fed(fed_id)
                 if not subs_data:
                     continue
-                for chat in subs_data.get("chats", []):
-                    try:
-                        await self.bot.client.unban_chat_member(chat, target.id)
-                    except (BadRequest, Forbidden, ChannelPrivate) as err:
-                        self.log.warning(
-                            f"Failed to unfban on subfed {subs_data['_id']} of {data['_id']} due to {err.MESSAGE}"
-                        )
+
+                await self._propagate_unfban(
+                    target, subs_data.get("chats", []), data["_id"], subs_data["_id"]
+                )
 
         if log := data.get("log"):
             await self.bot.client.send_message(log, text, disable_web_page_preview=True)
