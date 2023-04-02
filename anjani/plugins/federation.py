@@ -332,8 +332,10 @@ class Federation(plugin.Plugin):
                 ),
                 self.bot.client.ban_chat_member(chat.id, user.id),
             )
-        except (ChatAdminRequired, UserAdminInvalid):
-            self.log.debug(f"Can't ban user {user.username} on {chat.title}")
+        except (ChatAdminRequired, UserAdminInvalid) as e:
+            self.log.warning(
+                f"Can't ban user {user.username} on {chat.title} ({chat.id}) caused by {e}"
+            )
 
     async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
         """Create a new federations"""
