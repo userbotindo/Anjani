@@ -37,6 +37,7 @@ from pyrogram.errors import (
     ChatAdminRequired,
     Forbidden,
     PeerIdInvalid,
+    UserAdminInvalid,
 )
 from pyrogram.types import (
     CallbackQuery,
@@ -331,7 +332,7 @@ class Federation(plugin.Plugin):
                 ),
                 self.bot.client.ban_chat_member(chat.id, user.id),
             )
-        except ChatAdminRequired:
+        except (ChatAdminRequired, UserAdminInvalid):
             self.log.debug(f"Can't ban user {user.username} on {chat.title}")
 
     async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
