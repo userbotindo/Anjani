@@ -15,8 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from base64 import b64encode
 from typing import Any, ClassVar, MutableMapping
 
+from aiopath import AsyncPath
 from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
@@ -94,8 +96,19 @@ class Canonical(plugin.Plugin):
             if not member.user.is_bot and member.privileges.can_manage_chat:
                 admins.append(member.user.id)
 
+        photo = None
+        if ctx.chat.photo:
+            file = await self.bot.client.download_media(ctx.chat.photo.small_file_id)
+            if file and isinstance(file, str):
+                file = AsyncPath(file)
+                result = await file.read_bytes()
+                photo = b64encode(result).decode("utf-8")
+                await file.unlink()
+            if file and isinstance(file, bytes):
+                photo = b64encode(file).decode("utf-8")
+
         await self.chats_db.update_one(
-            {"chat_id": ctx.chat.id}, {"$set": {"admins": admins}}, upsert=True
+            {"chat_id": ctx.chat.id}, {"$set": {"admins": admins, "photo": photo}}, upsert=True
         )
         await ctx.respond("Done", delete_after=5)
 
