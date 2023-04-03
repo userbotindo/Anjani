@@ -1,5 +1,6 @@
 name: Feature Change
 description: Create a feature change for Anjani
+title: "[FEAT] "
 labels: ["type: feature", "feature: enhancement", "status: triage"]
 body:
   - type: markdown
@@ -11,7 +12,7 @@ body:
   - type: textarea
     attributes:
       label: Summary
-      description: A clear and concise what are you trying to do.
+      description: A clear and concise what feature you want to change.
     validations:
       required: true
   - type: textarea
@@ -22,14 +23,5 @@ body:
   - type: textarea
     attributes:
       label: How the feature should work?
-    validations:
-      required: true
-  - type: dropdown
-    attributes:
-      label: Contributing
-      multiple: false
-      options:
-        - "Yes I would like to contribute this feature in a PR"
-        - "No, I am afraid I can't contribute this feature"
     validations:
       required: true

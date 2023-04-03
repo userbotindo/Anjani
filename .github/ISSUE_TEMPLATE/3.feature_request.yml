@@ -1,5 +1,6 @@
 name: Feature Proposal
 description: Create a feature request for Anjani
+title: "[FEAT] "
 labels: ["type: feature", "feature: addition", "status: triage"]
 body:
   - type: markdown
@@ -18,14 +19,5 @@ body:
     attributes:
       label: Describe the solution you'd like
       description: A clear and concise description of what you want to happen.
-    validations:
-      required: true
-  - type: dropdown
-    attributes:
-      label: Contributing
-      multiple: false
-      options:
-        - "Yes I would like to contribute this feature in a PR"
-        - "No, I am afraid I can't contribute this feature"
     validations:
       required: true

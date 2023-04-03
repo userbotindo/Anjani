@@ -1,5 +1,6 @@
 name: Bug Report (core)
 description: Create a bug report specific for Anjani-core
+title: "[BUG] "
 labels: ["type: bug", "scope: core", "status: triage"]
 body:
   - type: markdown
@@ -15,6 +16,12 @@ body:
       required: true
   - type: textarea
     attributes:
+      label: Step to Reproduce
+      description: How to reproduce the bug.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
       label: Expected Behavior
       description: A clear and concise description of what you expected to happen.
     validations:
@@ -22,9 +29,5 @@ body:
   - type: textarea
     attributes:
       label: Logs (if any)
-      description: Relevant logs and traceback output. (automaticaly rendered non need backticks)
+      description: Relevant logs and traceback output. (automaticaly rendered no need backticks)
       render: Shell
-  - type: textarea
-    attributes:
-      label: Additional Information
-      description: Any additional information you would like to share.
