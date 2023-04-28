@@ -369,7 +369,7 @@ class Greeting(plugin.Plugin):
                 return await self.text(chat.id, "unsupported-media-command")
             else:
                 welc_text = (
-                    Str(ctx.message.text).init(ctx.msg.entities).markdown.split(ctx.invoker, 1)[1]
+                    Str(ctx.message.text).init(ctx.msg.entities).markdown.split(ctx.invoker, 1)[1].strip()
                 )
                 welc_text, buttons = parse_button(welc_text)
                 types = Types.TEXT
