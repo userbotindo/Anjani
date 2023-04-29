@@ -569,10 +569,8 @@ bot-added: |
 default-welcome: Hai {first}, apa kabar?\nSelamat datang di {chatname}
 clean-serv-set: "Mengubah pembersihan pesan layanan : {}."
 welcome-set: Sambutan menjadi {} saat anggota baru bergabung.
-welcome-message-expired: File ID for the media message got expired.\n__This might have occured because you must have changed the bot token. Please re-add the welcome media.__
 cust-welcome-set: Berhasil mengubah pesan sambutan sesuai yang anda inginkan!
 reset-welcome: Berhasil mengubah pesan sambutan ke pesan sambutan bawaan saya!
-unsupported-media-command: "Media with commands as captions are not supported yet. **TIP**: __Maybe just reply the command to the media?__"
 view-welcome: |
   **Grup ini memiliki pengaturan: **
   `Menyambut pengguna` = `{}`
