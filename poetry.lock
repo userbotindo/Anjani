@@ -1189,14 +1189,14 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pyrogram"
-version = "2.0.104"
+version = "2.0.106"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
 python-versions = "~=3.7"
 files = [
-    {file = "Pyrogram-2.0.104-py3-none-any.whl", hash = "sha256:20f9bebd3a42f6bf9e90b798a431ccc065a19baa3dd3ff94be6ee32e5ed038bd"},
-    {file = "Pyrogram-2.0.104.tar.gz", hash = "sha256:c8588d3f379efbacbeead42d31745dc2482de6dbcc19c46ebfb2bf25b780a67e"},
+    {file = "Pyrogram-2.0.106-py3-none-any.whl", hash = "sha256:32b62b3d93030b1080cbe45b88c0e8790cf4e2179cf3321ede810d48edf97bc7"},
+    {file = "Pyrogram-2.0.106.tar.gz", hash = "sha256:30202995758fcb6e0f91224704ab7fedefea454297724bd70a6a71a23748c16f"},
 ]
 
 [package.dependencies]
