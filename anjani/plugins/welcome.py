@@ -246,7 +246,7 @@ class Greeting(plugin.Plugin):
         self, chat_id: int
     ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]], Optional[int], Optional[str]]:
         """Get chat welcome string"""
-        message: Optional[Dict[str, Union[str, int, bool]]] = await self.db.find_one(
+        message= await self.db.find_one(
             {"chat_id": chat_id}
         )
         if message:
