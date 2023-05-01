@@ -255,7 +255,7 @@ class Greeting(plugin.Plugin):
             if "custom_welcome" in message:
                 text: str = message["custom_welcome"]
                 button: Optional[Button] = message.get("button")
-                message_type: Types = Types.TEXT.value
+                message_type: Types = Types.TEXT
                 await self.db.delete_one({"chat_id": chat_id})
                 await self.set_custom_welcome(
                     chat_id=chat_id,
