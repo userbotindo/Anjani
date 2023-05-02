@@ -151,7 +151,7 @@ class Greeting(plugin.Plugin):
                         button = build_button(button)
                     else:
                         button = None
-
+                    msg = None
                     try:
                         if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
                             msg = await self.SEND[msg_type](
