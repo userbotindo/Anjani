@@ -16,15 +16,39 @@
 
 import asyncio
 from html import escape
-from typing import Any, ClassVar, MutableMapping, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Dict,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
-from pyrogram.client import Client
+from pyrogram import Client
 from pyrogram.enums.parse_mode import ParseMode
-from pyrogram.errors import ChannelPrivate, ChatWriteForbidden, MessageDeleteForbidden
+from pyrogram.errors import (
+    ChannelPrivate,
+    ChatWriteForbidden,
+    MediaEmpty,
+    MessageDeleteForbidden,
+    MessageEmpty,
+)
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
 from anjani import command, filters, plugin, util
+from anjani.util.tg import (
+    Button,
+    Types,
+    build_button,
+    get_message_info,
+    parse_button,
+    revert_button,
+)
 
 
 class Greeting(plugin.Plugin):
@@ -32,11 +56,25 @@ class Greeting(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
-    chat_dg: util.db.AsyncCollection
+    chat_db: util.db.AsyncCollection
+    SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
         self.chat_db = self.bot.db.get_collection("CHATS")
+
+        self.SEND = {
+            Types.TEXT.value: self.bot.client.send_message,
+            Types.BUTTON_TEXT.value: self.bot.client.send_message,
+            Types.DOCUMENT.value: self.bot.client.send_document,
+            Types.PHOTO.value: self.bot.client.send_photo,
+            Types.VIDEO.value: self.bot.client.send_video,
+            Types.STICKER.value: self.bot.client.send_sticker,
+            Types.AUDIO.value: self.bot.client.send_audio,
+            Types.VOICE.value: self.bot.client.send_voice,
+            Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
+            Types.ANIMATION.value: self.bot.client.send_animation,
+        }
 
     async def on_chat_action(self, message: Message) -> None:
         chat = message.chat
@@ -108,7 +146,8 @@ class Greeting(plugin.Plugin):
                         reply_to_message_id=reply_to,
                     )
                 else:
-                    text, button = await self.welc_message(chat.id)
+                    text, button, msg_type, file_id = await self.welc_message(chat.id)
+                    msg_type = Types(msg_type) if msg_type else Types.TEXT
                     if not text:
                         string = await self.text(chat.id, "default-welcome", noformat=True)
                     else:
@@ -119,22 +158,51 @@ class Greeting(plugin.Plugin):
                     )
 
                     if button:
-                        button = util.tg.build_button(button)
+                        button = build_button(button)
+                    else:
+                        button = None
+                    msg = None
+                    try:
+                        if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
+                            msg = await self.SEND[msg_type](
+                                message.chat.id,
+                                formatted_text,
+                                thread_id=thread_id,
+                                reply_to_message_id=reply_to,
+                                reply_markup=button,
+                                disable_web_page_preview=True,
+                            )
+                        elif msg_type in {Types.STICKER, Types.ANIMATION}:
+                            msg = await self.SEND[msg_type](
+                                message.chat.id,
+                                file_id,
+                                thread_id=thread_id,
+                                reply_to_message_id=reply_to,
+                            )
+                        else:
+                            msg = await self.SEND[msg_type](
+                                message.chat.id,
+                                file_id,
+                                caption=formatted_text,
+                                thread_id=thread_id,
+                                reply_to_message_id=reply_to,
+                                reply_markup=button,
+                            )
+                    except MediaEmpty:
+                        await self.bot.client.send_message(
+                            message.chat.id,
+                            await self.text(message.chat.id, "welcome-message-expired"),
+                        )
+                    except MessageEmpty:
+                        self.log.warning("Welcome message empty on %s.", message.chat.id)
 
-                    msg = await self.bot.client.send_message(
-                        chat.id,
-                        formatted_text,
-                        reply_to_message_id=reply_to if not thread_id else None,  # type: ignore
-                        message_thread_id=thread_id,  # type: ignore
-                        reply_markup=button,  # type: ignore
-                    )
-
-                    previous = await self.previous_welcome(chat.id, msg.id)
-                    if previous:
-                        try:
-                            await self.bot.client.delete_messages(chat.id, previous)
-                        except MessageDeleteForbidden:
-                            pass
+                    if msg:
+                        previous = await self.previous_welcome(chat.id, msg.id)
+                        if previous:
+                            try:
+                                await self.bot.client.delete_messages(chat.id, previous)
+                            except MessageDeleteForbidden:
+                                pass
             except ChatWriteForbidden:
                 pass
 
@@ -195,13 +263,34 @@ class Greeting(plugin.Plugin):
 
     async def welc_message(
         self, chat_id: int
-    ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]]]:
+    ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]], Optional[int], Optional[str]]:
         """Get chat welcome string"""
-        message = await self.db.find_one({"chat_id": chat_id}, {"custom_welcome": 1, "button": 1})
+        message = await self.db.find_one({"chat_id": chat_id})
         if message:
-            return message.get("custom_welcome"), message.get("button")
-
-        return await self.text(chat_id, "default-welcome", noformat=True), None
+            # This checks data for old welcome schema
+            # TODO: deprecate old schema on v3
+            if "custom_welcome" in message:
+                text: str = message["custom_welcome"]
+                button: Optional[Button] = message.get("button")
+                message_type: Types = Types.TEXT
+                await self.db.delete_one({"chat_id": chat_id})
+                await self.set_custom_welcome(
+                    chat_id=chat_id,
+                    text=text,
+                    buttons=button,
+                    message_type=message_type,
+                    content=None,
+                )
+                self.log.info("Migrated old welcome message on %d to new schema.", chat_id)
+                return text, button, message_type, None
+            else:
+                return (
+                    message.get("text"),
+                    message.get("button"),
+                    message.get("type"),
+                    message.get("file_id"),
+                )
+        return await self.text(chat_id, "default-welcome", noformat=True), None, None, None
 
     async def left_message(self, chat_id: int) -> str:
         message = await self.db.find_one({"chat_id": chat_id}, {"custom_goodbye": 1})
@@ -221,12 +310,25 @@ class Greeting(plugin.Plugin):
 
         return False  # Defaults off
 
-    async def set_custom_welcome(self, chat_id: int, text: Str) -> None:
+    async def set_custom_welcome(
+        self,
+        chat_id: int,
+        text: str,
+        message_type: Types,
+        buttons: Optional[Button] = None,
+        content: Optional[str] = None,
+    ) -> None:
         """Set custom welcome"""
-        msg, button = util.tg.parse_button(text.markdown)
         await self.db.update_one(
             {"chat_id": chat_id},
-            {"$set": {"custom_welcome": msg, "button": button}},
+            {
+                "$set": {
+                    "text": text,
+                    "button": buttons,
+                    "file_id": content,
+                    "type": message_type,
+                }
+            },
             upsert=True,
         )
 
@@ -237,7 +339,16 @@ class Greeting(plugin.Plugin):
     async def del_custom_welcome(self, chat_id: int) -> None:
         """Delete custom welcome message"""
         await self.db.update_one(
-            {"chat_id": chat_id}, {"$unset": {"custom_welcome": "", "button": ""}}
+            {"chat_id": chat_id},
+            {
+                "$unset": {
+                    "custom_welcome": "",
+                    "text": "",
+                    "button": "",
+                    "type": "",
+                    "file_id": "",
+                }
+            },
         )
 
     async def del_custom_goodbye(self, chat_id: int) -> None:
@@ -268,10 +379,25 @@ class Greeting(plugin.Plugin):
     async def cmd_setwelcome(self, ctx: command.Context) -> str:
         """Set chat welcome message"""
         chat = ctx.chat
+
         if ctx.input:
-            welc_text = Str(ctx.input).init(ctx.msg.entities[1:])
+            if ctx.message.media:
+                # TODO: Add support for command in media caption
+                return await self.text(chat.id, "unsupported-media-command")
+            else:
+                welc_text = (
+                    Str(ctx.message.text)
+                    .init(ctx.msg.entities)
+                    .markdown.split(ctx.invoker, 1)[1]
+                    .strip()
+                )
+                welc_text, buttons = parse_button(welc_text)
+                types = Types.TEXT
+                content = None
+                if ctx.msg.reply_to_message:
+                    _, types, content, __ = get_message_info(ctx.msg)
         elif ctx.msg.reply_to_message:
-            welc_text = ctx.msg.reply_to_message.text or ctx.msg.reply_to_message.caption
+            welc_text, types, content, buttons = get_message_info(ctx.msg)
         else:
             return await self.text(chat.id, "greetings-no-input")
 
@@ -281,7 +407,8 @@ class Greeting(plugin.Plugin):
             return await self.text(chat.id, "err-msg-format-parsing", err=e)
 
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "cust-welcome-set"), self.set_custom_welcome(chat.id, welc_text)
+            self.text(chat.id, "cust-welcome-set"),
+            self.set_custom_welcome(chat.id, welc_text, types, buttons, content),
         )
         return ret
 
@@ -343,7 +470,11 @@ class Greeting(plugin.Plugin):
             )
             return ret
 
-        setting, (text, button), clean_service = await asyncio.gather(
+        (
+            setting,
+            (text, button, msg_type, file_id),
+            clean_service,
+        ) = await asyncio.gather(
             self.is_welcome(chat.id), self.welc_message(chat.id), self.clean_service(chat.id)
         )
 
@@ -355,12 +486,12 @@ class Greeting(plugin.Plugin):
         if noformat:
             parse_mode = ParseMode.DISABLED
             if button:
-                text += util.tg.revert_button(button)
+                text += revert_button(button)
             button = None
         else:
             parse_mode = ParseMode.MARKDOWN
             if button:
-                button = util.tg.build_button(button)
+                button = build_button(button)
 
         view_welc = await self.text(chat.id, "view-welcome", setting, clean_service)
         if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
@@ -370,21 +501,50 @@ class Greeting(plugin.Plugin):
                 f"https://t.me/{self.bot.user.username}?start=help_topic",
             )
 
-        await ctx.respond(view_welc)
-        await ctx.respond(
-            text
-            if text
-            else (
-                "Empty, custom welcome message haven't set yet."
-                if not setting
-                else "Default:\n\n" + await self.text(chat.id, "default-welcome", noformat=True)
-            ),
-            mode="reply",
-            reply_markup=button,
-            parse_mode=parse_mode,
-            disable_web_page_preview=True,
-        )
-        return None
+        settings_msg = await ctx.respond(view_welc)
+
+        reply_to = settings_msg.id if settings_msg else None
+        try:
+            response_text = (
+                text
+                if text
+                else (
+                    "Empty, custom welcome message haven't set yet."
+                    if not setting
+                    else "Default:\n\n" + await self.text(chat.id, "default-welcome", noformat=True)
+                )
+            )
+            msg_type = msg_type or Types.TEXT
+            if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
+                await self.SEND[msg_type](
+                    ctx.chat.id,
+                    response_text,
+                    reply_to_message_id=reply_to,
+                    reply_markup=button,
+                    parse_mode=parse_mode,
+                    disable_web_page_preview=True,
+                )
+            elif msg_type in {Types.STICKER, Types.ANIMATION}:
+                await self.SEND[msg_type](
+                    ctx.chat.id,
+                    file_id,
+                    reply_to_message_id=reply_to,
+                )
+            else:
+                await self.SEND[msg_type](
+                    ctx.chat.id,
+                    file_id,
+                    caption=text,
+                    reply_to_message_id=reply_to,
+                    parse_mode=parse_mode,
+                    reply_markup=button,
+                )
+        except MediaEmpty:
+            await self.bot.client.send_message(
+                ctx.chat.id, await self.text(ctx.chat.id, "welcome-message-expired")
+            )
+        except MessageEmpty:
+            self.log.warning("Welcome message empty on %s.", ctx.chat.id)
 
     @command.filters(filters.admin_only)
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:

@@ -561,8 +561,10 @@ bot-added: |
 default-welcome: Hey {first}, how are you?\nWelcome to {chatname}
 clean-serv-set: Turned {} service messages cleaning.
 welcome-set: Welcome turned {} on new member join.
+welcome-message-expired: File ID for the media message got expired.\n__This might have occured because you must have changed the bot token. Please re-add the welcome media.__
 cust-welcome-set: Successfully set custom welcome message!
 reset-welcome: Successfully reset welcome message to default!
+unsupported-media-command: "Media with commands as captions are not supported yet. **TIP**: __Maybe just reply the command to the media?__"
 view-welcome: |
   **This chat has the welcome setting:**
   `Welcoming user` = `{}`
