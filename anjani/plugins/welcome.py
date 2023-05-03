@@ -28,7 +28,7 @@ from typing import (
     Union,
 )
 
-from pyrogram import Client
+from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import (
     ChannelPrivate,
@@ -167,7 +167,7 @@ class Greeting(plugin.Plugin):
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 formatted_text,
-                                thread_id=thread_id,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                                 reply_markup=button,
                                 disable_web_page_preview=True,
@@ -176,7 +176,7 @@ class Greeting(plugin.Plugin):
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 file_id,
-                                thread_id=thread_id,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                             )
                         else:
@@ -184,7 +184,7 @@ class Greeting(plugin.Plugin):
                                 message.chat.id,
                                 file_id,
                                 caption=formatted_text,
-                                thread_id=thread_id,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                                 reply_markup=button,
                             )
