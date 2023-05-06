@@ -85,9 +85,9 @@ admins-help: |
   × /demote <ID Pengguna/username> : Menurunkan Administrator grup untuk hanya menjadi anggota.
 gpic-no-photo: Berikan saya sebuah foto!
 gpic-success-changed: Gambar grup berhasil diganti!.
-finding-zombie: "`Mencari akun yang sudah terhapus...`"
-cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup.`"
-zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup.`"
+finding-zombie: "Mencari akun yang sudah terhapus..."
+cleaning-zombie: "**{}** Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup."
+zombie-clean: "Akun yang sudah terhapus tidak ditemukan pada grup."
 promote-error-invalid: "**ID Pengguna tidak benar**\n\nPeriksa ulang apakah dia seorang anggota grup, dan masukkan kembali ID pengguna atau nama pengguna (@username) yang benar."
 promote-error-self: "Anda tidak dapat mengangkat diri sendiri!"
 promote-error-privacy-restricted: "**Pengguna ini memiliki pengaturan privasi yang mencegah tindakan ini**\n\nPeriksa ulang, apakah dia anggota di sini, dan masukkan kembali ID/username yang benar."
