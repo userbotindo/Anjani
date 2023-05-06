@@ -53,7 +53,7 @@ up: all  # Pull latest changes, build docker images, stop and start docker conta
 changelog: # Generate changelog https://convco.github.io/
 	@echo "$(GREEN)Generating changelog$(END)"
 	@convco changelog -m 1 > $(CHANGELOG_FILE)
-	@echo -e "\n### Version Contributor(s)\n" >> $(CHANGELOG_FILE)
+	@echo "\n### Version Contributor(s)\n" >> $(CHANGELOG_FILE)
 	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> $(CHANGELOG_FILE)
 	@echo "$(GREEN)Changelog saved to $(CHANGELOG_FILE)$(END)"
 
