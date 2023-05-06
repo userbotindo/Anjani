@@ -66,7 +66,7 @@ class Filters(plugin.Plugin):
         return {self.name: data} if data else {}
 
     async def on_plugin_restore(self, chat_id: int, data: MutableMapping[str, Any]) -> None:
-        await self.db.update_one({"chat_id": chat_id}, {"$set": {data[self.name]}}, upsert=True)
+        await self.db.update_one({"chat_id": chat_id}, {"$set": data[self.name]}, upsert=True)
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
