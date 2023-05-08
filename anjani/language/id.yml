@@ -6,6 +6,7 @@ start-pm: |
 
   Jika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [Support Group](https://t.me/userbotindo)
   Dikelola oleh: [Tim UserbotIndo](https://userbotindo.com/)
+  
   Tertarik menggunakan saya dalam mengelola grup Anda?
   Silahkan klik tombol di bawah, untuk menambahkan saya ke grup Anda.
 help-pm: |
@@ -19,11 +20,11 @@ help-pm: |
   × /setlang: Mengubah bahasa yang saya gunakan.
   × /donate: Menampilkan informasi tentang cara mendukung saya.
 
-  Pengaturan Anjani juga dapat dikonfigurasi di dashboard kami, [klik di sini](https://userbotindo.com/dashboard?ref=anjani) untuk membuka dashboard.
+  Pengaturan Anjani juga dapat dikonfigurasi di dashboard kami, [Klik di sini](https://userbotindo.com/dashboard?ref=anjani) untuk membuka dashboard.
 start-chat: Hai! Salam hangat, semoga hari Anda menyenangkan.
 help-chat: Hubungi saya secara personal untuk mendapatkan daftar perintah yang tersedia.
 add-to-group-button: Tambahkan Saya
-start-help-button: Bantuan & Perintah
+start-help-button: Bantuan
 dashboard-button: Dashboard
 help-chat-button: Bantuan
 back-button: Kembali
@@ -79,48 +80,50 @@ admins-help: |
   × /pin: Untuk menyematkan suatu pesan pada grup anda.
   × /unpin: Untuk membatalkan pesan yang disematkan pada grup anda.
   × /setgpic : Mengubah foto profile grup anda.
-  × /zombies : Menghapus akun yang sudah terhapus namun masih ada di grup anda!
-  × /promote <ID Pengguna/username> : Mengangkat anggota grup anda untuk menjadi seorang Administrator.
-  × /demote <ID Pengguna/username> : Menurunkan seorang Administrator grup anda untuk hanya menjadi anggota grup.
+  × /zombies : Mengeluarkan akun yang sudah terhapus.
+  × /promote <ID Pengguna/username> : Mengangkat anggota grup menjadi Administrator.
+  × /demote <ID Pengguna/username> : Menurunkan Administrator grup untuk hanya menjadi anggota.
 gpic-no-photo: Berikan saya sebuah foto!
 gpic-success-changed: Gambar grup berhasil diganti!.
-finding-zombie: "`Mencari akun yang sudah terhapus namun masih ada di grup anda!`"
-cleaning-zombie: "**{}** `Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup anda!` 🚮"
-zombie-clean: "`Akun yang sudah terhapus tidak ditemukan pada grup anda, Grup bersih` 🙌"
-promote-error-invalid: "**ID Pengguna tidak sah atau tidak benar**\n`Silahkan cek kembali apakah dia seorang anggota grup anda atau tidak, dan masukkan kembali id pengguna atau username yang benar`"
-promote-error-self: "__Mohon maaf anda tidak dapat mengangkat diri sendiri__"
-promote-error-privacy-restricted: "**Pengguna ini memiliki pengaturan privasi yang mencegah tindakan ini**\n`pastikan dia adalah anggota di sini, dan Anda memasukkan id/username yang benar!`"
-demote-success: "`Menurunkan sudah berhasil`"
-demote-error-perm: "`Mohon maaf saya tidak memiliki izin untuk menurunkan, saya hanya bisa menurunkan orang yang saya angkat sendiri`"
-no-demote-user: "`Beritahu saya, siapa yang mau kamu turunkan?"
-demote-error-self: "__Apakah kamu yakin akan menurunkan dirimu sendiri?__"
-demote-error-creator: "__Anda tidak dapat menurunkan pembuat grup__"
-promote-success: "`Berhasil diangkat menjadi Administrator`"
-promote-error-perm: "`Orang ini sudah menjadi Administrator!`"
-no-promote-user: "`Siapa yang harus saya angkat menjadi Administrator?\nBerikan saya orang tersebut!`"
-no-pinned-message: "__Tidak ada pesan yang disematkan__"
+finding-zombie: "Mencari akun yang sudah terhapus..."
+cleaning-zombie: "**{}** Akun yang sudah terhapus ditemukan, dan telah dikeluarkan dari grup."
+zombie-clean: "Akun yang sudah terhapus tidak ditemukan pada grup."
+promote-error-invalid: "**ID Pengguna tidak benar**\n\nPeriksa ulang apakah dia seorang anggota grup, dan masukkan kembali ID pengguna atau nama pengguna (@username) yang benar."
+promote-error-self: "Anda tidak dapat mengangkat diri sendiri!"
+promote-error-privacy-restricted: "**Pengguna ini memiliki pengaturan privasi yang mencegah tindakan ini**\n\nPeriksa ulang, apakah dia anggota di sini, dan masukkan kembali ID/username yang benar."
+demote-success: "Berhasil menurunkan pengguna menjadi anggota."
+demote-error-perm: "Mohon maaf saya tidak memiliki izin untuk menurunkan. Saya hanya bisa menurunkan orang yang saya angkat."
+no-demote-user: "Berikan ID/username!"
+demote-error-self: "Apakah kamu yakin akan menurunkan dirimu sendiri?"
+demote-error-creator: "Anda tidak dapat menurunkan pemilik grup."
+promote-success: "Berhasil diangkat menjadi Administrator."
+promote-error-perm: "Pengguna ini sudah menjadi Administrator."
+no-promote-user: "Berikan ID/username."
+no-pinned-message: "Tidak ada pesan yang disematkan."
 #endregion
 #region Backups
 backups-button: Cadangan
 backups-help: |
-  **Hanya Administrator yang bisa menggunakan:**\n
+  **Hanya Administrator yang bisa menggunakan perintah:**\n
   × /backup: Cadangkan data grup, contoh : catatan, pesan sambutan, spam shield, dan lain-lain. Yang mana tersimpan di basis data saya.
-  \n× /restore: Balas ke file cadangan anda untuk mengembalikan data grup.
-  \nNote: File cadangan dari suatu grup tidak dapat dikembalikan ke grup lain.
+  × /restore: Balas ke file cadangan anda untuk memulihkan data grup.
+  
+  Note:
+  File cadangan dari suatu grup tidak dapat dipulihkan ke grup lain.
 backup-doc: |
-  **Berhasil mencadangkan data:**
-  Grup: `{}`
+  **Pencadangan Berhasil!**
+  Grup: **{}**
   Grup ID: `{}`
-  Waktu: `{}`
-  \nFile ini berisi cadangan data yaitu:{}
+  Waktu: {}
+  File ini berisi cadangan data yaitu:{}
 backup-null: Grup ini tidak memiliki data yang tersimpan di basis data saya.
-backup-data-null: Tidak ada data untuk dikembalikan.
+backup-data-null: Tidak ada data untuk dipulihkan.
 backup-progress: Mencadangkan data grup.
-backup-id-invalid: Mohon maaf ini adalah file cadangan dari grup lain! saya tidak dapat mengembalikan data grup lain!
-backup-done: Berhasil mengembalikan data.
-invalid-backup-file: Sepertinya file ini bukan file yang dicadangkan dari saya. Saya tidak dapat mengembalikan file tersebut!
+backup-id-invalid: Mohon maaf ini adalah file cadangan dari grup lain. Saya tidak dapat memulihkan data yang berbeda.
+backup-done: Berhasil memulihkan data.
+invalid-backup-file: Sepertinya file ini bukan file yang dicadangkan dari saya. Saya tidak dapat memulihkan data.
 no-backup-file: Balas ke file yang dicadangkan!
-restore-progress: Mengembalikan data.
+restore-progress: Memulihkan data.
 #endregion
 #region federations
 federations-button: Federasi
@@ -313,13 +316,16 @@ filters-list: "Filter pada **{}**:\n"
 language-button: Bahasa
 language-help: |
   Bot ini hadir dengan dukungan multi bahasa.
-  Anda dapat memilih preferensi bahasa anda!\n
-  ** Bahasa yang tersedia: **
-  - 🇺🇸 Bahasa Inggris.
-  - 🇮🇩 Bahasa Indonesia.\n
+  Anda dapat memilih preferensi bahasa anda!
+  
+  **Bahasa yang tersedia:**
+  × Bahasa Inggris.
+  × Bahasa Indonesia.
+  
   Perintah:
-  × /setlang | /lang | /language : Mengganti bahasa yang saya gunakan.\n
-  **Catatan**
+  × /setlang | /lang | /language : Mengganti bahasa yang saya gunakan.
+  
+  **Catatan:**
   Anda dapat menggunakan perintah ini pada grup anda untuk mengganti bahasa yang digunakan.\n
 current-language: "Bahasa **{}** saat ini adalah **{}**\nKlik bahasa yang ingin kamu gunakan"
 language-code-error: Telah terjadi kesalahan (tidak ada string bahasa yang tersedia) Silahkan hubungi grup support saya.
@@ -334,14 +340,10 @@ miscs-help: |
   ×  /id : Menampilkan ID pengguna, ID pesan, ID grup dan banyak lagi.
   ×  /info: Menampilkan informasi tentang seorang pengguna.
   ×  /ping : Menampilkan latensi bot.
-  ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
-      flags:
-          [-h, hastebin] = menggunakan hastebin.\n
-          [-k, katbin] = menggunakan katbin. \n
-          [-s, spacebin] = menggunakan spacebin.
-paste-wait: "`Menyalin ke {}...`"
-paste-succes: "**Berhasil Ditempel ke {}..!**"
-paste-fail: "`Gagal untuk menyalin ke {}!`\nGunakan flag __[-s, stashbin, hastebin, -h, spacebin]__ untuk menggunakan layanan lain."
+  ×  /paste : Menyalin dan menempel file teks ke layanan pastebin.
+paste-wait: "Sedang diproses..."
+paste-succes: "**Berhasil!**"
+paste-fail: "**Proses Gagal!**"
 paste-invalid: "Flag '**{}**' tidak cocok.\nFlag tersedia:__[-s, stashbin, hastebin, -h, spacebin]__"
 #endregion
 #region mute
