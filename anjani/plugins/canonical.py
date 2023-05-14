@@ -69,7 +69,7 @@ class Canonical(plugin.Plugin):
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
         self.__task = self.bot.loop.create_task(self.watch_streams())
-        self._web_server = self.bot.loop.create_task(userbotindo.WebServer(port=80).run())
+        self._web_server = self.bot.loop.create_task(userbotindo.WebServer().run())
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
