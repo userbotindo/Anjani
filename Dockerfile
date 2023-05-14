@@ -1,5 +1,5 @@
 # Set base image (host OS)
-FROM python:3.9-slim-bullseye
+FROM python:3.10-slim-bullseye
 
 # Set the working directory in the container
 WORKDIR /anjani/
@@ -18,10 +18,7 @@ COPY pyproject.toml poetry.lock ./
 ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN pip install --upgrade pip
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-
-# Add poetry environment
-ENV PATH="${PATH}:/root/.local/bin:$PATH"
+RUN pip install poetry
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --only main -E uvloop
