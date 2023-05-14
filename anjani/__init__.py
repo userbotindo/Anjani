@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-__version__ = "2.11.1"
+__version__ = "2.12.0"
 
 __description__ = "Telegram group management bot with spam protection."
 
