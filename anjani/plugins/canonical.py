@@ -35,7 +35,6 @@ try:
     import userbotindo
 
     _run_canonical = True
-    del userbotindo
 except ImportError:
     _run_canonical = False
 
@@ -54,6 +53,7 @@ class Canonical(plugin.Plugin):
 
     # Private
     __task: asyncio.Task[None]
+    _web_server: asyncio.Task[None]
     _mt: MutableMapping[MessageMediaType, str] = {
         MessageMediaType.STICKER: "s",
         MessageMediaType.PHOTO: "p",
@@ -69,10 +69,12 @@ class Canonical(plugin.Plugin):
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
         self.__task = self.bot.loop.create_task(self.watch_streams())
+        self._web_server = self.bot.loop.create_task(userbotindo.WebServer(port=80).run())
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
         self.__task.cancel()
+        self._web_server.cancel()
 
     def get_type(self, message: Message) -> str:
         return self._mt.get(message.media, "t") if message.media else "t"
