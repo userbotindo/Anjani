@@ -2,7 +2,8 @@ name: Docker
 
 on:
   push:
-    branches: ["staging", "topic-canary"]
+    branches:
+      - topic-canary
     # Publish semver tags as releases.
     tags:
       - "v*"
