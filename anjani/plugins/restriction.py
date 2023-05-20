@@ -236,7 +236,7 @@ class Restrictions(plugin.Plugin):
 
         try:
             await chat.unban_member(user.id)
-        except (BadRequest, PeerIdInvalid) as e:
+        except BadRequest as e:
             if isinstance(e.value, str) and "PARTICIPANT_ID_INVALID" in e.value:
                 return await self.text(chat.id, "err-invalid-pid")
 
