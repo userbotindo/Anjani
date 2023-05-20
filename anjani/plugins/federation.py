@@ -60,6 +60,7 @@ class Federation(plugin.Plugin):
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FEDERATIONS")
+        self.chat_db = self.bot.db.get_collection("CHATS")
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -114,7 +115,12 @@ class Federation(plugin.Plugin):
                 self.text(chat.id, "fed-autoleave", fed_data["name"], fed_data["_id"]),
                 self.db.update_one({"_id": fed_data["_id"]}, {"$pull": {"chats": chat.id}}),
             )
-            await self.bot.client.send_message(chat.id, ret)
+            thread_id = await self.get_action_topic(chat.id)
+            await self.bot.client.send_message(
+                chat.id,
+                ret,
+                message_thread_id=thread_id,  # type: ignore
+            )
 
     @listener.filters(filters.regex(r"(rm|log)fed_(.*)"))
     async def on_callback_query(self, query: CallbackQuery) -> Any:
@@ -161,6 +167,10 @@ class Federation(plugin.Plugin):
         banned = await self.is_fbanned(chat.id, target.id)
         if banned:
             await self.fban_handler(chat, target, banned)
+
+    async def get_action_topic(self, chat_id: int) -> Optional[int]:
+        data = await self.chat_db.find_one({"chat_id": chat_id}, {"action_topic": 1})
+        return data.get("action_topic") if data else None
 
     @staticmethod
     def is_fed_admin(data: Mapping[str, Any], user: int) -> bool:
@@ -329,6 +339,7 @@ class Federation(plugin.Plugin):
                         data["reason"],
                         data["time"].strftime("%Y %b %d %H:%M UTC"),
                     ),
+                    message_thread_id=await self.get_action_topic(chat.id),  # type: ignore
                 ),
                 self.bot.client.ban_chat_member(chat.id, user.id),
             )

@@ -520,6 +520,19 @@ spamshield-view: |
   Spam shield setting: **{}**.
   Spam shield is a usefull plugin to help protect your group from spammers and trollers.
 #endregion
+#region topic
+topic-button: Topic
+topic-help: |
+  Telegram Topics makes your group divided into different chats within the group (or forum).
+  This plugin help you manage your topic on Anjani.
+
+  A Topic group need to set a default "action topic" that will be used for greetings and more other action by Anjani.
+
+  **Admin Commands:**
+  × /setactiontopic | /setdefaulttopic: Set the current topic as the action topic of this forum.
+topic-non-topic: This is not a topic group!
+topic-set: This topic will be used for action topic.
+#endregion
 #region greetings
 greetings-button: Greetings
 greetings-help: |
@@ -538,6 +551,9 @@ greetings-help: |
   Example: `/welcome noformat`
 
   Check /markdownhelp and /fillinghelp for formatting details.
+greetings-topic-default: |
+  Forum chat detected. Bot will use the default action topic for greetings.
+  To set a default action topic, please set a default action topic as mentioned in this [topic help]({}).
 greetings-no-input: Please provide the text you want to set!
 bot-added: |
   Hi... Thanks for inviting me.

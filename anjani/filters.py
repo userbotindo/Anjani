@@ -195,6 +195,7 @@ can_invite = _create_filter_permission("can_invite_users")
 can_pin = _create_filter_permission("can_pin_messages")
 can_promote = _create_filter_permission("can_promote_members")
 can_restrict = _create_filter_permission("can_restrict_members")
+can_manage_topic = _create_filter_permission("can_manage_topics")
 # }
 
 

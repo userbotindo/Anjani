@@ -28,7 +28,7 @@ from typing import (
     Union,
 )
 
-from pyrogram import Client
+from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import (
     ChannelPrivate,
@@ -56,10 +56,12 @@ class Greeting(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     db: util.db.AsyncCollection
+    chat_db: util.db.AsyncCollection
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
+        self.chat_db = self.bot.db.get_collection("CHATS")
 
         self.SEND = {
             Types.TEXT.value: self.bot.client.send_message,
@@ -88,13 +90,20 @@ class Greeting(plugin.Plugin):
                 pass
             reply_to = 0
 
+        thread_id = await self.get_action_topic(chat)
+        if message.chat.is_forum and not thread_id:
+            self.log.debug(f"Chat {message.chat.id} is forum but no action topic set!")
+            # continue try to send on default (general) topic
+
         if message.new_chat_members:
-            return await self._member_join(message, reply_to)
+            return await self._member_join(message, reply_to, thread_id)
 
         if message.left_chat_member:
-            return await self._member_leave(message, reply_to)
+            return await self._member_leave(message, reply_to, thread_id)
 
-    async def _member_leave(self, message: Message, reply_to: int) -> None:
+    async def _member_leave(
+        self, message: Message, reply_to: int, thread_id: Optional[int]
+    ) -> None:
         chat = message.chat
         if not await self.is_goodbye(chat.id):
             return
@@ -109,7 +118,8 @@ class Greeting(plugin.Plugin):
             msg = await self.bot.client.send_message(
                 chat.id,
                 formatted_text,
-                reply_to_message_id=reply_to,
+                reply_to_message_id=reply_to if not thread_id else None,  # type: ignore
+                message_thread_id=thread_id,  # type: ignore
             )
         except ChatWriteForbidden:
             return
@@ -121,7 +131,7 @@ class Greeting(plugin.Plugin):
             except MessageDeleteForbidden:
                 pass
 
-    async def _member_join(self, message: Message, reply_to: int) -> None:
+    async def _member_join(self, message: Message, reply_to: int, thread_id: Optional[int]) -> None:
         chat = message.chat
         if not await self.is_welcome(chat.id):
             return
@@ -157,6 +167,7 @@ class Greeting(plugin.Plugin):
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 formatted_text,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                                 reply_markup=button,
                                 disable_web_page_preview=True,
@@ -165,6 +176,7 @@ class Greeting(plugin.Plugin):
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 file_id,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                             )
                         else:
@@ -172,6 +184,7 @@ class Greeting(plugin.Plugin):
                                 message.chat.id,
                                 file_id,
                                 caption=formatted_text,
+                                message_thread_id=thread_id,
                                 reply_to_message_id=reply_to,
                                 reply_markup=button,
                             )
@@ -232,6 +245,12 @@ class Greeting(plugin.Plugin):
             id=user.id,
         )
 
+    async def get_action_topic(self, chat: Chat) -> Optional[int]:
+        if not chat.is_forum:
+            return None
+        data = await self.chat_db.find_one({"chat_id": chat.id}, {"action_topic": True})
+        return data.get("action_topic") if data else None
+
     async def is_welcome(self, chat_id: int) -> bool:
         """Get chat welcome setting"""
         active = await self.db.find_one({"chat_id": chat_id}, {"should_welcome": 1})
@@ -246,9 +265,7 @@ class Greeting(plugin.Plugin):
         self, chat_id: int
     ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]], Optional[int], Optional[str]]:
         """Get chat welcome string"""
-        message= await self.db.find_one(
-            {"chat_id": chat_id}
-        )
+        message = await self.db.find_one({"chat_id": chat_id})
         if message:
             # This checks data for old welcome schema
             # TODO: deprecate old schema on v3
@@ -369,7 +386,10 @@ class Greeting(plugin.Plugin):
                 return await self.text(chat.id, "unsupported-media-command")
             else:
                 welc_text = (
-                    Str(ctx.message.text).init(ctx.msg.entities).markdown.split(ctx.invoker, 1)[1].strip()
+                    Str(ctx.message.text)
+                    .init(ctx.msg.entities)
+                    .markdown.split(ctx.invoker, 1)[1]
+                    .strip()
                 )
                 welc_text, buttons = parse_button(welc_text)
                 types = Types.TEXT
@@ -473,11 +493,17 @@ class Greeting(plugin.Plugin):
             if button:
                 button = build_button(button)
 
-        settings_msg = await ctx.respond(
-            await self.text(chat.id, "view-welcome", setting, clean_service)
-        )
+        view_welc = await self.text(chat.id, "view-welcome", setting, clean_service)
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            view_welc += "\n\n" + await self.text(
+                chat.id,
+                "greetings-topic-default",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
 
-        reply_to = settings_msg.id
+        settings_msg = await ctx.respond(view_welc)
+
+        reply_to = settings_msg.id if settings_msg else None
         try:
             response_text = (
                 text
@@ -519,7 +545,6 @@ class Greeting(plugin.Plugin):
             )
         except MessageEmpty:
             self.log.warning("Welcome message empty on %s.", ctx.chat.id)
-        return None
 
     @command.filters(filters.admin_only)
     async def cmd_goodbye(self, ctx: command.Context) -> Optional[str]:
@@ -552,7 +577,15 @@ class Greeting(plugin.Plugin):
         else:
             parse_mode = ParseMode.MARKDOWN
 
-        await ctx.respond(await self.text(chat.id, "view-goodbye", setting, clean_service))
+        view_gby = await self.text(chat.id, "view-goodbye", setting, clean_service)
+        if ctx.chat.is_forum and not await self.get_action_topic(ctx.chat):
+            view_gby += "\n\n" + await self.text(
+                chat.id,
+                "greetings-topic-default",
+                f"https://t.me/{self.bot.user.username}?start=help_topic",
+            )
+
+        await ctx.respond(view_gby)
         await ctx.respond(
             text,
             mode="reply",

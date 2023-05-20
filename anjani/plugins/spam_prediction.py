@@ -438,6 +438,7 @@ class SpamPrediction(plugin.Plugin):
                 alert,
                 reply_to_message_id=reply_id,
                 reply_markup=InlineKeyboardMarkup(button),
+                message_thread_id=message.message_thread_id,
             )
             raise StopPropagation
 

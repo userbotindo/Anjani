@@ -92,7 +92,7 @@ class SpamShield(plugin.Plugin):
 
             tasks = set()
             for member in message.new_chat_members:
-                tasks.add(self.bot.loop.create_task(self.check(member, chat)))
+                tasks.add(self.bot.loop.create_task(self.check(member, chat, message)))
 
             res: List[bool] = await asyncio.gather(*tasks)
             # Assume only one member is added at a time, so raise StopPropagation
@@ -133,7 +133,7 @@ class SpamShield(plugin.Plugin):
             ):
                 return
 
-            await self.check(target.user, chat)
+            await self.check(target.user, chat, message)
         except (ChannelPrivate, ChatAdminRequired, PeerIdInvalid, UserNotParticipant):
             return
 
@@ -259,7 +259,7 @@ class SpamShield(plugin.Plugin):
         else:
             await self.db.delete_one({"chat_id": chat_id})
 
-    async def check(self, user: User, chat: Chat) -> bool:
+    async def check(self, user: User, chat: Chat, message: Message) -> bool:
         """Shield checker action."""
         cas, sw, spam = await asyncio.gather(
             self.cas_check(user), self.get_ban(user.id), self.check_spam(user.id)
@@ -296,6 +296,7 @@ class SpamShield(plugin.Plugin):
                     chat.id,
                     text=await self.text(chat.id, "banned-text", userlink, user.id, reason, banner),
                     disable_web_page_preview=True,
+                    message_thread_id=message.message_thread_id,
                 ),
                 self.bot.client.send_message(
                     int(self.bot.config.log_channel),
