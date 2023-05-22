@@ -16,9 +16,11 @@
 
 import asyncio
 from base64 import b64encode
+from datetime import datetime, timezone
 from typing import Any, ClassVar, MutableMapping
 
 from aiopath import AsyncPath
+from pymongo import UpdateOne
 from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
@@ -77,15 +79,32 @@ class Canonical(plugin.Plugin):
         self._web_server.cancel()
 
     def get_type(self, message: Message) -> str:
+        if message.command:
+            return "c"
         return self._mt.get(message.media, "t") if message.media else "t"
 
     async def save_message_type(self, message: Message) -> None:
         today = util.time.sec()
         timestamp = today - (today % 86400)  # truncate to day
-        await self.db_analytics.update_one(
-            {"key": 2},
-            {"$inc": {f"data.{str(timestamp)}.{self.get_type(message)}": 1}},
-            upsert=True,
+
+        # TODO: Remove old schema after analytics migration
+        await self.db_analytics.bulk_write(
+            [
+                UpdateOne(
+                    {"key": 2},
+                    {"$inc": {f"data.{str(timestamp)}.{self.get_type(message)}": 1}},
+                    upsert=True,
+                ),
+                UpdateOne(  # new schema
+                    {
+                        "timestamp": datetime.now(timezone.utc).replace(
+                            minute=0, second=0, microsecond=0
+                        )
+                    },
+                    {"$inc": {f"data.{self.get_type(message)}": 1}},
+                    upsert=True,
+                ),
+            ]
         )
 
     @command.filters(filters.admin_only & filters.group)
