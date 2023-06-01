@@ -6,7 +6,7 @@ start-pm: |
 
   Jika ada pertanyaan atau masalah, silahkan bergabung dan diskusikan di [Support Group](https://t.me/userbotindo)
   Dikelola oleh: [Tim UserbotIndo](https://userbotindo.com/)
-  
+
   Tertarik menggunakan saya dalam mengelola grup Anda?
   Silahkan klik tombol di bawah, untuk menambahkan saya ke grup Anda.
 help-pm: |
@@ -107,7 +107,7 @@ backups-help: |
   **Hanya Administrator yang bisa menggunakan perintah:**\n
   × /backup: Cadangkan data grup, contoh : catatan, pesan sambutan, spam shield, dan lain-lain. Yang mana tersimpan di basis data saya.
   × /restore: Balas ke file cadangan anda untuk memulihkan data grup.
-  
+
   Note:
   File cadangan dari suatu grup tidak dapat dipulihkan ke grup lain.
 backup-doc: |
@@ -302,7 +302,7 @@ filters-help: |
   × /stop <kata kunci>: Menghentikan filter dengan kata kunci yang diberikan.
   × /rmallfilters: Menghentikan semua filter pada grup.
 
-  Filter mendukung markdown dan formatting (cek /formathelp).
+  Filter mendukung markdown (cek /markdownhelp).
 filters-added: "Berhasil menambahkan `{}` sebagai filter."
 filters-removed: "Berhasil menghapus `{}` dari filter."
 filter-help: "Contoh: `/filter <kata kunci> <teks>`"
@@ -317,14 +317,14 @@ language-button: Bahasa
 language-help: |
   Bot ini hadir dengan dukungan multi bahasa.
   Anda dapat memilih preferensi bahasa anda!
-  
+
   **Bahasa yang tersedia:**
   × Bahasa Inggris.
   × Bahasa Indonesia.
-  
+
   Perintah:
   × /setlang | /lang | /language : Mengganti bahasa yang saya gunakan.
-  
+
   **Catatan:**
   Anda dapat menggunakan perintah ini pada grup anda untuk mengganti bahasa yang digunakan.\n
 current-language: "Bahasa **{}** saat ini adalah **{}**\nKlik bahasa yang ingin kamu gunakan"
