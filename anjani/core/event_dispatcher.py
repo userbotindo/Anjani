@@ -16,6 +16,7 @@
 
 import asyncio
 import bisect
+from datetime import datetime
 from hashlib import sha256
 from typing import TYPE_CHECKING, Any, MutableMapping, MutableSequence, Optional, Tuple
 
@@ -194,6 +195,9 @@ class EventDispatcher(MixinBase):
                 dispatcher_error = EventDispatchError(
                     f"raised from {type(err).__name__}: {str(err)}"
                 ).with_traceback(err.__traceback__)
+                await self.dispatch_alert(
+                    f"Event __{event}__ on `{lst.func.__qualname__}`", dispatcher_error
+                )
                 if is_tg_event and args[0] is not None:
                     data = _get_event_data(args[0])
                     self.log.error(
@@ -323,6 +327,33 @@ class EventDispatcher(MixinBase):
                 {"_id": api_id},
                 {"$unset": {"pts": "", "date": "", "qts": "", "seq": ""}},
             )
+
+    async def dispatch_alert(self: "Anjani", invoker: str, exc: BaseException) -> None:
+        """Dispatches an alert to the configured alert log."""
+        if not self.config["alert_log"]:
+            return
+
+        log_chat = self.config["alert_log"].split("#")
+        thread_id = None
+        chat_id = int(log_chat[0])
+        if len(log_chat) == 2:
+            thread_id = int(log_chat[1])
+
+        alert = f"""🔴 **Anjani ERROR ALERT**
+
+  - **Alert by:** {invoker}
+  - **Time (UTC):** {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}
+
+**ERROR**
+```python
+{util.error.format_exception(exc)}
+```
+        """
+        await self.client.send_message(
+            chat_id,
+            alert,
+            message_thread_id=thread_id,  # type: ignore
+        )
 
     async def log_stat(self: "Anjani", stat: str, *, value: int = 1) -> None:
         await self.dispatch_event("stat_listen", stat, value)
