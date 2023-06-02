@@ -235,6 +235,7 @@ class CommandDispatcher(MixinBase):
                     ctx.input,
                     exc_info=constructor_invoke,
                 )
+                await self.dispatch_alert(f"command `/{message.command[0]}`", constructor_invoke)
 
             await self.dispatch_event("command", ctx, cmd)
         except Exception as e:  # skipcq: PYL-W0703
@@ -256,6 +257,9 @@ class CommandDispatcher(MixinBase):
                 user.id if user else None,
                 message.command,
                 exc_info=constructor_handler,
+            )
+            await self.dispatch_alert(
+                f"command `/{message.command[0]}` handler", constructor_handler
             )
         finally:
             # Continue processing handler of on_message

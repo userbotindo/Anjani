@@ -126,6 +126,7 @@ def start() -> None:
         "owner_id": os.environ.get("OWNER_ID"),
         "sw_api": os.environ.get("SW_API"),
         "log_channel": os.environ.get("LOG_CHANNEL"),
+        "alert_log": os.environ.get("ALERT_LOG") or "",
         "login_url": os.environ.get("LOGIN_URL"),
         "plugin_flag": [i.strip() for i in os.environ.get("PLUGIN_FLAG", "").split(";")],
         "is_ci": os.environ.get("IS_CI", "false").lower() == "true",
