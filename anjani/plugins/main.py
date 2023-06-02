@@ -249,6 +249,7 @@ class Main(plugin.Plugin):
                                 ]
                             ]
                         ),
+                        disable_web_page_preview=True,
                         parse_mode=ParseMode.MARKDOWN,
                     )
                     return
@@ -281,9 +282,13 @@ class Main(plugin.Plugin):
                 buttons.append(
                     [
                         InlineKeyboardButton(
+                            text=await self.text(chat.id, "status-page-button"),
+                            url="https://status.userbotindo.com",
+                        ),
+                        InlineKeyboardButton(
                             text=await self.text(chat.id, "dashboard-button"),
                             url="https://userbotindo.com/dashboard",
-                        )
+                        ),
                     ]
                 )
 
