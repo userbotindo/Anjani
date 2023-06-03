@@ -34,10 +34,12 @@ from pyrogram.types import (
 )
 
 try:
-    import userbotindo
+    from userbotindo import WebServer
 
     _run_canonical = True
 except ImportError:
+    from util.types import WebServer
+
     _run_canonical = False
 
 
@@ -54,8 +56,9 @@ class Canonical(plugin.Plugin):
     disabled: ClassVar[bool] = not _run_canonical
 
     # Private
+    _api: WebServer
     __task: asyncio.Task[None]
-    _web_server: asyncio.Task[None]
+    __web_server: asyncio.Task[None]
     _mt: MutableMapping[MessageMediaType, str] = {
         MessageMediaType.STICKER: "s",
         MessageMediaType.PHOTO: "p",
@@ -67,16 +70,20 @@ class Canonical(plugin.Plugin):
         self.db = self.bot.db.get_collection("TEST")
         self.db_analytics = self.bot.db.get_collection("ANALYTICS")
         self.chats_db = self.bot.db.get_collection("CHATS")
+        self._api = WebServer(
+            title="Anjani API Docs", description="API Documentation for Anjani Services"
+        )
+        self._api.add_router(test)
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
         self.__task = self.bot.loop.create_task(self.watch_streams())
-        self._web_server = self.bot.loop.create_task(userbotindo.WebServer().run())
+        self.__web_server = self.bot.loop.create_task(self._api.run())
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
         self.__task.cancel()
-        self._web_server.cancel()
+        self.__web_server.cancel()
 
     def get_type(self, message: Message) -> str:
         if message.command:
