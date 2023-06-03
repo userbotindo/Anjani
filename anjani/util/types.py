@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import abstractmethod, abstractproperty
-from typing import TYPE_CHECKING, Any, Iterable, Optional, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar
 
 from aiohttp import ClientSession
 from pyrogram.filters import Filter
@@ -28,6 +28,12 @@ ChatId = TypeVar("ChatId", int, None, covariant=True)
 TextName = TypeVar("TextName", bound=str, covariant=True)
 NoFormat = TypeVar("NoFormat", bound=bool, covariant=True)
 TypeData = TypeVar("TypeData", covariant=True)
+DecoratedCallable = TypeVar("DecoratedCallable", bound=Callable[..., Any])
+
+
+class Instantiable(Protocol):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        raise NotImplementedError
 
 
 class CustomFilter(Filter):  # skipcq: PYL-W0223
@@ -66,4 +72,25 @@ class Classifier(Protocol):
     @staticmethod
     @abstractmethod
     def prob_to_string(value: float) -> str:
+        raise NotImplementedError
+
+
+class WebServer(Protocol):
+    @abstractmethod
+    async def run(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def add_router(self, **router_param: Any) -> None:
+        raise NotImplementedError
+
+
+class Router(Instantiable):
+    def get(self, *args, **kwargs) -> Callable[[DecoratedCallable], DecoratedCallable]:
+        raise NotImplementedError
+
+    def post(self, *args, **kwargs) -> Callable[[DecoratedCallable], DecoratedCallable]:
+        raise NotImplementedError
+
+    def put(self, *args, **kwargs) -> Callable[[DecoratedCallable], DecoratedCallable]:
         raise NotImplementedError

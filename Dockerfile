@@ -21,9 +21,9 @@ RUN pip install --upgrade pip \
 RUN poetry install --no-root --only main -E uvloop
 
 ARG USERBOTINDO_ACCESS_TOKEN
-COPY ./entrypoint.sh ./
-RUN chmod +x ./entrypoint.sh
-RUN ./entrypoint.sh
+COPY ./preinstall.sh ./
+RUN chmod +x ./preinstall.sh
+RUN ./preinstall.sh
 
 # copy the rest of files
 COPY . .
