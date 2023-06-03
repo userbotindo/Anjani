@@ -73,7 +73,6 @@ class Canonical(plugin.Plugin):
         self._api = WebServer(
             title="Anjani API Docs", description="API Documentation for Anjani Services"
         )
-        self._api.add_router(test)
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
