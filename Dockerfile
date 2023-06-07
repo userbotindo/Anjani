@@ -7,7 +7,7 @@ WORKDIR /anjani/
 # Install all required packages
 RUN apt-get -qq update && apt-get -qq upgrade -y
 RUN apt-get -qq install -y --no-install-recommends \
-    git
+    git curl
 
 # copy pyproject.toml and poetry.lock for layer caching
 COPY pyproject.toml poetry.lock ./
