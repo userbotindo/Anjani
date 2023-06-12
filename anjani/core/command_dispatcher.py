@@ -229,9 +229,9 @@ class CommandDispatcher(MixinBase):
                     "    • Input   -> %s\n",
                     cmd.name,
                     chat.title if chat else None,
-                    chat.id if chat else None,
+                    chat.id if chat else -1,
                     user.first_name if user else None,
-                    user.id if user else None,
+                    user.id if user else -1,
                     ctx.input,
                     exc_info=constructor_invoke,
                 )
