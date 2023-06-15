@@ -118,7 +118,7 @@ class Greeting(plugin.Plugin):
             chat_id = int(web_app_data['chat_id'])
             check_captcha = await self.captcha_db.find_one({'chat_id': chat_id, 'user_id': user.id})
             if check_captcha:
-                previous = await self.previous_welcome(chat_id, check_captcha['msg_id'])
+                #previous = await self.previous_welcome(chat_id, check_captcha['msg_id'])
                 if check_captcha['done']:
                     return await self.SEND[Types.TEXT](
                         user.id,
@@ -132,8 +132,8 @@ class Greeting(plugin.Plugin):
                 try:
                     permissions = (await self.bot.get_chat(chat_id)).permissions
                     await self.bot.client.restrict_chat_member(chat_id, user.id, permissions)
-                    if not previous:
-                        await self._edit_welcome_message(chat_id, check_captcha['msg_id'])
+                    #if not previous:
+                    #    await self._edit_welcome_message(chat_id, check_captcha['msg_id'])
                 except ChatAdminRequired:
                     pass
                 await self.captcha_db.update_one({'chat_id': chat_id, 'user_id': user.id}, {"$set": {'done': True}})
