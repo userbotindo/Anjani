@@ -32,9 +32,12 @@ from pyrogram.errors import (
 from pyrogram.raw.functions.updates.get_state import GetState
 from pyrogram.types import (
     CallbackQuery,
+    KeyboardButton,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    ReplyKeyboardMarkup,
+    WebAppInfo,
 )
 
 from anjani import command, filters, listener, plugin, util
@@ -50,9 +53,11 @@ class Main(plugin.Plugin):
 
     bot_name: str
     db: util.db.AsyncCollection
+    captcha_db: util.db.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("SESSION")
+        self.captcha_db = self.bot.db.get_collection("CAPTCHA")
 
     async def on_start(self, _: int) -> None:
         self.bot_name = (
@@ -253,6 +258,31 @@ class Main(plugin.Plugin):
                         parse_mode=ParseMode.MARKDOWN,
                     )
                     return
+
+                verify_re = re.compile(r"verify_(.*)").match(ctx.input)
+                if verify_re:
+                    chat_id = int(ctx.input.replace('verify_', ''))
+                    check_verify = await self.captcha_db.find_one({'chat_id': chat_id, 'user_id': chat.id})
+                    print(chat.id)
+                    print(chat_id)
+                    if not check_verify:
+                        return await ctx.respond(await self.text(chat.id, "no-verify-found"))
+                    if check_verify['done']:
+                        return await ctx.respond(await self.text(chat.id, "verify-already-done"))
+                    text = await self.text(chat.id, "click-verify-button")
+                    return await ctx.respond(
+                        text,
+                        reply_markup=ReplyKeyboardMarkup(
+                            [
+                                [
+                                    KeyboardButton(
+                                        text=(await self.text(chat.id, "verify-button")),
+                                        web_app=WebAppInfo(url=f"{self.bot.config.get('recaptcha_url')}/?chat_id={chat_id}")
+                                    )
+                                ]
+                            ]
+                        )
+                    )
 
             permission = [
                 "change_info",

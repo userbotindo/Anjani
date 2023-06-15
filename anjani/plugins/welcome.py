@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import asyncio
 from html import escape
 from typing import (
@@ -28,19 +29,21 @@ from typing import (
     Union,
 )
 
+from pyrogram import enums
 from pyrogram.client import Client
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import (
     ChannelPrivate,
+    ChatAdminRequired,
     ChatWriteForbidden,
     MediaEmpty,
     MessageDeleteForbidden,
     MessageEmpty,
 )
-from pyrogram.types import Chat, Message, User
+from pyrogram.types import Chat, ChatPermissions, Message, User, InlineKeyboardButton, ReplyKeyboardRemove
 from pyrogram.types.messages_and_media.message import Str
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, listener, plugin, util
 from anjani.util.tg import (
     Button,
     Types,
@@ -57,11 +60,15 @@ class Greeting(plugin.Plugin):
 
     db: util.db.AsyncCollection
     chat_db: util.db.AsyncCollection
+    captcha_db: util.db.AsyncCollection
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
+    captcha_enable: bool
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("WELCOME")
         self.chat_db = self.bot.db.get_collection("CHATS")
+        self.captcha_db = self.bot.db.get_collection("CAPTCHA")
+        self.captcha_enable = self.bot.config.get('enable_captcha')
 
         self.SEND = {
             Types.TEXT.value: self.bot.client.send_message,
@@ -100,6 +107,41 @@ class Greeting(plugin.Plugin):
 
         if message.left_chat_member:
             return await self._member_leave(message, reply_to, thread_id)
+
+
+
+    @listener.filters(filters.private)
+    async def on_message(self, message: Message) -> None:
+        user = message.chat
+        if message.web_app_data:
+            web_app_data = ast.literal_eval(message.web_app_data.data)
+            chat_id = int(web_app_data['chat_id'])
+            check_captcha = await self.captcha_db.find_one({'chat_id': chat_id, 'user_id': user.id})
+            if check_captcha:
+                previous = await self.previous_welcome(chat_id, check_captcha['msg_id'])
+                if check_captcha['done']:
+                    return await self.SEND[Types.TEXT](
+                        user.id,
+                        await self.text(user.id, "verify-already-done")
+                    )
+                if web_app_data['score'] < 0.7:
+                    return await self.SEND[Types.TEXT](
+                        user.id, 
+                        await self.text(user.id, "score-to-low")
+                    )
+                try:
+                    permissions = (await self.bot.get_chat(chat_id)).permissions
+                    await self.bot.client.restrict_chat_member(chat_id, user.id, permissions)
+                    if not previous:
+                        await self._edit_welcome_message(chat_id, check_captcha['msg_id'])
+                except ChatAdminRequired:
+                    pass
+                await self.captcha_db.update_one({'chat_id': chat_id, 'user_id': user.id}, {"$set": {'done': True}})
+                await self.SEND[Types.TEXT](
+                    user.id,
+                    await self.text(user.id, "verify-done"),
+                    reply_markup=ReplyKeyboardRemove()
+                )
 
     async def _member_leave(
         self, message: Message, reply_to: int, thread_id: Optional[int]
@@ -146,7 +188,7 @@ class Greeting(plugin.Plugin):
                         reply_to_message_id=reply_to,
                     )
                 else:
-                    text, button, msg_type, file_id = await self.welc_message(chat.id)
+                    text, button, msg_type, file_id, is_captcha, verify_text = await self.welc_message(chat.id)
                     msg_type = Types(msg_type) if msg_type else Types.TEXT
                     if not text:
                         string = await self.text(chat.id, "default-welcome", noformat=True)
@@ -156,11 +198,45 @@ class Greeting(plugin.Plugin):
                     formatted_text = await self._build_text(
                         string, new_member, chat, self.bot.client
                     )
+                    print(is_captcha)
+                    print(self.captcha_enable)
+                    if self.captcha_enable and is_captcha:
+                        check_captcha = await self.captcha_db.find_one({'chat_id': chat.id, 'user_id': new_member.id})
+                        if (
+                            not check_captcha
+                            or
+                            (check_captcha and not check_captcha["done"])
+                        ):
+                            try:
+                                await self.bot.client.restrict_chat_member(chat_id, user.id, ChatPermissions())
+                            except ChatAdminRequired:
+                                pass
+                            if not button:
+                                button = []
+                            if not verify_text:
+                                button.append(
+                                    [
+                                        (await self.text(chat.id, "default-verify-button")),
+                                        f"https://t.me/{self.bot.user.username}?start=verify_{chat.id}",
+                                        True
+                                    ]
+                                )
+                            else:
+                                button.append(
+                                    [
+                                        verify_text,
+                                        f"https://t.me/{self.bot.user.username}?start=verify_{chat.id}",
+                                        True
+                                    ]
+                                )
+                        else:
+                            is_captcha = False
 
                     if button:
                         button = build_button(button)
                     else:
                         button = None
+
                     msg = None
                     try:
                         if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
@@ -197,6 +273,8 @@ class Greeting(plugin.Plugin):
                         self.log.warning("Welcome message empty on %s.", message.chat.id)
 
                     if msg:
+                        if is_captcha:
+                            await self.captcha_db.update_one({'chat_id': chat.id, 'user_id': new_member.id}, {"$set": {'done': False, 'msg_id': msg.id}}, upsert=True)
                         previous = await self.previous_welcome(chat.id, msg.id)
                         if previous:
                             try:
@@ -205,6 +283,40 @@ class Greeting(plugin.Plugin):
                                 pass
             except ChatWriteForbidden:
                 pass
+
+    async def _edit_welcome_message(self, chat_id: int, msg_id: int) -> None:
+        text, button, msg_type, file_id, is_captcha, verify_text = await self.welc_message(chat_id)
+        if not text:
+            string = await self.text(chat.id, "default-welcome", noformat=True)
+        else:
+            string = text
+
+        formatted_text = await self._build_text(
+            string, new_member, chat, self.bot.client
+        )
+        if button:
+            button = build_button(button)
+        else:
+            button = None
+        try:
+            if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
+                return await self.bot.client.edit_message_text(
+                    chat_id,
+                    msg_id,
+                    formatted_text,
+                    reply_markup=button,
+                    disable_web_page_preview=True,
+                )
+            if msg_type in {Types.ANIMATION, Types.DOCUMENT, Types.PHOTO, Types.VIDEO}:
+                return await self.bot.client.edit_message_caption(
+                    chat_id,
+                    msg_id,
+                    formatted_text,
+                    reply_markup=button,
+                    disable_web_page_preview=True,
+                )
+        except Exception:
+            pass
 
     async def on_chat_migrate(self, message: Message) -> None:
         new_chat = message.chat.id
@@ -272,6 +384,8 @@ class Greeting(plugin.Plugin):
             if "custom_welcome" in message:
                 text: str = message["custom_welcome"]
                 button: Optional[Button] = message.get("button")
+                is_captcha: Optional[bool] = message.get("is_captcha")
+                verify_text: Optional[str] = message.get("verify_text")
                 message_type: Types = Types.TEXT
                 await self.db.delete_one({"chat_id": chat_id})
                 await self.set_custom_welcome(
@@ -282,15 +396,17 @@ class Greeting(plugin.Plugin):
                     content=None,
                 )
                 self.log.info("Migrated old welcome message on %d to new schema.", chat_id)
-                return text, button, message_type, None
+                return text, button, message_type, None, is_captcha, verify_text
             else:
                 return (
                     message.get("text"),
                     message.get("button"),
                     message.get("type"),
                     message.get("file_id"),
+                    message.get("is_captcha"),
+                    message.get("verify_text")
                 )
-        return await self.text(chat_id, "default-welcome", noformat=True), None, None, None
+        return await self.text(chat_id, "default-welcome", noformat=True), None, None, None, False, None
 
     async def left_message(self, chat_id: int) -> str:
         message = await self.db.find_one({"chat_id": chat_id}, {"custom_goodbye": 1})
@@ -472,7 +588,7 @@ class Greeting(plugin.Plugin):
 
         (
             setting,
-            (text, button, msg_type, file_id),
+            (text, button, msg_type, file_id, is_captcha, verify_text),
             clean_service,
         ) = await asyncio.gather(
             self.is_welcome(chat.id), self.welc_message(chat.id), self.clean_service(chat.id)
@@ -607,3 +723,24 @@ class Greeting(plugin.Plugin):
             self.greeting_setting(chat.id, "clean_service", active),
         )
         return ret
+
+    @command.filters(filters.admin_only)
+    async def cmd_welcomecaptcha(self, ctx: command.Context) -> str:
+        chat = ctx.chat
+        param = ctx.input.lower()
+        if not param:
+            await ctx.respond(await self.text(chat.id, 'wc-no-input'))
+        if param == 'true' or param == 'on':
+            await self.db.update_one({'chat_id': chat.id}, {"$set": {'is_captcha': True}})
+            return await ctx.respond(await self.text(chat.id, 'wc-enabled'))
+        await self.db.update_one({'chat_id': chat.id}, {"$set": {'is_captcha': False}})
+        return await ctx.respond(await self.text(chat.id, 'wc-disabled'))
+
+    @command.filters(filters.admin_only)
+    async def cmd_setwelcomeverifytext(self, ctx: command.Context) -> str:
+        chat = ctx.chat
+        param = ctx.input
+        if not param:
+            await ctx.respond(await self.text(chat.id, 'greetings-no-input'))
+        await self.db.update_one({'chat_id': chat.id}, {"$set": {'verify_text': param}})
+        return await ctx.respond(await self.text(chat.id, 'wvt-changed'), param)

@@ -130,6 +130,8 @@ def start() -> None:
         "login_url": os.environ.get("LOGIN_URL"),
         "plugin_flag": [i.strip() for i in os.environ.get("PLUGIN_FLAG", "").split(";")],
         "is_ci": os.environ.get("IS_CI", "false").lower() == "true",
+        "enable_captcha": os.environ.get("ENABLE_CAPTCHA", None),
+        "recaptcha_url": os.environ.get("RECAPTCHA_URL", None),
     }
     config: TelegramConfig[str, str] = TelegramConfig(config_data)
     if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):

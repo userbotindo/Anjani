@@ -580,6 +580,17 @@ view-goodbye: |
   `Sending goodbye` = `{}`
   `Clean service message` = `{}`
   And the goodbye message of this chat is:
+default-verify-button: Click here to verify.
+no-verify-found: Could not find captcha data!
+verify-already-done: Verification is already done!
+click-verify-button: Click verification button below to join the group chat.
+verify-button: Verify me.
+score-to-low: Captcha Score is to low. please try again!
+verify-done: Verification done :). you can go back to the group chat.
+wc-no-input: Give status (on/off) after command!
+wc-enabled: Captcha turned on.
+wc-disabled: Captcha turned off.
+wvt-changed: Verification button text has been changed to `{}`.
 #endregion
 #region lockings
 lockings-button: Lockings

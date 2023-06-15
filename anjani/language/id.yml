@@ -601,6 +601,17 @@ view-goodbye: |
   `Ucapan selamat tinggal untuk anggota yang keluar` = `{}`
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
+default-verify-button: Klik disini untuk verifikasi.
+no-verify-found: Data captcha tidak ditemukan!
+verify-already-done: Verifikasi sudah diselesaikan sebelumnya!
+click-verify-button: Klik tombol verifikasi dibawah untuk masuk kedalam grup.
+verify-button: Verifikasi saya.
+score-to-low: Score captcha terlalu rendah. Silahkan ulangi kembali.
+verify-done: Verifikasi selesai :). Anda dapat kembali ke grup chat.
+wc-no-input: Berikan status (on/off) setelah perintah!
+wc-enabled: Captcha diaktifkan.
+wc-disabled: Captcha di-nonaktifkan.
+wvt-changed: Teks tombol verifikasi berhasil diubah menjadi `{}`.
 #endregion
 #region lockings
 lockings-button: Lockings
