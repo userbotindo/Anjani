@@ -177,7 +177,7 @@ fed-invalid-id: Please enter a valid federation ID
 fed-invalid-user-id: |
   Please enter a valid user ID
   Usage:
-    - `/fstats <user_id> <fed_id>``: Check fban status of a user in a federation.
+    - `/fstats <user_id> <fed_id>`: Check fban status of a user in a federation.
     - `/fstats <user_id>`: check all fban stats for user in all federations.
     - `/fstats <reply>`: check all fban stats for replied user in all federations.
     - `/fstats`: check all fban stats for you in all federations.
