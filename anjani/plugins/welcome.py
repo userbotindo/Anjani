@@ -198,8 +198,6 @@ class Greeting(plugin.Plugin):
                     formatted_text = await self._build_text(
                         string, new_member, chat, self.bot.client
                     )
-                    print(is_captcha)
-                    print(self.captcha_enable)
                     if self.captcha_enable and is_captcha:
                         check_captcha = await self.captcha_db.find_one({'chat_id': chat.id, 'user_id': new_member.id})
                         if (
