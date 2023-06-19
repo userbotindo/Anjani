@@ -600,6 +600,9 @@ lockings-type-invalid: "'`{lock_type}`' invalid lock type."
 lockings-type-done: Successfully locked '`{lock_type}`'.
 lockings-bots-not-admin: I see a bot added by not the owner and it's locked.\nBut i can't kicked it because i'm not an admin.
 lockings-failed-to-delete: "'`{lock_type}`' is locked but i can't delete the message.\nIt's probably i'm not an admin."
+lockings-admin-required: |
+  This method requires admin rights to work.\n
+  -> __{message}__
 unlockings-type-required: Please provide a type of unlock.
 unlockings-type-unlocked: "'`{unlock_type}`' is not locked."
 unlockings-type-invalid: "'`{unlock_type}`' invalid unlock type."
