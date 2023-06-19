@@ -621,6 +621,9 @@ lockings-type-invalid: "'`{lock_type}`' tipe pesan tidak sah."
 lockings-type-done: Berhasil mengunci '`{lock_type}`'.
 lockings-bots-not-admin: Saya melihat bot ditambahkan selain pemilik grup dan pengaturan tipe bot dikunci.\nAkan tetapi saya tidak bisa mengeluarkannya karena saya bukan administrator.
 lockings-failed-to-delete: "'`{lock_type}`' dikunci tetapi saya tidak bisa menghapusnya.\nKemungkinan saya bukan administrator."
+lockings-admin-required: |
+  Metode ini membutuhkan hak administrator untuk mengunci tipe pesan/hak.\n
+  -> __{message}__
 unlockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
 unlockings-type-unlocked: "'`{unlock_type}`' tidak terkunci."
 unlockings-type-invalid: "'`{unlock_type}`' tipe pesan tidak sah."

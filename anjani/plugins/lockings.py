@@ -312,10 +312,13 @@ class Lockings(plugin.Plugin):
             ):
                 return await ctx.get_text("lockings-type-locked", lock_type=lock_type)
 
-            await self.bot.client.set_chat_permissions(
-                chat_id=chat.id,
-                permissions=self.unpack_permissions(permissions, "lock", lock_type),
-            )
+            try:
+                await self.bot.client.set_chat_permissions(
+                    chat_id=chat.id,
+                    permissions=self.unpack_permissions(permissions, "lock", lock_type),
+                )
+            except ChatAdminRequired as e:
+                return await ctx.get_text("lockings-admin-required", message=e.MESSAGE.split()[-1].strip(")").split(".")[-1].strip('"') if e.MESSAGE else "")
         elif lock_type in LOCK_TYPES:
             locked = await self.get_chat_restrictions(chat.id)
             if lock_type in locked:
