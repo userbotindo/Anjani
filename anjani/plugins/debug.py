@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import traceback
+from contextlib import redirect_stdout
 from datetime import datetime
 from html import escape
 from typing import Any, ClassVar, Optional, Tuple
@@ -99,7 +100,8 @@ class Debug(plugin.Plugin):
             }
 
             try:
-                return "", await meval(code, globals(), **eval_vars)
+                with redirect_stdout(out_buf):
+                    return "", await meval(code, globals(), **eval_vars)
             except Exception as e:  # skipcq: PYL-W0703
                 # Find first traceback frame involving the snippet
                 first_snip_idx = -1
