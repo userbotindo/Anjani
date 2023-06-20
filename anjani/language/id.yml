@@ -342,9 +342,9 @@ miscs-help: |
   ×  /info: Menampilkan informasi tentang seorang pengguna.
   ×  /ping : Menampilkan latensi bot.
   ×  /paste : Menyalin dan menempel file teks ke layanan pastebin.
-paste-wait: "Sedang diproses..."
-paste-succes: "**Berhasil!**"
-paste-fail: "**Proses Gagal!**"
+paste-wait: "`Sedang menyalin ke {}...`"
+paste-succes: "**Berhasil disali ke {}!**"
+paste-fail: "`Gagal memproses {}!` Gunakan  flag __[-s, stashbin, hastebin, -h, spacebin]__ untuk menggunakan layanan lain"
 paste-invalid: "Flag '**{}**' tidak cocok.\nFlag tersedia:__[-s, stashbin, hastebin, -h, spacebin]__"
 #endregion
 #region mute
