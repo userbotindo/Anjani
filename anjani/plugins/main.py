@@ -95,41 +95,42 @@ class Main(plugin.Plugin):
             await self.send_to_log("Starting system...")
 
     async def on_stop(self) -> None:
-        file = AsyncPath("anjani/anjani.session")
-        if not await file.exists():
-            return
+        async with asyncio.Lock():
+            file = AsyncPath("anjani/anjani.session")
+            if not await file.exists():
+                return
 
-        data = await self.bot.client.invoke(GetState())
-        await self.db.update_one(
-            {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
-            {
-                "$set": {
-                    "session": Binary(await file.read_bytes()),
-                    "date": data.date,
-                    "pts": data.pts,
-                    "qts": data.qts,
-                    "seq": data.seq,
-                }
-            },
-            upsert=True,
-        )
+            data = await self.bot.client.invoke(GetState())
+            await self.db.update_one(
+                {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
+                {
+                    "$set": {
+                        "session": Binary(await file.read_bytes()),
+                        "date": data.date,
+                        "pts": data.pts,
+                        "qts": data.qts,
+                        "seq": data.seq,
+                    }
+                },
+                upsert=True,
+            )
 
-        status_msg = await self.send_to_log("Shutdowning system...")
-        self.bot.log.info("Preparing to shutdown...")
-        if not status_msg:
-            return
+            status_msg = await self.send_to_log("Shutdowning system...")
+            self.bot.log.info("Preparing to shutdown...")
+            if not status_msg:
+                return
 
-        await self.db.update_one(
-            {"_id": 5},
-            {
-                "$set": {
-                    "status_chat_id": status_msg.chat.id,
-                    "status_message_id": status_msg.id,
-                    "time": util.time.usec(),
-                }
-            },
-            upsert=True,
-        )
+            await self.db.update_one(
+                {"_id": 5},
+                {
+                    "$set": {
+                        "status_chat_id": status_msg.chat.id,
+                        "status_message_id": status_msg.id,
+                        "time": util.time.usec(),
+                    }
+                },
+                upsert=True,
+            )
 
     async def send_to_log(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
         try:
