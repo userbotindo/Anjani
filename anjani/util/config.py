@@ -1,59 +1,67 @@
-"""Anjani config"""
-# Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from os import cpu_count, getenv
+from pathlib import Path
+from typing import Optional
 
-from typing import Any, Iterator, MutableMapping, Optional, TypeVar
+from dotenv import load_dotenv
 
-_KT = TypeVar("_KT", bound=str, contravariant=True)
-_VT = TypeVar("_VT", covariant=True)
+from anjani import DEFAULT_CONFIG_PATH
 
 
-class TelegramConfig(MutableMapping[_KT, _VT]):
-    def __init__(self, config: MutableMapping[str, Any]) -> None:
-        for key, value in config.items():
-            if not value:
-                continue
+class Config:
+    API_ID: str
+    API_HASH: str
+    BOT_TOKEN: str
+    OWNER_ID: int
+    WORKERS: int
+    DOWNLOAD_PATH: Optional[str]
 
-            super().__setattr__(key, value)
+    DB_URI: str
 
-    def is_plugin_disabled(self, name: str) -> bool:
-        return name in self.__getattribute__("plugin_flag")
+    SW_API: Optional[str]
+    LOG_CHANNEL: Optional[str]
+    ALERT_LOG: Optional[str]
 
-    def __contains__(self, k: _KT) -> bool:
-        return k in self.__dict__
+    LOGIN_URL: Optional[str]
+    PLUGIN_FLAG: list[str]
 
-    def __delattr__(self, obj: object) -> None:  # skipcq: PYL-W0613
-        raise RuntimeError("Can't delete configuration while running the bot.")
+    IS_CI: bool
 
-    def __delitem__(self, k: _KT) -> None:  # skipcq: PYL-W0613
-        raise RuntimeError("Can't delete configuration while running the bot.")
+    def __init__(self) -> None:
+        config_path = Path(DEFAULT_CONFIG_PATH)
+        if config_path.is_file():
+            load_dotenv(config_path)
 
-    def __getattr__(self, name: str) -> _VT:
-        return self.__getattribute__(name)
+        self.API_ID = getenv("API_ID", "")
+        self.API_HASH = getenv("API_HASH", "")
+        self.BOT_TOKEN = getenv("BOT_TOKEN", "")
+        self.OWNER_ID = int(getenv("OWNER_ID", 0))
+        self.WORKERS = int(getenv("WORKERS", min(32, (cpu_count() or 0) + 4)))
+        self.DOWNLOAD_PATH = getenv("DOWNLOAD_PATH", "./downloads")
 
-    def __getitem__(self, k: _KT) -> _VT:
-        return self.__dict__[k]
+        self.DB_URI = getenv("DB_URI", "")
 
-    def __iter__(self) -> Iterator[str]:
-        return self.__dict__.__iter__()
+        self.LOG_CHANNEL = getenv("LOG_CHANNEL")
+        self.ALERT_LOG = getenv("ALERT_LOG")
+        self.SW_API = getenv("SW_API")
 
-    def __len__(self) -> int:
-        return len(self.__dict__)
+        self.LOGIN_URL = getenv("LOGIN_URL")
+        self.PLUGIN_FLAG = [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")]
 
-    def __setattr__(self, name: str, value: Any) -> None:  # skipcq: PYL-W0613
-        raise RuntimeError("Configuration must be done before running the bot.")
+        self.IS_CI = getenv("IS_CI", "false").lower() == "true"
 
-    def __setitem__(self, k: str, v: Any) -> None:  # skipcq: PYL-W0613
-        raise RuntimeError("Configuration must be done before running the bot.")
+        #  check if all the required variables are set
+        if any(
+            {
+                not self.API_ID,
+                not self.API_HASH,
+                not self.BOT_TOKEN,
+                not self.DB_URI,
+            }
+        ):
+            raise RuntimeError("Required ENV variables are missing!")
+
+        # create download path if not exists
+        Path(self.DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
+
+    def is_plugin_disabled(self, plugin_name: str) -> bool:
+        return plugin_name in self.PLUGIN_FLAG

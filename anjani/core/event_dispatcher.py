@@ -238,7 +238,7 @@ class EventDispatcher(MixinBase):
         if not self.loaded or self._TelegramBot__running:
             return
 
-        api_id = sha256(self.config["api_id"].encode()).hexdigest()
+        api_id = sha256(self.config.API_ID.encode()).hexdigest()
         collection = self.db.get_collection("SESSION")
 
         data = await collection.find_one({"_id": api_id})
@@ -330,10 +330,10 @@ class EventDispatcher(MixinBase):
 
     async def dispatch_alert(self: "Anjani", invoker: str, exc: BaseException) -> None:
         """Dispatches an alert to the configured alert log."""
-        if not self.config["alert_log"]:
+        if not self.config.ALERT_LOG:
             return
 
-        log_chat = self.config["alert_log"].split("#")
+        log_chat = self.config.ALERT_LOG.split("#")
         thread_id = None
         chat_id = int(log_chat[0])
         if len(log_chat) == 2:

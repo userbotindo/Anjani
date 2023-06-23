@@ -27,7 +27,7 @@ import dotenv
 
 from . import DEFAULT_CONFIG_PATH
 from .core import Anjani
-from .util.config import TelegramConfig
+from .util.config import Config
 
 log = logging.getLogger("launch")
 
@@ -104,7 +104,7 @@ def start() -> None:
         asyncio.set_event_loop_policy(policy)
     else:
         try:
-            import uvloop
+            import uvloop  # type: ignore
         except ImportError:
             pass
         else:
@@ -115,24 +115,4 @@ def start() -> None:
     log.info("Initializing bot")
     loop = asyncio.new_event_loop()
 
-    # Initialize config
-    config_data: MutableMapping[str, Any] = {
-        "api_id": os.environ.get("API_ID"),
-        "api_hash": os.environ.get("API_HASH"),
-        "bot_token": os.environ.get("BOT_TOKEN"),
-        "workers": os.environ.get("WORKERS"),
-        "db_uri": os.environ.get("DB_URI"),
-        "download_path": os.environ.get("DOWNLOAD_PATH"),
-        "owner_id": os.environ.get("OWNER_ID"),
-        "sw_api": os.environ.get("SW_API"),
-        "log_channel": os.environ.get("LOG_CHANNEL"),
-        "alert_log": os.environ.get("ALERT_LOG") or "",
-        "login_url": os.environ.get("LOGIN_URL"),
-        "plugin_flag": [i.strip() for i in os.environ.get("PLUGIN_FLAG", "").split(";")],
-        "is_ci": os.environ.get("IS_CI", "false").lower() == "true",
-    }
-    config: TelegramConfig[str, str] = TelegramConfig(config_data)
-    if any(key not in config for key in {"api_id", "api_hash", "bot_token", "db_uri"}):
-        return log.error("Configuration must be done correctly before running the bot.")
-
-    aiorun.run(Anjani.init_and_run(config, loop=loop), loop=loop if _uvloop else None)
+    aiorun.run(Anjani.init_and_run(Config(), loop=loop), loop=loop if _uvloop else None)

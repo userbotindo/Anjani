@@ -88,12 +88,12 @@ class TelegramBot(MixinBase):
         super().__init__(**kwargs)
 
     async def init_client(self: "Anjani") -> None:
-        api_id = int(self.config["api_id"])
-        api_hash = self.config["api_hash"]
-        bot_token = self.config["bot_token"]
+        api_id = int(self.config.API_ID)
+        api_hash = self.config.API_HASH
+        bot_token = self.config.BOT_TOKEN
 
         try:
-            self.owner = int(self.config["owner_id"])
+            self.owner = int(self.config.OWNER_ID)
         except KeyError:
             self.log.warning("Owner id is not set! you won't be able to run staff command!")
             self.owner = 0
@@ -114,7 +114,7 @@ class TelegramBot(MixinBase):
             api_hash=api_hash,
             bot_token=bot_token,
             workdir="anjani",
-            workers=int(self.config.get("workers", Client.WORKERS)),
+            workers=self.config.WORKERS,
             parse_mode=ParseMode.MARKDOWN,
         )
 
@@ -250,7 +250,7 @@ class TelegramBot(MixinBase):
                 self.log.warning("Received interrupt while connecting")
                 return
 
-            if self.config.get("is_ci", False):
+            if self.config.IS_CI:
                 self.log.info("Completed CI run, exiting")
                 return
 
@@ -314,10 +314,10 @@ class TelegramBot(MixinBase):
         return len(self._plugin_event_handlers)
 
     def redact_message(self: "Anjani", text: str) -> str:
-        api_id = self.config["api_id"]
-        api_hash = self.config["api_hash"]
-        bot_token = self.config["bot_token"]
-        db_uri = self.config["db_uri"]
+        api_id = self.config.API_ID
+        api_hash = self.config.API_HASH
+        bot_token = self.config.BOT_TOKEN
+        db_uri = self.config.DB_URI
 
         if api_id in text:
             text = text.replace(api_id, "[REDACTED]")
