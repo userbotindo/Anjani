@@ -217,7 +217,7 @@ class Canonical(plugin.Plugin):
     @command.filters(filters.private)
     async def cmd_login(self, ctx: command.Context):
         """Login to https://userbotindo.com"""
-        if not self.bot.config["login_url"]:
+        if not self.bot.config.LOGIN_URL:
             return
 
         await ctx.respond(
@@ -228,7 +228,7 @@ class Canonical(plugin.Plugin):
                         InlineKeyboardButton(
                             "Login",
                             login_url=LoginUrl(
-                                url=self.bot.config["login_url"],
+                                url=self.bot.config.LOGIN_URL,
                                 forward_text="Login to https://userbotindo.com",
                                 request_write_access="True",
                             ),

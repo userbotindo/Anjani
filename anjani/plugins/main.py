@@ -102,7 +102,7 @@ class Main(plugin.Plugin):
 
             data = await self.bot.client.invoke(GetState())
             await self.db.update_one(
-                {"_id": sha256(self.bot.config["api_id"].encode()).hexdigest()},
+                {"_id": sha256(self.bot.config.API_ID.encode()).hexdigest()},
                 {
                     "$set": {
                         "session": Binary(await file.read_bytes()),
@@ -133,12 +133,11 @@ class Main(plugin.Plugin):
             )
 
     async def send_to_log(self, text: str, *args: Any, **kwargs: Any) -> Optional[Message]:
-        try:
-            return await self.bot.client.send_message(
-                int(self.bot.config.log_channel), text, *args, **kwargs
-            )
-        except AttributeError:
-            pass
+        if not self.bot.config.LOG_CHANNEL:
+            return
+        return await self.bot.client.send_message(
+            int(self.bot.config.LOG_CHANNEL), text, *args, **kwargs
+        )
 
     async def help_builder(self, chat_id: int) -> List[List[InlineKeyboardButton]]:
         """Build the help button"""

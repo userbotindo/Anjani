@@ -33,10 +33,10 @@ class DatabaseProvider(MixinBase):
             import certifi
 
             client = util.db.AsyncClient(
-                self.config["db_uri"], connect=False, tlsCAFile=certifi.where()
+                self.config.DB_URI, connect=False, tlsCAFile=certifi.where()
             )
         else:
-            client = util.db.AsyncClient(self.config["db_uri"], connect=False)
+            client = util.db.AsyncClient(self.config.DB_URI, connect=False)
 
         self.db = client.get_database("AnjaniBot")
 

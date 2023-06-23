@@ -21,7 +21,7 @@ from typing import Optional
 import aiohttp
 import pyrogram
 
-from anjani.util.config import TelegramConfig
+from anjani.util.config import Config
 
 from .command_dispatcher import CommandDispatcher
 from .database_provider import DatabaseProvider
@@ -35,11 +35,11 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
     log: logging.Logger
     http: aiohttp.ClientSession
     client: pyrogram.client.Client
-    config: TelegramConfig[str, str]
+    config: Config
     loop: asyncio.AbstractEventLoop
     stopping: bool
 
-    def __init__(self, config: TelegramConfig[str, str]):
+    def __init__(self, config: Config):
         self.config = config
         self.log = logging.getLogger("bot")
         self.loop = asyncio.get_event_loop()
@@ -53,7 +53,7 @@ class Anjani(TelegramBot, DatabaseProvider, PluginExtender, CommandDispatcher, E
 
     @classmethod
     async def init_and_run(
-        cls, config: TelegramConfig[str, str], *, loop: Optional[asyncio.AbstractEventLoop] = None
+        cls, config: Config, *, loop: Optional[asyncio.AbstractEventLoop] = None
     ) -> "Anjani":
         anjani = None
 
