@@ -303,8 +303,12 @@ class SpamShield(plugin.Plugin):
                 task.append(
                     self.bot.client.send_message(
                         self.bot.config.LOG_CHANNEL,
-                        text=await self.text(
-                            chat.id, "log-text", userlink, user.id, reason, banner, chat_link
+                        text=(
+                            "#LOG #SPAM_SHIELD\n"
+                            f"**User**: {userlink}\n"
+                            f"**Banned On**: {chat_link}\n"
+                            f"**ID**: {user.id}\n"
+                            f"**Reason**: {reason}"
                         ),
                         disable_web_page_preview=True,
                     )
