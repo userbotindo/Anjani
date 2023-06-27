@@ -15,10 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import os
 import signal
 import sys
 from functools import partial
 from hashlib import sha256
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt
@@ -46,6 +48,7 @@ from anjani import util
 from anjani.language import get_lang_file
 
 from .anjani_mixin_base import MixinBase
+from .sqlite_storage import SQLiteStorage
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -116,6 +119,7 @@ class TelegramBot(MixinBase):
             workdir="anjani",
             workers=self.config.WORKERS,
             parse_mode=ParseMode.MARKDOWN,
+            storage=SQLiteStorage("anjani"),
         )
 
     async def start(self: "Anjani") -> None:
