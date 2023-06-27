@@ -43,7 +43,10 @@ BEGIN
     UPDATE peers
     SET last_update_on = CAST(STRFTIME('%s', 'now') AS INTEGER)
     WHERE id = NEW.id;
+END;
 
+CREATE TRIGGER trg_session_last_update_on AFTER INSERT ON peers
+BEGIN
     UPDATE sessions
     SET date = CAST(STRFTIME('%s', 'now') AS INTEGER);
 END;
@@ -56,7 +59,7 @@ class SQLiteStorage(Storage):
 
     def __init__(self, name: str):
         super().__init__(name)
-        self.database = Path(os.getcwd()) / f"anjani/{name}.session"
+        self.database = Path(os.getcwd()) / f"anjani/{name}.sqlite"
 
     async def create(self):
         with self.conn:
