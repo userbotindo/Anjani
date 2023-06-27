@@ -59,7 +59,7 @@ class SQLiteStorage(Storage):
 
     def __init__(self, name: str):
         super().__init__(name)
-        self.database = Path(os.getcwd()) / f"anjani/{name}.sqlite"
+        self.database = Path(os.getcwd()) / f"anjani/{name}.session"
 
     async def create(self):
         with self.conn:
