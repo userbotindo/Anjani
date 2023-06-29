@@ -45,7 +45,7 @@ class Config:
         self.SW_API = getenv("SW_API")
 
         self.LOGIN_URL = getenv("LOGIN_URL")
-        self.PLUGIN_FLAG = [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")]
+        self.PLUGIN_FLAG = list(filter(None, [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")]))
 
         self.IS_CI = getenv("IS_CI", "false").lower() == "true"
 
@@ -63,5 +63,5 @@ class Config:
         # create download path if not exists
         Path(self.DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
 
-    def is_plugin_disabled(self, plugin_name: str) -> bool:
-        return plugin_name in self.PLUGIN_FLAG
+    def is_plugin_disabled(self, name: str) -> bool:
+        return f'disable_{name.lower().replace(" ", "_")}_plugin' in self.PLUGIN_FLAG
