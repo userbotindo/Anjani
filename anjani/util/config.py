@@ -64,4 +64,4 @@ class Config:
         Path(self.DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
 
     def is_plugin_disabled(self, name: str) -> bool:
-        return f"disable_{name}_plugin" in self.PLUGIN_FLAG
+        return f'disable_{name.lower().replace(" ", "_")}_plugin' in self.PLUGIN_FLAG
