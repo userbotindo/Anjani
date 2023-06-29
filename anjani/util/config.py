@@ -23,6 +23,7 @@ class Config:
 
     LOGIN_URL: Optional[str]
     PLUGIN_FLAG: list[str]
+    FEATURE_FLAG: list[str]
 
     IS_CI: bool
 
@@ -45,7 +46,12 @@ class Config:
         self.SW_API = getenv("SW_API")
 
         self.LOGIN_URL = getenv("LOGIN_URL")
-        self.PLUGIN_FLAG = list(filter(None, [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")]))
+        self.PLUGIN_FLAG = list(
+            filter(None, [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")])
+        )
+        self.FEATURE_FLAG = list(
+            filter(None, [i.strip() for i in getenv("FEATURE_FLAG", "").split(";")])
+        )
 
         self.IS_CI = getenv("IS_CI", "false").lower() == "true"
 
@@ -65,3 +71,6 @@ class Config:
 
     def is_plugin_disabled(self, name: str) -> bool:
         return f'disable_{name.lower().replace(" ", "_")}_plugin' in self.PLUGIN_FLAG
+
+    def is_flag_active(self, name: str) -> bool:
+        return name in self.FEATURE_FLAG
