@@ -238,10 +238,11 @@ class EventDispatcher(MixinBase):
         if not self.loaded or self._TelegramBot__running:
             return
 
-        api_id = sha256(self.config.API_ID.encode()).hexdigest()
         collection = self.db.get_collection("SESSION")
 
-        data = await collection.find_one({"_id": api_id})
+        data = await collection.find_one(
+            {"_id": sha256(self.config.BOT_TOKEN.encode()).hexdigest()}
+        )
         if not data:
             return
 
