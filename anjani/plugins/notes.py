@@ -94,14 +94,15 @@ class Notes(plugin.Plugin):
         )
         if not data:
             return
-        note = data["notes"][name]
 
+        note = data["notes"][name]
         button = note.get("button", None)
         if noformat:
             parse_mode = ParseMode.DISABLED
             btn_text = "\n\n"
             if button:
                 btn_text += revert_button(button)
+
             keyb = None
         else:
             parse_mode = ParseMode.MARKDOWN
@@ -112,31 +113,33 @@ class Notes(plugin.Plugin):
                 keyb = button
 
         types: int = note["type"]
+        text = note["text"]
+        if not text or text == "\n\n":  # Leftover from button markdown
+            text = name
+
         await self.bot.client.send_chat_action(chat.id, self.ACTION[types])
         try:
             if types in {Types.TEXT, Types.BUTTON_TEXT}:
-                text = note["text"] + btn_text
-                if not text or text == "\n\n":
-                    text = name
                 await self.SEND[types](
                     chat.id,
-                    text,
+                    text + btn_text,
                     disable_web_page_preview=True,
                     reply_to_message_id=reply_to,
                     reply_markup=keyb,
                     parse_mode=parse_mode,
                 )
-            elif types in {Types.STICKER, Types.ANIMATION}:
+            elif types == Types.STICKER:
                 await self.SEND[types](
                     chat.id,
                     note["content"],
                     reply_to_message_id=reply_to,
+                    reply_markup=keyb,
                 )
             else:
                 await self.SEND[types](
                     chat.id,
                     str(note["content"]),
-                    caption=note["text"] + btn_text,
+                    caption=text + btn_text,
                     reply_to_message_id=reply_to,
                     reply_markup=keyb,
                     parse_mode=parse_mode,
