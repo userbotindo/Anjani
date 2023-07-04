@@ -34,6 +34,11 @@ CREATE TABLE peers
     last_update_on INTEGER NOT NULL DEFAULT (CAST(STRFTIME('%s', 'now') AS INTEGER))
 );
 
+CREATE TABLE version
+(
+    number INTEGER PRIMARY KEY
+);
+
 CREATE INDEX idx_peers_id ON peers (id);
 CREATE INDEX idx_peers_username ON peers (username);
 CREATE INDEX idx_peers_phone_number ON peers (phone_number);
@@ -54,6 +59,7 @@ END;
 
 
 class SQLiteStorage(Storage):
+    VERSION = 3
     USERNAME_TTL = 8 * 60 * 60
     _conn: sqlite3.Connection
 
@@ -69,6 +75,8 @@ class SQLiteStorage(Storage):
                 "INSERT INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (2, None, None, None, 0, None, None),
             )
+
+            self.conn.execute("INSERT INTO version VALUES (?)", (self.VERSION,))
 
     async def open(self):
         path = self.database
@@ -171,3 +179,11 @@ class SQLiteStorage(Storage):
 
     async def is_bot(self, value=object) -> Optional[bool]:
         return await self._accessor(value)
+
+    async def version(self, value=object):
+        if value == object:
+            q = self.conn.execute("SELECT number FROM version")
+            return (q.fetchone())[0]
+        else:
+            with self.conn:
+                self.conn.execute("UPDATE version SET number = ?", (value,))
