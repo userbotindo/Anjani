@@ -325,7 +325,7 @@ class EventDispatcher(MixinBase):
             # Unset after we finished to avoid sending the same pts and date,
             # If GetState() doesn't executed on stop event
             await collection.update_one(
-                {"_id": api_id},
+                {"_id": sha256(self.config.BOT_TOKEN.encode()).hexdigest()},
                 {"$unset": {"pts": "", "date": "", "qts": "", "seq": ""}},
             )
 
