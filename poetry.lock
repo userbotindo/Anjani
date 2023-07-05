@@ -174,13 +174,13 @@ anyio = ">=3.2.0,<4"
 
 [[package]]
 name = "aiorun"
-version = "2022.11.1"
+version = "2023.7.2"
 description = "Boilerplate for asyncio applications"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 files = [
-    {file = "aiorun-2022.11.1-py3-none-any.whl", hash = "sha256:8fbfc2aab258021deef2b1f38284c652af9fd3710e94c7b0e736a55d161fa0cb"},
-    {file = "aiorun-2022.11.1.tar.gz", hash = "sha256:d820cebffdea82f9c1750cc396f3a58e4c0d277a2c51f11e86ed6ab7736dce59"},
+    {file = "aiorun-2023.7.2-py3-none-any.whl", hash = "sha256:61f839265d86d3f3b37921eb4a99ef42fa2ee026241b67c54315423d7dac29c9"},
+    {file = "aiorun-2023.7.2.tar.gz", hash = "sha256:95e689dc1b263aaf4556ef8fa73ccae68f38ba0f1c1017fe196ef7da244031f9"},
 ]
 
 [package.extras]
@@ -1637,4 +1637,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.9"
-content-hash = "ed0c8d4d76f0a24387ca94fb258f0f7b8f99f721c06bf09c3b098a779667b692"
+content-hash = "38324efcefcb1e1c60881b7a0872bf1d1cb250ef83ddcfdb4348f3335606843b"
