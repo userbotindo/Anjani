@@ -179,14 +179,14 @@ anyio = ">=3.2.0,<4"
 
 [[package]]
 name = "aiorun"
-version = "2022.11.1"
+version = "2023.7.2"
 description = "Boilerplate for asyncio applications"
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 files = [
-    {file = "aiorun-2022.11.1-py3-none-any.whl", hash = "sha256:8fbfc2aab258021deef2b1f38284c652af9fd3710e94c7b0e736a55d161fa0cb"},
-    {file = "aiorun-2022.11.1.tar.gz", hash = "sha256:d820cebffdea82f9c1750cc396f3a58e4c0d277a2c51f11e86ed6ab7736dce59"},
+    {file = "aiorun-2023.7.2-py3-none-any.whl", hash = "sha256:61f839265d86d3f3b37921eb4a99ef42fa2ee026241b67c54315423d7dac29c9"},
+    {file = "aiorun-2023.7.2.tar.gz", hash = "sha256:95e689dc1b263aaf4556ef8fa73ccae68f38ba0f1c1017fe196ef7da244031f9"},
 ]
 
 [package.extras]
@@ -209,14 +209,14 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "anyio"
-version = "3.7.0"
+version = "3.7.1"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "anyio-3.7.0-py3-none-any.whl", hash = "sha256:eddca883c4175f14df8aedce21054bfca3adb70ffe76a9f607aef9d7fa2ea7f0"},
-    {file = "anyio-3.7.0.tar.gz", hash = "sha256:275d9973793619a5374e1c89a4f4ad3f4b0a5510a2b5b939444bee8f4c4d37ce"},
+    {file = "anyio-3.7.1-py3-none-any.whl", hash = "sha256:91dee416e570e92c64041bd18b900d1d6fa78dff7048769ce5ac5ddad004fbb5"},
+    {file = "anyio-3.7.1.tar.gz", hash = "sha256:44a3c9aba0f5defa43261a8b3efb97891f2bd7d804e0e1f56419befa1adfc780"},
 ]
 
 [package.dependencies]
@@ -225,7 +225,7 @@ idna = ">=2.8"
 sniffio = ">=1.1"
 
 [package.extras]
-doc = ["Sphinx (>=6.1.0)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme", "sphinxcontrib-jquery"]
+doc = ["Sphinx", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme (>=1.2.2)", "sphinxcontrib-jquery"]
 test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=4)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.17)"]
 trio = ["trio (<0.22)"]
 
@@ -475,14 +475,14 @@ files = [
 
 [[package]]
 name = "click"
-version = "8.1.3"
+version = "8.1.4"
 description = "Composable command line interface toolkit"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
-    {file = "click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
+    {file = "click-8.1.4-py3-none-any.whl", hash = "sha256:2739815aaa5d2c986a88f1e9230c55e17f0caad3d958a5e13ad0797c166db9e3"},
+    {file = "click-8.1.4.tar.gz", hash = "sha256:b97d0c74955da062a7d4ef92fadb583806a585b2ea81958a81bd72726cbb8e37"},
 ]
 
 [package.dependencies]
@@ -962,14 +962,14 @@ files = [
 
 [[package]]
 name = "platformdirs"
-version = "3.8.0"
+version = "3.8.1"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.8.0-py3-none-any.whl", hash = "sha256:ca9ed98ce73076ba72e092b23d3c93ea6c4e186b3f1c3dad6edd98ff6ffcca2e"},
-    {file = "platformdirs-3.8.0.tar.gz", hash = "sha256:b0cabcb11063d21a0b261d557acb0a9d2126350e63b70cdf7db6347baea456dc"},
+    {file = "platformdirs-3.8.1-py3-none-any.whl", hash = "sha256:cec7b889196b9144d088e4c57d9ceef7374f6c39694ad1577a0aab50d27ea28c"},
+    {file = "platformdirs-3.8.1.tar.gz", hash = "sha256:f87ca4fcff7d2b0f81c6a748a77973d7af0f4d526f98f308477c3c436c74d528"},
 ]
 
 [package.extras]
@@ -1195,24 +1195,6 @@ python-versions = "~=3.7"
 files = [
     {file = "PyroFork-2.2.5-py3-none-any.whl", hash = "sha256:cda643c0d85ba66778745112db7224395e6df67d1b4cdcbdac433fea7eaa9668"},
     {file = "PyroFork-2.2.5.tar.gz", hash = "sha256:17af842d7c5db7f40453b40135d9928846866e868a3424c04da000e01a37708b"},
-]
-
-[package.dependencies]
-pyaes = "1.6.1"
-pymediainfo = "6.0.1"
-pymongo = "4.4.0"
-pysocks = "1.7.1"
-
-[[package]]
-name = "pyrofork-dev"
-version = "2.2.3.dev202306270958"
-description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
-category = "main"
-optional = false
-python-versions = "~=3.7"
-files = [
-    {file = "PyroFork-dev-2.2.3.dev202306270958.tar.gz", hash = "sha256:51bab8108bce388185ee01cf7fec19d145c70367a63eb1c03f777c0afdcd712b"},
-    {file = "PyroFork_dev-2.2.3.dev202306270958-py3-none-any.whl", hash = "sha256:b75e59a0c27e05791bb1b2e341f497d3be6a7e4712b137f9f2fd404b3997ab82"},
 ]
 
 [package.dependencies]
@@ -1718,4 +1700,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.9"
-content-hash = "a330e787880efd70d74d678dc4e761ea60cee2271dd14790c935dbc6fbb03900"
+content-hash = "0b0cd91f9cabd22d4582137bb98ce264cb60cdbba16138b325544944e2fcff7b"
