@@ -36,7 +36,7 @@ aiopath = [
     {version = "^0.5.12", python = "<3.10"},
     {version = "^0.6.11", python = ">=3.10"},
 ]
-aiorun = "^2022.11.1"
+aiorun = ">=2022.11.1,<2024.0.0"
 certifi = {version = ">=2022.12.7,<2024.0.0", platform = "windows"}
 colorlog = "^6.7.0"
 frozenlist = "^1.3.3"
