@@ -15,12 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import os
 import signal
 import sys
 from functools import partial
 from hashlib import sha256
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import pyrogram.filters as flt

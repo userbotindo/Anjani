@@ -67,6 +67,9 @@ class SQLiteStorage(Storage):
         super().__init__(name)
         self.database = Path(os.getcwd()) / f"anjani/{name}.session"
 
+    async def delete(self):
+        raise NotImplementedError
+
     async def create(self):
         with self.conn:
             self.conn.executescript(SCHEMA)
