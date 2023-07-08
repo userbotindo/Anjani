@@ -46,6 +46,7 @@ from anjani import util
 from anjani.language import get_lang_file
 
 from .anjani_mixin_base import MixinBase
+from .sqlite_storage import SQLiteStorage
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -98,14 +99,15 @@ class TelegramBot(MixinBase):
             self.log.warning("Owner id is not set! you won't be able to run staff command!")
             self.owner = 0
 
-        # Load session from database
-        data = await self.db.get_collection("SESSION").find_one(
-            {"_id": sha256(str(api_id).encode()).hexdigest()}
-        )
-        file = AsyncPath("anjani/anjani.session")
-        if data and not await file.exists():
-            self.log.info("Loading session from database")
-            await file.write_bytes(data["session"])
+        if "--fresh" not in sys.argv:
+            # Load session from database
+            data = await self.db.get_collection("SESSION").find_one(
+                {"_id": sha256(str(bot_token).encode()).hexdigest()}
+            )
+            file = AsyncPath("anjani/anjani.session")
+            if data and not await file.exists():
+                self.log.info("Loading session from database")
+                await file.write_bytes(data["session"])
 
         # Initialize Telegram client with gathered parameters
         self.client = Client(
@@ -116,6 +118,7 @@ class TelegramBot(MixinBase):
             workdir="anjani",
             workers=self.config.WORKERS,
             parse_mode=ParseMode.MARKDOWN,
+            storage=SQLiteStorage("anjani"),
         )
 
     async def start(self: "Anjani") -> None:

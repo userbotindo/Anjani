@@ -102,7 +102,7 @@ class Main(plugin.Plugin):
 
             data = await self.bot.client.invoke(GetState())
             await self.db.update_one(
-                {"_id": sha256(self.bot.config.API_ID.encode()).hexdigest()},
+                {"_id": sha256(self.bot.config.BOT_TOKEN.encode()).hexdigest()},
                 {
                     "$set": {
                         "session": Binary(await file.read_bytes()),
