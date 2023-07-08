@@ -81,6 +81,10 @@ class WebServer(Protocol):
         raise NotImplementedError
 
     @abstractmethod
+    async def stop(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     async def add_router(self, **router_param: Any) -> None:
         raise NotImplementedError
 
