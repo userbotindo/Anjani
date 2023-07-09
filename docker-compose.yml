@@ -7,8 +7,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - USERBOTINDO_ACCESS_TOKEN=${USERBOTINDO_ACCESS_TOKEN}
     ports:
       - 8000:8000
     env_file:
@@ -16,10 +14,6 @@ services:
     restart: unless-stopped
 
 # # Uncomment the following lines to use a local MongoDB database
-# # aware that some feature will not work as Anjani expect a MongoDB that support ReplicaSet!
-# # This lines bellow only uses a single MongoDB instance for simplicity
-# # Change it to your needs if you want to convert it to a ReplicaSet
-
 #     depends_on:
 #       - mongo
 #     environment:

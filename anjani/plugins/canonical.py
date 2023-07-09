@@ -77,7 +77,15 @@ class Canonical(plugin.Plugin):
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
         self.__task = self.bot.loop.create_task(self.watch_streams())
+
+        def server_done_cb(task: asyncio.Task[None]):
+            if task.cancelled:
+                self.log.debug("Stopping web server")
+                asyncio.ensure_future(self._api.stop())
+
+        self.log.debug("Starting web server")
         self.__web_server = self.bot.loop.create_task(self._api.run())
+        self.__web_server.add_done_callback(server_done_cb)
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
