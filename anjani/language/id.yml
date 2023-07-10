@@ -601,6 +601,7 @@ view-goodbye: |
   `Ucapan selamat tinggal untuk anggota yang keluar` = `{}`
   `Pembersihan pesan layanan` = `{}`
   Dan pesan selamat tinggal dari grup ini adalah:
+greetings-button-only-error: Pesan sambutan tidak diperbolehkan hanya berupa tombol!
 #endregion
 #region lockings
 lockings-button: Lockings

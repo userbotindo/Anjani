@@ -401,8 +401,13 @@ class Greeting(plugin.Plugin):
         else:
             return await self.text(chat.id, "greetings-no-input")
 
+        if not welc_text:
+            return await self.text(chat.id, "greetings-button-only-error")
+
         try:  # Try to build a text first to check message validity
-            await self._build_text(welc_text or "", ctx.author or self.bot.user, chat, self.bot.client)
+            await self._build_text(
+                welc_text or "", ctx.author or self.bot.user, chat, self.bot.client
+            )
         except (KeyError, ValueError) as e:
             return await self.text(chat.id, "err-msg-format-parsing", err=e)
 
