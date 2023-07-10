@@ -580,6 +580,7 @@ view-goodbye: |
   `Sending goodbye` = `{}`
   `Clean service message` = `{}`
   And the goodbye message of this chat is:
+greetings-button-only-error: Welcome message can't only contains buttons!
 #endregion
 #region lockings
 lockings-button: Lockings
