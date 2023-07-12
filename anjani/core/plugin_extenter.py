@@ -19,7 +19,7 @@ import inspect
 from types import ModuleType as PluginType
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type
 
-from anjani import custom_plugins, plugin, plugins, util
+from anjani import custom_plugins, internal_plugins, plugin, plugins, util
 from anjani.error import ExistingPluginError
 
 from .anjani_mixin_base import MixinBase
@@ -80,8 +80,10 @@ class PluginExtender(MixinBase):
     # noinspection PyTypeChecker,PyTypeChecker
     def load_all_plugins(self: "Anjani") -> None:
         self.log.info("Loading plugins")
-        self._load_all_from_metaplug(plugins.subplugins)
+        if self.config.is_flag_active("enable_internal_plugin"):
+            self._load_all_from_metaplug(internal_plugins.subplugins, comment="internal")
         self._load_all_from_metaplug(custom_plugins.subplugins, comment="custom")
+        self._load_all_from_metaplug(plugins.subplugins)
         self.log.info("All plugins loaded.")
 
     def unload_all_plugins(self: "Anjani") -> None:

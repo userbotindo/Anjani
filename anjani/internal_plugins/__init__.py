@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Anjani plugin init"""
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,14 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pytest
-from yaml import full_load
+import importlib
+import pkgutil
+from pathlib import Path
 
-from anjani.language import get_lang_file
+current_dir = str(Path(__file__).parent)
+subplugins = [
+    importlib.import_module("." + info.name, __name__)
+    for info in pkgutil.iter_modules([current_dir])
+]
 
+try:
+    _reload_flag: bool
 
-@pytest.mark.asyncio
-async def test_language():
-    """Check if language file is valid."""
-    async for language_file in get_lang_file():
-        full_load(await language_file.read_text())
+    # noinspection PyUnboundLocalVariable
+    if _reload_flag:  # skipcq: PYL-E0601
+        # Plugin has been reloaded, reload our subplugins
+        for plugin in subplugins:
+            importlib.reload(plugin)
+except NameError:
+    _reload_flag = True
