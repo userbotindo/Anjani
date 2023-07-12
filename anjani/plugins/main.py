@@ -100,16 +100,21 @@ class Main(plugin.Plugin):
             if not await file.exists():
                 return
 
-            data = await self.bot.client.invoke(GetState())
+            state = {}
+            if not self.bot.config.is_flag_active("disable_catchup"):
+                data = await self.bot.client.invoke(GetState())
+                state = {
+                    "date": data.date,
+                    "pts": data.pts,
+                    "qts": data.qts,
+                    "seq": data.seq,
+                }
             await self.db.update_one(
                 {"_id": sha256(self.bot.config.BOT_TOKEN.encode()).hexdigest()},
                 {
                     "$set": {
                         "session": Binary(await file.read_bytes()),
-                        "date": data.date,
-                        "pts": data.pts,
-                        "qts": data.qts,
-                        "seq": data.seq,
+                        **state,
                     }
                 },
                 upsert=True,
