@@ -138,7 +138,7 @@ class Greeting(plugin.Plugin):
 
         new_members = message.new_chat_members
         is_bulk_welcome = len(new_members) > 1
-        for new_member in new_members:
+        for idx, new_member in enumerate(new_members):
             try:
                 if new_member.id == self.bot.uid:
                     await self.bot.client.send_message(
@@ -199,7 +199,7 @@ class Greeting(plugin.Plugin):
 
                     if msg:
                         previous = await self.previous_welcome(chat.id, msg.id, is_bulk_welcome)
-                        if previous:
+                        if idx == 0 and previous:
                             try:
                                 await self.bot.client.delete_messages(chat.id, previous)
                             except MessageDeleteForbidden:
