@@ -44,6 +44,7 @@ from yaml import full_load
 
 from anjani import util
 from anjani.language import get_lang_file
+from anjani.util.cache_limiter import CacheLimiter
 
 from .anjani_mixin_base import MixinBase
 from .sqlite_storage import SQLiteStorage
@@ -60,6 +61,7 @@ TgEventHandler = Union[
 class TelegramBot(MixinBase):
     # Initialized during instantiation
     __running: bool
+    _limiter: CacheLimiter
     _plugin_event_handlers: MutableMapping[str, Tuple[TgEventHandler, int]]
 
     loaded: bool
@@ -77,6 +79,7 @@ class TelegramBot(MixinBase):
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         self.__running = False
+        self._limiter = CacheLimiter(ttl=10, max_value=3)
         self._plugin_event_handlers = {}
 
         self.loaded = False
@@ -279,7 +282,15 @@ class TelegramBot(MixinBase):
                 async def event_handler(
                     client: Client, event: EventType  # skipcq: PYL-W0613
                 ) -> None:
-                    await self.dispatch_event(name, event)
+                    user = event.from_user
+                    if name == "callback_query" and await self._limiter.exceeded(user.id):
+                        return await event.answer("")  # type: ignore
+
+                    try:
+                        await self.dispatch_event(name, event)
+                    finally:
+                        if name == "callback_query":
+                            return await self._limiter.increment(user.id)
 
                 if filters is not None:
                     handler_info = (event_type(event_handler, filters), group)
