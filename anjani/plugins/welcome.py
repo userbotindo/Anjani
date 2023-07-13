@@ -21,7 +21,7 @@ from typing import (
     Callable,
     ClassVar,
     Coroutine,
-    Dict,
+    List,
     MutableMapping,
     Optional,
     Tuple,
@@ -137,7 +137,8 @@ class Greeting(plugin.Plugin):
             return
 
         new_members = message.new_chat_members
-        for new_member in new_members:
+        is_bulk_welcome = len(new_members) > 1
+        for idx, new_member in enumerate(new_members):
             try:
                 if new_member.id == self.bot.uid:
                     await self.bot.client.send_message(
@@ -197,8 +198,8 @@ class Greeting(plugin.Plugin):
                         self.log.warning("Welcome message empty on %s.", message.chat.id)
 
                     if msg:
-                        previous = await self.previous_welcome(chat.id, msg.id)
-                        if previous:
+                        previous = await self.previous_welcome(chat.id, msg.id, is_bulk_welcome)
+                        if idx == 0 and previous:
                             try:
                                 await self.bot.client.delete_messages(chat.id, previous)
                             except MessageDeleteForbidden:
@@ -362,10 +363,13 @@ class Greeting(plugin.Plugin):
         else:
             await self.db.update_one({"chat_id": chat_id}, {"$unset": {key: ""}}, upsert=True)
 
-    async def previous_welcome(self, chat_id: int, msg_id: int) -> Optional[int]:
+    async def previous_welcome(
+        self, chat_id: int, msg_id: int, is_bulk: bool = False
+    ) -> Union[int, List[int], None]:
         """Save latest welcome msg_id and return previous msg_id"""
+        operator = "$push" if is_bulk else "$set"
         data = await self.db.find_one_and_update(
-            {"chat_id": chat_id}, {"$set": {"prev_welc": msg_id}}, upsert=True
+            {"chat_id": chat_id}, {operator: {"prev_welc": msg_id}}, upsert=True
         )
         return data.get("prev_welc", None) if data else None
 
