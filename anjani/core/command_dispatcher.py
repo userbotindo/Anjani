@@ -152,7 +152,7 @@ class CommandDispatcher(MixinBase):
                         cmd = self.commands[parts[0]]
                     except KeyError:
                         return False
- 
+
                     # Check additional built-in filters
                     if cmd.filters:
                         if inspect.iscoroutinefunction(cmd.filters.__call__):
