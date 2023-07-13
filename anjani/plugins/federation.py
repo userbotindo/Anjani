@@ -436,29 +436,30 @@ class Federation(plugin.Plugin):
         return ret
 
     @command.filters(filters.admin_only)
-    async def cmd_leavefed(self, ctx: command.Context, fid: Optional[str] = None) -> str:
+    async def cmd_leavefed(self, ctx: command.Context) -> str:
         """Leave a federation in chats"""
         chat = ctx.chat
         user = ctx.msg.from_user
 
         invoker = await chat.get_member(user.id)
-        if invoker.status != ChatMemberStatus.OWNER or invoker.user.id != self.bot.owner:
+        if invoker.status != ChatMemberStatus.OWNER:
             return await self.text(chat.id, "err-group-creator-cmd")
 
-        if not fid:
-            return await self.text(chat.id, "fed-not-found")
+        fed = await self.get_fed_bychat(chat.id)
 
-        exists = await self.get_fed(fid)
-        if not exists:
-            return await self.text(chat.id, "fed-invalid-id")
-
-        if chat.id not in exists.get("chats", []):
+        if not fed:
             return await self.text(chat.id, "fed-not-connected")
 
         ret, _ = await asyncio.gather(
-            self.text(chat.id, "fed-chat-leave-info", exists["name"]),
-            self.db.update_one({"_id": fid}, {"$pull": {"chats": chat.id}}),
+            self.text(chat.id, "fed-chat-leave-info", fed["name"]),
+            self.db.update_one({"_id": fed["_id"]}, {"$pull": {"chats": chat.id}}),
         )
+
+        if log := fed.get("log"):
+            await self.bot.client.send_message(
+                log,
+                f"**New Chat Joined Federation**\n**Name**: {chat.title}",
+            )
         return ret
 
     @command.filters(aliases=["fpromote"])
