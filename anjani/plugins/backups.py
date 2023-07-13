@@ -17,7 +17,7 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, List, MutableMapping, Optional
 
 from aiopath import AsyncPath
 
@@ -28,8 +28,20 @@ class Backups(plugin.Plugin):
     name: ClassVar[str] = "Backups"
     helpable: ClassVar[bool] = True
 
-    async def on_load(self) -> None:
-        self.db = self.bot.db.get_collection("MIGRATED_BACKUPS")
+    async def propagate_event(
+        self, chat_id: int, data: Optional[MutableMapping[str, Any]] = None
+    ) -> Optional[List[MutableMapping[str, Any]]]:
+        event = "restore" if data else "backup"
+        params = tuple([chat_id, data]) if data else tuple([chat_id])
+        listener = self.bot.listeners.get(f"plugin_{event}", [])
+        if not listener:
+            return
+
+        task = []
+        for lst in listener:
+            task.append(asyncio.create_task(lst.func(*params)))
+
+        return await asyncio.gather(*task)
 
     @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
@@ -40,7 +52,7 @@ class Backups(plugin.Plugin):
 
         await ctx.respond(await self.text(chat.id, "backup-progress"))
 
-        results = await self.bot.dispatch_event("plugin_backup", chat.id)
+        results = await self.propagate_event(chat.id)
         if not results or len(results) <= 1:
             return await self.text(chat.id, "backup-null")
 
@@ -94,12 +106,6 @@ class Backups(plugin.Plugin):
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
-        if data.get("_migrated", False):
-            await ctx.respond(
-                await self.text(chat.id, "restore-progress") + "\nMigrate file detected..."
-            )
-            await self.db.insert_one({"chat_id": chat.id, "on": datetime.now()})
-
-        await self.bot.dispatch_event("plugin_restore", chat.id, data)
+        await self.propagate_event(chat.id, data)
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
         return None
