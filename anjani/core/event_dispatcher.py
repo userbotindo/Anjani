@@ -16,7 +16,6 @@
 
 import asyncio
 import bisect
-import copy
 from datetime import datetime
 from functools import partial
 from hashlib import sha256
