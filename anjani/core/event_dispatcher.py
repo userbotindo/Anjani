@@ -16,17 +16,18 @@
 
 import asyncio
 import bisect
+import copy
 from datetime import datetime
 from functools import partial
 from hashlib import sha256
 from typing import (
     TYPE_CHECKING,
     Any,
+    Iterable,
     MutableMapping,
     MutableSequence,
     Optional,
     Set,
-    Tuple,
 )
 
 from pyrogram import raw
@@ -76,7 +77,7 @@ def _get_event_data(event: Any) -> MutableMapping[str, Any]:
     return {}
 
 
-def _unpack_args(args: Tuple[Any, ...]) -> str:
+def _unpack_args(args: Iterable[Any]) -> str:
     """Unpack arguments into a string for logging purposes."""
     return ", ".join([str(arg) for arg in args])
 
@@ -93,7 +94,11 @@ class EventDispatcher(MixinBase):
         super().__init__(**kwargs)
 
     def _event_dispatcher_callback(
-        self: "Anjani", name: str, event: Any, func: ListenerFunc, future: asyncio.Future[Any]
+        self: "Anjani",
+        name: str,
+        event: Any,
+        func: ListenerFunc,
+        future: asyncio.Future[Any],
     ) -> None:
         err = future.exception()
         if not err:
@@ -125,7 +130,7 @@ class EventDispatcher(MixinBase):
             )
         else:
             self.log.error(
-                "Error dispatching event '%s' on %s with data\n%s",
+                "Error dispatching event '%s' on %s\n" "  Data:\n" "    • %s",
                 name,
                 func.__qualname__,
                 _unpack_args(event),
@@ -209,28 +214,49 @@ class EventDispatcher(MixinBase):
         if not listeners:
             return None
 
-        args = tuple(args)  # hack to avoid matches attribute disappearing
+        match_found = False
         for lst in listeners:
             if lst.filters:
                 for arg in args:
                     if isinstance(arg, EventType):
-                        if not await lst.filters(self.client, arg):
+                        # Skip if match found and event is callback_query or inline_query
+                        # To avoid matches object to be overwritten by None
+                        if match_found and event in {"callback_query", "inline_query"}:
                             continue
+
+                        done = await lst.filters(self.client, arg)
+                        if not done:
+                            continue
+
+                        if arg.matches is not None:
+                            match_found = True
 
                         break
 
-                    self.log.error(f"'%s' can't be used with filters.", event)
+                    self.log.error("'%s' can't be used with filters.", event)
                 else:
                     continue
 
             task = self.loop.create_task(lst.func(*args, **kwargs))
             for arg in args:
+                if isinstance(arg, EventType):
+                    task.add_done_callback(
+                        partial(
+                            self.loop.call_soon_threadsafe,
+                            self._event_dispatcher_callback,
+                            event,
+                            arg,
+                            lst.func,
+                        )
+                    )
+                    break
+            else:
                 task.add_done_callback(
                     partial(
                         self.loop.call_soon_threadsafe,
                         self._event_dispatcher_callback,
                         event,
-                        arg,
+                        args,
                         lst.func,
                     )
                 )
@@ -240,7 +266,7 @@ class EventDispatcher(MixinBase):
         if not tasks:
             return None
 
-        self.log.debug("Dispatching event '%s' with data %s", event, args)
+        self.log.debug("Dispatching event '%s'\nData:\n    • %s", event, _unpack_args(args))
         if wait:
             await asyncio.wait(tasks)
 
