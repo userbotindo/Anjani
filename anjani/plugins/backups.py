@@ -17,7 +17,7 @@
 import asyncio
 import json
 from datetime import datetime
-from typing import Any, ClassVar, List, MutableMapping, Optional
+from typing import Any, ClassVar, Mapping, Optional, Set
 
 from aiopath import AsyncPath
 
@@ -29,19 +29,20 @@ class Backups(plugin.Plugin):
     helpable: ClassVar[bool] = True
 
     async def propagate_event(
-        self, chat_id: int, data: Optional[MutableMapping[str, Any]] = None
-    ) -> Optional[List[MutableMapping[str, Any]]]:
+        self, chat_id: int, data: Optional[Mapping[str, Any]] = None
+    ) -> Optional[Set[asyncio.Task[Mapping[str, Any]]]]:
         event = "restore" if data else "backup"
         params = tuple([chat_id, data]) if data else tuple([chat_id])
         listener = self.bot.listeners.get(f"plugin_{event}", [])
         if not listener:
             return
 
-        task = []
+        tasks: Set[asyncio.Task[Mapping[str, Any]]] = set()
         for lst in listener:
-            task.append(asyncio.create_task(lst.func(*params)))
+            tasks.add(asyncio.create_task(lst.func(*params)))
 
-        return await asyncio.gather(*task)
+        fut, _ = await asyncio.wait(tasks)
+        return fut
 
     @command.filters(filters.admin_only)
     async def cmd_backup(self, ctx: command.Context) -> Optional[str]:
@@ -56,9 +57,9 @@ class Backups(plugin.Plugin):
         if not results or len(results) <= 1:
             return await self.text(chat.id, "backup-null")
 
-        result: MutableMapping[str, Any]
-        for result in results:
-            data.update(result)
+        task: asyncio.Task[Mapping[str, Any]]
+        for task in results:
+            data.update(task.result())
 
         await file.write_text(json.dumps(data, indent=2))
 
@@ -93,7 +94,7 @@ class Backups(plugin.Plugin):
         file = AsyncPath(await ctx.msg.reply_to_message.download())
 
         try:
-            data: MutableMapping[str, Any] = json.loads(await file.read_text())
+            data: Mapping[str, Any] = json.loads(await file.read_text())
         except json.JSONDecodeError:
             return await self.text(chat.id, "invalid-backup-file")
 
@@ -106,6 +107,12 @@ class Backups(plugin.Plugin):
         if len(data) <= 1:
             return await self.text(chat.id, "backup-data-null")
 
-        await self.propagate_event(chat.id, data)
+        results = await self.propagate_event(chat.id, data)
+        for task in results:  # type: ignore
+            try:
+                task.result()
+            except KeyError:
+                continue
+
         await asyncio.gather(ctx.respond(await self.text(chat.id, "backup-done")), file.unlink())
         return None
