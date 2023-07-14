@@ -26,7 +26,6 @@ from pyrogram.types import Message
 
 from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
-from anjani.util.cache_limiter import CacheLimiter
 
 from .anjani_mixin_base import MixinBase
 
@@ -38,14 +37,9 @@ class CommandDispatcher(MixinBase):
     # Initialized during instantiation
     commands: MutableMapping[str, command.Command]
 
-    # Private
-    __limiter: CacheLimiter
-
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         # Initialize command map
         self.commands = {}
-
-        self.__limiter = CacheLimiter(ttl=10, max_value=3)
 
         # Propagate initialization to other mixins
         super().__init__(**kwargs)
@@ -139,8 +133,7 @@ class CommandDispatcher(MixinBase):
 
             if message.text is not None and message.text.startswith("/"):
                 user = message.from_user or message.sender_chat
-                # check user limiter
-                if await self.__limiter.exceeded(user.id):
+                if await self._limiter.exceeded(user.id):
                     return False
 
                 try:
@@ -173,7 +166,7 @@ class CommandDispatcher(MixinBase):
                     return True
                 finally:
                     # Increment user limit
-                    await self.__limiter.increment(user.id)
+                    await self._limiter.increment(user.id)
 
             return False
 
