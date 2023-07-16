@@ -183,7 +183,7 @@ class Users(plugin.Plugin):
         text = f"<b>{'Bot' if user.is_bot else 'User'} Info</b>\n\n"
         text += f"<b>ID:</b> <code>{user.id}</code>\n"
         text += f"<b>DC ID: </b><code>{user.dc_id if user.dc_id else 'N/A'}</code>\n"
-        text += f"<b>First Name: </b>{escape(user.first_name)}\n"
+        text += f"<b>First Name: </b>{escape(user.first_name) if user.first_name else ''}\n"
         if user.last_name:
             text += f"<b>Last Name: </b><code>{escape(user.last_name)}</code>\n"
 
