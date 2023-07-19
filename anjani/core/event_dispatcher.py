@@ -99,8 +99,19 @@ class EventDispatcher(MixinBase):
         func: ListenerFunc,
         future: asyncio.Future[Any],
     ) -> None:
-        err = future.exception()
+        try:
+            err = future.exception()
+        except asyncio.CancelledError:
+            return None
+
         if not err:
+            return None
+
+        if isinstance(err, util.misc.StopPropagation):
+            for task in asyncio.all_tasks():
+                if task.get_name() == name:
+                    task.cancel()
+
             return None
 
         dispatcher_error = EventDispatchError(
@@ -236,7 +247,7 @@ class EventDispatcher(MixinBase):
                 else:
                     continue
 
-            task = self.loop.create_task(lst.func(*args, **kwargs))
+            task = self.loop.create_task(lst.func(*args, **kwargs), name=event)
             for arg in args:
                 if isinstance(arg, EventType):
                     task.add_done_callback(
