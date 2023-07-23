@@ -1,31 +1,41 @@
-# Set base image (host OS)
-FROM python:3.10-slim-bullseye
+FROM python:3.10-slim-bullseye as base
 
-# Set the working directory in the container
-WORKDIR /anjani/
+ENV POETRY_NO_INTERACTION=true \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRTUALENVS_CREATE=true \
+    POETRY_CACHE_DIR='/tmp/poetry_cache' \
+    PYTHONDONTWRITEBYTECODE=1
 
-# Install all required packages
-RUN apt-get -qq update && apt-get -qq upgrade -y
-RUN apt-get -qq install -y --no-install-recommends \
-    git curl
+RUN apt-get -qq update \
+    && apt-get -qq install -y --no-install-recommends curl
 
-# copy pyproject.toml and poetry.lock for layer caching
+
+FROM base as builder
+WORKDIR /app
+
 COPY pyproject.toml poetry.lock ./
-
-# ignore pip root user warning
-ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN pip install --upgrade pip \
     && pip install poetry
 
 RUN poetry install --no-root --only main -E uvloop
 
+RUN apt-get -qq install -y --no-install-recommends git
+
 ARG USERBOTINDO_ACCESS_TOKEN
 COPY ./preinstall.sh ./
 RUN chmod +x ./preinstall.sh
-RUN ./preinstall.sh
+RUN ./preinstall.sh && rm -rf $POETRY_CACHE_DIR
 
-# copy the rest of files
+
+FROM base as runner
+WORKDIR /app
+
+ENV VENV_PATH=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder $VENV_PATH $VENV_PATH
+
 COPY . .
 
-CMD ["poetry", "run", "anjani"]
+CMD ["python", "-m", "anjani"]
