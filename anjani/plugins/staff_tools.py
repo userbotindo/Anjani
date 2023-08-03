@@ -94,7 +94,11 @@ class Staff(plugin.Plugin):
             if not get_all and chat.get("type") == "channel":
                 continue
 
-            chatfile += f"{chat['chat_name']} | ({chat['chat_id']})\n"
+            name = chat.get("chat_name")
+            if not name:
+                name = chat["chat_id"]
+
+            chatfile += f"{name} | ({chat['chat_id']})\n"
 
         with BytesIO(str.encode(chatfile)) as output:
             output.name = "chatlist.txt"
