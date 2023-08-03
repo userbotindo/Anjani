@@ -96,7 +96,7 @@ class Staff(plugin.Plugin):
 
             name = chat.get("chat_name")
             if not name:
-                name = chat["chat_id"]
+                name = "[NO CHAT NAME]"
 
             chatfile += f"{name} | ({chat['chat_id']})\n"
 
