@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "anjani"
-version = "2.13.10"
+version = "2.13.11"
 description = "Telegram group management bot"
 license = "GPL-3.0-or-later"
 authors = [
-    "Gaung Ramadhan <hi@mrmiss.my.id>",
+    "Gaung Ramadhan <hi@mrmiss.dev>",
     "Adek Maulana <adekzmaulana@gmail.com>"
 ]
 readme = "README.md"
