@@ -44,7 +44,7 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, ChatPermissions, Message
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 async def anon(_: Client, message: Message) -> bool:
@@ -105,7 +105,7 @@ class Lockings(plugin.Plugin):
     name: ClassVar[str] = "Lockings"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
     restrictions: MutableMapping[str, MutableMapping[str, MutableMapping[str, bool]]]
 
     async def on_load(self) -> None:
@@ -191,7 +191,7 @@ class Lockings(plugin.Plugin):
         if not locked or locked and "bots" not in locked:
             return
 
-        bot_perm, added_by_perm = await util.tg.fetch_permissions(
+        bot_perm, added_by_perm = await shared.tg.fetch_permissions(
             self.bot.client, chat.id, added_by.id
         )
         if not (bot_perm and added_by_perm) or added_by_perm.status == ChatMemberStatus.OWNER:
@@ -318,7 +318,12 @@ class Lockings(plugin.Plugin):
                     permissions=self.unpack_permissions(permissions, "lock", lock_type),
                 )
             except ChatAdminRequired as e:
-                return await ctx.get_text("lockings-admin-required", message=e.MESSAGE.split()[-1].strip(")").split(".")[-1].strip('"') if e.MESSAGE else "")
+                return await ctx.get_text(
+                    "lockings-admin-required",
+                    message=e.MESSAGE.split()[-1].strip(")").split(".")[-1].strip('"')
+                    if e.MESSAGE
+                    else "",
+                )
         elif lock_type in LOCK_TYPES:
             locked = await self.get_chat_restrictions(chat.id)
             if lock_type in locked:

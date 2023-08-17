@@ -15,22 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import codecs
 import html
 import re
-from enum import IntEnum, unique
-from functools import wraps
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Callable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Tuple, Union
 
 from pyrogram.client import Client
 from pyrogram.enums.chat_member_status import ChatMemberStatus
@@ -42,6 +29,7 @@ from pyrogram.errors import (
     MessageDeleteForbidden,
     UserNotParticipant,
 )
+from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
 from pyrogram.types import (
     ChatMember,
     InlineKeyboardButton,
@@ -49,35 +37,13 @@ from pyrogram.types import (
     Message,
     User,
 )
-from typing_extensions import ParamSpecArgs, ParamSpecKwargs
 
-from anjani.util import types as _types
-from anjani.util.async_helper import run_sync
+from ..constant import MESSAGE_CHAR_LIMIT, STAFF, TRUNCATION_SUFFIX
+from ..types import Button, CustomFilter
+from .enum import MessageType
 
 if TYPE_CHECKING:
     from anjani.core import Anjani
-
-MESSAGE_CHAR_LIMIT = 4096
-STAFF: Set[int] = set()
-TRUNCATION_SUFFIX = "... (truncated)"
-
-Button = Union[Tuple[Tuple[str, str, bool]], List[Tuple[str, str, bool]]]
-
-
-@unique
-class Types(IntEnum):
-    """A Class representing message type"""
-
-    TEXT = 0
-    BUTTON_TEXT = 1
-    DOCUMENT = 2
-    PHOTO = 3
-    VIDEO = 4
-    STICKER = 5
-    AUDIO = 6
-    VOICE = 7
-    VIDEO_NOTE = 8
-    ANIMATION = 9
 
 
 def build_button(buttons: Button) -> InlineKeyboardMarkup:
@@ -129,20 +95,11 @@ def parse_button(text: str) -> Tuple[str, Button]:
             prev = match.start(1) - 1
 
     parser_data += text[prev:]
-    # Remove any markdown button left over if any
-    # t = parser_data.rstrip().split()
-    # if t:
-    #     pattern = re.compile(r"[_-`*~]+")
-    #     anyMarkdownLeft = pattern.search(t[-1])
-    #     if anyMarkdownLeft:
-    #         toRemove = anyMarkdownLeft[0][0]
-    #         t[-1] = t[-1].replace(toRemove, "")
-    #         return " ".join(t), buttons
 
     return parser_data.rstrip(), buttons
 
 
-def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
+def get_message_info(msg: Message) -> Tuple[str, MessageType, Optional[str], Button]:
     """Parse received message and return its content."""
     types = None
     content = None
@@ -164,28 +121,28 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
             text = added_text
 
         if reply_msg.text:
-            types = Types.BUTTON_TEXT if buttons else Types.TEXT
+            types = MessageType.BUTTON_TEXT if buttons else MessageType.TEXT
         elif reply_msg.sticker:
-            content, types = reply_msg.sticker.file_id, Types.STICKER
+            content, types = reply_msg.sticker.file_id, MessageType.STICKER
         elif reply_msg.document:
-            content, types = reply_msg.document.file_id, Types.DOCUMENT
+            content, types = reply_msg.document.file_id, MessageType.DOCUMENT
         elif reply_msg.photo:
-            content, types = reply_msg.photo.file_id, Types.PHOTO
+            content, types = reply_msg.photo.file_id, MessageType.PHOTO
         elif reply_msg.audio:
-            content, types = reply_msg.audio.file_id, Types.AUDIO
+            content, types = reply_msg.audio.file_id, MessageType.AUDIO
         elif reply_msg.voice:
-            content, types = reply_msg.voice.file_id, Types.VOICE
+            content, types = reply_msg.voice.file_id, MessageType.VOICE
         elif reply_msg.video:
-            content, types = reply_msg.video.file_id, Types.VIDEO
+            content, types = reply_msg.video.file_id, MessageType.VIDEO
         elif reply_msg.video_note:
-            content, types = reply_msg.video_note.file_id, Types.VIDEO_NOTE
+            content, types = reply_msg.video_note.file_id, MessageType.VIDEO_NOTE
         elif reply_msg.animation:
-            content, types = reply_msg.animation.file_id, Types.ANIMATION
+            content, types = reply_msg.animation.file_id, MessageType.ANIMATION
         else:
             raise ValueError("Can't get message information")
     else:
         text, buttons = parse_button(msg.text.markdown.split(" ", 2)[2])
-        types = Types.BUTTON_TEXT if buttons else Types.TEXT
+        types = MessageType.BUTTON_TEXT if buttons else MessageType.TEXT
 
     return text, types, content, buttons
 
@@ -277,91 +234,16 @@ async def reply_and_delete(message: Message, text: str, del_in: int = 1) -> None
     return
 
 
-# }
+def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
+    """Recursively check filters to set :obj:`~Anjani` into :obj:`~CustomFilter` if needed"""
+    if isinstance(filters, (AndFilter, OrFilter, InvertFilter)):
+        check_filters(filters.base, anjani)
+    if isinstance(filters, (AndFilter, OrFilter)):
+        check_filters(filters.other, anjani)
 
-
-# { GetText Language
-def __loop_safe(
-    func: Callable[
-        [
-            _types.Bot,
-            _types.ChatId,
-            _types.TextName,
-            ParamSpecArgs,
-            _types.NoFormat,
-            ParamSpecKwargs,
-        ],
-        str,
-    ]
-):  # Special: let default typing choose the return type
-    """Decorator for get_text functions"""
-
-    @wraps(func)
-    async def wrapper(
-        bot: "Anjani",
-        chat_id: Optional[int],
-        text_name: str,
-        *args: Any,
-        noformat: bool = False,
-        **kwargs: Any,
-    ) -> str:
-        """Parse the string with user language setting.
-
-        Parameters:
-            bot (`Anjani`):
-                The bot instance.
-            chat_id (`int`, *Optional*):
-                Id of the sender(PM's) or chat_id to fetch the user language setting.
-                If chat_id is None, the language will always use 'en'.
-            text_name (`str`):
-                String name to parse. The string is parsed from YAML documents.
-            *args (`any`, *Optional*):
-                One or more values that should be formatted and inserted in the string.
-                The value should be in order based on the language string placeholder.
-            noformat (`bool`, *Optional*):
-                If True, the text returned will not be formated.
-                Default to False.
-            **kwargs (`any`, *Optional*):
-                One or more keyword values that should be formatted and inserted in the string.
-                based on the keyword on the language strings.
-        """
-        return await run_sync(func, bot, chat_id, text_name, *args, noformat=noformat, **kwargs)
-
-    return wrapper
-
-
-@__loop_safe
-def get_text(
-    bot: "Anjani",
-    chat_id: Optional[int],
-    text_name: str,
-    *args: Any,
-    noformat: bool = False,
-    **kwargs: Any,
-) -> str:
-    def _get_text(lang: str) -> str:
-        try:
-            text = codecs.decode(
-                codecs.encode(bot.languages[lang][text_name], "latin-1", "backslashreplace"),
-                "unicode-escape",
-            )
-        except KeyError:
-            if lang == "en":
-                return (
-                    f"**NO LANGUAGE STRING FOR '{text_name}' in '{lang}'**\n"
-                    "__Please forward this to__ @userbotindo"
-                )
-
-            bot.log.warning("NO LANGUAGE STRING FOR '%s' in '%s'", text_name, lang)
-            return _get_text("en")
-        else:
-            try:
-                return text if noformat else text.format(*args, **kwargs)
-            except (IndexError, KeyError):
-                bot.log.error("Failed to format '%s' string on '%s'", text_name, lang)
-                raise
-
-    return _get_text(bot.chats_languages.get(chat_id or 0, "en"))
+    # Only accepts CustomFilter instance
+    if getattr(filters, "include_bot", False) and isinstance(filters, CustomFilter):
+        filters.anjani = anjani
 
 
 # }

@@ -16,14 +16,14 @@
 
 from typing import ClassVar, Optional
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Topics(plugin.Plugin):
     name: ClassVar[str] = "Topic"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")

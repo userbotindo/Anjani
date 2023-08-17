@@ -37,18 +37,18 @@ from pyrogram.types import Chat, Message, User
 try:
     from userbotindo import get_trust
 except ImportError:
-    from anjani.util.misc import do_nothing as get_trust
+    from anjani.shared.utils import do_nothing as get_trust
 
-from anjani import command, filters, listener, plugin, util
-from anjani.util.misc import StopPropagation
+from anjani import command, filters, listener, plugin, shared
+from anjani.shared.utils import StopPropagation
 
 
 class SpamShield(plugin.Plugin):
     name: ClassVar[str] = "SpamShield"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
-    federation_db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
+    federation_db: shared.database.AsyncCollection
     token: Optional[str]
     spam_protection: bool
 
@@ -124,12 +124,12 @@ class SpamShield(plugin.Plugin):
                     await self.user_db.update_one({"_id": user.id}, {"$set": {"spam": True}})
 
         try:
-            me, target = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
+            me, target = await shared.telegram.fetch_permissions(self.bot.client, chat.id, user.id)
             if (
                 not (me and target)
                 or not me.privileges
                 or not me.privileges.can_restrict_members
-                or util.tg.is_staff_or_admin(target)
+                or shared.telegram.is_staff_or_admin(target)
             ):
                 return
 

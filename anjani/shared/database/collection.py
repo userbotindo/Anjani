@@ -43,7 +43,7 @@ from pymongo.results import (
 from pymongo.typings import _DocumentType
 from pymongo.write_concern import WriteConcern
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
@@ -150,7 +150,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         bypass_document_validation: bool = False,
         session: Optional[AsyncClientSession] = None,
     ) -> BulkWriteResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.bulk_write,
             request,
             ordered=ordered,
@@ -165,7 +165,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> int:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.count_documents,
             query,
             session=session.dispatch if session else session,
@@ -173,7 +173,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         )
 
     async def create_index(self, keys: Union[str, List[Tuple[str, Any]]], **kwargs: Any) -> str:
-        return await util.run_sync(self.dispatch.create_index, keys, **kwargs)
+        return await shared.run_sync(self.dispatch.create_index, keys, **kwargs)
 
     async def create_indexes(
         self,
@@ -182,7 +182,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> List[str]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.create_indexes,
             indexes,
             session=session.dispatch if session else session,
@@ -197,7 +197,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
     ) -> DeleteResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.delete_many,
             query,
             collation=collation,
@@ -213,7 +213,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
     ) -> DeleteResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.delete_one,
             query,
             collation=collation,
@@ -229,7 +229,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> List[str]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.distinct,
             key,
             filter=query,
@@ -238,7 +238,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         )
 
     async def drop(self, session: Optional[AsyncClientSession] = None) -> None:
-        await util.run_sync(self.dispatch.drop, session=session.dispatch if session else session)
+        await shared.run_sync(self.dispatch.drop, session=session.dispatch if session else session)
 
     async def drop_index(
         self,
@@ -247,7 +247,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> None:
-        await util.run_sync(
+        await shared.run_sync(
             self.dispatch.drop_index,
             index_or_name,
             session=session.dispatch if session else session,
@@ -255,12 +255,12 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         )
 
     async def drop_indexes(self, session: Optional[AsyncClientSession] = None, **kwargs) -> None:
-        await util.run_sync(
+        await shared.run_sync(
             self.dispatch.drop_indexes, session=session.dispatch if session else session, **kwargs
         )
 
     async def estimated_document_count(self, **kwargs: Any) -> int:
-        return await util.run_sync(self.dispatch.estimated_document_count, **kwargs)
+        return await shared.run_sync(self.dispatch.estimated_document_count, **kwargs)
 
     def find(self, *args: Any, **kwargs: Any) -> AsyncCursor:
         return AsyncCursor(Cursor(self, *args, **kwargs), self)
@@ -268,7 +268,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
     async def find_one(
         self, query: Optional[Mapping[str, Any]], *args: Any, **kwargs: Any
     ) -> Optional[Mapping[str, Any]]:
-        return await util.run_sync(self.dispatch.find_one, query, *args, **kwargs)
+        return await shared.run_sync(self.dispatch.find_one, query, *args, **kwargs)
 
     async def find_one_and_delete(
         self,
@@ -280,7 +280,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.find_one_and_delete,
             query,
             projection=projection,
@@ -303,7 +303,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.find_one_and_replace,
             query,
             replacement,
@@ -330,7 +330,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.find_one_and_update,
             query,
             update,
@@ -356,7 +356,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
     async def index_information(
         self, session: Optional[AsyncClientSession] = None
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.index_information, session=session.dispatch if session else session
         )
 
@@ -368,7 +368,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         bypass_document_validation: bool = False,
         session: Optional[AsyncClientSession] = None,
     ) -> InsertManyResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.insert_many,
             documents,
             ordered=ordered,
@@ -383,7 +383,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         bypass_document_validation: bool = False,
         session: Optional[AsyncClientSession] = None,
     ) -> InsertOneResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.insert_one,
             document,
             bypass_document_validation=bypass_document_validation,
@@ -402,14 +402,14 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         )
 
     async def options(self, session: Optional[AsyncClientSession] = None) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.options, session=session.dispatch if session else session
         )
 
     async def rename(
         self, new_name: str, *, session: Optional[AsyncClientSession] = None, **kwargs: Any
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.rename,
             new_name,
             session=session.dispatch if session else session,
@@ -427,7 +427,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.replace_one,
             query,
             replacement,
@@ -450,7 +450,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.update_many,
             query,
             update,
@@ -474,7 +474,7 @@ class AsyncCollection(AsyncBaseProperty, Generic[_DocumentType]):
         hint: Optional[Union[IndexModel, List[Tuple[str, Any]]]] = None,
         session: Optional[AsyncClientSession] = None,
     ) -> UpdateResult:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.update_one,
             query,
             update,

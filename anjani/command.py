@@ -35,8 +35,8 @@ from pyrogram.types import Message
 from typing_extensions import final
 
 from anjani.action import BotAction
-from anjani.util.tg import get_text
-from anjani.util.types import CustomFilter
+from anjani.shared.types import CustomFilter
+from anjani.shared.utils import get_text
 
 if TYPE_CHECKING:
     from anjani.core import Anjani

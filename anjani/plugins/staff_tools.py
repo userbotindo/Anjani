@@ -26,13 +26,13 @@ from pyrogram.errors.exceptions.bad_request_400 import (
     UserNotParticipant,
 )
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Staff(plugin.Plugin):
     name: ClassVar[str] = "Staff Tools"
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")

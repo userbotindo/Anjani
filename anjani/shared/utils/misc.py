@@ -14,26 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any, Callable, Set, Tuple, Union
-
-from pyrogram.filters import AndFilter, Filter, InvertFilter, OrFilter
-
-from anjani.util.types import CustomFilter
-
-if TYPE_CHECKING:
-    from anjani.core import Anjani
-
-
-def check_filters(filters: Union[Filter, CustomFilter], anjani: "Anjani") -> None:
-    """Recursively check filters to set :obj:`~Anjani` into :obj:`~CustomFilter` if needed"""
-    if isinstance(filters, (AndFilter, OrFilter, InvertFilter)):
-        check_filters(filters.base, anjani)
-    if isinstance(filters, (AndFilter, OrFilter)):
-        check_filters(filters.other, anjani)
-
-    # Only accepts CustomFilter instance
-    if getattr(filters, "include_bot", False) and isinstance(filters, CustomFilter):
-        filters.anjani = anjani
+from typing import Any, Callable, Set, Tuple
 
 
 def find_prefixed_funcs(obj: Any, prefix: str) -> Set[Tuple[str, Callable[..., Any]]]:

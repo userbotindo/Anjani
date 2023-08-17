@@ -31,7 +31,7 @@ from pymongo.client_session import ClientSession, SessionOptions
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBase
 from .errors import OperationFailure, PyMongoError
@@ -61,19 +61,19 @@ class AsyncClientSession(AsyncBase):
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        await util.run_sync(self.dispatch.__exit__, exc_type, exc_val, exc_tb)
+        await shared.run_sync(self.dispatch.__exit__, exc_type, exc_val, exc_tb)
 
     def __enter__(self) -> None:
         raise RuntimeError("Use 'async with' not just 'with'")
 
     async def abort_transaction(self) -> None:
-        return await util.run_sync(self.dispatch.abort_transaction)
+        return await shared.run_sync(self.dispatch.abort_transaction)
 
     async def commit_transaction(self) -> None:
-        return await util.run_sync(self.dispatch.commit_transaction)
+        return await shared.run_sync(self.dispatch.commit_transaction)
 
     async def end_session(self) -> None:
-        return await util.run_sync(self.dispatch.end_session)
+        return await shared.run_sync(self.dispatch.end_session)
 
     @asynccontextmanager
     async def start_transaction(
@@ -84,7 +84,7 @@ class AsyncClientSession(AsyncBase):
         read_preference: Optional[ReadPreferences] = None,
         max_commit_time_ms: Optional[int] = None,
     ) -> AsyncGenerator["AsyncClientSession", None]:
-        await util.run_sync(
+        await shared.run_sync(
             self.dispatch.start_transaction,
             read_concern=read_concern,
             write_concern=write_concern,

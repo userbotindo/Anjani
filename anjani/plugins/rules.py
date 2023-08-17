@@ -20,14 +20,14 @@ from typing import Any, MutableMapping, Optional
 from pyrogram.errors import PeerIdInvalid
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Rules(plugin.Plugin):
     name = "Rules"
     helpable = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("RULES")

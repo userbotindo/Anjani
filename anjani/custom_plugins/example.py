@@ -26,7 +26,7 @@ else:
 
 from pyrogram.types import CallbackQuery, Message
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 
 class ExamplePlugin(plugin.Plugin):
@@ -34,7 +34,7 @@ class ExamplePlugin(plugin.Plugin):
     disabled: ClassVar[bool] = True
     helpable: ClassVar[bool] = False
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("example")

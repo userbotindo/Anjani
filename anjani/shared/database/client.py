@@ -41,7 +41,7 @@ from pymongo.topology_description import TopologyDescription
 from pymongo.typings import _Address
 from pymongo.write_concern import DEFAULT_WRITE_CONCERN, WriteConcern
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
@@ -75,7 +75,7 @@ class AsyncClient(AsyncBaseProperty):
         return hash(self.address)
 
     async def close(self) -> None:
-        await util.run_sync(self.dispatch.close)
+        await shared.run_sync(self.dispatch.close)
 
     async def drop_database(
         self,
@@ -85,7 +85,7 @@ class AsyncClient(AsyncBaseProperty):
         if isinstance(name_or_database, AsyncDatabase):
             name_or_database = name_or_database.name
 
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.drop_database,
             name_or_database,
             session=session.dispatch if session else session,
@@ -132,7 +132,7 @@ class AsyncClient(AsyncBaseProperty):
         )
 
     async def list_database_names(self, session: Optional[AsyncClientSession] = None) -> List[str]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.list_database_names, session=session.dispatch if session else session
         )
 
@@ -147,7 +147,7 @@ class AsyncClient(AsyncBaseProperty):
             read_preference=ReadPreference.PRIMARY,
             write_concern=DEFAULT_WRITE_CONCERN,
         )
-        res: Mapping[str, Any] = await util.run_sync(
+        res: Mapping[str, Any] = await shared.run_sync(
             database.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session,
@@ -160,7 +160,7 @@ class AsyncClient(AsyncBaseProperty):
         return AsyncCommandCursor(CommandCursor(database["$cmd"], cursor, None))
 
     async def server_info(self, session: Optional[AsyncClientSession] = None) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.server_info, session=session.dispatch if session else session
         )
 
@@ -174,7 +174,7 @@ class AsyncClient(AsyncBaseProperty):
         default_transaction_options: Optional[TransactionOptions] = None,
         snapshot: bool = False,
     ) -> AsyncGenerator[AsyncClientSession, None]:
-        session = await util.run_sync(
+        session = await shared.run_sync(
             self.dispatch.start_session,
             causal_consistency=causal_consistency,
             default_transaction_options=default_transaction_options,

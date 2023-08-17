@@ -20,7 +20,7 @@ from bson.timestamp import Timestamp
 from pymongo.change_stream import ChangeStream
 from pymongo.collation import Collation
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBase
 from .client_session import AsyncClientSession
@@ -97,13 +97,13 @@ class AsyncChangeStream(AsyncBase):
 
     async def _init(self) -> ChangeStream:
         if not self.dispatch:
-            self.dispatch = await util.run_sync(self._target.dispatch.watch, **self._options)
+            self.dispatch = await shared.run_sync(self._target.dispatch.watch, **self._options)
 
         return self.dispatch
 
     async def close(self):
         if self.dispatch:
-            await util.run_sync(self.dispatch.close)
+            await shared.run_sync(self.dispatch.close)
 
     async def next(self) -> Mapping[str, Any]:
         while self.alive:
@@ -115,7 +115,7 @@ class AsyncChangeStream(AsyncBase):
 
     async def try_next(self) -> Optional[Mapping[str, Any]]:
         self.dispatch = await self._init()
-        return await util.run_sync(self.dispatch.try_next)
+        return await shared.run_sync(self.dispatch.try_next)
 
     @property
     def alive(self) -> bool:

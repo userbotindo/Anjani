@@ -22,43 +22,48 @@ from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 
-from anjani import command, filters, listener, plugin, util
-from anjani.util.tg import Types, build_button, get_message_info, revert_button
+from anjani import command, filters, listener, plugin, shared
+from anjani.shared.telegram import (
+    MessageType,
+    build_button,
+    get_message_info,
+    revert_button,
+)
 
 
 class Notes(plugin.Plugin):
     name: ClassVar[str] = "Notes"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
     ACTION: MutableMapping[int, ChatAction]
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self):
         self.db = self.bot.db.get_collection("NOTES")
         self.ACTION = {
-            Types.TEXT.value: ChatAction.TYPING,
-            Types.BUTTON_TEXT.value: ChatAction.TYPING,
-            Types.DOCUMENT.value: ChatAction.UPLOAD_DOCUMENT,
-            Types.PHOTO.value: ChatAction.UPLOAD_PHOTO,
-            Types.VIDEO.value: ChatAction.UPLOAD_VIDEO,
-            Types.STICKER.value: ChatAction.CHOOSE_STICKER,
-            Types.AUDIO.value: ChatAction.UPLOAD_AUDIO,
-            Types.VOICE.value: ChatAction.UPLOAD_AUDIO,
-            Types.VIDEO_NOTE.value: ChatAction.UPLOAD_VIDEO_NOTE,
-            Types.ANIMATION.value: ChatAction.UPLOAD_VIDEO,
+            MessageType.TEXT.value: ChatAction.TYPING,
+            MessageType.BUTTON_TEXT.value: ChatAction.TYPING,
+            MessageType.DOCUMENT.value: ChatAction.UPLOAD_DOCUMENT,
+            MessageType.PHOTO.value: ChatAction.UPLOAD_PHOTO,
+            MessageType.VIDEO.value: ChatAction.UPLOAD_VIDEO,
+            MessageType.STICKER.value: ChatAction.CHOOSE_STICKER,
+            MessageType.AUDIO.value: ChatAction.UPLOAD_AUDIO,
+            MessageType.VOICE.value: ChatAction.UPLOAD_AUDIO,
+            MessageType.VIDEO_NOTE.value: ChatAction.UPLOAD_VIDEO_NOTE,
+            MessageType.ANIMATION.value: ChatAction.UPLOAD_VIDEO,
         }
         self.SEND = {
-            Types.TEXT.value: self.bot.client.send_message,
-            Types.BUTTON_TEXT.value: self.bot.client.send_message,
-            Types.DOCUMENT.value: self.bot.client.send_document,
-            Types.PHOTO.value: self.bot.client.send_photo,
-            Types.VIDEO.value: self.bot.client.send_video,
-            Types.STICKER.value: self.bot.client.send_sticker,
-            Types.AUDIO.value: self.bot.client.send_audio,
-            Types.VOICE.value: self.bot.client.send_voice,
-            Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
-            Types.ANIMATION.value: self.bot.client.send_animation,
+            MessageType.TEXT.value: self.bot.client.send_message,
+            MessageType.BUTTON_TEXT.value: self.bot.client.send_message,
+            MessageType.DOCUMENT.value: self.bot.client.send_document,
+            MessageType.PHOTO.value: self.bot.client.send_photo,
+            MessageType.VIDEO.value: self.bot.client.send_video,
+            MessageType.STICKER.value: self.bot.client.send_sticker,
+            MessageType.AUDIO.value: self.bot.client.send_audio,
+            MessageType.VOICE.value: self.bot.client.send_voice,
+            MessageType.VIDEO_NOTE.value: self.bot.client.send_video_note,
+            MessageType.ANIMATION.value: self.bot.client.send_animation,
         }
 
     async def on_chat_migrate(self, message: Message) -> None:
@@ -119,7 +124,7 @@ class Notes(plugin.Plugin):
 
         await self.bot.client.send_chat_action(chat.id, self.ACTION[types])
         try:
-            if types in {Types.TEXT, Types.BUTTON_TEXT}:
+            if types in {MessageType.TEXT, MessageType.BUTTON_TEXT}:
                 await self.SEND[types](
                     chat.id,
                     text + btn_text,
@@ -128,7 +133,7 @@ class Notes(plugin.Plugin):
                     reply_markup=keyb,
                     parse_mode=parse_mode,
                 )
-            elif types == Types.STICKER:
+            elif types == MessageType.STICKER:
                 await self.SEND[types](
                     chat.id,
                     note["content"],

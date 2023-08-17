@@ -22,7 +22,7 @@ from pyrogram.errors import PeerIdInvalid, UsernameInvalid, UsernameNotOccupied
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.types import ChatMember, ChatPermissions, Message, User
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Muting(plugin.Plugin):
@@ -71,7 +71,7 @@ class Muting(plugin.Plugin):
 
         if member is not None:
             user = member.user
-            if util.tg.is_staff_or_admin(member):
+            if shared.tg.is_staff_or_admin(member):
                 return await self.text(chat_id, "cant-mute-admin")
 
             if member.permissions and not member.permissions.can_send_messages:
@@ -83,11 +83,11 @@ class Muting(plugin.Plugin):
         if user.id == self.bot.uid:
             return await self.text(chat_id, "self-muting")
 
-        if util.tg.is_staff(user.id):
+        if shared.tg.is_staff(user.id):
             return await self.text(chat_id, "cant-mute-admin")
 
         if flag:
-            until = util.time.extract_time(flag)
+            until = shared.time.extract_time(flag)
             if not until:
                 return await self.text(chat_id, "invalid-time-flag")
         else:
@@ -112,8 +112,7 @@ class Muting(plugin.Plugin):
 
         if member.permissions and not member.permissions.can_send_messages:
             _, t = await asyncio.gather(
-                ctx.message.chat.unban_member(member.user.id),
-                self.text(chat_id, "unmute-done")
+                ctx.message.chat.unban_member(member.user.id), self.text(chat_id, "unmute-done")
             )
             return t
 

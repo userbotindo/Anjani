@@ -19,7 +19,7 @@ import inspect
 from types import ModuleType as PluginType
 from typing import TYPE_CHECKING, Any, Iterable, MutableMapping, Optional, Type
 
-from anjani import custom_plugins, internal_plugins, plugin, plugins, util
+from anjani import custom_plugins, internal_plugins, plugin, plugins, shared
 from anjani.error import ExistingPluginError
 
 from .anjani_mixin_base import MixinBase
@@ -97,10 +97,10 @@ class PluginExtender(MixinBase):
 
     async def reload_plugin_pkg(self: "Anjani") -> None:
         self.log.info("Reloading base plugin class...")
-        await util.run_sync(importlib.reload, plugin)
+        await shared.run_sync(importlib.reload, plugin)
 
         self.log.info("Reloading master plugin...")
-        await util.run_sync(importlib.reload, plugins)
+        await shared.run_sync(importlib.reload, plugins)
 
         self.log.info("Reloading custom master module...")
-        await util.run_sync(importlib.reload, custom_plugins)
+        await shared.run_sync(importlib.reload, custom_plugins)

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Optional, Type
 if TYPE_CHECKING:
     from .command import Command
     from .plugin import Plugin
-    from .util.converter import Converter
+    from .shared.telegram import Converter
 
 __all__ = [
     "AnjaniException",

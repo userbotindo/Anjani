@@ -24,7 +24,8 @@ from pyrogram.enums.chat_type import ChatType
 from pyrogram.filters import Filter, create
 from pyrogram.types import Message
 
-from anjani import command, plugin, util
+import anjani.shared.telegram.command
+from anjani import command, plugin, shared
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
 
 from .anjani_mixin_base import MixinBase
@@ -50,7 +51,7 @@ class CommandDispatcher(MixinBase):
         name: str,
         func: command.CommandFunc,
         *,
-        filters: Optional[Union[util.types.CustomFilter, Filter]] = None,
+        filters: Optional[Union[shared.types.CustomFilter, Filter]] = None,
         aliases: Iterable[str] = [],
     ) -> None:
         if getattr(func, "_listener_filters", None):
@@ -60,7 +61,7 @@ class CommandDispatcher(MixinBase):
 
         if filters:
             self.log.debug("Registering filter '%s' into '%s'", type(filters).__name__, name)
-            util.misc.check_filters(filters, self)
+            anjani.shared.telegram.command.check_filters(filters, self)
 
         cmd = command.Command(name, plug, func, filters, aliases)
 
@@ -87,7 +88,7 @@ class CommandDispatcher(MixinBase):
                 continue
 
     def register_commands(self: "Anjani", plug: plugin.Plugin) -> None:
-        for name, func in util.misc.find_prefixed_funcs(plug, "cmd_"):
+        for name, func in shared.utils.find_prefixed_funcs(plug, "cmd_"):
             done = False
 
             try:
@@ -159,7 +160,7 @@ class CommandDispatcher(MixinBase):
                             if not await cmd.filters(client, message):
                                 return False
                         else:
-                            if not await util.run_sync(cmd.filters, client, message):
+                            if not await shared.run_sync(cmd.filters, client, message):
                                 return False
 
                     message.command = parts
@@ -190,7 +191,7 @@ class CommandDispatcher(MixinBase):
             args = []  # type: list[Any]
             kwargs = {}  # type: MutableMapping[str, Any]
             if len(signature.parameters) > 1:
-                args, kwargs = await util.converter.parse_arguments(signature, ctx, cmd.func)
+                args, kwargs = await shared.telegram.parse_arguments(signature, ctx, cmd.func)
 
             # Invoke command function
             try:

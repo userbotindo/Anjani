@@ -22,15 +22,15 @@ from pyrogram.enums.chat_type import ChatType
 from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 
 class Reporting(plugin.Plugin):
     name = "Reporting"
     helpable = True
 
-    db: util.db.AsyncCollection
-    user_db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
+    user_db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHAT_REPORTING")
@@ -91,13 +91,13 @@ class Reporting(plugin.Plugin):
             await message.reply_text(await self.text(chat.id, "user-not-in-chat"))
             return
 
-        if util.tg.is_staff_or_admin(member):
+        if shared.tg.is_staff_or_admin(member):
             await message.reply_text(await self.text(chat.id, "cant-report-admin"))
             return
 
         reply_text = await self.text(chat.id, "report-notif", reported_user.mention)
         slots = 4096 - len(reply_text)
-        async for admin in util.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
+        async for admin in shared.tg.get_chat_admins(self.bot.client, chat.id, exclude_bot=True):
             if await self.is_active(admin.user.id, True):
                 reply_text += f"[\u200b](tg://user?id={admin.user.id})"
 
@@ -159,7 +159,7 @@ class Reporting(plugin.Plugin):
 
             return await self.text(chat.id, "err-yes-no-args")
 
-        _, member = await util.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
+        _, member = await shared.tg.fetch_permissions(self.bot.client, chat.id, ctx.author.id)
         if not member or member.status not in {
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.OWNER,

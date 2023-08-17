@@ -29,7 +29,7 @@ import pyrogram
 from meval import meval
 from pyrogram.enums.chat_action import ChatAction
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Debug(plugin.Plugin):
@@ -96,7 +96,7 @@ class Debug(plugin.Plugin):
                 # Custom modules
                 "command": command,
                 "plugin": plugin,
-                "util": util,
+                "util": shared,
             }
 
             try:
@@ -117,19 +117,19 @@ class Debug(plugin.Plugin):
 
                 # Return formatted stripped traceback
                 stripped_tb = tb[first_snip_idx:]
-                formatted_tb = util.error.format_exception(e, tb=stripped_tb)
+                formatted_tb = shared.error.format_exception(e, tb=stripped_tb)
                 return "⚠️ Error executing snippet\n\n", formatted_tb
 
-        before = util.time.usec()
+        before = shared.time.usec()
         prefix, result = await _eval()
-        after = util.time.usec()
+        after = shared.time.usec()
 
         # Always write result if no output has been collected thus far
         if not out_buf.getvalue() or result is not None:
             print(result, file=out_buf)
 
         el_us = after - before
-        el_str = util.time.format_duration_us(el_us)
+        el_str = shared.time.format_duration_us(el_us)
 
         out = out_buf.getvalue()
         # Strip only ONE final newline to compensate for our message formatting

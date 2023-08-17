@@ -19,7 +19,7 @@ from inspect import signature
 import pytest
 
 from anjani.error import BadArgument
-from anjani.util.converter import parse_arguments
+from anjani.shared.telegram import parse_arguments
 
 from . import Context, Message
 

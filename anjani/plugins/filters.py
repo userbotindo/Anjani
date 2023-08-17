@@ -30,31 +30,31 @@ from typing import (
 from pyrogram.errors import MediaEmpty, MessageEmpty
 from pyrogram.types import Message
 
-from anjani import command, filters, listener, plugin, util
-from anjani.util.tg import Types, build_button, get_message_info
+from anjani import command, filters, listener, plugin, shared
+from anjani.shared.telegram import MessageType, build_button, get_message_info
 
 
 class Filters(plugin.Plugin):
     name: ClassVar[str] = "Filters"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
     trigger: MutableMapping[int, Set[str]] = {}
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FILTERS")
         self.SEND = {
-            Types.TEXT.value: self.bot.client.send_message,
-            Types.BUTTON_TEXT.value: self.bot.client.send_message,
-            Types.DOCUMENT.value: self.bot.client.send_document,
-            Types.PHOTO.value: self.bot.client.send_photo,
-            Types.VIDEO.value: self.bot.client.send_video,
-            Types.STICKER.value: self.bot.client.send_sticker,
-            Types.AUDIO.value: self.bot.client.send_audio,
-            Types.VOICE.value: self.bot.client.send_voice,
-            Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
-            Types.ANIMATION.value: self.bot.client.send_animation,
+            MessageType.TEXT.value: self.bot.client.send_message,
+            MessageType.BUTTON_TEXT.value: self.bot.client.send_message,
+            MessageType.DOCUMENT.value: self.bot.client.send_document,
+            MessageType.PHOTO.value: self.bot.client.send_photo,
+            MessageType.VIDEO.value: self.bot.client.send_video,
+            MessageType.STICKER.value: self.bot.client.send_sticker,
+            MessageType.AUDIO.value: self.bot.client.send_audio,
+            MessageType.VOICE.value: self.bot.client.send_voice,
+            MessageType.VIDEO_NOTE.value: self.bot.client.send_video_note,
+            MessageType.ANIMATION.value: self.bot.client.send_animation,
         }
 
     async def on_start(self, _: int) -> None:
@@ -120,14 +120,14 @@ class Filters(plugin.Plugin):
                         keyb = button
 
                     try:
-                        if types in {Types.TEXT, Types.BUTTON_TEXT}:
+                        if types in {MessageType.TEXT, MessageType.BUTTON_TEXT}:
                             await self.SEND[types](
                                 message.chat.id,
                                 filt["text"],
                                 reply_to_message_id=reply_to,
                                 reply_markup=keyb,
                             )
-                        elif types in {Types.STICKER, Types.ANIMATION}:
+                        elif types in {MessageType.STICKER, MessageType.ANIMATION}:
                             await self.SEND[types](
                                 message.chat.id,
                                 filt["content"],

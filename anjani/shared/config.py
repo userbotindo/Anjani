@@ -4,7 +4,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from anjani import DEFAULT_CONFIG_PATH
+from .constant import DEFAULT_CONFIG_PATH
 
 
 class Config:
@@ -35,8 +35,8 @@ class Config:
         self.API_ID = getenv("API_ID", "")
         self.API_HASH = getenv("API_HASH", "")
         self.BOT_TOKEN = getenv("BOT_TOKEN", "")
-        self.OWNER_ID = int(getenv("OWNER_ID", 0))
-        self.WORKERS = int(getenv("WORKERS", min(32, (cpu_count() or 0) + 4)))
+        self.OWNER_ID = self.get_int_value("OWNER_ID")
+        self.WORKERS = self.get_int_value("WORKERS", min(32, (cpu_count() or 0) + 4))
         self.DOWNLOAD_PATH = getenv("DOWNLOAD_PATH", "./downloads")
 
         self.DB_URI = getenv("DB_URI", "")
@@ -46,14 +46,13 @@ class Config:
         self.SW_API = getenv("SW_API")
 
         self.LOGIN_URL = getenv("LOGIN_URL")
-        self.PLUGIN_FLAG = list(
-            filter(None, [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")])
-        )
-        self.FEATURE_FLAG = list(
-            filter(None, [i.strip() for i in getenv("FEATURE_FLAG", "").split(";")])
-        )
+        # self.PLUGIN_FLAG = list(
+        #     filter(None, [i.strip() for i in getenv("PLUGIN_FLAG", "").split(";")])
+        # )
+        self.PLUGIN_FLAG = self.get_list_value("PLUGIN_FLAG")
+        self.FEATURE_FLAG = self.get_list_value("FEATURE_FLAG")
 
-        self.IS_CI = getenv("IS_CI", "false").lower() == "true"
+        self.IS_CI = self.get_boolean_value("IS_CI")
 
         #  check if all the required variables are set
         if any(
@@ -68,6 +67,18 @@ class Config:
 
         # create download path if not exists
         Path(self.DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def get_int_value(name: str, default: int = 0) -> int:
+        return int(getenv(name, default))
+
+    @staticmethod
+    def get_boolean_value(name: str) -> bool:
+        return getenv(name, "").lower() in ("true", "yes", "enable", "on", "1")
+
+    @staticmethod
+    def get_list_value(name: str, delimiter: str = ";") -> list[str]:
+        return list(filter(None, [i.strip() for i in getenv(name, "").split(delimiter)]))
 
     def is_plugin_disabled(self, name: str) -> bool:
         return f'disable_{name.lower().replace(" ", "_")}_plugin' in self.PLUGIN_FLAG

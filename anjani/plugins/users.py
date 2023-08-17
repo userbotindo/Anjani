@@ -27,19 +27,19 @@ from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.errors import BadRequest, ChannelInvalid, ChannelPrivate, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Chat, ChatPreview, Message, User
 
-from anjani import command, listener, plugin, util
+from anjani import command, listener, plugin, shared
 
 try:
     from userbotindo import get_trust
 except ImportError:
-    from anjani.util.misc import do_nothing as get_trust
+    from anjani.shared.utils import do_nothing as get_trust
 
 
 class Users(plugin.Plugin):
     name: ClassVar[str] = "Users"
 
-    chats_db: util.db.AsyncCollection
-    users_db: util.db.AsyncCollection
+    chats_db: shared.database.AsyncCollection
+    users_db: shared.database.AsyncCollection
     predict_loaded: bool
 
     async def on_load(self) -> None:

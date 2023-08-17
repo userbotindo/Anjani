@@ -40,23 +40,23 @@ from pyrogram.errors import (
 from pyrogram.types import Chat, Message, User
 from pyrogram.types.messages_and_media.message import Str
 
-from anjani import command, filters, plugin, util
-from anjani.util.tg import (
-    Button,
-    Types,
+from anjani import command, filters, plugin, shared
+from anjani.shared.telegram import (
+    MessageType,
     build_button,
     get_message_info,
     parse_button,
     revert_button,
 )
+from anjani.shared.types import Button
 
 
 class Greeting(plugin.Plugin):
     name: ClassVar[str] = "Greetings"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
-    chat_db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
+    chat_db: shared.database.AsyncCollection
     SEND: MutableMapping[int, Callable[..., Coroutine[Any, Any, Optional[Message]]]]
 
     async def on_load(self) -> None:
@@ -64,16 +64,16 @@ class Greeting(plugin.Plugin):
         self.chat_db = self.bot.db.get_collection("CHATS")
 
         self.SEND = {
-            Types.TEXT.value: self.bot.client.send_message,
-            Types.BUTTON_TEXT.value: self.bot.client.send_message,
-            Types.DOCUMENT.value: self.bot.client.send_document,
-            Types.PHOTO.value: self.bot.client.send_photo,
-            Types.VIDEO.value: self.bot.client.send_video,
-            Types.STICKER.value: self.bot.client.send_sticker,
-            Types.AUDIO.value: self.bot.client.send_audio,
-            Types.VOICE.value: self.bot.client.send_voice,
-            Types.VIDEO_NOTE.value: self.bot.client.send_video_note,
-            Types.ANIMATION.value: self.bot.client.send_animation,
+            MessageType.TEXT.value: self.bot.client.send_message,
+            MessageType.BUTTON_TEXT.value: self.bot.client.send_message,
+            MessageType.DOCUMENT.value: self.bot.client.send_document,
+            MessageType.PHOTO.value: self.bot.client.send_photo,
+            MessageType.VIDEO.value: self.bot.client.send_video,
+            MessageType.STICKER.value: self.bot.client.send_sticker,
+            MessageType.AUDIO.value: self.bot.client.send_audio,
+            MessageType.VOICE.value: self.bot.client.send_voice,
+            MessageType.VIDEO_NOTE.value: self.bot.client.send_video_note,
+            MessageType.ANIMATION.value: self.bot.client.send_animation,
         }
 
     async def on_chat_action(self, message: Message) -> None:
@@ -148,7 +148,7 @@ class Greeting(plugin.Plugin):
                     )
                 else:
                     text, button, msg_type, file_id = await self.welc_message(chat.id)
-                    msg_type = Types(msg_type) if msg_type else Types.TEXT
+                    msg_type = MessageType(msg_type) if msg_type else MessageType.TEXT
                     if not text:
                         string = await self.text(chat.id, "default-welcome", noformat=True)
                     else:
@@ -164,7 +164,7 @@ class Greeting(plugin.Plugin):
                         button = None
                     msg = None
                     try:
-                        if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
+                        if msg_type in {MessageType.TEXT, MessageType.BUTTON_TEXT}:
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 formatted_text,
@@ -173,7 +173,7 @@ class Greeting(plugin.Plugin):
                                 reply_markup=button,
                                 disable_web_page_preview=True,
                             )
-                        elif msg_type in {Types.STICKER, Types.ANIMATION}:
+                        elif msg_type in {MessageType.STICKER, MessageType.ANIMATION}:
                             msg = await self.SEND[msg_type](
                                 message.chat.id,
                                 file_id,
@@ -264,7 +264,7 @@ class Greeting(plugin.Plugin):
 
     async def welc_message(
         self, chat_id: int
-    ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]], Optional[int], Optional[str]]:
+    ) -> Tuple[Optional[str], Optional[Button], Optional[int], Optional[str]]:
         """Get chat welcome string"""
         message = await self.db.find_one({"chat_id": chat_id})
         if message:
@@ -273,7 +273,7 @@ class Greeting(plugin.Plugin):
             if "custom_welcome" in message:
                 text: str = message["custom_welcome"]
                 button: Optional[Button] = message.get("button")
-                message_type: Types = Types.TEXT
+                message_type: MessageType = MessageType.TEXT
                 await self.db.delete_one({"chat_id": chat_id})
                 await self.set_custom_welcome(
                     chat_id=chat_id,
@@ -315,7 +315,7 @@ class Greeting(plugin.Plugin):
         self,
         chat_id: int,
         text: str,
-        message_type: Types,
+        message_type: MessageType,
         buttons: Optional[Button] = None,
         content: Optional[str] = None,
     ) -> None:
@@ -396,7 +396,7 @@ class Greeting(plugin.Plugin):
                     .strip()
                 )
                 welc_text, buttons = parse_button(welc_text)
-                types = Types.TEXT
+                types = MessageType.TEXT
                 content = None
                 if ctx.msg.reply_to_message:
                     _, types, content, __ = get_message_info(ctx.msg)
@@ -523,8 +523,8 @@ class Greeting(plugin.Plugin):
                     else "Default:\n\n" + await self.text(chat.id, "default-welcome", noformat=True)
                 )
             )
-            msg_type = msg_type or Types.TEXT
-            if msg_type in {Types.TEXT, Types.BUTTON_TEXT}:
+            msg_type = msg_type or MessageType.TEXT
+            if msg_type in {MessageType.TEXT, MessageType.BUTTON_TEXT}:
                 await self.SEND[msg_type](
                     ctx.chat.id,
                     response_text,
@@ -533,7 +533,7 @@ class Greeting(plugin.Plugin):
                     parse_mode=parse_mode,
                     disable_web_page_preview=True,
                 )
-            elif msg_type in {Types.STICKER, Types.ANIMATION}:
+            elif msg_type in {MessageType.STICKER, MessageType.ANIMATION}:
                 await self.SEND[msg_type](
                     ctx.chat.id,
                     file_id,

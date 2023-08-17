@@ -16,7 +16,7 @@
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from anjani.util.tg import build_button, parse_button, revert_button, truncate
+from anjani.shared.telegram import build_button, parse_button, revert_button, truncate
 
 
 def test_truncate():

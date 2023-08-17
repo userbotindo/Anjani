@@ -37,7 +37,7 @@ from pyrogram.types import (
     Message,
 )
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 if TYPE_CHECKING:
     from .rules import Rules
@@ -49,7 +49,7 @@ class Main(plugin.Plugin):
     name: ClassVar[str] = "Main"
 
     bot_name: str
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("SESSION")
@@ -74,8 +74,8 @@ class Main(plugin.Plugin):
             if rs_chat_id is None or rs_message_id is None or rs_time is None:
                 return
 
-            duration = util.time.usec() - rs_time
-            duration_str = util.time.format_duration_us(duration)
+            duration = shared.time.usec() - rs_time
+            duration_str = shared.time.format_duration_us(duration)
             __, status_msg = await asyncio.gather(
                 self.bot.log_stat("downtime", value=duration),
                 self.bot.client.get_messages(rs_chat_id, rs_message_id),
@@ -126,7 +126,7 @@ class Main(plugin.Plugin):
                     "$set": {
                         "status_chat_id": status_msg.chat.id,
                         "status_message_id": status_msg.id,
-                        "time": util.time.usec(),
+                        "time": shared.time.usec(),
                     }
                 },
                 upsert=True,

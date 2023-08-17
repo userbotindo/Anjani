@@ -25,7 +25,7 @@ from pymongo.database import Database
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBaseProperty
 from .change_stream import AsyncChangeStream
@@ -91,7 +91,7 @@ class AsyncDatabase(AsyncBaseProperty):
         session: Optional[AsyncClientSession] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.command,
             command,
             value=value,
@@ -121,7 +121,7 @@ class AsyncDatabase(AsyncBaseProperty):
         return AsyncCollection(
             self,
             name,
-            collection=await util.run_sync(
+            collection=await shared.run_sync(
                 self.dispatch.create_collection,
                 name,
                 codec_options=codec_options,
@@ -138,7 +138,7 @@ class AsyncDatabase(AsyncBaseProperty):
     async def dereference(
         self, dbref: DBRef, *, session: Optional[AsyncClientSession] = None, **kwargs: Any
     ) -> Optional[Mapping[str, Any]]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.dereference,
             dbref,
             session=session.dispatch if session else session,
@@ -153,7 +153,7 @@ class AsyncDatabase(AsyncBaseProperty):
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
 
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.drop_collection,
             name_or_collection,
             session=session.dispatch if session else session,
@@ -184,7 +184,7 @@ class AsyncDatabase(AsyncBaseProperty):
         query: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.list_collection_names,
             session=session.dispatch if session else session,
             filter=query,
@@ -201,7 +201,7 @@ class AsyncDatabase(AsyncBaseProperty):
         cmd = SON([("listCollections", 1)])
         cmd.update(query, **kwargs)
 
-        res: Mapping[str, Any] = await util.run_sync(
+        res: Mapping[str, Any] = await shared.run_sync(
             self.dispatch._retryable_read_command,  # skipcq: PYL-W0212
             cmd,
             session=session.dispatch if session else session,
@@ -220,7 +220,7 @@ class AsyncDatabase(AsyncBaseProperty):
         if isinstance(name_or_collection, AsyncCollection):
             name_or_collection = name_or_collection.name
 
-        return await util.run_sync(
+        return await shared.run_sync(
             self.dispatch.validate_collection,
             name_or_collection,
             scandata=scandata,

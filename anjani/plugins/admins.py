@@ -30,7 +30,7 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, ChatPrivileges, User
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 
 class Admins(plugin.Plugin):
@@ -95,7 +95,7 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "err-chat-groups")
         admins = ""
 
-        async for admin in util.tg.get_chat_admins(ctx.bot.client, chat.id):
+        async for admin in shared.tg.get_chat_admins(ctx.bot.client, chat.id):
             if admin.status == ChatMemberStatus.OWNER:
                 admins += f"• {admin.user.mention} (**Creator**)\n"
             elif admin.user.id == self.bot.uid:
@@ -151,7 +151,7 @@ class Admins(plugin.Plugin):
         if user.id == self.bot.uid:
             return await self.text(chat.id, "error-its-myself")
 
-        bot, _ = await util.tg.fetch_permissions(self.bot.client, chat.id, user.id)
+        bot, _ = await shared.tg.fetch_permissions(self.bot.client, chat.id, user.id)
         if not bot:
             return await self.text(chat.id, "promote-error-perm")
 

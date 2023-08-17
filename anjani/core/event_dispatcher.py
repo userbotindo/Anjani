@@ -25,10 +25,10 @@ from pyrogram.filters import Filter
 from pyrogram.raw import functions
 from pyrogram.types import CallbackQuery, InlineQuery, Message
 
-from anjani import plugin, util
+from anjani import plugin, shared
 from anjani.error import EventDispatchError
 from anjani.listener import Listener, ListenerFunc
-from anjani.util.misc import StopPropagation
+from anjani.shared.utils.misc import StopPropagation
 
 from .anjani_mixin_base import MixinBase
 
@@ -123,7 +123,7 @@ class EventDispatcher(MixinBase):
         self.update_plugin_events()
 
     def register_listeners(self: "Anjani", plug: plugin.Plugin) -> None:
-        for event, func in util.misc.find_prefixed_funcs(plug, "on_"):
+        for event, func in shared.utils.find_prefixed_funcs(plug, "on_"):
             done = True
             try:
                 self.register_listener(
@@ -347,7 +347,7 @@ class EventDispatcher(MixinBase):
 
 **ERROR**
 ```python
-{util.error.format_exception(exc)}
+{shared.utils.format_exception(exc)}
 ```
         """
         await self.client.send_message(

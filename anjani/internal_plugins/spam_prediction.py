@@ -43,12 +43,12 @@ try:
 
     _run_predict = True
 except ImportError:
-    from anjani.util.types import Classifier
+    from anjani.shared.types import Classifier
 
     _run_predict = False
 
-from anjani import command, filters, listener, plugin, util
-from anjani.util.misc import StopPropagation
+from anjani import command, filters, listener, plugin, shared
+from anjani.shared.utils import StopPropagation
 
 
 class SpamPrediction(plugin.Plugin):
@@ -56,9 +56,9 @@ class SpamPrediction(plugin.Plugin):
     helpable: ClassVar[bool] = True
     disabled: ClassVar[bool] = not _run_predict
 
-    db: util.db.AsyncCollection
-    user_db: util.db.AsyncCollection
-    setting_db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
+    user_db: shared.database.AsyncCollection
+    setting_db: shared.database.AsyncCollection
     model: Classifier
 
     __predict_cost: int = 10
@@ -365,7 +365,7 @@ class SpamPrediction(plugin.Plugin):
                             "ham": [],
                             "proba": probability,
                             "msg_id": msg.id,
-                            "date": util.time.sec(),
+                            "date": shared.utils.sec(),
                             "text": text_norm,
                         },
                     )
@@ -391,7 +391,7 @@ class SpamPrediction(plugin.Plugin):
                 except UserNotParticipant:
                     pass
                 else:
-                    if util.tg.is_staff_or_admin(target):
+                    if shared.telegram.is_staff_or_admin(target):
                         return
 
             alert = (

@@ -42,9 +42,9 @@ from pyrogram.types import (
 )
 from yaml import full_load
 
-from anjani import util
+from anjani import shared
 from anjani.language import get_lang_file
-from anjani.util.cache_limiter import CacheLimiter
+from anjani.shared.cache import CacheLimiter
 
 from .anjani_mixin_base import MixinBase
 from .sqlite_storage import SQLiteStorage
@@ -168,7 +168,7 @@ class TelegramBot(MixinBase):
             self.staff.add(doc["_id"])
 
         # Update global staff variable
-        util.tg.STAFF.update(self.staff)
+        shared.constant.STAFF.update(self.staff)
 
         # Update Language setting chat from db
         async for data in self.db.get_collection("LANGUAGE").find({}, {"_id": False}):
@@ -176,12 +176,12 @@ class TelegramBot(MixinBase):
 
         # Load text from language file
         async for language_file in get_lang_file():
-            self.languages[language_file.stem] = await util.run_sync(
+            self.languages[language_file.stem] = await shared.run_sync(
                 full_load, await language_file.read_text()
             )
 
         # Record start time and dispatch start event
-        self.start_time_us = util.time.usec()
+        self.start_time_us = shared.utils.usec()
         await self.dispatch_event("start", self.start_time_us)
 
         self.log.info("Bot is ready")
@@ -374,7 +374,7 @@ class TelegramBot(MixinBase):
             if redact:
                 text = self.redact_message(text)
             # Truncate messages longer than Telegram's 4096-character length limit
-            text = util.tg.truncate(text)
+            text = shared.telegram.truncate(text)
 
         # get rid of emtpy value "animation", "audio", "document", "photo", "video"
         for key, value in dict(kwargs).items():

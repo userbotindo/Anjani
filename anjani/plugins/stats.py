@@ -20,7 +20,7 @@ from typing import Any, ClassVar, List, Mapping, Optional
 from pyrogram.enums.parse_mode import ParseMode
 from pyrogram.types import Message
 
-from anjani import command, filters, plugin, util
+from anjani import command, filters, plugin, shared
 
 USEC_PER_HOUR = 60 * 60 * 1000000
 USEC_PER_DAY = USEC_PER_HOUR * 24
@@ -46,7 +46,7 @@ def _calc_pd(stat: int, uptime: int) -> str:
 class PluginStats(plugin.Plugin):
     name: ClassVar[str] = "Stats"
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("STATS")
@@ -59,7 +59,7 @@ class PluginStats(plugin.Plugin):
 
         last_time = await self.get("stop_time_usec")
         if last_time:
-            await self.inc("uptime", util.time.usec() - last_time)
+            await self.inc("uptime", shared.time.usec() - last_time)
             await self.delete("stop_time_usec")
 
         uptime = await self.get("uptime")
@@ -102,16 +102,16 @@ class PluginStats(plugin.Plugin):
         if ctx.input == "reset":
             await self.db.delete_many({})
             await self.on_load()
-            await self.on_start(util.time.usec())
-            self.bot.loop.create_task(util.tg.reply_and_delete(ctx.msg, "Stats reset", 5))
+            await self.on_start(shared.time.usec())
+            self.bot.loop.create_task(shared.tg.reply_and_delete(ctx.msg, "Stats reset", 5))
             return None
 
         start_time: Optional[int] = await self.get("start_time_usec")
         if start_time is None:
-            start_time = util.time.usec()
+            start_time = shared.time.usec()
             await self.put("start_time_usec", start_time)
 
-        uptime = util.time.usec() - start_time
+        uptime = shared.time.usec() - start_time
         resp = await asyncio.gather(
             self.get("downtime"),
             self.get("received"),
@@ -158,8 +158,8 @@ class PluginStats(plugin.Plugin):
             total_chat_fbanned += opt.get("banned_chat", 0)
 
         text = f"""<b>STATS  SINCE  LAST  RESET</b>:\n
-  • <b>Total Uptime Elapsed</b>: <b>{util.time.format_duration_us(uptime - downtime)}</b>
-  • <b>Total Downtime Elapsed</b>: <b>{util.time.format_duration_us(downtime)}</b>
+  • <b>Total Uptime Elapsed</b>: <b>{shared.time.format_duration_us(uptime - downtime)}</b>
+  • <b>Total Downtime Elapsed</b>: <b>{shared.time.format_duration_us(downtime)}</b>
   • <b>Messages Received</b>: <b>{recv}</b> (<b><i>{_calc_ph(recv, uptime)}/h</i></b>)
      × <b>{predicted}</b> (<b><i>{_calc_ph(predicted, uptime)}/h</i></b>) messages predicted - <b>{_calc_pct(predicted, recv)}%</b> from received messages
      × <b>{spam_detected}</b> messages were detected as spam - <b>{_calc_pct(spam_detected, predicted)}%</b> of predicted messages

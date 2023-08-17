@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Optional
 
 from typing_extensions import final
 
-from anjani.util.tg import get_text
+from anjani.shared.utils import get_text
 
 if TYPE_CHECKING:
     from .core import Anjani

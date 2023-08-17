@@ -78,8 +78,9 @@ from pyrogram.filters import (  # skipcq: PY-W2000
 )
 from pyrogram.types import ChatMember, Message
 
-from anjani.util.tg import fetch_permissions, get_text, reply_and_delete
-from anjani.util.types import CustomFilter
+from anjani.shared.telegram import fetch_permissions, reply_and_delete
+from anjani.shared.types import CustomFilter
+from anjani.shared.utils import get_text
 
 if TYPE_CHECKING:
     from anjani.core import Anjani

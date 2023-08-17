@@ -38,12 +38,12 @@ try:
 
     _run_canonical = True
 except ImportError:
-    from anjani.util.types import WebServer
+    from anjani.shared.types import WebServer
 
     _run_canonical = False
 
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 
 class Canonical(plugin.Plugin):
@@ -98,7 +98,7 @@ class Canonical(plugin.Plugin):
         return self._mt.get(message.media, "t") if message.media else "t"
 
     async def save_message_type(self, message: Message) -> None:
-        today = util.time.sec()
+        today = shared.utils.sec()
         timestamp = today - (today % 86400)  # truncate to day
 
         # TODO: Remove old schema after analytics migration

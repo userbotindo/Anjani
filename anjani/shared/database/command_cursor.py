@@ -35,7 +35,7 @@ from pymongo.client_session import ClientSession
 from pymongo.command_cursor import CommandCursor as _CommandCursor
 from pymongo.typings import _Address, _DocumentType
 
-from anjani import util
+from anjani import shared
 
 from .client_session import AsyncClientSession
 from .cursor_base import AsyncCursorBase
@@ -45,7 +45,6 @@ if TYPE_CHECKING:
 
 
 class CommandCursor(_CommandCursor, Generic[_DocumentType]):
-
     _CommandCursor__data: Deque[Any]
     _CommandCursor__killed: bool
 
@@ -75,7 +74,7 @@ class CommandCursor(_CommandCursor, Generic[_DocumentType]):
         )
 
     async def _AsyncCommandCursor__die(self, synchronous: bool = False) -> None:
-        await util.run_sync(self.__die, synchronous=synchronous)
+        await shared.run_sync(self.__die, synchronous=synchronous)
 
     @property
     def _AsyncCommandCursor__data(self) -> Deque[Any]:
@@ -187,7 +186,7 @@ class AsyncLatentCommandCursor(AsyncCommandCursor):
         if not self.started:
             self.started = True
             original_future = self.loop.create_future()
-            future = self.loop.create_task(util.run_sync(self.start, *self.args, **self.kwargs))
+            future = self.loop.create_task(shared.run_sync(self.start, *self.args, **self.kwargs))
             future.add_done_callback(
                 partial(self.loop.call_soon_threadsafe, self._on_started, original_future)
             )

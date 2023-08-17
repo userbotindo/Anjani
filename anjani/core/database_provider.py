@@ -17,7 +17,7 @@
 import sys
 from typing import TYPE_CHECKING, Any
 
-from anjani import util
+from anjani import shared
 
 from .anjani_mixin_base import MixinBase
 
@@ -26,17 +26,17 @@ if TYPE_CHECKING:
 
 
 class DatabaseProvider(MixinBase):
-    db: util.db.AsyncDatabase
+    db: shared.database.AsyncDatabase
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         if sys.platform == "win32":
             import certifi
 
-            client = util.db.AsyncClient(
+            client = shared.database.AsyncClient(
                 self.config.DB_URI, connect=False, tlsCAFile=certifi.where()
             )
         else:
-            client = util.db.AsyncClient(self.config.DB_URI, connect=False)
+            client = shared.database.AsyncClient(self.config.DB_URI, connect=False)
 
         self.db = client.get_database("AnjaniBot")
 

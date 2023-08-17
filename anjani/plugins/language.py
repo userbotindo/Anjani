@@ -29,7 +29,7 @@ from pyrogram.types import (
     Message,
 )
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 LANG_FLAG = {
     "en": f"{emoji.FLAG_UNITED_STATES} English",
@@ -43,7 +43,7 @@ class Language(plugin.Plugin):
     name: ClassVar[str] = "Language"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
     _db_stream: asyncio.Task[None]
 
     def _start_db_stream(self) -> None:

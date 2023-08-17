@@ -35,7 +35,7 @@ from pymongo.collection import Collection
 from pymongo.cursor import _QUERY_OPTIONS, Cursor, RawBatchCursor
 from pymongo.typings import _Address, _DocumentType
 
-from anjani import util
+from anjani import shared
 
 from .base import AsyncBase
 from .errors import InvalidOperation
@@ -156,7 +156,7 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
                 future.set_exception(exc)
 
     async def _refresh(self) -> int:
-        return await util.run_sync(self.dispatch._refresh)  # skipcq: PYL-W0212
+        return await shared.run_sync(self.dispatch._refresh)  # skipcq: PYL-W0212
 
     def batch_size(self, batch_size: int) -> "AsyncCursorBase":
         self.dispatch.batch_size(batch_size)
@@ -165,11 +165,11 @@ class AsyncCursorBase(AsyncBase, Generic[_DocumentType]):
     async def close(self) -> None:
         if not self.closed:
             self.closed = True
-            await util.run_sync(self.dispatch.close)
+            await shared.run_sync(self.dispatch.close)
 
     async def next(self) -> Any:
         if self.alive and (self._buffer_size() or await self._get_more()):
-            return await util.run_sync(next, self.dispatch)
+            return await shared.run_sync(next, self.dispatch)
         raise StopAsyncIteration
 
     def to_list(self, length: Optional[int] = None) -> asyncio.Future[List[Mapping[str, Any]]]:

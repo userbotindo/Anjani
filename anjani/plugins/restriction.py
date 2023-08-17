@@ -29,14 +29,14 @@ from pyrogram.types import (
     User,
 )
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 
 class Restrictions(plugin.Plugin):
     name: ClassVar[str] = "Restriction"
     helpable: ClassVar[bool] = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("CHATS")
@@ -135,12 +135,12 @@ class Restrictions(plugin.Plugin):
             reason = ctx.input
 
         try:
-            if isinstance(target, User) and util.tg.is_staff_or_admin(
+            if isinstance(target, User) and shared.tg.is_staff_or_admin(
                 await chat.get_member(target.id)
             ):
                 return await self.text(chat.id, "admin-kick")
         except UserNotParticipant:
-            if util.tg.is_staff(target.id):
+            if shared.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-kick")
 
         await self.bot.client.ban_chat_member(chat.id, target.id)
@@ -180,13 +180,13 @@ class Restrictions(plugin.Plugin):
             reason = ctx.input
 
         try:
-            if isinstance(target, User) and util.tg.is_staff_or_admin(
+            if isinstance(target, User) and shared.tg.is_staff_or_admin(
                 await chat.get_member(target.id)
             ):
                 return await self.text(chat.id, "admin-ban")
         except UserNotParticipant:
             # Not a participant in the chat (replying from channel discussion)
-            if util.tg.is_staff(target.id):
+            if shared.tg.is_staff(target.id):
                 return await self.text(chat.id, "admin-ban")
 
         ret, _ = await asyncio.gather(

@@ -21,7 +21,7 @@ from typing import Optional
 import aiohttp
 import pyrogram
 
-from anjani.util.config import Config
+from anjani.shared.config import Config
 
 from .command_dispatcher import CommandDispatcher
 from .database_provider import DatabaseProvider

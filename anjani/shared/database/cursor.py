@@ -31,7 +31,7 @@ from bson.code import Code
 from pymongo.cursor import Cursor as _Cursor
 from pymongo.typings import _CollationIn, _DocumentType
 
-from anjani import util
+from anjani import shared
 
 from .cursor_base import AsyncCursorBase
 
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
 
 
 class Cursor(_Cursor, Generic[_DocumentType]):
-
     _Cursor__data: Deque[Any]
     _Cursor__killed: bool
     _Cursor__query_flags: int
@@ -75,7 +74,7 @@ class Cursor(_Cursor, Generic[_DocumentType]):
         return self.__data
 
     async def _AsyncCursor__die(self, synchronous: bool = False) -> None:
-        await util.run_sync(self.__die, synchronous=synchronous)
+        await shared.run_sync(self.__die, synchronous=synchronous)
 
     @property
     def _AsyncCursor__exhaust(self) -> bool:
@@ -143,10 +142,10 @@ class AsyncCursor(AsyncCursorBase, Generic[_DocumentType]):
         return self
 
     async def distinct(self, key: str) -> List[Any]:
-        return await util.run_sync(self.dispatch.distinct, key)
+        return await shared.run_sync(self.dispatch.distinct, key)
 
     async def explain(self) -> _DocumentType:
-        return await util.run_sync(self.dispatch.explain)
+        return await shared.run_sync(self.dispatch.explain)
 
     def hint(self, index: Union[str, List[Tuple[str, Any]]]) -> "AsyncCursor[_DocumentType]":
         self.dispatch = self.dispatch.hint(index)

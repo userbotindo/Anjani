@@ -16,16 +16,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import (
-    Any,
-    AsyncIterator,
-    Dict,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Union,
-)
+from typing import Any, AsyncIterator, List, Mapping, MutableMapping, Optional, Union
 from uuid import uuid4
 
 from aiopath import AsyncPath
@@ -49,14 +40,14 @@ from pyrogram.types import (
     User,
 )
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin, shared
 
 
 class Federation(plugin.Plugin):
     name = "Federations"
     helpable = True
 
-    db: util.db.AsyncCollection
+    db: shared.database.AsyncCollection
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FEDERATIONS")
@@ -251,7 +242,7 @@ class Federation(plugin.Plugin):
             {"_id": fid}, {"$unset": {f"banned_chat.{chat}": None}}, upsert=True
         )
 
-    async def check_fban(self, target: int) -> util.db.AsyncCursor:
+    async def check_fban(self, target: int) -> shared.database.AsyncCursor:
         """Check user banned list"""
         return self.db.find(
             {
