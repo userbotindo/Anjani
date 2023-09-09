@@ -86,7 +86,7 @@ class Topics(plugin.Plugin):
         if not name:
             return await self.text(ctx.chat.id, "topic-name-missing")
 
-        topic = await self.bot.client.create_forum_topic(ctx.chat.id, name)
+        await self.bot.client.create_forum_topic(ctx.chat.id, name)
         return await self.text(ctx.chat.id, "topic-created", name)
 
     @command.filters(filters.can_manage_topic)
