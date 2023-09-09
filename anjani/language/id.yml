@@ -556,9 +556,32 @@ topic-help: |
   Sebuah group topik membutuhkan sebuah topik default yang berfungsi sebagai tempat sambutan dan aksi lain oleh Anjani.
 
   **Hanya Administrator yang bisa menggunakan:**
-  × /setactiontopic | /setdefaulttopic: mengatur topik saat ini untuk menjadi topik default pada grup.
+  × /setactiontopic | /setdefaulttopic: mengatur topik saat ini untuk menjadi topik aksi pada grup.
+  × /actiontopic: Menampilkan topik aksi saat ini.
+  × /createtopic <topic name>: Membuat topik baru.
+  × /renametopic <topic name>: Mengubah nama topik saat ini.
+  × /opentopic: Membuka topik saat ini.
+  × /closetopic: Menutup topik saat ini.
+  × /deletetopic: Menghapus topik saat ini.
 topic-non-topic: Grup ini bukan sebuah forum (topik)!
 topic-set: Topik ini akan digunakan sebagai topik default Anjani.
+topic-action-general: |
+  Chat ini menggunakan topik general sebagai topik aksi.
+
+  Semua aksi bot seperti salam, perlindungan spam, dll. akan dikirim ke topik ini.
+topic-action-custom: |
+  Chat ini menggunakan topik {} sebagai topik aksi.
+
+  Semua aksi bot seperti salam, perlindungan spam, dll. akan dikirim ke topik ini.
+topic-remove-confirm: |
+  Apakah anda yakin ingin menghapus topik ini?
+  Tindakan ini tidak bisa dibatalkan!
+  Anda akan kehilangan seluruh data topik dan topik Anda akan hilang secara permanen!
+topic-closing: Menutup topik ...
+topic-reopened: Topik dibuka kembali!
+topic-renamed: Mengubah nama topik menjadi **{}**.
+topic-name-missing: Berikan nama topik!
+topic-created: Topik **{}** dibuat!
 #endregion
 #region greetings
 greetings-button: Pesan Sambutan

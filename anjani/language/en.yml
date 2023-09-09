@@ -531,8 +531,31 @@ topic-help: |
 
   **Admin Commands:**
   × /setactiontopic | /setdefaulttopic: Set the current topic as the action topic of this forum.
+  × /actiontopic: Get the current action topic of the chat.
+  × /createtopic <topic name>: Create a new topic.
+  × /renametopic <topic name>: Rename the current topic.
+  × /opentopic: Reopen the current topic.
+  × /closetopic: Close the current topic.
+  × /deletetopic: Delete the current topic.
 topic-non-topic: This is not a topic group!
 topic-set: This topic will be used for action topic.
+topic-action-general: |
+  This chat currently uses the default general topic as action topic.
+
+  Bot actions such as greetings, spam shield, etc. will be sent to this topic.
+topic-action-custom: |
+  This chat currently uses {} as action topic.
+
+  Bot actions such as greetings, spam shield, etc. will be sent to this topic.
+topic-remove-confirm: |
+  Are you sure you want to remove this topic?
+  This action cannot be undone!
+  You will loose your entire topic data and your topic will be permanently lost!
+topic-closing: Closing topic...
+topic-reopened: Topic reopened!
+topic-renamed: Topic renamed to **{}**!
+topic-name-missing: Please provide a topic name!
+topic-created: Topic **{}** created!
 #endregion
 #region greetings
 greetings-button: Greetings
