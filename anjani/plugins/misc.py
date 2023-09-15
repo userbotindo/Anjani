@@ -44,7 +44,7 @@ class Paste:
         ...
 
     async def go(self, content: Any) -> str:
-        async with self.__session.post(self.__url, data=content) as r:
+        async with self.__session.post(self.__url, json=content) as r:
             content_data = await r.json()
             url = self.url_map[self.__name]
             if self.__name == "stashbin":
