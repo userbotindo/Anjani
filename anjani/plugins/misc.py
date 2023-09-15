@@ -107,9 +107,9 @@ class Misc(plugin.Plugin):
 
         uris = {
             "-h": "https://hastebin.com/documents",
-            "-s": "http://stashbin.xyz/api/document",
+            "-s": "https://stashbin.xyz/api/document",
             "hastebin": "https://hastebin.com/documents",
-            "stashbin": "http://stashbin.xyz/api/document",
+            "stashbin": "https://stashbin.xyz/api/document",
             "spacebin": "https://spaceb.in/api/v1/documents/",
         }
         try:
