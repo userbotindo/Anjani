@@ -198,7 +198,7 @@ class Users(plugin.Plugin):
             if len(username) == 1:
                 text += f"<b>Username: </b>@{username[0]}\n"
             else:
-                text += f"<b>Usernames: </b>\n"
+                text += "<b>Usernames: </b>\n"
                 text += "\n".join(f" - @{u}" for u in username)
                 text += "\n"
 
@@ -286,8 +286,9 @@ class Users(plugin.Plugin):
                 if len(username) == 1:
                     text += f"<b>Chat Username: </b>@{username[0]}\n"
                 else:
-                    text += f"<b>Chat Usernames: </b>\n"
+                    text += "<b>Chat Usernames: </b>\n"
                     text += "\n".join(f" - @{u}" for u in username)
+                    text += "\n"
 
             text += f"<b>Member Count:</b> <code>{chat.members_count}</code>\n"
             if chat.linked_chat:
