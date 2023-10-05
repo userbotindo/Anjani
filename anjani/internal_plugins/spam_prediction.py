@@ -179,7 +179,9 @@ class SpamPrediction(plugin.Plugin):
         await chat.ban_member(target.id)
         await query.answer(
             await self.get_text(
-                chat.id, "spampredict-ban", user=target.username or target.first_name
+                chat.id,
+                "spampredict-ban",
+                user=util.tg.get_username(target) or target.first_name,
             )
         )
 
@@ -288,16 +290,17 @@ class SpamPrediction(plugin.Plugin):
                 InlineKeyboardButton(text="✅ Correct", callback_data="spam_check_t"),
                 InlineKeyboardButton(text="❌ Incorrect", callback_data="spam_check_f"),
             ],
-            [InlineKeyboardButton(text="Chat", url=f"https://t.me/{message.chat.username}")],
+            [
+                InlineKeyboardButton(
+                    text="Chat", url=f"https://t.me/{util.tg.get_username(message.chat)}"
+                )
+            ],
         ]
 
-        if message.forward_from_chat and message.forward_from_chat.username:
-            raw_btn = InlineKeyboardButton(
-                text="Channel", url=f"https://t.me/{message.forward_from_chat.username}"
-            )
-            if message.chat.username:
-                keyb[1].append(raw_btn)
-            else:
+        if message.forward_from_chat:
+            fw_username = util.tg.get_username(message.forward_from_chat)
+            if fw_username:
+                raw_btn = InlineKeyboardButton(text="Channel", url=f"https://t.me/{fw_username}")
                 keyb.append([raw_btn])
 
         return notice, keyb
@@ -331,7 +334,7 @@ class SpamPrediction(plugin.Plugin):
         msg_id = None
 
         # only log public chat
-        if message.chat.username:
+        if util.tg.get_username(message.chat):
             notice, keyb = await self._build_notice(
                 message, text, proba_str, identifier, content_hash
             )
@@ -415,7 +418,7 @@ class SpamPrediction(plugin.Plugin):
             chat = message.chat
             button = []
             me = await chat.get_member(self.bot.uid)
-            if message.chat.username and msg_id:
+            if util.tg.get_username(message.chat) and msg_id:
                 button.append(
                     [
                         InlineKeyboardButton(

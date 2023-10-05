@@ -68,7 +68,10 @@ class Users(plugin.Plugin):
 
     async def build_user_task(self, user: User) -> asyncio.Task:
         data = await self.users_db.find_one({"_id": user.id})
-        content: MutableMapping[str, Any] = {"username": user.username, "last_seen": int(time())}
+        content: MutableMapping[str, Any] = {
+            "username": util.tg.get_username(user),
+            "last_seen": int(time()),
+        }
         if not data or "hash" not in data:
             content["hash"] = self.hash_id(user.id)
         if not data or "chats" not in data:
@@ -108,7 +111,7 @@ class Users(plugin.Plugin):
     async def on_callback_query(self, query: CallbackQuery) -> None:
         """Hanle user that sent a callback query"""
         user = query.from_user
-        set_content = {"username": user.username, "name": user.first_name}
+        set_content = {"username": util.tg.get_username(user), "name": user.first_name}
         user_data = await self.users_db.find_one({"_id": user.id})
 
         if self.predict_loaded and (not user_data or "hash" not in user_data):
@@ -129,7 +132,11 @@ class Users(plugin.Plugin):
             return
 
         tasks = []
-        set_content = {"username": user.username, "name": user.first_name, "last_seen": int(time())}
+        set_content = {
+            "username": util.tg.get_username(user),
+            "name": user.first_name,
+            "last_seen": int(time()),
+        }
         user_data = await self.users_db.find_one({"_id": user.id})
 
         if chat.type == ChatType.PRIVATE:
@@ -187,8 +194,13 @@ class Users(plugin.Plugin):
         if user.last_name:
             text += f"<b>Last Name: </b><code>{escape(user.last_name)}</code>\n"
 
-        if user.username:
-            text += f"<b>Username: </b>@{user.username}\n"
+        if username := util.tg.get_username(user, full=True):
+            if len(username) == 1:
+                text += f"<b>Username: </b>@{username[0]}\n"
+            else:
+                text += f"<b>Usernames: </b>\n"
+                text += "\n".join(f" - @{u}" for u in username)
+                text += "\n"
 
         self.bot.client.parse_mode = ParseMode.HTML
         text += f"<b>Permanent user link: </b>{user.mention}\n"
@@ -269,8 +281,14 @@ class Users(plugin.Plugin):
                 text += f"<b>DC ID:</b> <code>{chat.dc_id}</code>\n"
             text += f"<b>Chat Type:</b> <code>{chat.type.__dict__['_name_']}</code>\n"
             text += f"<b>Title:</b> <code>{chat.title}</code>\n"
-            if chat.username:
-                text += f"<b>Chat Username:</b> @{chat.username}\n"
+
+            if username := util.tg.get_username(chat, full=True):
+                if len(username) == 1:
+                    text += f"<b>Chat Username: </b>@{username[0]}\n"
+                else:
+                    text += f"<b>Chat Usernames: </b>\n"
+                    text += "\n".join(f" - @{u}" for u in username)
+
             text += f"<b>Member Count:</b> <code>{chat.members_count}</code>\n"
             if chat.linked_chat:
                 text += f"<b>Linked Chat:</b> <code>{chat.linked_chat.title}</code>\n"

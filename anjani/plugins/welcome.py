@@ -235,11 +235,13 @@ class Greeting(plugin.Plugin):
         except ChannelPrivate:
             count = "N/A"
 
+        username = util.tg.get_username(user)
+
         return text.format(
             first=escape(first_name),
             last=escape(last_name) if last_name else "",
             fullname=escape(full_name),
-            username=f"@{user.username}" if user.username else user.mention,
+            username=f"@{username}" if username else user.mention,
             mention=user.mention,
             count=count,
             chatname=escape(chat.title),
@@ -264,7 +266,7 @@ class Greeting(plugin.Plugin):
 
     async def welc_message(
         self, chat_id: int
-    ) -> Tuple[Optional[str], Optional[Tuple[Tuple[str, str, bool]]], Optional[int], Optional[str]]:
+    ) -> Tuple[Optional[str], Optional[Button], Optional[int], Optional[str]]:
         """Get chat welcome string"""
         message = await self.db.find_one({"chat_id": chat_id})
         if message:
