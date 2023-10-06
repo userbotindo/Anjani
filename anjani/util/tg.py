@@ -30,6 +30,7 @@ from typing import (
     Set,
     Tuple,
     Union,
+    overload,
 )
 
 from pyrogram.client import Client
@@ -43,6 +44,7 @@ from pyrogram.errors import (
     UserNotParticipant,
 )
 from pyrogram.types import (
+    Chat,
     ChatMember,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -365,3 +367,25 @@ def get_text(
 
 
 # }
+
+
+@overload
+def get_username(user: Union[User, Chat]) -> Optional[str]:
+    ...
+
+
+@overload
+def get_username(user: Union[User, Chat], full: bool = True) -> List[str]:
+    ...
+
+
+def get_username(user: Union[User, Chat], full: bool = False) -> Union[Optional[str], List[str]]:
+    """Get username from user"""
+
+    if user.usernames:  # Collectible usernames
+        return [i.username for i in user.usernames] if full else user.usernames[0].username
+
+    if user.username:
+        return [user.username] if full else user.username
+
+    return [] if full else None

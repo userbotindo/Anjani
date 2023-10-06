@@ -345,7 +345,7 @@ class Federation(plugin.Plugin):
             )
         except (ChatAdminRequired, UserAdminInvalid) as e:
             self.log.warning(
-                f"Can't ban user {user.username} on {chat.title} ({chat.id}) caused by {e}"
+                f"Can't ban user {util.tg.get_username(user)} on {chat.title} ({chat.id}) caused by {e}"
             )
 
     async def cmd_newfed(self, ctx: command.Context, name: Optional[str] = None) -> str:
@@ -708,14 +708,14 @@ class Federation(plugin.Plugin):
                 self.log.warning(
                     f"Failed to send fban on subfed {sub_fed} of {host_fed} at {chat} due to {br.MESSAGE}"
                     if sub_fed
-                    else f"Failed to fban {target.username} on {chat} due to {br.MESSAGE}"
+                    else f"Failed to fban {util.tg.get_username(target)} on {chat} due to {br.MESSAGE}"
                 )
                 failed[chat] = br.MESSAGE
             except (Forbidden, ChannelPrivate) as err:
                 self.log.warning(
                     f"Can't fban on subfed {sub_fed} of {host_fed} at {chat} caused by {err.MESSAGE}"
                     if sub_fed
-                    else f"Can't fban {target.username} on {chat} caused by {err.MESSAGE}"
+                    else f"Can't fban {util.tg.get_username(target)} on {chat} caused by {err.MESSAGE}"
                 )
                 failed[chat] = err.MESSAGE
         return failed
