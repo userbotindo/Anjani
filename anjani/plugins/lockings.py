@@ -224,26 +224,49 @@ class Lockings(plugin.Plugin):
         return mode != "lock"
 
     def get_restrictions(self, mode: str) -> MutableMapping[str, MutableMapping[str, bool]]:
+        permission = self.get_mode(mode)
         return OrderedDict(
             sorted(
                 {
                     "all": {
-                        "can_send_messages": self.get_mode(mode),
-                        "can_send_media_messages": self.get_mode(mode),
-                        "can_send_polls": self.get_mode(mode),
-                        "can_send_other_messages": self.get_mode(mode),
-                        "can_add_web_page_previews": self.get_mode(mode),
-                        "can_change_info": self.get_mode(mode),
-                        "can_invite_users": self.get_mode(mode),
-                        "can_pin_messages": self.get_mode(mode),
+                        "can_send_messages": permission,
+                        "can_send_media_messages": permission,
+                        "can_send_polls": permission,
+                        "can_send_other_messages": permission,
+                        "can_add_web_page_previews": permission,
+                        "can_change_info": permission,
+                        "can_invite_users": permission,
+                        "can_pin_messages": permission,
+                        "can_send_audios": permission,
+                        "can_send_docs": permission,
+                        "can_send_games": permission,
+                        "can_send_gifs": permission,
+                        "can_send_inline": permission,
+                        "can_send_photos": permission,
+                        "can_send_plain": permission,
+                        "can_send_roundvideos": permission,
+                        "can_send_stickers": permission,
+                        "can_send_videos": permission,
+                        "can_send_voice": permission,
                     },
-                    "messages": {"can_send_messages": self.get_mode(mode)},
-                    "media": {"can_send_media_messages": self.get_mode(mode)},
-                    "polls": {"can_send_polls": self.get_mode(mode)},
-                    "previews": {"can_add_web_page_previews": self.get_mode(mode)},
-                    "info": {"can_change_info": self.get_mode(mode)},
-                    "invite": {"can_invite_users": self.get_mode(mode)},
-                    "pin": {"can_pin_messages": self.get_mode(mode)},
+                    "messages": {"can_send_messages": permission},
+                    "media": {"can_send_media_messages": permission},
+                    "polls": {"can_send_polls": permission},
+                    "previews": {"can_add_web_page_previews": permission},
+                    "info": {"can_change_info": permission},
+                    "invite": {"can_invite_users": permission},
+                    "pin": {"can_pin_messages": permission},
+                    "audio": {"can_send_audios": permission},
+                    "docs": {"can_send_docs": permission},
+                    "games": {"can_send_games": permission},
+                    "gifs": {"can_send_gifs": permission},
+                    "inline": {"can_send_inline": permission},
+                    "photos": {"can_send_photos": permission},
+                    "plain": {"can_send_plain": permission},
+                    "videonote": {"can_send_roundvideos": permission},
+                    "stickers": {"can_send_stickers": permission},
+                    "videos": {"can_send_videos": permission},
+                    "voices": {"can_send_voice": permission},
                 }.items()
             )
         )
@@ -318,7 +341,12 @@ class Lockings(plugin.Plugin):
                     permissions=self.unpack_permissions(permissions, "lock", lock_type),
                 )
             except ChatAdminRequired as e:
-                return await ctx.get_text("lockings-admin-required", message=e.MESSAGE.split()[-1].strip(")").split(".")[-1].strip('"') if e.MESSAGE else "")
+                return await ctx.get_text(
+                    "lockings-admin-required",
+                    message=e.MESSAGE.split()[-1].strip(")").split(".")[-1].strip('"')
+                    if e.MESSAGE
+                    else "",
+                )
         elif lock_type in LOCK_TYPES:
             locked = await self.get_chat_restrictions(chat.id)
             if lock_type in locked:
@@ -336,9 +364,7 @@ class Lockings(plugin.Plugin):
         for types in sorted(list(LOCK_TYPES) + list(self.restrictions["lock"])):
             text += f"\n × `{types}`"
 
-        return (
-            await ctx.get_text("lockings-types-available") + text + await ctx.get_text("types-note")
-        )
+        return await ctx.get_text("lockings-types-available") + text
 
     @command.filters(filters.admin_only)
     async def cmd_unlock(self, ctx: command.Context, unlock_type: Optional[str] = None) -> str:

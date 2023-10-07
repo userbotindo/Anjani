@@ -631,9 +631,6 @@ unlockings-type-required: Please provide a type of unlock.
 unlockings-type-unlocked: "'`{unlock_type}`' is not locked."
 unlockings-type-invalid: "'`{unlock_type}`' invalid unlock type."
 unlockings-type-done: Successfully unlocked '`{unlock_type}`'.
-types-note: |
-  \n\n__Note__:
-  × **other** -> locks **animation**, **game**, **sticker** and **inline** at the same time.
 #endregion
 #region common-error
 error-its-myself: "I can't do anything for myself 😒"
