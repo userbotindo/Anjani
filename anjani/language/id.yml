@@ -652,9 +652,6 @@ unlockings-type-required: Tolong sediakan tipe pesan yang ingin dikunci.
 unlockings-type-unlocked: "'`{unlock_type}`' tidak terkunci."
 unlockings-type-invalid: "'`{unlock_type}`' tipe pesan tidak sah."
 unlockings-type-done: Berhasil membuka kunci '`{unlock_type}`'.
-types-note: |
-  \n\n__Catatan__:
-  × **other** -> mengunci **animation**, **game**, **sticker** dan **inline** disaat yang sama.
 #endregion
 #region common-error
 error-its-myself: "Saya tidak bisa melakukan apa pun untuk diri saya sendiri"
