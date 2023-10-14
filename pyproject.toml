@@ -48,7 +48,7 @@ python-dotenv = ">=0.21.1,<1.1.0"
 PyYAML = "^6.0"
 TgCrypto = "^1.2.5"
 typing-extensions = "^4.5.0"
-uvloop = { version = "^0.17.0", optional = true, platform = "linux" }
+uvloop = { version = ">=0.17,<0.19", optional = true, platform = "linux" }
 yarl = "^1.8.2"
 aiocache = "^0.12.0"
 
