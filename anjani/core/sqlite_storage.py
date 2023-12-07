@@ -34,6 +34,13 @@ CREATE TABLE peers
     last_update_on INTEGER NOT NULL DEFAULT (CAST(STRFTIME('%s', 'now') AS INTEGER))
 );
 
+CREATE TABLE IF NOT EXISTS usernames
+(
+    id             TEXT PRIMARY KEY,
+    peer_id        INTEGER NOT NULL,
+    last_update_on INTEGER NOT NULL DEFAULT (CAST(STRFTIME('%s', 'now') AS INTEGER))
+);
+
 CREATE TABLE version
 (
     number INTEGER PRIMARY KEY
@@ -55,11 +62,20 @@ BEGIN
     UPDATE sessions
     SET date = CAST(STRFTIME('%s', 'now') AS INTEGER);
 END;
+
+CREATE TRIGGER IF NOT EXISTS trg_usernames_last_update_on
+    AFTER UPDATE
+    ON usernames
+BEGIN
+    UPDATE usernames
+    SET last_update_on = CAST(STRFTIME('%s', 'now') AS INTEGER)
+    WHERE id = NEW.id;
+END;
 """
 
 
 class SQLiteStorage(Storage):
-    VERSION = 3
+    VERSION = 4
     USERNAME_TTL = 8 * 60 * 60
     _conn: sqlite3.Connection
 
@@ -81,6 +97,34 @@ class SQLiteStorage(Storage):
 
             self.conn.execute("INSERT INTO version VALUES (?)", (self.VERSION,))
 
+    async def update(self):
+        version = await self.version()
+
+        if version == 3:
+            with self.conn:
+                self.conn.executescript(
+                    """
+CREATE TABLE IF NOT EXISTS usernames
+(
+    id             TEXT PRIMARY KEY,
+    peer_id        INTEGER NOT NULL,
+    last_update_on INTEGER NOT NULL DEFAULT (CAST(STRFTIME('%s', 'now') AS INTEGER))
+);
+
+CREATE TRIGGER IF NOT EXISTS trg_usernames_last_update_on
+    AFTER UPDATE
+    ON usernames
+BEGIN
+    UPDATE usernames
+    SET last_update_on = CAST(STRFTIME('%s', 'now') AS INTEGER)
+    WHERE id = NEW.id;
+END;
+"""
+                )
+            version += 1
+
+        await self.version(version)  # type:ignore
+
     async def open(self):
         path = self.database
         file_exists = path.is_file()
@@ -89,6 +133,8 @@ class SQLiteStorage(Storage):
 
         if not file_exists:
             await self.create()
+        else:
+            await self.update()
 
         self.conn.execute("VACUUM")
 
@@ -105,6 +151,11 @@ class SQLiteStorage(Storage):
                 "VALUES (?, ?, ?, ?, ?)",
                 peers,
             )
+
+    async def update_usernames(self, usernames: List[Tuple[int, str]]):
+        for user in usernames:
+            self.conn.execute("DELETE FROM usernames WHERE peer_id=?", (user[0],))
+        self.conn.executemany("REPLACE INTO usernames (peer_id, id)" "VALUES (?, ?)", usernames)
 
     async def get_peer_by_id(
         self, peer_id: int
@@ -128,7 +179,23 @@ class SQLiteStorage(Storage):
         ).fetchone()
 
         if r is None:
-            raise KeyError(f"Username not found: {username}")
+            r2 = self.conn.execute(
+                "SELECT peer_id, last_update_on FROM usernames WHERE id = ?"
+                "ORDER BY last_update_on DESC",
+                (username,),
+            ).fetchone()
+            if r2 is None:
+                raise KeyError(f"Username not found: {username}")
+
+            if abs(time.time() - r2[1]) > self.USERNAME_TTL:
+                raise KeyError(f"Username expired: {username}")
+            r = r = self.conn.execute(
+                "SELECT id, access_hash, type, last_update_on FROM peers WHERE id = ?"
+                "ORDER BY last_update_on DESC",
+                (r2[0],),
+            ).fetchone()
+            if r is None:
+                raise KeyError(f"Username not found: {username}")
 
         if abs(time.time() - r[3]) > self.USERNAME_TTL:
             raise KeyError(f"Username expired: {username}")
@@ -183,7 +250,7 @@ class SQLiteStorage(Storage):
     async def is_bot(self, value=object) -> Optional[bool]:
         return await self._accessor(value)
 
-    async def version(self, value=object):
+    async def version(self, value: Any = object):
         if value == object:
             q = self.conn.execute("SELECT number FROM version")
             return (q.fetchone())[0]
