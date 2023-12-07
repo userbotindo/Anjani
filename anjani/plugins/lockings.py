@@ -232,7 +232,6 @@ class Lockings(plugin.Plugin):
                         "can_send_messages": permission,
                         "can_send_media_messages": permission,
                         "can_send_polls": permission,
-                        "can_send_other_messages": permission,
                         "can_add_web_page_previews": permission,
                         "can_change_info": permission,
                         "can_invite_users": permission,
