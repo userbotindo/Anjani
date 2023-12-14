@@ -779,7 +779,7 @@ class Federation(plugin.Plugin):
             for key, err_msg in failed.items():
                 text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
                 # Remove the chat federation
-                await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat}})
+                await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat.id}})
             text += f"**Those chat has leaved the federation {data['name']}!**"
             await ctx.respond(text, mode="reply", reference=ctx.response)
 
