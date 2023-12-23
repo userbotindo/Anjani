@@ -994,19 +994,24 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.13"
-description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
+version = "2.3.14.post2"
+description = "Fork of pyrogram. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
-python-versions = "~=3.7"
+python-versions = "~=3.8"
 files = [
-    {file = "PyroFork-2.3.13-py3-none-any.whl", hash = "sha256:fb02bd113e24f3148a484c48d2388927f896a8a1ed34a2cb7763805a03385be2"},
-    {file = "PyroFork-2.3.13.tar.gz", hash = "sha256:0532fbb0c4938afadde96d3a8aff8c2a0ed85a236ec953134b02c97c182915a8"},
+    {file = "pyrofork-2.3.14.post2-py3-none-any.whl", hash = "sha256:41b7f3c70037348ec698d7a32825a138f7315b8112efbf4fe28c6075ec04bfd8"},
+    {file = "pyrofork-2.3.14.post2.tar.gz", hash = "sha256:a5dd600e64e9878d7600e1f48e0ba16217fc20e9e1376ce04ce8bef4e387f3ec"},
 ]
 
 [package.dependencies]
 pyaes = "1.6.1"
 pymediainfo-pyrofork = ">=6.0.1,<7.0.0"
 pysocks = "1.7.1"
+
+[package.extras]
+dev = ["hatch (>=1.7.0)", "pytest (>=7.4.3)", "pytest-asyncio (>=0.21.1)", "pytest-cov (>=4.1.0)", "twine (>=4.0.2)"]
+docs = ["sphinx", "sphinx-autobuild", "sphinx-copybutton", "sphinx-immaterial (==0.11.10)", "tornado (>=6.3.3)"]
+speedup = ["tgcrypto (>=1.2.5)", "uvloop (>=0.19.0)"]
 
 [[package]]
 name = "pysocks"
