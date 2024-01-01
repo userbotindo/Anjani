@@ -246,7 +246,7 @@ class Lockings(plugin.Plugin):
                         "can_send_roundvideos": permission,
                         "can_send_stickers": permission,
                         "can_send_videos": permission,
-                        "can_send_voice": permission,
+                        "can_send_voices": permission,
                     },
                     "messages": {"can_send_messages": permission},
                     "media": {"can_send_media_messages": permission},
@@ -265,7 +265,7 @@ class Lockings(plugin.Plugin):
                     "videonote": {"can_send_roundvideos": permission},
                     "stickers": {"can_send_stickers": permission},
                     "videos": {"can_send_videos": permission},
-                    "voices": {"can_send_voice": permission},
+                    "voices": {"can_send_voices": permission},
                 }.items()
             )
         )
