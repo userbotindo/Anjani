@@ -402,6 +402,7 @@ purges-help: |
   × /purge | /prune: Menghapus semua pesan hingga pesan yang dibalas /purge.
 purge-done: "`{} pesan telah dihapus dalam {} detik...`"
 purge-error: "__Mohon maaf tidak bisa menghapus pesan lebih dari 2 hari__"
+purge-failed: "Tidak bisa menghapus pesan ini, {}"
 #endregion
 #region reporting
 reporting-button: Laporan

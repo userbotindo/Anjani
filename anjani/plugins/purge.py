@@ -33,8 +33,12 @@ class Purges(plugin.Plugin):
         if not reply_msg:
             return await self.text(ctx.chat.id, "error-reply-to-message")
 
-        await self.bot.client.delete_messages(ctx.chat.id, [reply_msg.id, ctx.msg.id])
-        return None
+        try:
+            await self.bot.client.delete_messages(ctx.chat.id, [reply_msg.id, ctx.msg.id])
+        except MessageDeleteForbidden as e:
+            await ctx.respond(
+                await self.text(ctx.chat.id, "purge-failed", e.MESSAGE), delete_after=5
+            )
 
     @command.filters(filters.can_delete, aliases=["prune"])
     async def cmd_purge(self, ctx: command.Context) -> Optional[str]:
