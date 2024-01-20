@@ -708,7 +708,7 @@ class Federation(plugin.Plugin):
             try:
                 await self.bot.client.ban_chat_member(chat, target.id)
                 await asyncio.sleep(self.__fban_delay)
-            except UserAdminInvalid as err:
+            except UserAdminInvalid:
                 self.log.warning(
                     f"Failed to fban {util.tg.get_username(target)} on subfed {sub_fed} of {host_fed}  on {chat}, user might be an admin"
                     if sub_fed
@@ -717,13 +717,6 @@ class Federation(plugin.Plugin):
                 failed[
                     chat
                 ] = f"failed to fban on chat {chat} caused by: user has higher admin privileges"
-            except BadRequest as br:
-                self.log.warning(
-                    f"Failed to send fban on subfed {sub_fed} of {host_fed} at {chat} due to {br.MESSAGE}"
-                    if sub_fed
-                    else f"Failed to fban {util.tg.get_username(target)} on {chat} due to {br.MESSAGE}"
-                )
-                failed[chat] = br.MESSAGE
             except (Forbidden, ChannelPrivate) as err:
                 self.log.warning(
                     f"Can't fban on subfed {sub_fed} of {host_fed} at {chat} caused by {err.MESSAGE}"
@@ -731,6 +724,13 @@ class Federation(plugin.Plugin):
                     else f"Can't fban {util.tg.get_username(target)} on {chat} caused by {err.MESSAGE}"
                 )
                 failed[chat] = err.MESSAGE
+            except BadRequest as br:
+                self.log.warning(
+                    f"Failed to send fban on subfed {sub_fed} of {host_fed} at {chat} due to {br.MESSAGE}"
+                    if sub_fed
+                    else f"Failed to fban {util.tg.get_username(target)} on {chat} due to {br.MESSAGE}"
+                )
+                failed[chat] = br.MESSAGE
         return failed
 
     async def cmd_fban(
@@ -823,7 +823,7 @@ class Federation(plugin.Plugin):
             try:
                 await self.bot.client.unban_chat_member(chat, target.id)
                 await asyncio.sleep(self.__fban_delay)
-            except (BadRequest, Forbidden, ChannelPrivate) as err:
+            except (BadRequest, Forbidden) as err:
                 self.log.warning(
                     f"Failed to unfban on subfed {sub_fed} of {host_fed} due to {err.MESSAGE}"
                     if sub_fed
