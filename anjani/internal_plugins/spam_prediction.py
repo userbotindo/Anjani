@@ -391,7 +391,7 @@ class SpamPrediction(plugin.Plugin):
             if user:
                 try:
                     target = await message.chat.get_member(user)
-                except UserNotParticipant:
+                except (UserNotParticipant, ChatAdminRequired):
                     pass
                 else:
                     if util.tg.is_staff_or_admin(target):
@@ -408,7 +408,7 @@ class SpamPrediction(plugin.Plugin):
             try:
                 await message.delete()
             except (MessageDeleteForbidden, ChatAdminRequired, UserAdminInvalid):
-                alert += "\n\nNot enough permission to delete message."
+                alert += "\n\n⚠️Not enough permission to delete message."
                 reply_id = message.id
             else:
                 await self.bot.log_stat("spam_deleted")
@@ -417,7 +417,6 @@ class SpamPrediction(plugin.Plugin):
 
             chat = message.chat
             button = []
-            me = await chat.get_member(self.bot.uid)
             if util.tg.get_username(message.chat) and msg_id:
                 button.append(
                     [
@@ -427,14 +426,16 @@ class SpamPrediction(plugin.Plugin):
                     ]
                 )
 
-            if me.privileges and me.privileges.can_restrict_members and target is not None:
-                button.append(
-                    [
-                        InlineKeyboardButton(
-                            "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
-                        )
-                    ]
-                )
+            if target is not None:
+                me = await chat.get_member(self.bot.uid)
+                if me.privileges and me.privileges.can_restrict_members:
+                    button.append(
+                        [
+                            InlineKeyboardButton(
+                                "Ban User (*admin only)", callback_data=f"spam_ban_{user}"
+                            )
+                        ]
+                    )
 
             await self.bot.client.send_message(
                 chat.id,

@@ -38,6 +38,7 @@ from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
 from pyrogram.errors import (
     ChannelPrivate,
+    ChatAdminRequired,
     ChatForbidden,
     ChatWriteForbidden,
     MessageDeleteForbidden,
@@ -237,6 +238,8 @@ async def fetch_permissions(
         )
         return bot, member
     except UserNotParticipant:
+        return None, None
+    except ChatAdminRequired:
         return None, None
 
 
