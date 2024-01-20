@@ -57,6 +57,9 @@ class Federation(plugin.Plugin):
     helpable = True
 
     db: util.db.AsyncCollection
+    chat_db: util.db.AsyncCollection
+
+    __fban_delay: float = 0.5
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("FEDERATIONS")
@@ -704,6 +707,16 @@ class Federation(plugin.Plugin):
         for chat in chats:
             try:
                 await self.bot.client.ban_chat_member(chat, target.id)
+                await asyncio.sleep(self.__fban_delay)
+            except UserAdminInvalid as err:
+                self.log.warning(
+                    f"Failed to fban {util.tg.get_username(target)} on subfed {sub_fed} of {host_fed}  on {chat}, user might be an admin"
+                    if sub_fed
+                    else f"Failed to fban {util.tg.get_username(target)} on {chat}, user might be an admin"
+                )
+                failed[
+                    chat
+                ] = f"failed to fban on chat {chat} caused by: user has higher admin privileges"
             except BadRequest as br:
                 self.log.warning(
                     f"Failed to send fban on subfed {sub_fed} of {host_fed} at {chat} due to {br.MESSAGE}"
@@ -778,9 +791,6 @@ class Federation(plugin.Plugin):
         if failed:
             for key, err_msg in failed.items():
                 text += f"failed to fban on chat {key} caused by {err_msg}\n\n"
-                # Remove the chat federation
-                await self.db.update_one({"_id": data["_id"]}, {"$pull": {"chats": chat.id}})
-            text += f"**Those chat has leaved the federation {data['name']}!**"
             await ctx.respond(text, mode="reply", reference=ctx.response)
 
         if data.get("subscribers", []):
@@ -812,7 +822,7 @@ class Federation(plugin.Plugin):
         for chat in chats:
             try:
                 await self.bot.client.unban_chat_member(chat, target.id)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(self.__fban_delay)
             except (BadRequest, Forbidden, ChannelPrivate) as err:
                 self.log.warning(
                     f"Failed to unfban on subfed {sub_fed} of {host_fed} due to {err.MESSAGE}"
