@@ -1,4 +1,5 @@
 """Anjani command dispatcher"""
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -229,7 +230,7 @@ class CommandDispatcher(MixinBase):
                     exc_info=constructor_invoke,
                 )
                 await self.dispatch_alert(
-                    f"command `/{' '.join(message.command)}`", constructor_invoke
+                    f"command `/{' '.join(message.command)}`", constructor_invoke, chat.id
                 )
 
             await self.dispatch_event("command", ctx, cmd)
@@ -254,7 +255,7 @@ class CommandDispatcher(MixinBase):
                 exc_info=constructor_handler,
             )
             await self.dispatch_alert(
-                f"command `/{' '.join(message.command)}`", constructor_handler
+                f"command `/{' '.join(message.command)}`", constructor_handler, chat.id
             )
         finally:
             # Continue processing handler of on_message
