@@ -189,6 +189,24 @@ files = [
 frozenlist = ">=1.1.0"
 
 [[package]]
+name = "aiosqlite"
+version = "0.20.0"
+description = "asyncio bridge to the standard sqlite3 module"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "aiosqlite-0.20.0-py3-none-any.whl", hash = "sha256:36a1deaca0cac40ebe32aac9977a6e2bbc7f5189f23f4a54d5908986729e5bd6"},
+    {file = "aiosqlite-0.20.0.tar.gz", hash = "sha256:6d35c8c256637f4672f843c31021464090805bf925385ac39473fb16eaaca3d7"},
+]
+
+[package.dependencies]
+typing_extensions = ">=4.0"
+
+[package.extras]
+dev = ["attribution (==1.7.0)", "black (==24.2.0)", "coverage[toml] (==7.4.1)", "flake8 (==7.0.0)", "flake8-bugbear (==24.2.6)", "flit (==3.9.0)", "mypy (==1.8.0)", "ufmt (==2.3.0)", "usort (==1.0.8.post1)"]
+docs = ["sphinx (==7.2.6)", "sphinx-mdinclude (==0.5.3)"]
+
+[[package]]
 name = "anyio"
 version = "3.7.1"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
@@ -1010,16 +1028,17 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.18"
+version = "2.3.19.post1"
 description = "Fork of pyrogram. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "pyrofork-2.3.18-py3-none-any.whl", hash = "sha256:ef6e9874c6b1185e6eda2c577e6c628445eb41faed7ecafcfda38049d8146560"},
-    {file = "pyrofork-2.3.18.tar.gz", hash = "sha256:6edd85ba86cf910f590a2f15f77993784e145d77bc4732541b36fdba4c682992"},
+    {file = "pyrofork-2.3.19.post1-py3-none-any.whl", hash = "sha256:1dbffad70f5098bbf803d4c2c6dad06c9ce6b1ddf65fbffb0c03aeef2f7cd3bb"},
+    {file = "pyrofork-2.3.19.post1.tar.gz", hash = "sha256:4fd50b1662a68e3f1ff8e0d33dde5bef7f6199faa3d975041552d3cf17590d80"},
 ]
 
 [package.dependencies]
+aiosqlite = ">=0.19.0"
 pyaes = "1.6.1"
 pymediainfo-pyrofork = ">=6.0.1,<7.0.0"
 pysocks = "1.7.1"
