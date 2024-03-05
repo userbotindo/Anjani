@@ -184,7 +184,6 @@ class CommandDispatcher(MixinBase):
     async def on_command(
         self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
     ) -> None:
-        EventCount.labels("command").inc()
         # cmd never raises KeyError because we checked on command_predicate
         cmd = self.commands[message.command[0]]
         with CommandLatencySecond.labels(cmd.name).time():
