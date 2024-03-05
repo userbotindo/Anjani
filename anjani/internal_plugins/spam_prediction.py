@@ -1,4 +1,5 @@
 """Spam Prediction plugin"""
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -48,6 +49,7 @@ except ImportError:
     _run_predict = False
 
 from anjani import command, filters, listener, plugin, util
+from anjani.core.metrics import SpamPredictionStat
 from anjani.util.misc import StopPropagation
 
 
@@ -318,6 +320,7 @@ class SpamPrediction(plugin.Plugin):
 
         response = await self.model.predict(text_norm)
         await self.bot.log_stat("predicted")
+        SpamPredictionStat.labels("predicted").inc()
         if response.size == 0:
             return
 
@@ -405,6 +408,7 @@ class SpamPrediction(plugin.Plugin):
             )
 
             await self.bot.log_stat("spam_detected")
+            SpamPredictionStat.labels("detected").inc()
             try:
                 await message.delete()
             except (MessageDeleteForbidden, ChatAdminRequired, UserAdminInvalid):
@@ -412,6 +416,7 @@ class SpamPrediction(plugin.Plugin):
                 reply_id = message.id
             else:
                 await self.bot.log_stat("spam_deleted")
+                SpamPredictionStat.labels("deleted").inc()
                 alert += "\n\nThe message has been deleted."
                 reply_id = 0
 

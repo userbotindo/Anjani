@@ -1,4 +1,5 @@
 """ Canonical plugin for @dAnjani_bot """
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,16 +35,18 @@ from pyrogram.types import (
 )
 
 try:
+    from prometheus_client import make_asgi_app
     from userbotindo import WebServer
 
     _run_canonical = True
 except ImportError:
-    from anjani.util.types import WebServer
+    # from anjani.util.types import WebServer
 
     _run_canonical = False
 
 
 from anjani import command, filters, listener, plugin, util
+from anjani.core.metrics import MessageStat
 
 
 class Canonical(plugin.Plugin):
@@ -60,19 +63,19 @@ class Canonical(plugin.Plugin):
     __task: asyncio.Task[None]
     __web_server: asyncio.Task[None]
     _mt: MutableMapping[MessageMediaType, str] = {
-        MessageMediaType.STICKER: "s",
-        MessageMediaType.PHOTO: "p",
-        MessageMediaType.DOCUMENT: "f",
-        MessageMediaType.VIDEO: "v",
+        MessageMediaType.STICKER: "sticker",
+        MessageMediaType.PHOTO: "photo",
+        MessageMediaType.DOCUMENT: "file",
+        MessageMediaType.VIDEO: "video",
     }
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("TEST")
-        self.db_analytics = self.bot.db.get_collection("ANALYTICS")
         self.chats_db = self.bot.db.get_collection("CHATS")
         self._api = WebServer(
             title="Anjani API Docs", description="API Documentation for Anjani Services"
         )
+        self._api.app.mount("/metrics", make_asgi_app())
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
@@ -94,32 +97,8 @@ class Canonical(plugin.Plugin):
 
     def get_type(self, message: Message) -> str:
         if message.command:
-            return "c"
-        return self._mt.get(message.media, "t") if message.media else "t"
-
-    async def save_message_type(self, message: Message) -> None:
-        today = util.time.sec()
-        timestamp = today - (today % 86400)  # truncate to day
-
-        # TODO: Remove old schema after analytics migration
-        await self.db_analytics.bulk_write(
-            [
-                UpdateOne(
-                    {"key": 2},
-                    {"$inc": {f"data.{str(timestamp)}.{self.get_type(message)}": 1}},
-                    upsert=True,
-                ),
-                UpdateOne(  # new schema
-                    {
-                        "timestamp": datetime.now(timezone.utc).replace(
-                            minute=0, second=0, microsecond=0
-                        )
-                    },
-                    {"$inc": {f"data.{self.get_type(message)}": 1}},
-                    upsert=True,
-                ),
-            ]
-        )
+            return "command"
+        return self._mt.get(message.media, "text") if message.media else "text"
 
     @command.filters(filters.admin_only & filters.group)
     async def cmd_r(self, ctx: command.Context) -> None:
@@ -149,11 +128,11 @@ class Canonical(plugin.Plugin):
 
     @listener.priority(65)
     async def on_message(self, message: Message) -> None:
+        """Message metric analytics"""
         if message.outgoing:
             return
 
-        # Analytics
-        self.bot.loop.create_task(self.save_message_type(message))
+        MessageStat.labels(self.get_type(message)).inc()
 
     async def on_chat_action(self, message: Message) -> None:
         """Delete admins data from chats"""

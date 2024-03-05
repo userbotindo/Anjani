@@ -29,6 +29,13 @@ from anjani import command, plugin, util
 from anjani.error import CommandHandlerError, CommandInvokeError, ExistingCommandError
 
 from .anjani_mixin_base import MixinBase
+from .metrics import (
+    CommandCount,
+    CommandLatencySecond,
+    EventCount,
+    EventLatencySecond,
+    UnhandledError,
+)
 
 if TYPE_CHECKING:
     from .anjani_bot import Anjani
@@ -173,90 +180,95 @@ class CommandDispatcher(MixinBase):
 
         return create(func, "CustomCommandFilter")
 
+    @EventLatencySecond.labels("command").time()
     async def on_command(
         self: "Anjani", client: Client, message: Message  # skipcq: PYL-W0613
     ) -> None:
+        EventCount.labels("command").inc()
         # cmd never raises KeyError because we checked on command_predicate
         cmd = self.commands[message.command[0]]
-        try:
-            # Construct invocation context
-            ctx = command.Context(
-                self,
-                message,
-                1 + len(message.command[0]) + 1,
-            )
-
-            # Parse and convert handler required parameters
-            signature = inspect.signature(cmd.func)
-            args = []  # type: list[Any]
-            kwargs = {}  # type: MutableMapping[str, Any]
-            if len(signature.parameters) > 1:
-                args, kwargs = await util.converter.parse_arguments(signature, ctx, cmd.func)
-
-            # Invoke command function
+        with CommandLatencySecond.labels(cmd.name).time():
             try:
-                ret = await cmd.func(ctx, *args, **kwargs)
-
-                # Response shortcut
-                if ret is not None:
-                    async with ctx.action(ChatAction.TYPING):
-                        await ctx.respond(
-                            ret,
-                            disable_web_page_preview=True,
-                        )
-            except errors.MessageNotModified:
-                cmd.plugin.log.warning(
-                    "Command '%s' triggered a message edit with no changes; make sure there is only a single bot instance running",
-                    cmd.name,
+                # Construct invocation context
+                ctx = command.Context(
+                    self,
+                    message,
+                    1 + len(message.command[0]) + 1,
                 )
+
+                # Parse and convert handler required parameters
+                signature = inspect.signature(cmd.func)
+                args = []  # type: list[Any]
+                kwargs = {}  # type: MutableMapping[str, Any]
+                if len(signature.parameters) > 1:
+                    args, kwargs = await util.converter.parse_arguments(signature, ctx, cmd.func)
+
+                # Invoke command function
+                try:
+                    ret = await cmd.func(ctx, *args, **kwargs)
+                    CommandCount.labels(cmd.name).inc()
+                    # Response shortcut
+                    if ret is not None:
+                        async with ctx.action(ChatAction.TYPING):
+                            await ctx.respond(
+                                ret,
+                                disable_web_page_preview=True,
+                            )
+                except errors.MessageNotModified:
+                    cmd.plugin.log.warning(
+                        "Command '%s' triggered a message edit with no changes; make sure there is only a single bot instance running",
+                        cmd.name,
+                    )
+                except Exception as e:  # skipcq: PYL-W0703
+                    UnhandledError.labels("command").inc()
+                    constructor_invoke = CommandInvokeError(
+                        f"raised from {type(e).__name__}: {str(e)}"
+                    ).with_traceback(e.__traceback__)
+                    chat = ctx.chat
+                    user = ctx.msg.from_user
+                    cmd.plugin.log.error(
+                        "Error in command '%s'\n"
+                        "  Data:\n"
+                        "    • Chat    -> %s (%d)\n"
+                        "    • Invoker -> %s (%d)\n"
+                        "    • Input   -> %s\n",
+                        cmd.name,
+                        chat.title if chat else None,
+                        chat.id if chat else -1,
+                        user.first_name if user else None,
+                        user.id if user else -1,
+                        ctx.input,
+                        exc_info=constructor_invoke,
+                    )
+                    await self.dispatch_alert(
+                        f"command `/{' '.join(message.command)}`", constructor_invoke, chat.id
+                    )
+
+                await self.dispatch_event("command", ctx, cmd)
             except Exception as e:  # skipcq: PYL-W0703
-                constructor_invoke = CommandInvokeError(
+                UnhandledError.labels("command").inc()
+                constructor_handler = CommandHandlerError(
                     f"raised from {type(e).__name__}: {str(e)}"
                 ).with_traceback(e.__traceback__)
-                chat = ctx.chat
-                user = ctx.msg.from_user
+                chat = message.chat
+                user = message.from_user
                 cmd.plugin.log.error(
-                    "Error in command '%s'\n"
+                    "Error in command handler\n"
                     "  Data:\n"
                     "    • Chat    -> %s (%d)\n"
                     "    • Invoker -> %s (%d)\n"
                     "    • Input   -> %s\n",
                     cmd.name,
                     chat.title if chat else None,
-                    chat.id if chat else -1,
+                    chat.id if chat else None,
                     user.first_name if user else None,
-                    user.id if user else -1,
-                    ctx.input,
-                    exc_info=constructor_invoke,
+                    user.id if user else None,
+                    message.command,
+                    exc_info=constructor_handler,
                 )
                 await self.dispatch_alert(
-                    f"command `/{' '.join(message.command)}`", constructor_invoke, chat.id
+                    f"command `/{' '.join(message.command)}`", constructor_handler, chat.id
                 )
-
-            await self.dispatch_event("command", ctx, cmd)
-        except Exception as e:  # skipcq: PYL-W0703
-            constructor_handler = CommandHandlerError(
-                f"raised from {type(e).__name__}: {str(e)}"
-            ).with_traceback(e.__traceback__)
-            chat = message.chat
-            user = message.from_user
-            cmd.plugin.log.error(
-                "Error in command handler\n"
-                "  Data:\n"
-                "    • Chat    -> %s (%d)\n"
-                "    • Invoker -> %s (%d)\n"
-                "    • Input   -> %s\n",
-                cmd.name,
-                chat.title if chat else None,
-                chat.id if chat else None,
-                user.first_name if user else None,
-                user.id if user else None,
-                message.command,
-                exc_info=constructor_handler,
-            )
-            await self.dispatch_alert(
-                f"command `/{' '.join(message.command)}`", constructor_handler, chat.id
-            )
-        finally:
-            # Continue processing handler of on_message
-            raise ContinuePropagation
+            finally:
+                # Continue processing handler of on_message
+                raise ContinuePropagation
