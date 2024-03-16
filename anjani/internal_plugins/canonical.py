@@ -40,7 +40,7 @@ try:
 
     _run_canonical = True
 except ImportError:
-    # from anjani.util.types import WebServer
+    from anjani.util.types import WebServer
 
     _run_canonical = False
 
