@@ -1,4 +1,5 @@
 """Anjani base telegram"""
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -79,7 +80,7 @@ class TelegramBot(MixinBase):
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         self.__running = False
-        self._limiter = CacheLimiter(ttl=10, max_value=3)
+        self._limiter = CacheLimiter(ttl=10, max_value=10)
         self._plugin_event_handlers = {}
 
         self.loaded = False
@@ -282,15 +283,7 @@ class TelegramBot(MixinBase):
                 async def event_handler(
                     client: Client, event: EventType  # skipcq: PYL-W0613
                 ) -> None:
-                    user = event.from_user
-                    if name == "callback_query" and await self._limiter.exceeded(user.id):
-                        return await event.answer("")  # type: ignore
-
-                    try:
-                        await self.dispatch_event(name, event)
-                    finally:
-                        if name == "callback_query":
-                            return await self._limiter.increment(user.id)
+                    await self.dispatch_event(name, event)
 
                 if filters is not None:
                     handler_info = (event_type(event_handler, filters), group)
