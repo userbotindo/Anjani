@@ -80,7 +80,7 @@ class TelegramBot(MixinBase):
 
     def __init__(self: "Anjani", **kwargs: Any) -> None:
         self.__running = False
-        self._limiter = CacheLimiter(ttl=10, max_value=3)
+        self._limiter = CacheLimiter(ttl=10, max_value=10)
         self._plugin_event_handlers = {}
 
         self.loaded = False
@@ -283,7 +283,6 @@ class TelegramBot(MixinBase):
                 async def event_handler(
                     client: Client, event: EventType  # skipcq: PYL-W0613
                 ) -> None:
-                    user = event.from_user
                     await self.dispatch_event(name, event)
 
                 if filters is not None:

@@ -17,11 +17,9 @@
 
 import asyncio
 from base64 import b64encode
-from datetime import datetime, timezone
 from typing import Any, ClassVar, MutableMapping
 
 from aiopath import AsyncPath
-from pymongo import UpdateOne
 from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
@@ -45,7 +43,7 @@ except ImportError:
     _run_canonical = False
 
 
-from anjani import command, filters, listener, plugin, util
+from anjani import command, filters, listener, plugin
 from anjani.core.metrics import MessageStat
 
 

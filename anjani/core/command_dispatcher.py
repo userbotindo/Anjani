@@ -32,7 +32,6 @@ from .anjani_mixin_base import MixinBase
 from .metrics import (
     CommandCount,
     CommandLatencySecond,
-    EventCount,
     EventLatencySecond,
     UnhandledError,
 )
