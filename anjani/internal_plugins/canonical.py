@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import logging
 from base64 import b64encode
 from typing import Any, ClassVar, MutableMapping
 
@@ -47,6 +48,25 @@ from anjani import command, filters, listener, plugin
 from anjani.core.metrics import MessageStat
 
 
+class EndpointFilter(logging.Filter):
+    def __init__(
+        self,
+        path: str,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        super().__init__(*args, **kwargs)
+        self._path = path
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find(self._path) == -1
+
+
+# metrics endpoint filter
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/metrics"))
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter("GET / "))
+
+
 class Canonical(plugin.Plugin):
     """Helper Plugin
     This plugin is only available for @dAnjani_bot
@@ -73,7 +93,8 @@ class Canonical(plugin.Plugin):
         self._api = WebServer(
             title="Anjani API Docs", description="API Documentation for Anjani Services"
         )
-        self._api.app.mount("/metrics", make_asgi_app())
+        prom_client = make_asgi_app()
+        self._api.app.mount("/metrics", prom_client, "metrics")
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
