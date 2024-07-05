@@ -125,6 +125,20 @@ END;
 
         await self.version(version)  # type:ignore
 
+    async def update_state(self, update_state: Tuple[int, int, int, int, int] = object):
+        """Get or set the update state of the current session.
+
+        Parameters:
+            update_state (``Tuple[int, int, int, int, int]``): A tuple containing the update state to set.
+                Tuple must contain the following information:
+                - ``int``: The id of the entity.
+                - ``int``: The pts.
+                - ``int``: The qts.
+                - ``int``: The date.
+                - ``int``: The seq.
+        """
+        pass  # anjani has its own catch-up mechanism
+
     async def open(self):
         path = self.database
         file_exists = path.is_file()
