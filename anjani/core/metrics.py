@@ -16,7 +16,7 @@ MessageStat = Counter(
     labelnames=["type"],
 )
 CommandCount = Counter("anjani_command_stats", "Number of coomand", labelnames=["name"])
-UnhandledError = Counter("anjani_unhandled_error", "Number of unhandled error")
+UnhandledError = Counter("anjani_unhandled_error", "Number of unhandled error", labelnames=["type"])
 
 EventLatencySecond = Gauge(
     "anjani_event_latency",
