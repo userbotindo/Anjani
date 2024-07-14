@@ -25,6 +25,9 @@ class Config:
     PLUGIN_FLAG: list[str]
     FEATURE_FLAG: list[str]
 
+    HEALTH_CHECK_INTERVAL: Optional[int]
+    HEALTH_CHECK_WEBHOOK_URL: Optional[str]
+
     IS_CI: bool
 
     def __init__(self) -> None:
@@ -52,6 +55,9 @@ class Config:
         self.FEATURE_FLAG = list(
             filter(None, [i.strip() for i in getenv("FEATURE_FLAG", "").split(";")])
         )
+
+        self.HEALTH_CHECK_INTERVAL = int(getenv("HEALTH_CHECK_INTERVAL", 60))
+        self.HEALTH_CHECK_WEBHOOK_URL = getenv("HEALTH_CHECK_WEBHOOK_URL")
 
         self.IS_CI = getenv("IS_CI", "false").lower() == "true"
 

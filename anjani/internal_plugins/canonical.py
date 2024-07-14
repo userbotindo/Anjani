@@ -20,7 +20,9 @@ import logging
 from base64 import b64encode
 from typing import Any, ClassVar, MutableMapping
 
+from aiohttp import web
 from aiopath import AsyncPath
+from prometheus_client import REGISTRY, generate_latest
 from pymongo.errors import PyMongoError
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_members_filter import ChatMembersFilter
@@ -33,38 +35,15 @@ from pyrogram.types import (
     Message,
 )
 
-try:
-    from prometheus_client import make_asgi_app
-    from userbotindo import WebServer
-
-    _run_canonical = True
-except ImportError:
-    from anjani.util.types import WebServer
-
-    _run_canonical = False
-
-
 from anjani import command, filters, listener, plugin
 from anjani.core.metrics import MessageStat
 
-
-class EndpointFilter(logging.Filter):
-    def __init__(
-        self,
-        path: str,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        super().__init__(*args, **kwargs)
-        self._path = path
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage().find(self._path) == -1
-
-
 # metrics endpoint filter
-logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/metrics"))
-logging.getLogger("uvicorn.access").addFilter(EndpointFilter("GET / "))
+logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
+
+async def metrics_handler(_: web.Request):
+    metrics = generate_latest(REGISTRY)
+    return web.Response(body=metrics, content_type="text/plain")
 
 
 class Canonical(plugin.Plugin):
@@ -74,12 +53,13 @@ class Canonical(plugin.Plugin):
     """
 
     name: ClassVar[str] = "Canonical"
-    disabled: ClassVar[bool] = not _run_canonical
 
     # Private
-    _api: WebServer
+    _web_runner: web.AppRunner
+    _web_site: web.TCPSite
+
+    __web_task: asyncio.Task[None]
     __task: asyncio.Task[None]
-    __web_server: asyncio.Task[None]
     _mt: MutableMapping[MessageMediaType, str] = {
         MessageMediaType.STICKER: "sticker",
         MessageMediaType.PHOTO: "photo",
@@ -90,29 +70,41 @@ class Canonical(plugin.Plugin):
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("TEST")
         self.chats_db = self.bot.db.get_collection("CHATS")
-        self._api = WebServer(
-            title="Anjani API Docs", description="API Documentation for Anjani Services"
-        )
-        prom_client = make_asgi_app()
-        self._api.app.mount("/metrics", prom_client, "metrics")
+        await self._setup_web_app()
+
+    async def _setup_web_app(self):
+        app = web.Application()
+        app.add_routes([web.get("/metrics", metrics_handler)])
+        self._web_runner = web.AppRunner(app)
+        await self._web_runner.setup()
+        self._web_site = web.TCPSite(self._web_runner, "localhost", 8080)
+        await self._web_site.start()
+
+    async def stop_aiohttp_server(self):
+        if self._web_site:
+            await self._web_site.stop()
+        if self._web_runner:
+            await self._web_runner.cleanup()
 
     async def on_start(self, _: int) -> None:
         self.log.debug("Starting watch streams")
         self.__task = self.bot.loop.create_task(self.watch_streams())
+        self.__web_task = self.bot.loop.create_task(self._setup_web_app())
 
-        def server_done_cb(task: asyncio.Task[None]):
-            if task.cancelled:
-                self.log.debug("Stopping web server")
-                asyncio.ensure_future(self._api.stop())
+        async def _web_shutdown(task: asyncio.Task[None]) -> None:
+            if task.cancelled():
+                await self.stop_aiohttp_server()
 
-        self.log.debug("Starting web server")
-        self.__web_server = self.bot.loop.create_task(self._api.run())
-        self.__web_server.add_done_callback(server_done_cb)
+        def shutdown_wrapper(task):
+            asyncio.create_task(_web_shutdown(task))
+
+        self.__web_task.add_done_callback(shutdown_wrapper)
 
     async def on_stop(self) -> None:
         self.log.debug("Stopping watch streams")
         self.__task.cancel()
-        self.__web_server.cancel()
+        self.log.debug("Shutting down web app")
+        self.__web_task.cancel()
 
     def get_type(self, message: Message) -> str:
         if message.command:
