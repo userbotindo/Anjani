@@ -77,7 +77,7 @@ class Canonical(plugin.Plugin):
         app.add_routes([web.get("/metrics", metrics_handler)])
         self._web_runner = web.AppRunner(app)
         await self._web_runner.setup()
-        self._web_site = web.TCPSite(self._web_runner, "localhost", 9090)
+        self._web_site = web.TCPSite(self._web_runner, "0.0.0.0", 9090)
         await self._web_site.start()
 
     async def stop_aiohttp_server(self):
