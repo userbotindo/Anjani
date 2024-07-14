@@ -5,9 +5,13 @@ name: Test and Run
 
 on:
   push:
-    branches: ["staging", "master"]
+    branches: ["staging"]
   pull_request:
-    branches: ["staging", "master"]
+    branches: ["staging"]
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   pytest:
@@ -52,7 +56,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v4
@@ -87,7 +91,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v4
