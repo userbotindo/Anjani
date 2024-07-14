@@ -41,11 +41,6 @@ from anjani.core.metrics import MessageStat
 # metrics endpoint filter
 logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
-
-async def health(_: web.Request) -> web.Response:
-    return web.json_response({"message": "OK"})
-
-
 async def metrics_handler(_: web.Request):
     metrics = generate_latest(REGISTRY)
     return web.Response(body=metrics, content_type="text/plain")
@@ -79,7 +74,7 @@ class Canonical(plugin.Plugin):
 
     async def _setup_web_app(self):
         app = web.Application()
-        app.add_routes([web.get("/health", health), web.get("/metrics", metrics_handler)])
+        app.add_routes([web.get("/metrics", metrics_handler)])
         self._web_runner = web.AppRunner(app)
         await self._web_runner.setup()
         self._web_site = web.TCPSite(self._web_runner, "localhost", 8080)
