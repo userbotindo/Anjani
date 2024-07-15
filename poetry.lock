@@ -1159,13 +1159,13 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pyrofork"
-version = "2.3.30"
+version = "2.3.36"
 description = "Fork of pyrogram. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "pyrofork-2.3.30-py3-none-any.whl", hash = "sha256:77fdbb0455f0c9daada200c1ae0faf16c3c68fdcccd292d26db1dbdd987b08e6"},
-    {file = "pyrofork-2.3.30.tar.gz", hash = "sha256:b52176e5bcccbae936389e55e18e655fc0aa3df0913e82e0c66d8bd0fe4de0d8"},
+    {file = "pyrofork-2.3.36-py3-none-any.whl", hash = "sha256:4467bbbe787ef8d603e3748fd3a1d12fa63d3927d6d3e8d2681abeb2dbaf3f0b"},
+    {file = "pyrofork-2.3.36.tar.gz", hash = "sha256:92c5f98126d6447164eabd957d676849c55ac10bd24a059ad65194ad21c7617d"},
 ]
 
 [package.dependencies]
