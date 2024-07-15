@@ -37,7 +37,9 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
+from pydantic.functional_validators import field_validator
+
 
 from anjani import command, filters, listener, plugin, util
 from anjani.core.metrics import SpamPredictionStat
