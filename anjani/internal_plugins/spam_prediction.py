@@ -37,9 +37,7 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from pydantic import BaseModel
-from pydantic.functional_validators import field_validator
-
+from pydantic import BaseModel, validator
 
 from anjani import command, filters, listener, plugin, util
 from anjani.core.metrics import SpamPredictionStat
@@ -56,7 +54,7 @@ class PredictionResult(BaseModel):
     spam_score: float
     ham_score: float
 
-    @field_validator("spam_score", "ham_score")
+    @validator("spam_score", "ham_score")
     def calc_score(cls, value: float) -> float:
         return value * 100
 
