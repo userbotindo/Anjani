@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "anjani"
-version = "2.14.8"
+version = "2.14.9"
 description = "Telegram group management bot"
 license = "GPL-3.0-or-later"
 authors = [
@@ -52,6 +52,7 @@ uvloop = { version = ">=0.17,<0.20", optional = true, platform = "linux" }
 yarl = "^1.8.2"
 aiocache = "^0.12.0"
 prometheus-client = "^0.20.0"
+pydantic = "^2.8.2"
 
 [tool.poetry.extras]
 all = ["uvloop"]
