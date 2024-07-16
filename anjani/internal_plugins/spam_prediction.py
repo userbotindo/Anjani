@@ -385,7 +385,7 @@ class SpamPrediction(plugin.Plugin):
                         },
                     )
 
-        if probability >= 0.8:
+        if probability >= 78:
             chat = message.chat
             if not user and message.sender_chat:
                 if message.sender_chat.id == chat.id:  # anon admin
