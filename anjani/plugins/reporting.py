@@ -1,4 +1,5 @@
 """ Admin reporting plugin """
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -109,19 +110,12 @@ class Reporting(plugin.Plugin):
 
     async def setting(self, chat_id: int, is_private: bool, setting: bool) -> None:
         if is_private:
-            if setting:
-                await self.user_db.update_one(
-                    {"_id": chat_id}, {"$set": {"setting": True}}, upsert=True
-                )
-            else:
-                await self.user_db.delete_one({"_id": chat_id})
-        else:
-            if setting:
-                await self.db.update_one(
-                    {"chat_id": chat_id}, {"$set": {"setting": True}}, upsert=True
-                )
-            else:
-                await self.db.delete_one({"chat_id": chat_id})
+            await self.user_db.update_one(
+                {"_id": chat_id}, {"$set": {"setting": setting}}, upsert=True
+            )
+            return
+
+        await self.db.update_one({"chat_id": chat_id}, {"$set": {"setting": setting}}, upsert=True)
 
     async def is_active(self, uid: int, is_private: bool) -> bool:
         """Get current setting default to True"""
