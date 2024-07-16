@@ -1,4 +1,5 @@
 """ Main Anjani plugins """
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -326,6 +327,15 @@ class Main(plugin.Plugin):
         await ctx.respond(
             await self.text(chat.id, "help-pm", self.bot_name),
             reply_markup=InlineKeyboardMarkup(keyboard),
+        )
+
+    async def cmd_privacy(self, ctx: command.Context) -> None:
+        """Bot privacy command"""
+        await ctx.respond(
+            await self.text(ctx.chat.id, "privacy"),
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("Privacy Prolicy", url="https://userbotindo.com/privacy")]]
+            ),
         )
 
     async def cmd_donate(self, ctx: command.Context) -> None:
