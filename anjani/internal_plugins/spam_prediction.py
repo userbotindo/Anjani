@@ -381,7 +381,7 @@ class SpamPrediction(plugin.Plugin):
                             "proba": probability,
                             "msg_id": msg.id,
                             "date": util.time.sec(),
-                            "text": result.processed_text,
+                            "text": text,
                         },
                     )
 
