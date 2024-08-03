@@ -1,4 +1,5 @@
 """ Admin Plugin, Can manage your Group. """
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -156,7 +157,9 @@ class Admins(plugin.Plugin):
             return await self.text(chat.id, "promote-error-perm")
 
         try:
-            await chat.promote_member(user_id=user.id, privileges=bot.privileges)
+            await chat.promote_member(
+                user_id=user.id, privileges=bot.privileges, title="Administrator"
+            )
         except ChatAdminRequired:
             return await self.text(chat.id, "promote-error-perm")
         except UserIdInvalid:
@@ -191,6 +194,7 @@ class Admins(plugin.Plugin):
         try:
             await chat.promote_member(
                 user_id=user.id,
+                title="",
                 privileges=ChatPrivileges(
                     can_manage_chat=False,
                     can_delete_messages=False,
