@@ -10,7 +10,7 @@ Anyone is welcome to contribute to UserGram. Either it is just a small typo fix 
 
 ### Pull Requests
 
--   The latest version of the code is always in the `staging` branch. Please make your pull requests against that branch.
+-   The latest version of the code is always in the `master` branch. Please make your pull requests against that branch.
 -   Pull request need approval from at least one maintainer before it can be merged.
 -   We encourage you to test your code before submitting a pull request.
 -   If you are adding a new feature, please provide a clear description in the pull request.
@@ -22,7 +22,7 @@ We use custom scripts together with [Conventional Commits](https://www.conventio
 ### When merging a pull request make sure:
 
 -   Use the "Squash and merge" option.
--   Make sure contributors PR's are merged to `staging` branch.
+-   Make sure contributors PR's are merged to `master` branch.
 -   Make sure the commit message follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) guidelines.
     -   Use `fix` for bug fixes.
     -   Use `feat` for new features.

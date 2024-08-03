@@ -69,12 +69,9 @@ _bump:
 	@git add pyproject.toml anjani/__init__.py > /dev/null
 
 	@echo "$(GREEN)Commiting changes$(END)"
-	@git checkout staging > /dev/null
 	@git commit -m "Bump version to v$$NEW_VERSION"
 	@git tag -a "v$$NEW_VERSION" -m "Bump version to v$$NEW_VERSION"
 	@git checkout master
-	@git merge staging
-	@git push --atomic origin master staging "v$$NEW_VERSION"
-	@git checkout staging
+	@git push --atomic origin master "v$$NEW_VERSION"
 
 bump: _bump changelog # Bump version, generate changelog and push to git

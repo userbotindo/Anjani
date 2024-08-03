@@ -5,9 +5,9 @@ name: Test and Run
 
 on:
   push:
-    branches: ["staging"]
+    branches: ["master"]
   pull_request:
-    branches: ["staging"]
+    branches: ["master"]
 
 concurrency:
   cancel-in-progress: true
