@@ -259,6 +259,7 @@ class Canonical(plugin.Plugin):
             res = await resp.json()
             return f"Your new UserbotIndo API Key is:\n\n`{res['data']['key']}`"
 
+    @command.filters(filters.private)
     async def cmd_token(self, ctx: command.Context):
         """Get token for userbotindo services"""
         reference = "tg-user@" + str(ctx.author.id)
