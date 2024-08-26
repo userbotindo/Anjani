@@ -19,8 +19,18 @@ import asyncio
 import re
 from hashlib import md5, sha256
 from random import randint
-from typing import Any, Callable, ClassVar, List, Literal, MutableMapping, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    List,
+    Literal,
+    MutableMapping,
+    Optional,
+    Tuple,
+)
 
+from pydantic import BaseModel, validator
 from pyrogram.errors import (
     ChatAdminRequired,
     FloodWait,
@@ -37,7 +47,6 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from pydantic import BaseModel, validator
 
 from anjani import command, filters, listener, plugin, util
 from anjani.core.metrics import SpamPredictionStat
@@ -76,14 +85,17 @@ class SpamPrediction(plugin.Plugin):
     user_db: util.db.AsyncCollection
     setting_db: util.db.AsyncCollection
 
+    _api_key: str
+    _internal_api_url: str
+
     __predict_cost: int = 10
     __log_channel: int = -1001314588569
 
     async def on_load(self) -> None:
-        self._api_key = self.bot.config.SPAM_PREDICTION_API
-        self._predict_url = self.bot.config.SPAM_PREDICTION_URL
+        self._api_key = self.bot.config.USERBOTINDO_API_KEY
+        self._internal_api_url = self.bot.config.USERBOTINDO_API_URL
 
-        if not self._api_key or not self._predict_url:
+        if not self._api_key or not self._internal_api_url:
             self.bot.unload_plugin(self)
             return
 
@@ -134,7 +146,7 @@ class SpamPrediction(plugin.Plugin):
 
     async def check_spam(self, text: str) -> SpamDetectionResponse:
         async with self.bot.http.post(
-            self._predict_url,
+            self._internal_api_url + "/spam-detection/predict",
             json={"text": text},
             headers={"x-api-key": self._api_key},
         ) as resp:
@@ -592,3 +604,14 @@ class SpamPrediction(plugin.Plugin):
             self.setting(chat.id, enable),
         )
         return ret
+
+    @command.filters(_filters=filters.private & filters.staff_only)
+    async def cmd_update_model(self, ctx: command.Context) -> Optional[str]:
+        async with self.bot.http.post(
+            self._internal_api_url + "/spam-detection/update-model",
+            headers={"x-api-key": self._api_key},
+        ) as resp:
+            if resp.status != 200:
+                return f"Failed to update model: got status {resp.status}"
+
+            return "Model updated successfully"

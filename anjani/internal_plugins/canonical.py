@@ -41,6 +41,7 @@ from anjani.core.metrics import MessageStat
 # metrics endpoint filter
 logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
+
 async def metrics_handler(_: web.Request):
     metrics = generate_latest(REGISTRY)
     return web.Response(body=metrics, content_type="text/plain")
@@ -57,6 +58,8 @@ class Canonical(plugin.Plugin):
     # Private
     _web_runner: web.AppRunner
     _web_site: web.TCPSite
+    _api_key: str
+    _internal_api_url: str
 
     __web_task: asyncio.Task[None]
     __task: asyncio.Task[None]
@@ -67,7 +70,14 @@ class Canonical(plugin.Plugin):
         MessageMediaType.VIDEO: "video",
     }
 
-    async def on_load(self) -> None:
+    async def on_load(self):
+        self._api_key = self.bot.config.USERBOTINDO_API_KEY
+        self._internal_api_url = self.bot.config.USERBOTINDO_API_URL
+
+        if not self._api_key or not self._internal_api_url:
+            self.bot.unload_plugin(self)
+            return
+
         self.db = self.bot.db.get_collection("TEST")
         self.chats_db = self.bot.db.get_collection("CHATS")
         await self._setup_web_app()
@@ -235,3 +245,33 @@ class Canonical(plugin.Plugin):
                 ]
             ),
         )
+
+    async def _create_token(self, ctx: command.Context, reference: str):
+        async with self.bot.http.post(
+            self._internal_api_url + "/admin/keys",
+            headers={"x-api-key": self._api_key},
+            json={"reference": reference},
+        ) as resp:
+            if resp.status != 201:
+                self.log.error("Failed to create internal token", resp)
+                return "Failed to create token"
+
+            res = await resp.json()
+            return f"Your new UserbotIndo API Key is:\n\n`{res['data']['key']}`"
+
+    async def cmd_token(self, ctx: command.Context):
+        """Get token for userbotindo services"""
+        reference = "tg-user@" + str(ctx.author.id)
+        async with self.bot.http.get(
+            self._internal_api_url + f"/admin/keys/{reference}",
+            headers={"x-api-key": self._api_key},
+        ) as resp:
+            if resp.status == 404:
+                return await self._create_token(ctx, reference)
+
+            if resp.status != 200:
+                self.log.error("Failed to get internal token", resp)
+                return "Failed to get token"
+
+            res = await resp.json()
+            return f"Your current UserbotIndo API Key is:\n\n`{res['data']['key']}`"

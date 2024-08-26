@@ -28,8 +28,8 @@ class Config:
     HEALTH_CHECK_INTERVAL: Optional[int]
     HEALTH_CHECK_WEBHOOK_URL: Optional[str]
 
-    SPAM_PREDICTION_URL: Optional[str]
-    SPAM_PREDICTION_API: Optional[str]
+    USERBOTINDO_API_KEY: Optional[str]
+    USERBOTINDO_API_URL: Optional[str]
 
     IS_CI: bool
 
@@ -62,8 +62,8 @@ class Config:
         self.HEALTH_CHECK_INTERVAL = int(getenv("HEALTH_CHECK_INTERVAL", 60))
         self.HEALTH_CHECK_WEBHOOK_URL = getenv("HEALTH_CHECK_WEBHOOK_URL")
 
-        self.SPAM_PREDICTION_URL = getenv("SPAM_PREDICTION_URL")
-        self.SPAM_PREDICTION_API = getenv("SPAM_PREDICTION_API")
+        self.USERBOTINDO_API_KEY = getenv("USERBOTINDO_API_KEY")
+        self.USERBOTINDO_API_URL = getenv("USERBOTINDO_API_URL")
 
         self.IS_CI = getenv("IS_CI", "false").lower() == "true"
 
