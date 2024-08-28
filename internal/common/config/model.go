@@ -30,10 +30,6 @@ type DatabaseConfig struct {
 	Database string
 }
 
-func (d *DatabaseConfig) GetUri() string {
-	return "postgresql://" + d.User + ":" + d.Password + "@" + d.Host + ":" + d.Port + "/" + d.Database
-}
-
 type SpamDetectionConfig struct {
 	ApiKey string
 	ApiUrl string

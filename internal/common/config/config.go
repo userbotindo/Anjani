@@ -18,6 +18,10 @@ func (c *Config) loadEnv() error {
 	}
 
 	c.Telegram.BotToken = os.Getenv("BOT_TOKEN")
+	if c.Telegram.BotToken == "" {
+		log.Fatal().Msg("BOT_TOKEN must be set")
+	}
+
 	var ownerId = 0
 	var envOwnerId = os.Getenv("OWNER_ID")
 	if envOwnerId != "" {
@@ -29,6 +33,10 @@ func (c *Config) loadEnv() error {
 	}
 	c.Telegram.OwnerId = ownerId
 	c.Telegram.LogChannel = os.Getenv("LOG_CHANNEL")
+
+	if logChannel := os.Getenv("LOG_CHANNEL"); logChannel != "" {
+		c.Telegram.LogChannel = logChannel
+	}
 	c.Telegram.AlertChannel = os.Getenv("ALERT_CHANNEL")
 	c.Telegram.LoginUrl = os.Getenv("LOGIN_URL")
 
@@ -49,8 +57,10 @@ func (c *Config) loadEnv() error {
 	return nil
 }
 
-var cfg Config
-var once sync.Once
+var (
+	cfg  Config
+	once sync.Once
+)
 
 func GetConfig() Config {
 	once.Do(func() {

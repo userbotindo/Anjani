@@ -8,6 +8,16 @@ END		:=	\033[0m
 help: # Show help for each of the Makefile recipes.
 	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done
 
+.PHONY: install
+install: ## Install all dependencies
+	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	@go install github.com/pressly/goose/v3/cmd/goose@latest
+
+.PHONY: tidy
+tidy: ## Format code and tidy modfile
+	go fmt ./...
+	go mod tidy -v
+
 .PHONY: new-migration
 new-migration: # Create a new migration file. Usage: make new-migration name=<name>
 	@goose -dir db/migrations create $(name) sql
@@ -20,3 +30,12 @@ migrate-up: # Run database migrations
 migrate-down: # Rollback to to previous migration
 	go run scripts/migrate/migrate.go -down
 
+.PHONY: run-dev
+run-dev: # Run the application in development mode
+	@go run cmd/anjani/main.go cmd/anjani/app.go
+
+
+.PHONY: run-app
+run-app: ## Run app
+	@go build -o ./bin/anjani ./cmd/anjani/
+	@./bin/anjani
