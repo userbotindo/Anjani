@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -14,10 +13,10 @@ import (
 
 func main() {
 	cfg := config.GetConfig()
-
 	ctx := context.Background()
-	upFlag := flag.Bool("up", false, "Perform migration up")
-	downFlag := flag.Bool("down", false, "Perform migration down")
+
+	isUp := flag.Bool("up", false, "Migrate up")
+	isDown := flag.Bool("down", false, "Migrate down")
 	flag.Parse()
 
 	if err := goose.SetDialect("postgres"); err != nil {
@@ -35,12 +34,11 @@ func main() {
 	}
 	dbConn := stdlib.OpenDBFromPool(db)
 
-	if *upFlag {
+	if *isUp {
 		if err := goose.Up(dbConn, "db/migrations/"); err != nil {
-			fmt.Println(err)
 			log.Fatal().Err(err).Msg("failed to run migrations")
 		}
-	} else if *downFlag {
+	} else if *isDown {
 		if err := goose.Down(dbConn, "db/migrations/"); err != nil {
 			log.Fatal().Err(err).Msg("failed to downgrade migrations")
 		}
