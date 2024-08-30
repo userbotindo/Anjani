@@ -15,14 +15,8 @@ const uriFormat = "postgresql://%s:%s@%s:%s/%s"
 
 func Migrate(db *sql.DB, command string) {
 	log.Info().Msg(fmt.Sprintf("Running %s migrations", command))
-	if command == "up" {
-		if err := goose.Up(db, "db/migrations/"); err != nil {
-			log.Fatal().Err(err).Msg("failed to run migrations")
-		}
-	} else if command == "down" {
-		if err := goose.Down(db, "db/migrations/"); err != nil {
-			log.Fatal().Err(err).Msg("failed to downgrade migrations")
-		}
+	if err := goose.RunContext(context.Background(), command, db, "db/migrations/"); err != nil {
+		log.Fatal().Err(err).Msg("failed to run migrations")
 	}
 }
 
