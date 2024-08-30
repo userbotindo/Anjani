@@ -20,9 +20,17 @@ CREATE TABLE IF NOT EXISTS public.user (
     last_seen timestamp not null default current_timestamp
 );
 
+
+CREATE TABLE IF NOT EXISTS public.chat_warning (
+    warning_id varchar(36) primary key,
+    count integer default 0,
+    reasons text[]
+);
+
 CREATE TABLE IF NOT EXISTS public.chat_member (
     chat_id integer references public.chat(chat_id),
     user_id integer references public.user(user_id),
+    warning_id varchar(36) references public.chat_warning(warning_id),
     primary key (chat_id, user_id)
 );
 
@@ -43,14 +51,6 @@ CREATE TABLE IF NOT EXISTS public.user_setting (
     rank varchar(20) default 'user',
     language varchar(5) default 'en',
     reporting boolean default true
-);
-
-CREATE TABLE IF NOT EXISTS public.chat_warning (
-    chat_id integer references public.chat(chat_id),
-    user_id integer references public.user(user_id),
-    count integer default 0,
-    reasons text[],
-    primary key (chat_id, user_id)
 );
 
 

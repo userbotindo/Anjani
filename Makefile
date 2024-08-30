@@ -37,5 +37,5 @@ run-dev: # Run the application in development mode
 
 .PHONY: run-app
 run-app: ## Run app
-	@go build -o ./bin/anjani ./cmd/anjani/
-	@./bin/anjani
+	@go build -o ./build/anjani ./cmd/anjani/
+	@./build/anjani
