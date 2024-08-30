@@ -21,5 +21,8 @@ func NewBasicPlugin() *basicPlugin {
 func (bh *basicPlugin) RegisterHandler(d *ext.Dispatcher) {
 	log.Info().Msgf("Registering %s Plugin", bh.Name)
 
+	d.AddHandler(handlers.NewCommand("start", bh.cmdStart))
 	d.AddHandler(handlers.NewCommand("ping", bh.cmdPing))
+	d.AddHandler(handlers.NewCommand("privacy", bh.cmdPrivacy))
+	d.AddHandler(handlers.NewCommand("donate", bh.cmdDonate))
 }
