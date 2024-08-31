@@ -13,8 +13,36 @@ const getUserById = `-- name: GetUserById :one
 SELECT user_id, username, hash, is_started, reputation, last_seen FROM public.user WHERE user_id = $1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, userID int32) (User, error) {
+func (q *Queries) GetUserById(ctx context.Context, userID int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUserById, userID)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Hash,
+		&i.IsStarted,
+		&i.Reputation,
+		&i.LastSeen,
+	)
+	return i, err
+}
+
+const upsertUserById = `-- name: UpsertUserById :one
+INSERT INTO public.user (user_id, username, is_started)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id) DO UPDATE
+SET username = $2, is_started = $3
+RETURNING user_id, username, hash, is_started, reputation, last_seen
+`
+
+type UpsertUserByIdParams struct {
+	UserID    int64
+	Username  string
+	IsStarted *bool
+}
+
+func (q *Queries) UpsertUserById(ctx context.Context, arg UpsertUserByIdParams) (User, error) {
+	row := q.db.QueryRow(ctx, upsertUserById, arg.UserID, arg.Username, arg.IsStarted)
 	var i User
 	err := row.Scan(
 		&i.UserID,

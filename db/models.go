@@ -10,7 +10,7 @@ import (
 
 type Chat struct {
 	ID          int32
-	ChatID      int32
+	ChatID      int64
 	Title       string
 	Type        string
 	IsForum     bool
@@ -20,12 +20,13 @@ type Chat struct {
 }
 
 type ChatMember struct {
-	ChatID int32
-	UserID int32
+	ChatID    int64
+	UserID    int64
+	WarningID *int32
 }
 
 type ChatSetting struct {
-	ChatID               int32
+	ChatID               int64
 	Language             *string
 	Rules                *string
 	ActionTopic          *int32
@@ -37,32 +38,31 @@ type ChatSetting struct {
 }
 
 type ChatWarning struct {
-	ChatID  int32
-	UserID  int32
-	Count   *int32
-	Reasons []string
+	WarningID int32
+	Count     *int32
+	Reasons   []string
 }
 
 type Federation struct {
 	FederationID string
 	Name         string
 	OwnerID      int32
-	LogChatID    *int32
+	LogChatID    *int64
 }
 
 type FederationAdmin struct {
 	FederationID string
-	UserID       int32
+	UserID       int64
 }
 
 type FederationBan struct {
 	FederationID string
-	UserID       int32
+	UserID       int64
 }
 
 type FederationChat struct {
 	FederationID string
-	ChatID       int32
+	ChatID       int64
 }
 
 type FederationSubscriber struct {
@@ -71,44 +71,44 @@ type FederationSubscriber struct {
 }
 
 type Filter struct {
-	FilterID string
-	ChatID   *int32
-	Keyword  string
-	Content  *string
-	Type     *int32
+	ID      int32
+	ChatID  *int64
+	Keyword string
+	Content *string
+	Type    *int32
 }
 
 type FilterButton struct {
-	FilterID   *string
+	FilterID   *int32
 	Text       string
 	Url        string
 	IsSameLine *bool
 }
 
 type Greeting struct {
-	GreetingID     string
-	ChatID         *int32
+	ID             int32
+	ChatID         *int64
 	CleanService   *bool
 	WelcomeMessage *string
 	GoodbyeMessage *string
 	File           *string
-	PrevWelcomeID  *int32
-	PrevGoodbyeID  *int32
+	PrevWelcomeID  *int64
+	PrevGoodbyeID  *int64
 	ShouldWelcome  *bool
 	ShouldGoodbye  *bool
 	Type           *int32
 }
 
 type GreetingButton struct {
-	GreetingID *string
+	GreetingID *int32
 	Text       string
 	Url        string
 	IsSameLine *bool
 }
 
 type Note struct {
-	NoteID     string
-	ChatID     *int32
+	ID         int32
+	ChatID     *int64
 	Name       string
 	Content    *string
 	File       *string
@@ -117,14 +117,14 @@ type Note struct {
 }
 
 type NoteButton struct {
-	NoteID     *string
+	NoteID     *int32
 	Name       string
 	Url        string
 	IsSameLine *bool
 }
 
 type User struct {
-	UserID     int32
+	UserID     int64
 	Username   string
 	Hash       string
 	IsStarted  *bool
@@ -133,7 +133,7 @@ type User struct {
 }
 
 type UserSetting struct {
-	UserID    int32
+	UserID    int64
 	Rank      *string
 	Language  *string
 	Reporting *bool
