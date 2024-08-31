@@ -5,6 +5,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/userbotindo/anjani/internal/bot/plugins/basic"
 	"github.com/userbotindo/anjani/internal/bot/plugins/staff"
+	"github.com/userbotindo/anjani/internal/bot/plugins/user"
+	"github.com/userbotindo/anjani/internal/db"
 )
 
 type Plugin interface {
@@ -17,15 +19,17 @@ func loadPluginHandlers(d *ext.Dispatcher, p []Plugin) {
 	}
 }
 
-func LoadPlugin(d *ext.Dispatcher) {
+func LoadPlugin(d *ext.Dispatcher, db db.DBTX) {
 	log.Info().Msg("Registering Plugins")
 
 	basicPlugin := basic.NewBasicPlugin()
 	staffPlugin := staff.NewStaffPlugin()
+	userPlugin := user.NewUserPlugin(db)
 
 	plugins := []Plugin{
 		basicPlugin,
 		staffPlugin,
+		userPlugin,
 	}
 	loadPluginHandlers(d, plugins)
 }
