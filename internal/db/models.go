@@ -126,7 +126,7 @@ type NoteButton struct {
 type User struct {
 	UserID     int64
 	Username   string
-	Hash       string
+	Hash       *string
 	IsStarted  *bool
 	Reputation *float64
 	LastSeen   pgtype.Timestamp

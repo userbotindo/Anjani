@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS chat_hash_ix ON public.chat (hash);
 CREATE TABLE IF NOT EXISTS public.user (
     user_id bigint primary key,
     username varchar(35) not null,
-    hash varchar(32) not null,
+    hash varchar(32),
     is_started boolean default false,
     reputation double precision default 0,
     last_seen timestamp without time zone default CURRENT_TIMESTAMP

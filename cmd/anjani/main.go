@@ -13,6 +13,8 @@ import (
 	"github.com/userbotindo/anjani/internal/common/storage"
 )
 
+//go:generate sqlc generate -f ../../sqlc.yml
+
 func main() {
 	cfg := config.GetConfig()
 
@@ -23,9 +25,9 @@ func main() {
 
 	b := CreateBot(&cfg)
 
-	db := storage.New(cfg.Database)
-	storage.Migrate(stdlib.OpenDBFromPool(db), "up")
-	defer db.Close()
+	pg := storage.New(cfg.Database)
+	storage.Migrate(stdlib.OpenDBFromPool(pg), "up")
+	defer pg.Close()
 
 	sig := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -35,7 +37,7 @@ func main() {
 		done <- true
 	}()
 
-	up := bot.Run(&cfg, b)
+	up := bot.Run(&cfg, b, pg)
 	defer up.Stop()
 
 	<-done

@@ -30,6 +30,10 @@ migrate-up: # Run database migrations
 migrate-down: # Rollback to to previous migration
 	go run scripts/migrate/migrate.go -down
 
+.PHONY: generate
+generate: ## Generate code
+	@go generate ./...
+
 .PHONY: run-dev
 run-dev: # Run the application in development mode
 	@go run cmd/anjani/main.go cmd/anjani/app.go

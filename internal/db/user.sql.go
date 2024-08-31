@@ -9,6 +9,38 @@ import (
 	"context"
 )
 
+const createUser = `-- name: CreateUser :one
+INSERT INTO public.user (user_id, username, hash, is_started, last_seen)
+VALUES ($1, $2, $3, $4, now())
+RETURNING user_id, username, hash, is_started, reputation, last_seen
+`
+
+type CreateUserParams struct {
+	UserID    int64
+	Username  string
+	Hash      *string
+	IsStarted *bool
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.UserID,
+		arg.Username,
+		arg.Hash,
+		arg.IsStarted,
+	)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Hash,
+		&i.IsStarted,
+		&i.Reputation,
+		&i.LastSeen,
+	)
+	return i, err
+}
+
 const getUserById = `-- name: GetUserById :one
 SELECT user_id, username, hash, is_started, reputation, last_seen FROM public.user WHERE user_id = $1
 `
@@ -28,10 +60,10 @@ func (q *Queries) GetUserById(ctx context.Context, userID int64) (User, error) {
 }
 
 const upsertUserById = `-- name: UpsertUserById :one
-INSERT INTO public.user (user_id, username, is_started)
-VALUES ($1, $2, $3)
+INSERT INTO public.user (user_id, username, is_started, last_seen)
+VALUES ($1, $2, $3, now())
 ON CONFLICT (user_id) DO UPDATE
-SET username = $2, is_started = $3
+SET user_id = $1, username = $2, is_started = $3, last_seen = now()
 RETURNING user_id, username, hash, is_started, reputation, last_seen
 `
 
