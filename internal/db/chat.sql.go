@@ -9,44 +9,6 @@ import (
 	"context"
 )
 
-const createChat = `-- name: CreateChat :one
-INSERT INTO public.chat (chat_id, title, type, is_forum, is_bot_member, hash, last_update)
-VALUES ($1, $2, $3, $4, $5, $6, now())
-RETURNING id, chat_id, title, type, is_forum, is_bot_member, hash, last_update
-`
-
-type CreateChatParams struct {
-	ChatID      int64
-	Title       string
-	Type        string
-	IsForum     bool
-	IsBotMember *bool
-	Hash        *string
-}
-
-func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (Chat, error) {
-	row := q.db.QueryRow(ctx, createChat,
-		arg.ChatID,
-		arg.Title,
-		arg.Type,
-		arg.IsForum,
-		arg.IsBotMember,
-		arg.Hash,
-	)
-	var i Chat
-	err := row.Scan(
-		&i.ID,
-		&i.ChatID,
-		&i.Title,
-		&i.Type,
-		&i.IsForum,
-		&i.IsBotMember,
-		&i.Hash,
-		&i.LastUpdate,
-	)
-	return i, err
-}
-
 const getChatById = `-- name: GetChatById :one
 SELECT id, chat_id, title, type, is_forum, is_bot_member, hash, last_update FROM public.chat WHERE chat_id = $1
 `

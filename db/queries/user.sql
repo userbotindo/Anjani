@@ -2,12 +2,6 @@
 SELECT * FROM public.user WHERE user_id = $1;
 
 
--- name: CreateUser :one
-INSERT INTO public.user (user_id, username, hash, is_started, last_seen)
-VALUES ($1, $2, $3, $4, now())
-RETURNING *;
-
-
 -- name: UpsertUserById :one
 INSERT INTO public.user (user_id, username, hash, is_started, last_seen)
 VALUES ($1, $2, $3, $4, now())

@@ -12,8 +12,7 @@ import (
 )
 
 func (up *userPlugin) getUser(id int64) (*db.User, error) {
-	ctx := context.Background()
-	user, err := up.DB.GetUserById(ctx, id)
+	user, err := up.DB.GetUserById(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -25,15 +24,13 @@ func (up *userPlugin) getUser(id int64) (*db.User, error) {
 }
 
 func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, hasStarted *bool) (*db.User, error) {
-	ctx := context.Background()
-
-	log.Info().Msgf("Creating User %d", id)
+	log.Debug().Msgf("Creating User %d", id)
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("Error hashing user id")
 		return nil, err
 	}
-	p := db.CreateUserParams{
+	p := db.UpsertUserByIdParams{
 		UserID:    id,
 		Username:  username,
 		IsStarted: hasStarted,
@@ -42,7 +39,7 @@ func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, ha
 	if hasStarted != nil {
 		p.IsStarted = hasStarted
 	}
-	user, err := up.DB.CreateUser(ctx, p)
+	user, err := up.DB.UpsertUserById(context.Background(), p)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating user")
 		return nil, err
@@ -51,8 +48,7 @@ func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, ha
 }
 
 func (up *userPlugin) getChat(id int64) (*db.Chat, error) {
-	ctx := context.Background()
-	user, err := up.DB.GetChatById(ctx, id)
+	user, err := up.DB.GetChatById(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -64,15 +60,13 @@ func (up *userPlugin) getChat(id int64) (*db.Chat, error) {
 }
 
 func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType string, isForum bool, isMember *bool) (*db.Chat, error) {
-	ctx := context.Background()
-
-	log.Info().Msgf("Creating Chat %d", id)
+	log.Debug().Msgf("Creating Chat %d", id)
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("Error hashing chat id")
 		return nil, err
 	}
-	p := db.CreateChatParams{
+	p := db.UpsertChatByIdParams{
 		ChatID:      id,
 		Title:       title,
 		Type:        cType,
@@ -80,7 +74,7 @@ func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType
 		IsForum:     isForum,
 		IsBotMember: isMember,
 	}
-	chat, err := up.DB.CreateChat(ctx, p)
+	chat, err := up.DB.UpsertChatById(context.Background(), p)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating chat")
 		return nil, err
