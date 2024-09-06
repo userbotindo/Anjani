@@ -60,21 +60,30 @@ func (q *Queries) GetUserById(ctx context.Context, userID int64) (User, error) {
 }
 
 const upsertUserById = `-- name: UpsertUserById :one
-INSERT INTO public.user (user_id, username, is_started, last_seen)
-VALUES ($1, $2, $3, now())
-ON CONFLICT (user_id) DO UPDATE
-SET user_id = $1, username = $2, is_started = $3, last_seen = now()
+INSERT INTO public.user (user_id, username, hash, is_started, last_seen)
+VALUES ($1, $2, $3, $4, now())
+ON CONFLICT (user_id)
+DO UPDATE
+SET username = EXCLUDED.username,
+    is_started = EXCLUDED.is_started,
+    last_seen = now()
 RETURNING user_id, username, hash, is_started, reputation, last_seen
 `
 
 type UpsertUserByIdParams struct {
 	UserID    int64
 	Username  string
+	Hash      *string
 	IsStarted *bool
 }
 
 func (q *Queries) UpsertUserById(ctx context.Context, arg UpsertUserByIdParams) (User, error) {
-	row := q.db.QueryRow(ctx, upsertUserById, arg.UserID, arg.Username, arg.IsStarted)
+	row := q.db.QueryRow(ctx, upsertUserById,
+		arg.UserID,
+		arg.Username,
+		arg.Hash,
+		arg.IsStarted,
+	)
 	var i User
 	err := row.Scan(
 		&i.UserID,

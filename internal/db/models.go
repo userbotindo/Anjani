@@ -14,7 +14,7 @@ type Chat struct {
 	Title       string
 	Type        string
 	IsForum     bool
-	IsBotMember bool
+	IsBotMember *bool
 	Hash        *string
 	LastUpdate  pgtype.Timestamp
 }

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.chat (
     title varchar(255) not null,
     type varchar(20) not null,
     is_forum boolean not null default false,
-    is_bot_member boolean not null default false,
+    is_bot_member boolean default false,
     hash varchar(32),
     last_update timestamp without time zone default CURRENT_TIMESTAMP
 );
