@@ -12,7 +12,7 @@ import (
 )
 
 func (up *userPlugin) getUser(id int64) (*db.User, error) {
-	user, err := up.DB.GetUserById(context.Background(), id)
+	user, err := up.q.GetUserById(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -24,7 +24,16 @@ func (up *userPlugin) getUser(id int64) (*db.User, error) {
 }
 
 func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, hasStarted *bool) (*db.User, error) {
-	log.Debug().Msgf("Creating User %d", id)
+	log.Debug().Msgf("[upsertUser] %d", id)
+	ctx := context.Background()
+	tx, err := up.db.Begin(ctx)
+	if err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertUser] Error starting transaction")
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	qtx := up.q.WithTx(tx)
+
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("Error hashing user id")
@@ -39,16 +48,21 @@ func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, ha
 	if hasStarted != nil {
 		p.IsStarted = hasStarted
 	}
-	user, err := up.DB.UpsertUserById(context.Background(), p)
+	user, err := qtx.UpsertUserById(context.Background(), p)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating user")
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertUser] Error committing transaction")
 		return nil, err
 	}
 	return &user, nil
 }
 
 func (up *userPlugin) getChat(id int64) (*db.Chat, error) {
-	user, err := up.DB.GetChatById(context.Background(), id)
+	user, err := up.q.GetChatById(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -60,7 +74,16 @@ func (up *userPlugin) getChat(id int64) (*db.Chat, error) {
 }
 
 func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType string, isForum bool, isMember *bool) (*db.Chat, error) {
-	log.Debug().Msgf("Creating Chat %d", id)
+	log.Debug().Msgf("[upsertChat] %d", id)
+	ctx := context.Background()
+	tx, err := up.db.Begin(ctx)
+	if err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertChat] Error starting transaction")
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	qtx := up.q.WithTx(tx)
+
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
 		log.Error().Err(err).Msg("Error hashing chat id")
@@ -74,9 +97,14 @@ func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType
 		IsForum:     isForum,
 		IsBotMember: isMember,
 	}
-	chat, err := up.DB.UpsertChatById(context.Background(), p)
+	chat, err := qtx.UpsertChatById(context.Background(), p)
 	if err != nil {
 		log.Error().Err(err).Msg("Error creating chat")
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertUser] Error committing transaction")
 		return nil, err
 	}
 	return &chat, nil

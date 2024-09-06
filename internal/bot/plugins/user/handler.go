@@ -4,6 +4,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	database "github.com/userbotindo/anjani/internal/db"
 )
@@ -11,14 +12,16 @@ import (
 type userPlugin struct {
 	Name     string
 	Helpable bool
-	DB       *database.Queries
+	db       *pgxpool.Pool
+	q        *database.Queries
 }
 
-func NewUserPlugin(db database.DBTX) *userPlugin {
+func NewUserPlugin(db *pgxpool.Pool) *userPlugin {
 	return &userPlugin{
 		Name:     "User",
 		Helpable: true,
-		DB:       database.New(db),
+		q:        database.New(db),
+		db:       db,
 	}
 }
 

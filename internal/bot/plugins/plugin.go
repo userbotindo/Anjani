@@ -2,11 +2,11 @@ package plugins
 
 import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 	"github.com/userbotindo/anjani/internal/bot/plugins/basic"
 	"github.com/userbotindo/anjani/internal/bot/plugins/staff"
 	"github.com/userbotindo/anjani/internal/bot/plugins/user"
-	"github.com/userbotindo/anjani/internal/db"
 )
 
 type Plugin interface {
@@ -19,7 +19,7 @@ func loadPluginHandlers(d *ext.Dispatcher, p []Plugin) {
 	}
 }
 
-func LoadPlugin(d *ext.Dispatcher, db db.DBTX) {
+func LoadPlugin(d *ext.Dispatcher, db *pgxpool.Pool) {
 	log.Info().Msg("Registering Plugins")
 
 	basicPlugin := basic.NewBasicPlugin()

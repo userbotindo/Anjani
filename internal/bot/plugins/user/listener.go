@@ -21,17 +21,12 @@ func (up *userPlugin) onMessage(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if c.Type == "private" {
 		_, err := up.upsertUser(b, u.Id, u.Username, util.BoolPtr(true))
-		if err != nil {
-			return err
-		}
+		return err
 		// TODO: handle forwared messages
-
-		return nil
 	}
 
 	up.upsertChat(b, c.Id, c.Title, c.Type, c.IsForum, util.BoolPtr(true))
 	up.upsertUser(b, u.Id, u.Username, util.BoolPtr(uData != nil && *uData.IsStarted))
 	// TODO: handle forwarded messages
-
 	return nil
 }
