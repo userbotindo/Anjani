@@ -20,9 +20,8 @@ type Chat struct {
 }
 
 type ChatMember struct {
-	ChatID    int64
-	UserID    int64
-	WarningID *int32
+	ChatID int64
+	UserID int64
 }
 
 type ChatSetting struct {
@@ -38,9 +37,10 @@ type ChatSetting struct {
 }
 
 type ChatWarning struct {
-	WarningID int32
-	Count     *int32
-	Reasons   []string
+	ChatID  int64
+	UserID  int64
+	Count   *int32
+	Reasons []string
 }
 
 type Federation struct {

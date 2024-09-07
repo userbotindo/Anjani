@@ -36,7 +36,7 @@ func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, ha
 
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
-		log.Error().Err(err).Msg("Error hashing user id")
+		log.Error().Err(err).Msg("[upsertUser] Error hashing user id")
 		return nil, err
 	}
 	p := db.UpsertUserByIdParams{
@@ -50,7 +50,7 @@ func (up *userPlugin) upsertUser(bot *gotgbot.Bot, id int64, username string, ha
 	}
 	user, err := qtx.UpsertUserById(context.Background(), p)
 	if err != nil {
-		log.Error().Err(err).Msg("Error creating user")
+		log.Error().Err(err).Msg("[upsertUser] Error creating user")
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType
 
 	hash, err := util.HashMd5(id, bot.Username)
 	if err != nil {
-		log.Error().Err(err).Msg("Error hashing chat id")
+		log.Error().Err(err).Msg("[upsertUser] Error hashing chat id")
 		return nil, err
 	}
 	p := db.UpsertChatByIdParams{
@@ -99,7 +99,7 @@ func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType
 	}
 	chat, err := qtx.UpsertChatById(context.Background(), p)
 	if err != nil {
-		log.Error().Err(err).Msg("Error creating chat")
+		log.Error().Err(err).Msg("[upsertUser] Error creating chat")
 		return nil, err
 	}
 
@@ -108,4 +108,63 @@ func (up *userPlugin) upsertChat(bot *gotgbot.Bot, id int64, title string, cType
 		return nil, err
 	}
 	return &chat, nil
+}
+
+func (up *userPlugin) upsertChatMember(chatId int64, userId int64) error {
+	ctx := context.Background()
+	tx, err := up.db.Begin(ctx)
+	if err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertChatMember] Error starting transaction")
+	}
+	defer tx.Rollback(ctx)
+	qtx := up.q.WithTx(tx)
+
+	_, err = qtx.UpsertChatMember(context.Background(), db.UpsertChatMemberParams{
+		ChatID: chatId,
+		UserID: userId,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("[upsertChatMember] Error upserting chat member")
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[upsertChatMember] Error committing transaction")
+		return err
+	}
+	return nil
+}
+
+func (up *userPlugin) migrateChat(newId int64, oldId int64) error {
+	ctx := context.Background()
+	tx, err := up.db.Begin(ctx)
+	if err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[migrateChatMember] Error starting transaction")
+	}
+	defer tx.Rollback(ctx)
+	qtx := up.q.WithTx(tx)
+
+	_, err = qtx.MigrateChatId(context.Background(), db.MigrateChatIdParams{
+		NewChatID: newId,
+		OldChatID: oldId,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("[migrateChatMember] Error migrating chat")
+		return err
+	}
+
+	_, err = qtx.MigrateChatMemberChatId(context.Background(), db.MigrateChatMemberChatIdParams{
+		NewChatID: newId,
+		OldChatID: oldId,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("[migrateChatMember] Error migrating chat member")
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		log.Error().Err(err).Ctx(ctx).Msg("[migrateChatMember] Error committing transaction")
+		return err
+	}
+	return nil
 }

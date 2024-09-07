@@ -29,6 +29,34 @@ func (q *Queries) GetChatById(ctx context.Context, chatID int64) (Chat, error) {
 	return i, err
 }
 
+const migrateChatId = `-- name: MigrateChatId :one
+UPDATE public.chat
+SET chat_id = $1, last_update = now()
+WHERE chat_id = $2
+RETURNING id, chat_id, title, type, is_forum, is_bot_member, hash, last_update
+`
+
+type MigrateChatIdParams struct {
+	NewChatID int64
+	OldChatID int64
+}
+
+func (q *Queries) MigrateChatId(ctx context.Context, arg MigrateChatIdParams) (Chat, error) {
+	row := q.db.QueryRow(ctx, migrateChatId, arg.NewChatID, arg.OldChatID)
+	var i Chat
+	err := row.Scan(
+		&i.ID,
+		&i.ChatID,
+		&i.Title,
+		&i.Type,
+		&i.IsForum,
+		&i.IsBotMember,
+		&i.Hash,
+		&i.LastUpdate,
+	)
+	return i, err
+}
+
 const upsertChatById = `-- name: UpsertChatById :one
 INSERT INTO public.chat (chat_id, title, type, is_forum, is_bot_member, hash, last_update)
 VALUES ($1, $2, $3, $4, $5, $6, now())

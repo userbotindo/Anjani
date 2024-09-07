@@ -26,15 +26,16 @@ CREATE INDEX IF NOT EXISTS user_username_ix ON public.user (username);
 
 
 CREATE TABLE IF NOT EXISTS public.chat_warning (
-    warning_id serial primary key,
+    chat_id bigint references public.chat(chat_id),
+    user_id bigint references public.user(user_id),
     count integer default 0,
-    reasons text[]
+    reasons text[],
+    primary key (chat_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.chat_member (
     chat_id bigint references public.chat(chat_id),
     user_id bigint references public.user(user_id),
-    warning_id integer references public.chat_warning(warning_id),
     primary key (chat_id, user_id)
 );
 

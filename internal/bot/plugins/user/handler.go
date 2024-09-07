@@ -31,4 +31,5 @@ func (up *userPlugin) RegisterHandler(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("info", up.cmdInfo))
 
 	d.AddHandler(handlers.NewMessage(message.All, up.onMessage))
+	d.AddHandler(handlers.NewMessage(message.Migrate, up.onMigrate))
 }

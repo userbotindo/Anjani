@@ -27,6 +27,13 @@ func (up *userPlugin) onMessage(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	up.upsertChat(b, c.Id, c.Title, c.Type, c.IsForum, util.BoolPtr(true))
 	up.upsertUser(b, u.Id, u.Username, util.BoolPtr(uData != nil && *uData.IsStarted))
+	up.upsertChatMember(c.Id, u.Id)
 	// TODO: handle forwarded messages
+	return nil
+}
+
+func (up *userPlugin) onMigrate(b *gotgbot.Bot, ctx *ext.Context) error {
+	up.migrateChat(ctx.Update.Message.MigrateFromChatId, ctx.Update.Message.MigrateToChatId)
+
 	return nil
 }
