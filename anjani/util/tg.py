@@ -1,4 +1,5 @@
 """Anjani telegram utils"""
+
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -187,7 +188,12 @@ def get_message_info(msg: Message) -> Tuple[str, Types, Optional[str], Button]:
         else:
             raise ValueError("Can't get message information")
     else:
-        text, buttons = parse_button(msg.text.markdown.split(" ", 2)[2])
+        raw_text = msg.text.markdown.split(" ", 2)
+        if len(raw_text) == 2:  # content were on the next line
+            raw_text = raw_text[1]
+            text, buttons = parse_button(raw_text.split("\n", 1)[1])
+        else:
+            text, buttons = parse_button(raw_text[2])
         types = Types.BUTTON_TEXT if buttons else Types.TEXT
 
     return text, types, content, buttons
