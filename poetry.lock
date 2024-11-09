@@ -174,13 +174,13 @@ anyio = ">=3.2.0,<4"
 
 [[package]]
 name = "aiorun"
-version = "2024.5.1"
+version = "2024.8.1"
 description = "Boilerplate for asyncio applications"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "aiorun-2024.5.1-py3-none-any.whl", hash = "sha256:4613a4fb8c23fff0c49a19ee6100953e7447e20e0ca14f21abffa4ef765e68c7"},
-    {file = "aiorun-2024.5.1.tar.gz", hash = "sha256:c9911e414b6eb4f32ed50c964c4b8fded072dfd09b7fae6b953b9694bf7d0deb"},
+    {file = "aiorun-2024.8.1-py3-none-any.whl", hash = "sha256:e06cd75611a85f71802e741e7294b2db470f77bba8d76dce229fcc51dd58ec38"},
+    {file = "aiorun-2024.8.1.tar.gz", hash = "sha256:87ea66b6146756ced58175d2f5ae64519ef96c4657f46b0e0c036e541a22c764"},
 ]
 
 [package.extras]
