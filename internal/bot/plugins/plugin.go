@@ -11,25 +11,34 @@ import (
 
 type Plugin interface {
 	RegisterHandler(d *ext.Dispatcher)
+	GetName() string
 }
 
-func loadPluginHandlers(d *ext.Dispatcher, p []Plugin) {
-	for _, plugin := range p {
-		plugin.RegisterHandler(d)
+var plugins []Plugin
+
+func getAllPlugins() []string {
+	// yield all plugins
+	var all []string
+	for _, plugin := range plugins {
+		all = append(all, plugin.GetName())
+
 	}
+	return all
 }
 
 func LoadPlugin(d *ext.Dispatcher, db *pgxpool.Pool) {
 	log.Info().Msg("Registering Plugins")
 
-	basicPlugin := basic.NewBasicPlugin()
-	staffPlugin := staff.NewStaffPlugin()
-	userPlugin := user.NewUserPlugin(db)
-
-	plugins := []Plugin{
-		basicPlugin,
-		staffPlugin,
-		userPlugin,
+	plg := []Plugin{
+		basic.NewBasicPlugin(getAllPlugins),
+		staff.NewStaffPlugin(),
+		user.NewUserPlugin(db),
 	}
-	loadPluginHandlers(d, plugins)
+
+	for _, p := range plg {
+		log.Info().Msgf("Registering Plugin: %s", p.GetName())
+		p.RegisterHandler(d)
+	}
+
+	plugins = plg
 }

@@ -5,7 +5,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog/log"
 	database "github.com/userbotindo/anjani/internal/db"
 )
 
@@ -25,9 +24,11 @@ func NewUserPlugin(db *pgxpool.Pool) *userPlugin {
 	}
 }
 
-func (up *userPlugin) RegisterHandler(d *ext.Dispatcher) {
-	log.Info().Msgf("Registering %s Plugin", up.Name)
+func (up *userPlugin) GetName() string {
+	return up.Name
+}
 
+func (up *userPlugin) RegisterHandler(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("info", up.cmdInfo))
 
 	d.AddHandler(handlers.NewMessage(message.All, up.onMessage))

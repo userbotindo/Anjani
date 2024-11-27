@@ -3,7 +3,6 @@ package staff
 import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/rs/zerolog/log"
 )
 
 type staffPlugin struct {
@@ -18,8 +17,10 @@ func NewStaffPlugin() *staffPlugin {
 	}
 }
 
-func (sp *staffPlugin) RegisterHandler(d *ext.Dispatcher) {
-	log.Info().Msgf("Registering %s Plugin", sp.Name)
+func (sp *staffPlugin) GetName() string {
+	return sp.Name
+}
 
+func (sp *staffPlugin) RegisterHandler(d *ext.Dispatcher) {
 	d.AddHandler(handlers.NewCommand("debug", sp.cmdDebug))
 }
