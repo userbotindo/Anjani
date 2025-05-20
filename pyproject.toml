@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "anjani"
-version = "2.14.19"
+version = "2.14.20"
 description = "Telegram group management bot"
 license = "GPL-3.0-or-later"
 authors = [
